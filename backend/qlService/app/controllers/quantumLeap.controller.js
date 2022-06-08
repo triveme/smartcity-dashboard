@@ -2,8 +2,32 @@ require("dotenv").config();
 const axios = require("axios");
 
 const client = axios.create({
-  baseURL: `http://${process.env.QUANTUM_LEAP_URL}:8668`,
+  baseURL: `https://${process.env.QUANTUM_LEAP_URL}`,
 });
+
+
+exports.getTypes = (callback, errCallback) => {
+  client
+    .get(`v2/types`, {
+      timeout:70000,
+      headers: {
+        // "Content-Type": "application/json",
+        "Fiware-Service": "testfrank001",
+        "Fiware-ServicePath": "/",
+        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
+        // "Accept":"*/*",
+        // "Accept-Encoding":"gzip, deflate, br",
+        // "Connection": "keep-alive",
+        // "Host":`quantumleap.fiware-staging.kielregion.addix.io`
+      },
+    })
+    .then(function (response) {
+      callback(response.data);
+    })
+    .catch(function (error) {
+      errCallback(error);
+    });
+};
 
 exports.getCurrentDataFromQuantumLeap = (
   queryConfig,
@@ -20,6 +44,7 @@ exports.getCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
+        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
@@ -46,6 +71,7 @@ exports.getMultiCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
+        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
@@ -75,6 +101,7 @@ exports.getHistoricalDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
+        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
