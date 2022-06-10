@@ -21,7 +21,6 @@ exports.getCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
@@ -62,7 +61,6 @@ exports.getMultiCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
@@ -96,7 +94,6 @@ exports.getHistoricalDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
