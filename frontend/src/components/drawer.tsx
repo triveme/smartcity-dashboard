@@ -25,8 +25,8 @@ import { ArchitectureEditButtons } from "components/architectureConfig/architect
 import { DashboardIcon } from "components/architectureConfig/dashboard-icons";
 
 import colors from "theme/colors";
-import logoSmall from "assets/smartCityLogoWhiteSmall.svg";
-import logoTextOnly from "assets/smartCityTextOnly.svg";
+import logoSmall from "assets/logo_small.svg";
+import logoTextOnly from "assets/logo.png";
 import borderRadius from "theme/border-radius";
 import {
   BUTTON_TEXTS,
@@ -250,7 +250,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
           <Box
             display="flex"
             justifyContent={open ? "start" : "center"}
-            marginLeft={open ? "19px" : 0}
+            marginLeft={open ? "29px" : 0}
             marginTop="auto"
             marginBottom={2}
           >
