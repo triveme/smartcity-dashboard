@@ -1,33 +1,10 @@
 require("dotenv").config();
 const axios = require("axios");
+const util = require("util");
 
 const client = axios.create({
   baseURL: `https://${process.env.QUANTUM_LEAP_URL}`,
 });
-
-
-exports.getTypes = (callback, errCallback) => {
-  client
-    .get(`v2/types`, {
-      timeout:70000,
-      headers: {
-        // "Content-Type": "application/json",
-        "Fiware-Service": "testfrank001",
-        "Fiware-ServicePath": "/",
-        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
-        // "Accept":"*/*",
-        // "Accept-Encoding":"gzip, deflate, br",
-        // "Connection": "keep-alive",
-        // "Host":`quantumleap.fiware-staging.kielregion.addix.io`
-      },
-    })
-    .then(function (response) {
-      callback(response.data);
-    })
-    .catch(function (error) {
-      errCallback(error);
-    });
-};
 
 exports.getCurrentDataFromQuantumLeap = (
   queryConfig,
@@ -35,7 +12,7 @@ exports.getCurrentDataFromQuantumLeap = (
   errCallback
 ) => {
   client
-    .get(`v2/entities/${queryConfig.entityId}`, {
+    .get(`v2/types/${queryConfig.entityId}`, {
       params: {
         attrs: queryConfig.attrs,
         lastN: 1,
@@ -44,13 +21,27 @@ exports.getCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
+        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
-      callback(response.data);
+      console.log("Current");
+      console.log(
+        util.inspect(response.data, false, null, true /* enable colors */)
+      );
+      if (
+        response.data &&
+        response.data.entities &&
+        response.data.entities.length > 0
+      ) {
+        callback(response.data.entities[0]);
+      } else {
+        callback(response.data);
+      }
     })
     .catch(function (error) {
+      console.log("err");
+      console.log(error);
       errCallback(error);
     });
 };
@@ -71,14 +62,18 @@ exports.getMultiCurrentDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
+        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
       // careful: With this req, the data is contained in an array called "attrs", not "attributes"
+      console.log("multi");
+      console.log(response);
       callback(response.data);
     })
     .catch(function (error) {
+      console.log("err");
+      console.log(error);
       errCallback(error);
     });
 };
@@ -89,7 +84,7 @@ exports.getHistoricalDataFromQuantumLeap = (
   errCallback
 ) => {
   client
-    .get(`v2/entities/${queryConfig.entityId}`, {
+    .get(`v2/types/${queryConfig.entityId}`, {
       params: {
         fromDate: queryConfig.fromDate,
         toDate: queryConfig.toDate,
@@ -101,13 +96,23 @@ exports.getHistoricalDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        "Authorization": "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
+        Authorization: "Bearer 486e0fa94ae938ab03a249362db5e6d4affd2b57",
       },
     })
     .then(function (response) {
-      callback(response.data);
+      if (
+        response.data &&
+        response.data.entities &&
+        response.data.entities.length > 0
+      ) {
+        callback(response.data.entities[0]);
+      } else {
+        callback(response.data);
+      }
     })
     .catch(function (error) {
+      console.log("err");
+      console.log(error);
       errCallback(error);
     });
 };

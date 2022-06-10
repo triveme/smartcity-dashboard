@@ -96,7 +96,7 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         />
       ) : (
         <SmallField
-          label="Entitäts-Id"
+          label="Type"
           type="text"
           value={
             currentTab.entityId && currentTab.entityId.length === 1
