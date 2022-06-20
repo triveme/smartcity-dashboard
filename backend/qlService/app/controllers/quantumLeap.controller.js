@@ -12,7 +12,7 @@ exports.getCurrentDataFromQuantumLeap = (
   errCallback
 ) => {
   client
-    .get(`v2/types/${queryConfig.entityId}`, {
+    .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
         attrs: queryConfig.attrs,
         lastN: 1,
@@ -29,15 +29,7 @@ exports.getCurrentDataFromQuantumLeap = (
       console.log(
         util.inspect(response.data, false, null, true /* enable colors */)
       );
-      if (
-        response.data &&
-        response.data.entities &&
-        response.data.entities.length > 0
-      ) {
-        callback(response.data.entities[0]);
-      } else {
-        callback(response.data);
-      }
+      callback(response.data);
     })
     .catch(function (error) {
       console.log("err");
@@ -84,7 +76,7 @@ exports.getHistoricalDataFromQuantumLeap = (
   errCallback
 ) => {
   client
-    .get(`v2/types/${queryConfig.entityId}`, {
+    .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
         fromDate: queryConfig.fromDate,
         toDate: queryConfig.toDate,
@@ -96,18 +88,11 @@ exports.getHistoricalDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
+        Authorization: "Bearer 4ec3963d763ff17b63370eceea8996e3c03334ff",
       },
     })
     .then(function (response) {
-      if (
-        response.data &&
-        response.data.entities &&
-        response.data.entities.length > 0
-      ) {
-        callback(response.data.entities[0]);
-      } else {
-        callback(response.data);
-      }
+      callback(response.data);
     })
     .catch(function (error) {
       console.log("err");
