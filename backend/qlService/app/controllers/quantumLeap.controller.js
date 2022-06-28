@@ -2,16 +2,20 @@ require("dotenv").config();
 const axios = require("axios");
 const util = require("util");
 
-const client = axios.create({
+const qlClient = axios.create({
   baseURL: `https://${process.env.QUANTUM_LEAP_URL}`,
 });
 
-exports.getCurrentDataFromQuantumLeap = (
+const cbClient = axios.create({
+  baseURL: `https://${process.env.CONTEXT_BROKER_URL}`,
+});
+
+exports.getCurrentDataFromContextBroker = (
   queryConfig,
   callback,
   errCallback
 ) => {
-  client
+  qlClient
     .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
         attrs: queryConfig.attrs,
@@ -38,12 +42,12 @@ exports.getCurrentDataFromQuantumLeap = (
     });
 };
 
-exports.getMultiCurrentDataFromQuantumLeap = (
+exports.getMultiCurrentDataFromContextBroker = (
   queryConfig,
   callback,
   errCallback
 ) => {
-  client
+  qlClient
     .get(`v2/attrs`, {
       params: {
         id: queryConfig.id,
@@ -75,7 +79,7 @@ exports.getHistoricalDataFromQuantumLeap = (
   callback,
   errCallback
 ) => {
-  client
+  qlClient
     .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
         fromDate: queryConfig.fromDate,

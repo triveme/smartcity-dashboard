@@ -17,7 +17,7 @@ exports.runSchedule = cron.schedule("*/15 * * * * *", () => {
         // value(s) of one entity
         if (queryItem.queryConfig.entityId.length < 2) {
           queryItem.queryConfig.entityId = queryItem.queryConfig.entityId[0];
-          quantumLeapController.getCurrentDataFromQuantumLeap(
+          quantumLeapController.getCurrentDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               queryDataSaverController.processQueriedData(
@@ -35,7 +35,7 @@ exports.runSchedule = cron.schedule("*/15 * * * * *", () => {
         else {
           queryItem.queryConfig.lastN = 100;
           queryItem.queryConfig.id = queryItem.queryConfig.entityId.join(",");
-          quantumLeapController.getMultiCurrentDataFromQuantumLeap(
+          quantumLeapController.getMultiCurrentDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               queryDataSaverController.processQueriedData(
@@ -55,7 +55,7 @@ exports.runSchedule = cron.schedule("*/15 * * * * *", () => {
           queryItem.queryConfig.attribute.keys.join(",");
         // donut charts display the current values, update them always
         if (queryItem.queryConfig.apexType === "donut") {
-          quantumLeapController.getCurrentDataFromQuantumLeap(
+          quantumLeapController.getCurrentDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               queryDataSaverController.processQueriedData(
