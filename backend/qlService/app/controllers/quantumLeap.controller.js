@@ -25,7 +25,7 @@ exports.getCurrentDataFromContextBroker = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 4ec3963d763ff17b63370eceea8996e3c03334ff",
+        Authorization: `Bearer ${process.env.TOKEN}`,
       },
     })
     .then(function (response) {
@@ -58,7 +58,7 @@ exports.getMultiCurrentDataFromContextBroker = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 4ec3963d763ff17b63370eceea8996e3c03334ff",
+        Authorization: `Bearer ${process.env.TOKEN}`,
       },
     })
     .then(function (response) {
@@ -92,7 +92,7 @@ exports.getHistoricalDataFromQuantumLeap = (
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: "Bearer 4ec3963d763ff17b63370eceea8996e3c03334ff",
+        Authorization: `Bearer ${process.env.TOKEN}`,
       },
     })
     .then(function (response) {
