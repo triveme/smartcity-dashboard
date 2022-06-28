@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const scheduler = require("./app/controllers/schedule.controller");
+const authentication = require("./app/controllers/authenticationController");
 require("dotenv").config();
 const app = express();
 const port = 8081;
@@ -29,3 +30,5 @@ app.listen(port, () => {
 });
 
 scheduler.runSchedule;
+
+authentication.getNewToken;
