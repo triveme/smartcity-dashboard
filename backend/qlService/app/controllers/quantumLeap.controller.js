@@ -29,10 +29,10 @@ exports.getCurrentDataFromContextBroker = (
       },
     })
     .then(function (response) {
-      console.log("Current");
-      console.log(
-        util.inspect(response.data, false, null, true /* enable colors */)
-      );
+      // console.log("Current");
+      // console.log(
+      //   util.inspect(response.data, false, null, true /* enable colors */)
+      // );
       callback(response.data);
     })
     .catch(function (error) {
@@ -63,8 +63,8 @@ exports.getMultiCurrentDataFromContextBroker = (
     })
     .then(function (response) {
       // careful: With this req, the data is contained in an array called "attrs", not "attributes"
-      console.log("multi");
-      console.log(response);
+      // console.log("multi");
+      // console.log(response);
       callback(response.data);
     })
     .catch(function (error) {
@@ -99,8 +99,8 @@ exports.getHistoricalDataFromQuantumLeap = (
       callback(response.data);
     })
     .catch(function (error) {
-      console.log("err");
-      console.log(error);
+      // console.log("err");
+      // console.log(error);
       errCallback(error);
     });
 };

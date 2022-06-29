@@ -4,9 +4,21 @@ const mongoDbController = require("./mongoDB.controller");
 const quantumLeapController = require("./quantumLeap.controller");
 const queryDataSaverController = require("./queryDataSaver.controller");
 const errorHandling = require("./errorHandling");
+const authenticationController = require("./authenticationController");
+
+function updateTokenIfNecessary() {
+  authenticationController.checkIfTokenNeedsToUpdate();
+  if (authenticationController.checkIfTokenNeedsToUpdate()) {
+    authenticationController.updateToken();
+  }
+}
 
 // runs every 15 seconds
 exports.runSchedule = cron.schedule("*/15 * * * * *", () => {
+  console.log("Scheduler");
+  updateTokenIfNecessary();
+  authenticationController.checkIfTokenNeedsToUpdate();
+
   mongoDbController.getQuerydata((querydata) => {
     const now = new Date();
     querydata.map((queryItem) => {
