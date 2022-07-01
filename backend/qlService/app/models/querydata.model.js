@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const Querydata = mongoose.model(
   "Querydata",
@@ -30,4 +30,4 @@ const Querydata = mongoose.model(
   )
 );
 
-module.exports = Querydata;
+export { Querydata };

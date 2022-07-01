@@ -1,8 +1,7 @@
-const mongoDbController = require("./mongoDB.controller");
+import { updateQueryMsg } from "./mongoDB.controller.js";
 
-exports.handleError = (queryID) => {
-  mongoDbController.updateQueryMsg(
-    queryID,
-    "Daten konnten nicht geladen werden"
-  );
-};
+function handleError(queryID) {
+  updateQueryMsg(queryID, "Daten konnten nicht geladen werden");
+}
+
+export { handleError };

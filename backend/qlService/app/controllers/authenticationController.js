@@ -1,5 +1,6 @@
-const axios = require("axios");
-require("dotenv").config({ override: true });
+import axios from "axios";
+import * as dotenv from "dotenv";
+dotenv.config({ override: true });
 
 const authClient = axios.create({
   baseURL: `https://${process.env.AUTH_URL}`,
@@ -7,7 +8,7 @@ const authClient = axios.create({
 
 let expirationTime = 0;
 
-exports.checkIfTokenNeedsToUpdate = () => {
+function checkIfTokenNeedsToUpdate() {
   let currentTime = new Date.getTime();
   console.log("current time");
   console.log(currentTime);
@@ -22,9 +23,9 @@ exports.checkIfTokenNeedsToUpdate = () => {
     needsToUpdate = true;
   }
   return needsToUpdate;
-};
+}
 
-exports.updateToken = () => {
+function updateToken() {
   authClient
     .post(
       "/password",
@@ -65,4 +66,6 @@ exports.updateToken = () => {
       console.log("authentication request failed");
       console.log(err);
     });
-};
+}
+
+export { checkIfTokenNeedsToUpdate, updateToken };

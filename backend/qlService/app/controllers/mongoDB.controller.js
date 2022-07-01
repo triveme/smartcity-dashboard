@@ -1,7 +1,7 @@
-const mongoDB = require("../models");
+import { mongoDB } from "../models/index.js";
 const Querydata = mongoDB.querydata;
 
-exports.getQuerydata = (callback) => {
+function getQuerydata(callback) {
   Querydata.find({}, (err, querydata) => {
     if (err) {
       console.log({ status: 500, message: err });
@@ -13,9 +13,9 @@ exports.getQuerydata = (callback) => {
     }
     callback(querydata);
   });
-};
+}
 
-exports.updateQuerydata = (queryItem) => {
+function updateQuerydata(queryItem) {
   return new Promise((resolve, reject) => {
     Querydata.updateOne({ _id: queryItem._id }, queryItem, (err, result) => {
       if (err) {
@@ -29,9 +29,9 @@ exports.updateQuerydata = (queryItem) => {
       resolve();
     });
   });
-};
+}
 
-exports.updateQueryMsg = (queryID, queryMsg) => {
+function updateQueryMsg(queryID, queryMsg) {
   return new Promise((resolve, reject) => {
     Querydata.updateOne(
       { _id: queryID },
@@ -49,4 +49,6 @@ exports.updateQueryMsg = (queryID, queryMsg) => {
       }
     );
   });
-};
+}
+
+export { getQuerydata, updateQueryMsg, updateQuerydata };

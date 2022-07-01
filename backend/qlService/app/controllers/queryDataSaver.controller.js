@@ -1,5 +1,5 @@
-const moment = require("moment");
-const mongoDbController = require("./mongoDB.controller");
+import moment from "moment";
+import { updateQuerydata } from "./mongoDB.controller.js";
 
 // converts utc to local time and returns date strings in a more
 // human friendly way (depending on the chosen granularity)
@@ -20,7 +20,7 @@ function formattedDates(dateArray, granularity) {
 }
 
 // runs every 15 seconds
-exports.processQueriedData = (queryItem, queriedData, dateGranularity) => {
+function processQueriedData(queryItem, queriedData, dateGranularity) {
   if (
     queriedData &&
     ((queriedData.attributes && queriedData.attributes.length > 0) ||
@@ -153,6 +153,8 @@ exports.processQueriedData = (queryItem, queriedData, dateGranularity) => {
     }
     queryItem.data = newData;
     queryItem.updateMsg = "";
-    mongoDbController.updateQuerydata(queryItem);
+    updateQuerydata(queryItem);
   }
-};
+}
+
+export { processQueriedData };
