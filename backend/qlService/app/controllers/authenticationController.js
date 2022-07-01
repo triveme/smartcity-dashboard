@@ -48,7 +48,7 @@ function updateToken() {
         process.env.TOKEN = response.data.access_token;
         process.env.REFRESH_TOKEN = response.data.refresh_token;
         let currentTime = new Date().getTime();
-        expirationTime = currentTime + response.date.expires_in - 1500;
+        expirationTime = currentTime + response.data.expires_in * 1000 - 1500;
         console.log(expirationTime);
       }
       /**
