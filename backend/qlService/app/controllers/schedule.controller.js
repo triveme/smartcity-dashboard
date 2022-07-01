@@ -14,7 +14,6 @@ import {
 } from "./authenticationController.js";
 
 function updateTokenIfNecessary() {
-  checkIfTokenNeedsToUpdate();
   if (checkIfTokenNeedsToUpdate()) {
     updateToken();
   }
@@ -23,9 +22,7 @@ function updateTokenIfNecessary() {
 // runs every 15 seconds
 function runSchedule() {
   cron.schedule("*/15 * * * * *", () => {
-    console.log("Scheduler");
     updateTokenIfNecessary();
-    checkIfTokenNeedsToUpdate();
 
     getQuerydata((querydata) => {
       const now = new Date();

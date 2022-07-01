@@ -9,17 +9,11 @@ const authClient = axios.create({
 let expirationTime = 0;
 
 function checkIfTokenNeedsToUpdate() {
-  let currentTime = new Date.getTime();
-  console.log("current time");
-  console.log(currentTime);
-  console.log("expiration time");
-  console.log(expirationTime);
+  let currentTime = new Date().getTime();
   let needsToUpdate = false;
   if (expirationTime === 0) {
-    console.log("expTime 0 ");
     needsToUpdate = true;
-  } else if (expirationTime > currentTime) {
-    console.log("exp time > curr");
+  } else if (expirationTime < currentTime) {
     needsToUpdate = true;
   }
   return needsToUpdate;
@@ -54,8 +48,7 @@ function updateToken() {
         process.env.TOKEN = response.data.access_token;
         process.env.REFRESH_TOKEN = response.data.refresh_token;
         let currentTime = new Date().getTime();
-        // expirationTime = currentTime + response.date.expires_in - 500;
-        expirationTime = currentTime + 5000;
+        expirationTime = currentTime + response.date.expires_in - 500;
         console.log(expirationTime);
       }
       /**
