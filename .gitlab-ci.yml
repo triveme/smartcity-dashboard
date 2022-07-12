@@ -1,0 +1,71 @@
+stages:
+  - build
+  - deploy
+
+build_frontend_service:
+  tags:
+    - shared
+  image: docker:stable
+  stage: build
+  environment: dev
+
+  before_script:
+    - cp $CI_FRONTEND_SERVICE_ENV_FILE .env
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -f backend/frontendService/Dockerfile -t frontendservice .
+    - docker tag frontendservice "$CI_REGISTRY_IMAGE:frontendservice-1.0.0"
+    - docker push "$CI_REGISTRY_IMAGE:frontendservice-1.0.0"
+  when: manual
+
+build_ql_service:
+  tags:
+    - shared
+  image: docker:stable
+  stage: build
+  environment: dev
+
+  before_script:
+    - cp $CI_QL_SERVICE_ENV_FILE .env
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -f backend/qlService/Dockerfile -t qlservice .
+    - docker tag qlservice "$CI_REGISTRY_IMAGE:qlservice-1.0.0"
+    - docker push "$CI_REGISTRY_IMAGE:qlservice-1.0.0"
+  when: manual
+
+build_frontend:
+  tags:
+    - shared
+  image: docker:stable
+  stage: build
+  environment: dev
+
+  before_script:
+    - cp $CI_FRONTEND_ENV_FILE .env
+    - docker info
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -f frontend/Dockerfile -t frontend .
+    - docker tag frontend "$CI_REGISTRY_IMAGE:frontend-1.0.0"
+    - docker push "$CI_REGISTRY_IMAGE:frontend-1.0.0"
+  when: manual
+
+deploy_to_dev:
+  tags:
+    - shared
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  stage: deploy
+  environment: dev
+
+  script:
+    - mv $KUBECONFIG_DASHBOARD_DEV $(pwd)/config
+    - kubectl --kubeconfig=$(pwd)/config -n dashboard-dev apply -f deployment/mongo.yml
+    - kubectl --kubeconfig=$(pwd)/config -n dashboard-dev apply -f deployment/frontendService.yml
+    - kubectl --kubeconfig=$(pwd)/config -n dashboard-dev apply -f deployment/qlService.yml
+    - kubectl --kubeconfig=$(pwd)/config -n dashboard-dev apply -f deployment/frontend.yml
+  when: manual

@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: backend-mongo
+  name: backend-mongo
+spec:
+  selector:
+    matchLabels:
+      app: backend-mongo
+  replicas: 1
+  serviceName: backend-mongo
+  template:
+    metadata:
+      labels:
+        app: backend-mongo
+    spec:
+      containers:
+      - image: mongo:3.6
+        name: mongo
+        livenessProbe:
+          exec:
+            command:
+              - mongo
+              - --disableImplicitSessions
+              - --eval
+              - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - mountPath: /data/db
+          name: mongodb-data
+      restartPolicy: Always
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: backend-mongo-data
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend-mongo
+  name: backend-mongo
+spec:
+  ports:
+  - name: "27017"
+    port: 27017
+    targetPort: 27017
+  selector:
+    app: backend-mongo
+status:
+  loadBalancer: {}
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-mongo-data
+spec:
+  storageClassName: 'teutostack-ssd'
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 1Gi
