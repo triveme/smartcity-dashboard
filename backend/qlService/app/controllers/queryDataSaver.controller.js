@@ -20,9 +20,12 @@ function formattedDates(dateArray, granularity) {
 }
 
 // runs every 15 seconds
+//queryItem = mongoDB
+//queriedData = response from QL / ContextBroker
 function processQueriedData(queryItem, queriedData, dateGranularity) {
   if (
     queriedData &&
+    //attributes bei /entities - attrs bei /attrs
     ((queriedData.attributes && queriedData.attributes.length > 0) ||
       (queriedData.attrs && queriedData.attrs.length > 0))
   ) {
@@ -109,7 +112,8 @@ function processQueriedData(queryItem, queriedData, dateGranularity) {
         // which corresponds to the attribute arrays
         newDataLabels = formattedDates(queriedData.index, dateGranularity);
       } else if (queryItem.queryConfig.apexType === "donut") {
-        // if a custom max value is requested, it is added to the attribute arrays
+        // if manual maxValue is set:
+        // calculate difference to maxValue & add to data
         if (
           queryItem.queryConfig.apexMaxAlias &&
           queryItem.queryConfig.apexMaxAlias !== "" &&

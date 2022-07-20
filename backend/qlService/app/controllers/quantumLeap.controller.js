@@ -33,7 +33,24 @@ function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
     })
     .catch(function (error) {
       console.log("err");
-      console.log(error);
+
+      if (error) {
+        if (
+          error.response &&
+          error.response.status &&
+          error.response.statusText
+        ) {
+          console.log(`${error.response.status} ${error.response.statusText}`);
+        }
+        if (error.request && error.request.path) {
+          console.log(`${error.request.path}`);
+        }
+
+        if (error.data && error.data.description && error.data.error) {
+          console.log(`${error.data.description}`);
+          console.log(`${error.data.error}`);
+        }
+      }
       errCallback(error);
     });
 }
@@ -65,7 +82,14 @@ function getMultiCurrentDataFromContextBroker(
     })
     .catch(function (error) {
       console.log("err");
-      console.log(error);
+      if (
+        error &&
+        error.response &&
+        error.response.status &&
+        error.response.statusText
+      ) {
+        console.log(`${error.response.status} ${error.response.statusText}`);
+      }
       errCallback(error);
     });
 }
