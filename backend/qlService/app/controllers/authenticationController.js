@@ -7,6 +7,8 @@ const authClient = axios.create({
 });
 
 let expirationTime = 0;
+let refreshToken = "";
+let accessToken = "";
 
 function checkIfTokenNeedsToUpdate() {
   let currentTime = new Date().getTime();
@@ -27,7 +29,7 @@ function updateToken() {
         grant_type: "refresh_token",
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
-        refresh_token: process.env.REFRESH_TOKEN,
+        refresh_token: refreshToken,
       }).toString(),
       {
         headers: {
@@ -43,17 +45,13 @@ function updateToken() {
         response.data.expires_in &&
         response.data.refresh_token
       ) {
-        console.log(response.data.access_token);
-        console.log(response.data.refresh_token);
-        process.env.TOKEN = response.data.access_token;
-        process.env.REFRESH_TOKEN = response.data.refresh_token;
-        let currentTime = new Date().getTime();
-        expirationTime = currentTime + response.data.expires_in * 1000 - 1500;
-        console.log(expirationTime);
+        console.log("token erfolgreich aktualisiert");
+        updateTokenAndExpirationTime(
+          response.data.access_token,
+          response.data.refresh_token,
+          response.data.expires_in
+        );
       }
-      /**
-       * Ablaufzeit für nächste Abfrage setzen
-       */
     })
     .catch((err) => {
       console.log("authentication request failed");
@@ -61,4 +59,53 @@ function updateToken() {
     });
 }
 
-export { checkIfTokenNeedsToUpdate, updateToken };
+function getInitialToken() {
+  authClient
+    .post(
+      "/password",
+      new URLSearchParams({
+        grant_type: "password",
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        username: process.env.APPUSER,
+        password: process.env.APPUSERPW,
+      }).toString(),
+      {
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+        },
+      }
+    )
+    .then((response) => {
+      console.log("Token erfolgreich aktualisiert");
+      if (
+        response.data &&
+        response.data.access_token &&
+        response.data.expires_in &&
+        response.data.refresh_token
+      ) {
+        updateTokenAndExpirationTime(
+          response.data.access_token,
+          response.data.refresh_token,
+          response.data.expires_in
+        );
+      }
+    })
+    .catch((err) => {
+      console.log("authentication request failed");
+      console.log(err);
+    });
+}
+
+function updateTokenAndExpirationTime(
+  newAccessToken,
+  newRefreshToken,
+  newExpiration
+) {
+  accessToken = newAccessToken;
+  refreshToken = newRefreshToken;
+  let currentTime = new Date().getTime();
+  expirationTime = currentTime + newExpiration * 1000 - 1500;
+}
+
+export { checkIfTokenNeedsToUpdate, updateToken, getInitialToken, accessToken };

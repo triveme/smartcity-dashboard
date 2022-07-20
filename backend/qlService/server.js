@@ -2,6 +2,8 @@ import express from "express";
 import mongoose from "mongoose";
 import { runSchedule } from "./app/controllers/schedule.controller.js";
 import "dotenv/config";
+import { getInitialToken } from "./app/controllers/authenticationController.js";
+
 const app = express();
 const port = 8081;
 
@@ -28,4 +30,5 @@ app.listen(port, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
+getInitialToken();
 runSchedule();

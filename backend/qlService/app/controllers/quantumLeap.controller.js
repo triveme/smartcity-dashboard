@@ -1,6 +1,7 @@
 import "dotenv/config";
 import axios from "axios";
 import util from "util";
+import { accessToken } from "./authenticationController.js";
 
 const qlClient = axios.create({
   baseURL: `${process.env.QUANTUM_LEAP_URL}`,
@@ -21,7 +22,7 @@ function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: `Bearer ${process.env.TOKEN}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     })
     .then(function (response) {
@@ -71,7 +72,7 @@ function getMultiCurrentDataFromContextBroker(
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: `Bearer ${process.env.TOKEN}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     })
     .then(function (response) {
@@ -108,7 +109,7 @@ function getHistoricalDataFromQuantumLeap(queryConfig, callback, errCallback) {
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
-        Authorization: `Bearer ${process.env.TOKEN}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     })
     .then(function (response) {
