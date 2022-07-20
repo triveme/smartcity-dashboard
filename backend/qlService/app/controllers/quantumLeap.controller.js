@@ -3,11 +3,11 @@ import axios from "axios";
 import util from "util";
 
 const qlClient = axios.create({
-  baseURL: `https://${process.env.QUANTUM_LEAP_URL}`,
+  baseURL: `${process.env.QUANTUM_LEAP_URL}`,
 });
 
 const cbClient = axios.create({
-  baseURL: `https://${process.env.CONTEXT_BROKER_URL}`,
+  baseURL: `${process.env.CONTEXT_BROKER_URL}`,
 });
 
 function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {

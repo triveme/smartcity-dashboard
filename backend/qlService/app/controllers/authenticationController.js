@@ -3,7 +3,7 @@ import * as dotenv from "dotenv";
 dotenv.config({ override: true });
 
 const authClient = axios.create({
-  baseURL: `https://${process.env.AUTH_URL}`,
+  baseURL: `${process.env.AUTH_URL}`,
 });
 
 let expirationTime = 0;
