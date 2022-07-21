@@ -1,6 +1,5 @@
 import "dotenv/config";
 import axios from "axios";
-import util from "util";
 import { accessToken } from "./authenticationController.js";
 
 const qlClient = axios.create({
@@ -26,33 +25,11 @@ function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
       },
     })
     .then(function (response) {
-      // console.log("Current");
-      // console.log(
-      //   util.inspect(response.data, false, null, true /* enable colors */)
-      // );
       callback(response.data);
     })
     .catch(function (error) {
-      console.log("err");
-
-      if (error) {
-        if (
-          error.response &&
-          error.response.status &&
-          error.response.statusText
-        ) {
-          console.log(`${error.response.status} ${error.response.statusText}`);
-        }
-        if (error.request && error.request.path) {
-          console.log(`${error.request.path}`);
-        }
-
-        if (error.data && error.data.description && error.data.error) {
-          console.log(`${error.data.description}`);
-          console.log(`${error.data.error}`);
-        }
-      }
-      errCallback(error);
+      let errString = handleErrorMessage(error);
+      errCallback(errString);
     });
 }
 
@@ -77,21 +54,11 @@ function getMultiCurrentDataFromContextBroker(
     })
     .then(function (response) {
       // careful: With this req, the data is contained in an array called "attrs", not "attributes"
-      // console.log("multi");
-      // console.log(response);
       callback(response.data);
     })
     .catch(function (error) {
-      console.log("err");
-      if (
-        error &&
-        error.response &&
-        error.response.status &&
-        error.response.statusText
-      ) {
-        console.log(`${error.response.status} ${error.response.statusText}`);
-      }
-      errCallback(error);
+      let errString = handleErrorMessage(error);
+      errCallback(errString);
     });
 }
 
@@ -116,10 +83,37 @@ function getHistoricalDataFromQuantumLeap(queryConfig, callback, errCallback) {
       callback(response.data);
     })
     .catch(function (error) {
-      // console.log("err");
-      // console.log(error);
-      errCallback(error);
+      let errString = handleErrorMessage(error);
+      errCallback(errString);
     });
+}
+
+function handleErrorMessage(error) {
+  let errString = "";
+  if (!error.response || !error.request) {
+    console.log(error);
+  } else {
+    if (error.response && error.response.status && error.response.statusText) {
+      console.log(
+        `${error.response.status} ${error.response.statusText} -----------------------------------------------------------------------------------`
+      );
+    }
+    if (error.request && error.request.path) {
+      console.log(`${error.request.path}`);
+    }
+
+    if (
+      error.response &&
+      error.response.data &&
+      error.response.data.description &&
+      error.response.data.error
+    ) {
+      errString = `${error.response.data.error}: ${error.response.data.description}`;
+      console.log(errString);
+    }
+  }
+
+  return errString;
 }
 
 export {

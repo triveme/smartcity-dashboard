@@ -39,8 +39,8 @@ function runSchedule() {
               (queriedData) => {
                 processQueriedData(queryItem, queriedData, null);
               },
-              (err) => {
-                handleError(queryItem._id);
+              (errString) => {
+                handleError(queryItem._id, errString);
               }
             );
           }
@@ -53,8 +53,8 @@ function runSchedule() {
               (queriedData) => {
                 processQueriedData(queryItem, queriedData, null);
               },
-              (err) => {
-                handleError(queryItem._id);
+              (errString) => {
+                handleError(queryItem._id, errString);
               }
             );
           }
@@ -69,8 +69,8 @@ function runSchedule() {
               (queriedData) => {
                 processQueriedData(queryItem, queriedData, null);
               },
-              (err) => {
-                handleError(queryItem._id);
+              (errString) => {
+                handleError(queryItem._id, errString);
               }
             );
           }
@@ -110,8 +110,8 @@ function runSchedule() {
                   queryItem.queryConfig.aggrPeriod
                 );
               },
-              (err) => {
-                handleError(queryItem._id);
+              (errString) => {
+                handleError(queryItem._id, errString);
               }
             );
           }
