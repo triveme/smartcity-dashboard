@@ -33,49 +33,11 @@ function processQueriedData(queryItem, queriedData, dateGranularity) {
     if (queryItem.queryConfig.type === "value") {
       let currentValues = [];
       if (queryItem.queryConfig.lastN && queryItem.queryConfig.lastN > 1) {
+        // up to 2 shown values possible -> attribute.keys = [] maxLength 2
         queryItem.queryConfig.attribute.keys.forEach((key) => {
           queriedData.attrs.forEach((attribute) => {
             if (key === attribute.attrName) {
-              let val = 0;
-              switch (queryItem.queryConfig.aggrMode) {
-                case "avg":
-                  attribute.types[0].entities.forEach((entity) => {
-                    val =
-                      val + parseFloat(entity.values[entity.values.length - 1]);
-                  });
-                  val = val / queryItem.queryConfig.entityId.length;
-                  break;
-                case "sum":
-                  attribute.types[0].entities.forEach((entity) => {
-                    val =
-                      val + parseFloat(entity.values[entity.values.length - 1]);
-                  });
-                  break;
-                case "min":
-                  val = Number.MAX_VALUE;
-                  attribute.types[0].entities.forEach((entity) => {
-                    if (parseFloat(entity.values[0]) < val) {
-                      val = parseFloat(entity.values[entity.values.length - 1]);
-                    }
-                  });
-                  break;
-                case "max":
-                  val = Number.MIN_VALUE;
-                  attribute.types[0].entities.forEach((entity) => {
-                    if (parseFloat(entity.values[0]) > val) {
-                      val = parseFloat(entity.values[entity.values.length - 1]);
-                    }
-                  });
-                  break;
-                default:
-                  attribute.types[0].entities.forEach((entity) => {
-                    val =
-                      val + parseFloat(entity.values[entity.values.length - 1]);
-                  });
-                  val = val / queryItem.queryConfig.entityId.length;
-                  break;
-              }
-              currentValues.push(val);
+              currentValues.push(getAggregatedValue(queryItem, attribute));
             }
           });
         });
@@ -159,6 +121,46 @@ function processQueriedData(queryItem, queriedData, dateGranularity) {
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
   }
+}
+
+function getAggregatedValue(queryItem, attribute) {
+  let val = 0;
+  switch (queryItem.queryConfig.aggrMode) {
+    case "avg":
+      attribute.types[0].entities.forEach((entity) => {
+        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      });
+      val = val / queryItem.queryConfig.entityId.length;
+      break;
+    case "sum":
+      attribute.types[0].entities.forEach((entity) => {
+        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      });
+      break;
+    case "min":
+      val = Number.MAX_VALUE;
+      attribute.types[0].entities.forEach((entity) => {
+        if (parseFloat(entity.values[0]) < val) {
+          val = parseFloat(entity.values[entity.values.length - 1]);
+        }
+      });
+      break;
+    case "max":
+      val = Number.MIN_VALUE;
+      attribute.types[0].entities.forEach((entity) => {
+        if (parseFloat(entity.values[0]) > val) {
+          val = parseFloat(entity.values[entity.values.length - 1]);
+        }
+      });
+      break;
+    default:
+      attribute.types[0].entities.forEach((entity) => {
+        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      });
+      val = val / queryItem.queryConfig.entityId.length;
+      break;
+  }
+  return val;
 }
 
 export { processQueriedData };
