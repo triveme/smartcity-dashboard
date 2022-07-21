@@ -6,7 +6,10 @@ import {
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
 } from "./quantumLeap.controller.js";
-import { processQueriedData } from "./queryDataSaver.controller.js";
+import {
+  processQueriedData,
+  processCurrentData,
+} from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
   checkIfTokenNeedsToUpdate,
@@ -28,6 +31,7 @@ function runSchedule() {
       const now = new Date();
       querydata.map((queryItem) => {
         // current values, update them always
+        // TO DO: get current values from context broker
         if (queryItem.queryConfig.type === "value") {
           queryItem.queryConfig.attrs =
             queryItem.queryConfig.attribute.keys.join(",");
@@ -37,7 +41,7 @@ function runSchedule() {
             getCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processQueriedData(queryItem, queriedData, null);
+                processQueriedData(queryItem, queriedData);
               },
               (errString) => {
                 handleError(queryItem._id, errString);
@@ -63,11 +67,12 @@ function runSchedule() {
           queryItem.queryConfig.attrs =
             queryItem.queryConfig.attribute.keys.join(",");
           // donut charts display the current values, update them always
+          // TO DO: get current values from context broker
           if (queryItem.queryConfig.apexType === "donut") {
             getCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processQueriedData(queryItem, queriedData, null);
+                processCurrentData(queryItem, queriedData, null);
               },
               (errString) => {
                 handleError(queryItem._id, errString);

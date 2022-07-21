@@ -19,10 +19,63 @@ function formattedDates(dateArray, granularity) {
   }
 }
 
+function processCurrentData(queryItem, queriedData) {
+  // context-Broker-response: different structure
+  if (
+    queryItem.queryConfig.attribute.keys[0] in queriedData &&
+    "value" in queriedData[queryItem.queryConfig.attribute.keys[0]]
+  ) {
+    let newData = [];
+    // Donut-Chart:
+    if (
+      queryItem.queryConfig.type === "chart" &&
+      queryItem.queryConfig.apexType === "donut"
+    ) {
+      let newDataLabels = [];
+      // if manual maxValue is set:
+      // calculate difference to maxValue & add to data
+      if (
+        queryItem.queryConfig.apexMaxAlias &&
+        queryItem.queryConfig.apexMaxAlias !== "" &&
+        queryItem.queryConfig.apexMaxValue
+      ) {
+        let currentValues = [];
+        let numToMax = queryItem.queryConfig.apexMaxValue;
+        queryItem.queryConfig.attribute.keys.forEach((key, index) => {
+          numToMax -=
+            queriedData[queryItem.queryConfig.attribute.keys[index]].value;
+          currentValues.push(
+            queriedData[queryItem.queryConfig.attribute.keys[index]].value
+          );
+        });
+        currentValues.splice(0, 0, numToMax);
+        newData = currentValues;
+        newDataLabels = [...queryItem.queryConfig.attribute.aliases];
+        if (newData.length > newDataLabels.length) {
+          newDataLabels.splice(0, 0, queryItem.queryConfig.apexMaxAlias);
+        }
+      } else {
+        let currentValues = [];
+        queryItem.queryConfig.attribute.keys.forEach((key, index) => {
+          currentValues.push(
+            queriedData[queryItem.queryConfig.attribute.keys[index]].value
+          );
+        });
+        newData = currentValues;
+        newDataLabels = queryItem.queryConfig.attribute.aliases;
+      }
+      queryItem.dataLabels = newDataLabels;
+      queryItem.data = newData;
+      queryItem.updateMsg = "";
+      updateQuerydata(queryItem);
+    }
+  }
+}
+
 // runs every 15 seconds
 //queryItem = mongoDB
 //queriedData = response from QL / ContextBroker
-function processQueriedData(queryItem, queriedData, dateGranularity) {
+function processHistoricalData(queryItem, queriedData, dateGranularity) {
   if (
     queriedData &&
     //attributes bei /entities - attrs bei /attrs
@@ -73,42 +126,6 @@ function processQueriedData(queryItem, queriedData, dateGranularity) {
         // --> quantumLeap saves the dates in the 'index' array,
         // which corresponds to the attribute arrays
         newDataLabels = formattedDates(queriedData.index, dateGranularity);
-      } else if (queryItem.queryConfig.apexType === "donut") {
-        // if manual maxValue is set:
-        // calculate difference to maxValue & add to data
-        if (
-          queryItem.queryConfig.apexMaxAlias &&
-          queryItem.queryConfig.apexMaxAlias !== "" &&
-          queryItem.queryConfig.apexMaxValue
-        ) {
-          let currentValues = [];
-          let numToMax = queryItem.queryConfig.apexMaxValue;
-          queryItem.queryConfig.attribute.keys.forEach((key) => {
-            queriedData.attributes.forEach((attribute) => {
-              if (attribute.attrName === key) {
-                numToMax -= attribute.values[0];
-                currentValues.push(attribute.values[0]);
-              }
-            });
-          });
-          currentValues.splice(0, 0, numToMax);
-          newData = currentValues;
-          newDataLabels = [...queryItem.queryConfig.attribute.aliases];
-          if (newData.length > newDataLabels.length) {
-            newDataLabels.splice(0, 0, queryItem.queryConfig.apexMaxAlias);
-          }
-        } else {
-          let currentValues = [];
-          queryItem.queryConfig.attribute.keys.forEach((key) => {
-            queriedData.attributes.forEach((attribute) => {
-              if (attribute.attrName === key) {
-                currentValues.push(attribute.values[0]);
-              }
-            });
-          });
-          newData = currentValues;
-          newDataLabels = queryItem.queryConfig.attribute.aliases;
-        }
       } else {
         console.log(
           "Unknown chart type encountered in queryDataSaver.controller.js"
@@ -163,4 +180,4 @@ function getAggregatedValue(queryItem, attribute) {
   return val;
 }
 
-export { processQueriedData };
+export { processHistoricalData as processQueriedData, processCurrentData };

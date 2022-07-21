@@ -11,14 +11,12 @@ const cbClient = axios.create({
 });
 
 function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
-  qlClient
+  cbClient
     .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
         attrs: queryConfig.attrs,
-        lastN: 1,
       },
       headers: {
-        "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
         Authorization: `Bearer ${accessToken}`,
