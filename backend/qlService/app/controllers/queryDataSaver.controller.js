@@ -19,7 +19,26 @@ function formattedDates(dateArray, granularity) {
   }
 }
 
-function processCurrentData(queryItem, queriedData) {
+function processCurrentValueData(queryItem, queriedData) {
+  let newData = [];
+  let currentValues = [];
+  if (queryItem.queryConfig.type === "value") {
+    // one Entity
+    // up to two values -> & attribute.keys
+    // necessary, as ql doesn't seem to retrieve the attributess in the order specified
+    queryItem.queryConfig.attribute.keys.forEach((key) => {
+      if (key in queriedData && "value" in queriedData[key]) {
+        currentValues.push(queriedData[key].value);
+      }
+    });
+  }
+  newData = currentValues;
+  queryItem.data = newData;
+  queryItem.updateMsg = "";
+  updateQuerydata(queryItem);
+}
+
+function processCurrentDonutData(queryItem, queriedData) {
   // context-Broker-response: different structure
   if (
     queryItem.queryConfig.attribute.keys[0] in queriedData &&
@@ -41,12 +60,9 @@ function processCurrentData(queryItem, queriedData) {
       ) {
         let currentValues = [];
         let numToMax = queryItem.queryConfig.apexMaxValue;
-        queryItem.queryConfig.attribute.keys.forEach((key, index) => {
-          numToMax -=
-            queriedData[queryItem.queryConfig.attribute.keys[index]].value;
-          currentValues.push(
-            queriedData[queryItem.queryConfig.attribute.keys[index]].value
-          );
+        queryItem.queryConfig.attribute.keys.forEach((key) => {
+          numToMax -= queriedData[key].value;
+          currentValues.push(queriedData[key].value);
         });
         currentValues.splice(0, 0, numToMax);
         newData = currentValues;
@@ -56,10 +72,8 @@ function processCurrentData(queryItem, queriedData) {
         }
       } else {
         let currentValues = [];
-        queryItem.queryConfig.attribute.keys.forEach((key, index) => {
-          currentValues.push(
-            queriedData[queryItem.queryConfig.attribute.keys[index]].value
-          );
+        queryItem.queryConfig.attribute.keys.forEach((key) => {
+          currentValues.push(queriedData[key].value);
         });
         newData = currentValues;
         newDataLabels = queryItem.queryConfig.attribute.aliases;
@@ -79,33 +93,11 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
   if (
     queriedData &&
     //attributes bei /entities - attrs bei /attrs
-    ((queriedData.attributes && queriedData.attributes.length > 0) ||
-      (queriedData.attrs && queriedData.attrs.length > 0))
+    queriedData.attributes &&
+    queriedData.attributes.length > 0
   ) {
     let newData = [];
-    if (queryItem.queryConfig.type === "value") {
-      let currentValues = [];
-      if (queryItem.queryConfig.lastN && queryItem.queryConfig.lastN > 1) {
-        // up to 2 shown values possible -> attribute.keys = [] maxLength 2
-        queryItem.queryConfig.attribute.keys.forEach((key) => {
-          queriedData.attrs.forEach((attribute) => {
-            if (key === attribute.attrName) {
-              currentValues.push(getAggregatedValue(queryItem, attribute));
-            }
-          });
-        });
-      } else {
-        // necessary, as ql doesn't seem to retrieve the attrs in the order specified
-        queryItem.queryConfig.attribute.keys.forEach((key) => {
-          queriedData.attributes.forEach((attribute) => {
-            if (key === attribute.attrName) {
-              currentValues.push(attribute.values[0]);
-            }
-          });
-        });
-      }
-      newData = currentValues;
-    } else if (queryItem.queryConfig.type === "chart") {
+    if (queryItem.queryConfig.type === "chart") {
       let newDataLabels = [];
       if (
         queryItem.queryConfig.apexType === "line" ||
@@ -180,4 +172,8 @@ function getAggregatedValue(queryItem, attribute) {
   return val;
 }
 
-export { processHistoricalData as processQueriedData, processCurrentData };
+export {
+  processHistoricalData,
+  processCurrentDonutData,
+  processCurrentValueData,
+};

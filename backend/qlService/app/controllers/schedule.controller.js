@@ -7,8 +7,9 @@ import {
   getHistoricalDataFromQuantumLeap,
 } from "./quantumLeap.controller.js";
 import {
-  processQueriedData,
-  processCurrentData,
+  processHistoricalData,
+  processCurrentDonutData,
+  processCurrentValueData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
@@ -41,7 +42,7 @@ function runSchedule() {
             getCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processQueriedData(queryItem, queriedData);
+                processCurrentValueData(queryItem, queriedData);
               },
               (errString) => {
                 handleError(queryItem._id, errString);
@@ -55,7 +56,7 @@ function runSchedule() {
             getMultiCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processQueriedData(queryItem, queriedData, null);
+                processHistoricalData(queryItem, queriedData, null);
               },
               (errString) => {
                 handleError(queryItem._id, errString);
@@ -72,7 +73,7 @@ function runSchedule() {
             getCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processCurrentData(queryItem, queriedData, null);
+                processCurrentDonutData(queryItem, queriedData, null);
               },
               (errString) => {
                 handleError(queryItem._id, errString);
@@ -109,7 +110,7 @@ function runSchedule() {
             getHistoricalDataFromQuantumLeap(
               queryItem.queryConfig,
               (queriedData) => {
-                processQueriedData(
+                processHistoricalData(
                   queryItem,
                   queriedData,
                   queryItem.queryConfig.aggrPeriod
