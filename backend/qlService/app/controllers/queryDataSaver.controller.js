@@ -23,31 +23,31 @@ function formattedDates(dateArray, granularity) {
 function processMultiCurrentData(queryItem, queriedData) {
   let currentValues = [];
   // up to 2 shown values possible -> attribute.keys = [] maxLength 2
-  let queriedValues = [];
-  if (queriedData && queriedData.length > 1) {
-    queriedData.forEach((entity) => {
-      if (
-        queryItem.queryConfig.attribute.keys[0] in entity &&
-        "value" in entity[queryItem.queryConfig.attribute.keys[0]]
-      ) {
-        queriedValues.push(
-          entity[queryItem.queryConfig.attribute.keys[0]].value
-        );
-      } else {
-        console.log("Multi Current Value: attribute name missing in reponse");
-      }
-    });
-  } else {
-    console.log("Multi Current Value: response-data empty");
-  }
+  queryItem.queryConfig.attribute.keys.forEach((key) => {
+    let queriedValues = [];
+    if (queriedData && queriedData.length > 1) {
+      queriedData.forEach((entity) => {
+        if (key in entity && "value" in entity[key]) {
+          queriedValues.push(entity[key].value);
+        } else {
+          console.log("Multi Current Value: attribute name missing in reponse");
+        }
+      });
 
-  if (queriedValues.length > 0) {
-    currentValues.push(getAggregatedValue(queryItem, queriedValues));
+      if (queriedValues.length > 0) {
+        currentValues.push(getAggregatedValue(queryItem, queriedValues));
+      }
+    } else {
+      console.log("Multi Current Value: response-data empty");
+    }
+  });
+
+  if (currentValues.length > 0) {
     queryItem.data = currentValues;
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
   } else {
-    console.log("");
+    console.log("Multi Current Values: no values found");
   }
 }
 
