@@ -1,3 +1,4 @@
+import { response } from "express";
 import moment from "moment";
 import { updateQuerydata } from "./mongoDB.controller.js";
 
@@ -32,8 +33,12 @@ function processMultiCurrentData(queryItem, queriedData) {
         queriedValues.push(
           entity[queryItem.queryConfig.attribute.keys[0]].value
         );
+      } else {
+        console.log("Multi Current Value: attribute name missing in reponse");
       }
     });
+  } else {
+    console.log("Multi Current Value: response-data empty");
   }
 
   if (queriedValues.length > 0) {
@@ -41,22 +46,26 @@ function processMultiCurrentData(queryItem, queriedData) {
     queryItem.data = currentValues;
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
+  } else {
+    console.log("");
   }
 }
 
 function processCurrentValueData(queryItem, queriedData) {
   let newData = [];
   let currentValues = [];
-  if (queryItem.queryConfig.type === "value") {
-    // one Entity
-    // up to two values -> & attribute.keys
-    // necessary, as ql doesn't seem to retrieve the attributess in the order specified
-    queryItem.queryConfig.attribute.keys.forEach((key) => {
-      if (key in queriedData && "value" in queriedData[key]) {
-        currentValues.push(queriedData[key].value);
-      }
-    });
-  }
+
+  // one Entity
+  // up to two values -> & attribute.keys
+  // necessary, as ql doesn't seem to retrieve the attributess in the order specified
+  queryItem.queryConfig.attribute.keys.forEach((key) => {
+    if (key in queriedData && "value" in queriedData[key]) {
+      currentValues.push(queriedData[key].value);
+    } else {
+      console.log("Current Value: attribute name missing in response");
+    }
+  });
+
   newData = currentValues;
   queryItem.data = newData;
   queryItem.updateMsg = "";
