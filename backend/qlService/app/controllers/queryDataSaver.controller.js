@@ -19,6 +19,31 @@ function formattedDates(dateArray, granularity) {
   }
 }
 
+function processMultiCurrentData(queryItem, queriedData) {
+  let currentValues = [];
+  // up to 2 shown values possible -> attribute.keys = [] maxLength 2
+  let queriedValues = [];
+  if (queriedData && queriedData.length > 1) {
+    queriedData.forEach((entity) => {
+      if (
+        queryItem.queryConfig.attribute.keys[0] in entity &&
+        "value" in entity[queryItem.queryConfig.attribute.keys[0]]
+      ) {
+        queriedValues.push(
+          entity[queryItem.queryConfig.attribute.keys[0]].value
+        );
+      }
+    });
+  }
+
+  if (queriedValues.length > 0) {
+    currentValues.push(getAggregatedValue(queryItem, queriedValues));
+    queryItem.data = currentValues;
+    queryItem.updateMsg = "";
+    updateQuerydata(queryItem);
+  }
+}
+
 function processCurrentValueData(queryItem, queriedData) {
   let newData = [];
   let currentValues = [];
@@ -132,41 +157,31 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
   }
 }
 
-function getAggregatedValue(queryItem, attribute) {
+function getAggregatedValue(queryItem, queriedValues) {
   let val = 0;
   switch (queryItem.queryConfig.aggrMode) {
     case "avg":
-      attribute.types[0].entities.forEach((entity) => {
-        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      queriedValues.forEach((value) => {
+        val = val + value;
       });
-      val = val / queryItem.queryConfig.entityId.length;
+      val = val / queriedValues.length;
       break;
     case "sum":
-      attribute.types[0].entities.forEach((entity) => {
-        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      queriedValues.forEach((value) => {
+        val = val + value;
       });
       break;
     case "min":
-      val = Number.MAX_VALUE;
-      attribute.types[0].entities.forEach((entity) => {
-        if (parseFloat(entity.values[0]) < val) {
-          val = parseFloat(entity.values[entity.values.length - 1]);
-        }
-      });
+      val = Math.min(...queriedValues);
       break;
     case "max":
-      val = Number.MIN_VALUE;
-      attribute.types[0].entities.forEach((entity) => {
-        if (parseFloat(entity.values[0]) > val) {
-          val = parseFloat(entity.values[entity.values.length - 1]);
-        }
-      });
+      val = Math.max(...queriedValues);
       break;
     default:
-      attribute.types[0].entities.forEach((entity) => {
-        val = val + parseFloat(entity.values[entity.values.length - 1]);
+      queriedValues.forEach((value) => {
+        val = val + value;
       });
-      val = val / queryItem.queryConfig.entityId.length;
+      val = val / queriedValues.length;
       break;
   }
   return val;
@@ -176,4 +191,5 @@ export {
   processHistoricalData,
   processCurrentDonutData,
   processCurrentValueData,
+  processMultiCurrentData,
 };

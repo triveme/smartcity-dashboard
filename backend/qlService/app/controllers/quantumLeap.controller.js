@@ -36,20 +36,19 @@ function getMultiCurrentDataFromContextBroker(
   callback,
   errCallback
 ) {
-  qlClient
-    .get(`v2/attrs`, {
+  cbClient
+    .get(`v2/entities`, {
       params: {
         id: queryConfig.id,
         attrs: queryConfig.attrs,
-        lastN: queryConfig.lastN,
       },
       headers: {
-        "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
         "Fiware-ServicePath": "/",
         Authorization: `Bearer ${accessToken}`,
       },
     })
+
     .then(function (response) {
       // careful: With this req, the data is contained in an array called "attrs", not "attributes"
       callback(response.data);

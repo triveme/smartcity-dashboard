@@ -10,6 +10,7 @@ import {
   processHistoricalData,
   processCurrentDonutData,
   processCurrentValueData,
+  processMultiCurrentData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
@@ -56,7 +57,7 @@ function runSchedule() {
             getMultiCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
-                processHistoricalData(queryItem, queriedData, null);
+                processMultiCurrentData(queryItem, queriedData);
               },
               (errString) => {
                 handleError(queryItem._id, errString);
