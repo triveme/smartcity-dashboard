@@ -57,7 +57,6 @@ export function Dashboard(props: DashboardProps) {
           isAdmin: authContext.authToken ? true : false,
           queryEnabled: false,
         }).then((architectureData) => {
-          console.log("----- then ----------");
           const dIndex = architectureData.findIndex((d: DashboardComponent) => {
             return d._id === dashboard._id;
           });
@@ -87,7 +86,6 @@ export function Dashboard(props: DashboardProps) {
           }
         });
       } else {
-        console.log("------ else -----------");
         setArchitectureContext({
           ...architectureContext,
           dashboardUrl: dashboard.url,
