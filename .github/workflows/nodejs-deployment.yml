@@ -7,7 +7,6 @@ on:
   workflow_run:
     workflows: ["Build"]
     types: [completed]
-    branches: [github-actions-dev]
 
 jobs:
   deployment:
