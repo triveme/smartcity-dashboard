@@ -22,7 +22,6 @@ export async function getDashboardArchitecture(args: ArchitectureRequestData) {
       }
     )
     .then((response) => {
-      console.log(response.data);
       return response.data;
     })
     .catch((err) => {
