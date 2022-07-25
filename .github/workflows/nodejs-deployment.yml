@@ -5,11 +5,9 @@ name: Demo-Deployment
 
 on:
   workflow_run:
-    workflows: [Build]
-    types:
-      - completed
-    branches:
-      - github-actions-dev
+    workflows: ["Build"]
+    types: [completed]
+    branches: [github-actions-dev]
 
 jobs:
   deployment:
