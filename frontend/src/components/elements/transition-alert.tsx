@@ -4,6 +4,7 @@ import IconButton from "@mui/material/IconButton";
 import Collapse from "@mui/material/Collapse";
 import CloseIcon from "@mui/icons-material/Close";
 import colors from "theme/colors";
+import { useAuthContext } from "context/auth-provider";
 
 type TransitionAlertProps = {
   alertText: String;
@@ -13,6 +14,7 @@ type TransitionAlertProps = {
 export function TransitionAlert(props: TransitionAlertProps) {
   const { alertText, info } = props;
   const [open, setOpen] = React.useState(true);
+  const { authContext } = useAuthContext();
 
   const infoText: String = "Daten werden geladen.";
 
@@ -48,7 +50,11 @@ export function TransitionAlert(props: TransitionAlertProps) {
           backgroundColor: colors.panelBackground,
         }}
       >
-        {info ? infoText : alertText}
+        {info
+          ? infoText
+          : authContext.authToken
+          ? alertText
+          : "Es konnten keine Daten geladen werden"}
       </Alert>
     </Collapse>
   );
