@@ -26,7 +26,7 @@ import { DashboardIcon } from "components/architectureConfig/dashboard-icons";
 
 import colors from "theme/colors";
 import logoSmall from "assets/logo_small.svg";
-import logoTextOnly from "assets/logo.png";
+import logoTextOnly from "assets/logo.svg";
 import borderRadius from "theme/border-radius";
 import {
   BUTTON_TEXTS,
