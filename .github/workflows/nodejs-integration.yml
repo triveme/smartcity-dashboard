@@ -16,6 +16,12 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/frontendService
+
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
@@ -24,7 +30,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing Frontend-Service"
-      - run: cd backend/frontendService
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
@@ -35,6 +40,12 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend/qlService
+
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
@@ -43,7 +54,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing QL-Service"
-      - run: cd backend/qlService
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
@@ -54,6 +64,12 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x, 14.x, 16.x]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
@@ -62,7 +78,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing Frontend"
-      - run: cd frontend
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
