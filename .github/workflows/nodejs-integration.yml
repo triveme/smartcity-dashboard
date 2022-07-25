@@ -76,5 +76,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing Frontend"
-      - run: npm ci
+      - run: npm install
       - run: npm run build --if-present
