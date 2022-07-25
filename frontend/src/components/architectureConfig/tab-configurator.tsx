@@ -122,11 +122,11 @@ export function TabConfigurator(props: TabConfiguratorProps) {
               newAttributeForKeys!.aliases[i] = value[i];
               if (newTempTabs[currentTabIndex].apexOptions?.colors) {
                 newTempTabs[currentTabIndex].apexOptions?.colors!.push(
-                  colors.primary
+                  colors.attributeColors[0]
                 );
               } else {
                 set(newTempTabs[currentTabIndex], "apexOptions.colors", [
-                  colors.primary,
+                  colors.attributeColors[0],
                 ]);
               }
             }
