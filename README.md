@@ -1,3 +1,5 @@
+![nodejs-integration](https://github.com/triveme/smartcity-dashboard/actions/workflows/nodejs-integration.yml/badge.svg)
+![nodejs-deployment](https://github.com/triveme/smartcity-dashboard/actions/workflows/nodejs-deployment.yml/badge.svg)
 # Dashboards - Smart City Paderborn
 
 ![](documentation/overview.png)
