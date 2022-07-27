@@ -47,7 +47,7 @@ jobs:
         run: npm run build
       - name: Deploy frontend with rsync
         working-directory: frontend/build
-        run: rsync -avz --delete ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/usr/share/nginx/html
+        run: rsync -avz --delete ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/usr/share/nginx/html/demo
       - name: Install frontendService
         working-directory: backend/frontendService
         run: npm install
