@@ -99,11 +99,10 @@ export function About() {
 
           <p>
             Die technische Umsetzung wurde durch die EDAG Group realisiert und
-            als Public-Money-Public-Code-Projekt gestartet. Auftraggeber bisher:
-            Stadt Paderborn. Unser Ziel ist es, diese hier dargestellte,
-            städteneutrale Ausgangsbasis durch weitere öffentliche Projekte
-            weiterzuentwickeln, um so allen nutzenden Städten eine günstige
-            Weiterentwicklung und Wartung zu ermöglichen.
+            als Public-Money-Public-Code-Projekt gestartet. Unser Ziel ist es,
+            diese hier dargestellte, städteneutrale Ausgangsbasis durch weitere
+            öffentliche Projekte weiterzuentwickeln, um so allen nutzenden
+            Städten eine günstige Weiterentwicklung und Wartung zu ermöglichen.
           </p>
           <br />
         </Grid>

@@ -4,7 +4,7 @@
 
 ![](documentation/overview.png)
 
-Das Ziel dieses prototypischen Projekts ist die Visualisierung von Daten aus der [FIWARE](https://www.fiware.org/)-basierten [zentralen Open Data Plattform](https://gitlab.com/zentrale-open-data-plattform-paderborn/overview). Durch die Bereitstellung der Daten, insbesondere in Form von Charts, kann Bürger:innen und Interessenten ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden. So ist es beispielweise möglich einzusehen, wie viele Besucher sich aktuell im Maspernbad befinden oder welche Temperatur- und Luftfeuchtigkeitswerte durch Sensoren in verschiedenen Stadtteilen gemessen werden.
+Das Ziel dieses prototypischen Projekts ist die Visualisierung von Daten aus der [FIWARE](https://www.fiware.org/)-basierten zentralen Open Data Plattform. Durch die Bereitstellung der Daten, insbesondere in Form von Charts, kann Bürger:innen und Interessenten ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden. So ist es beispielweise möglich einzusehen, wie viele Besucher sich aktuell im Maspernbad befinden oder welche Temperatur- und Luftfeuchtigkeitswerte durch Sensoren in verschiedenen Stadtteilen gemessen werden.
 
 Welche Daten wie visualisiert werden sollen kann dabei von den Betreibern im Livebetrieb und ohne zusätzlichen Programmieraufwand angepasst werden. Das ist möglich, indem Sie sich als Administrator anmelden und über einen integrierten Wizard die gewünschte Konfiguration vornehmen. Folglich können neu in die Open Data Plattform eingespiesene Daten durch minimale Anpassungen direkt der Öffentlichkeit zugänglich gemacht werden. Die Daten liegen also nicht nur in der Plattform ab, sondern bieten allen Einwohner:innen einen direkten Mehrwert.
 
