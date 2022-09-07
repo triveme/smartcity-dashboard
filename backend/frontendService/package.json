@@ -15,7 +15,6 @@
     "authentication",
     "mongodb"
   ],
-  "author": "lea faulstich",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
