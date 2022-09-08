@@ -4,9 +4,9 @@
 
 ![](documentation/overview.png)
 
-Das Ziel dieses prototypischen Projekts ist die Visualisierung von Daten aus der [FIWARE](https://www.fiware.org/)-basierten zentralen Open Data Plattform. Durch die Bereitstellung der Daten, insbesondere in Form von Charts, kann Bürger:innen und Interessenten ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden. So ist es beispielweise möglich einzusehen, wie viele Besucher sich aktuell im Maspernbad befinden oder welche Temperatur- und Luftfeuchtigkeitswerte durch Sensoren in verschiedenen Stadtteilen gemessen werden.
+Das Ziel dieses prototypischen Projekts ist die Visualisierung von Daten aus der [FIWARE](https://www.fiware.org/)-basierten zentralen Open Data Plattform. Durch die Bereitstellung der Daten, insbesondere in Form von Charts, kann Bürger:innen und Interessenten ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden. So ist es beispielweise möglich einzusehen, wie viele Besucher sich aktuell im Schwimmbad befinden oder welche Temperatur- und Luftfeuchtigkeitswerte durch Sensoren in verschiedenen Stadtteilen gemessen werden.
 
-Welche Daten wie visualisiert werden sollen kann dabei von den Betreibern im Livebetrieb und ohne zusätzlichen Programmieraufwand angepasst werden. Das ist möglich, indem Sie sich als Administrator anmelden und über einen integrierten Wizard die gewünschte Konfiguration vornehmen. Folglich können neu in die Open Data Plattform eingespiesene Daten durch minimale Anpassungen direkt der Öffentlichkeit zugänglich gemacht werden. Die Daten liegen also nicht nur in der Plattform ab, sondern bieten allen Einwohner:innen einen direkten Mehrwert.
+Welche Daten wie visualisiert werden sollen kann dabei von den Betreibern im Livebetrieb ohne zusätzlichen Programmieraufwand angepasst werden. Das ist möglich, indem Sie sich als Administrator anmelden und über einen integrierten Wizard die gewünschte Konfiguration vornehmen. Folglich können neu in die Open Data Plattform eingespiesene Daten durch minimale Anpassungen direkt der Öffentlichkeit zugänglich gemacht werden. Die Daten liegen also nicht nur in der Plattform, sondern bieten allen Einwohner:innen einen direkten Mehrwert.
 
 Die oben ersichtiche Webseite setzt sich hauptsächlich aus dem Menü links und dem Hauptbereich des jeweiligen Dashboards rechts davon zusammen. Über das Menü können Nutzer:inner das gewünschte Dashboard wählen und werden über die entsprechende Url zur Unterseite der Single-Page-App weitergeleitet. Der Content Bereich rechts ist in Widgets unterteilt, welche wiederum Panels enthalten. So sind die Panels thematisch gegliedert. Auf mobilen Geräten wird das Menü standardmäßig eingeklappt und Widgets und Panels werden entsprechend der Bildschirmbreite umgebrochen, um den begrenzten Platz auf den kleineren Bildschirmen optimal auszunutzen.
 
@@ -18,14 +18,14 @@ Es folgt eine kurze Beschreibung der wichtigsten Elemente der Webseite, mit Einb
 
 ![](documentation/data-showing-components.png)
 
-Der Prototyp ermöglicht momentan das Erstellen von Panels in drei verschiedenen Typen.
+Der Prototyp ermöglicht das Erstellen von Panels in drei verschiedenen Typen:
 
-- Beschreibende Panels enthalten Text und können somit beispielsweise dazu verwendet werden um Daten zu beschreiben.
-- Werte Panels enthalten bis zu zwei aktuelle Werte. Dabei kann es sich entweder um Einzelwerte einer Entität handeln, oder um Durchschnitts-, Minimal-, Maximal- oder Summenwerte, die anhand mehrerer Entitäten berechnet werden.
-- Chart Panels visualisieren Informationen anhand von mit [APEXCHARTS](https://apexcharts.com/) erzeugten Diagrammen. Es werden drei Chart-Typen unterstützt.
-  - Donut Charts zeigen Werte in Bezug zu einem bestimmten Maximum und eignen sich damit z. B. gut zur Anzeige von Auslastungen. Falls Entitäten nur ein zur Anzeige relevantes Attribut enthalten kann der Maximalwert manuell festgelegt werden.
-  - Balken Charts visualisieren historische Werte durch Balken. Diese haben ihren Ursprung immer am Nullpunkt und eignen sich deshalb am besten zur Darstellung von Daten mit hohen Wertschwankungen, wie beispielsweise Besucherzahlendaten sie haben. Während das Maximum bei Donut Charts im Chart impliziert ist, kann bei Balken Charts unabhängig von den Daten ein manueller Maximalwert definiert werden.
-  - Linien Charts zeigen ebenfalls historische Werte und ähneln sich von ihrer Funktionsweise sehr mit den Balken Charts. Ein wesentlicher Unterschied ist aber, dass Werte nicht beim Nullpunkt beginnen, womit sich Linien Charts besser zur Visualisierung kleinerer Wertschwankungen eignen. So können durch Liniendiagramme z. B. Temperaturschwankungen von wenigen Grad aufgezeigt werden.
+- __Beschreibende Panels__ enthalten Text und können somit beispielsweise dazu verwendet werden um Daten zu beschreiben.
+- __Werte Panels__ enthalten bis zu zwei aktuelle Werte. Dabei kann es sich entweder um Einzelwerte einer Entität handeln, oder um Durchschnitts-, Minimal-, Maximal- oder Summenwerte, die anhand mehrerer Entitäten berechnet werden.
+- __Chart Panels__ visualisieren Informationen anhand von mit [APEXCHARTS](https://apexcharts.com/) erzeugten Diagrammen. Es werden drei Chart-Typen unterstützt.
+  - __Donut Charts__ zeigen Werte in Bezug zu einem bestimmten Maximum und eignen sich damit z. B. gut zur Anzeige von Auslastungen. Falls Entitäten nur ein zur Anzeige relevantes Attribut enthalten kann der Maximalwert manuell festgelegt werden.
+  - __Balken Charts__ visualisieren historische Werte durch Balken. Diese haben ihren Ursprung immer am Nullpunkt und eignen sich deshalb am besten zur Darstellung von Daten mit hohen Wertschwankungen, wie beispielsweise Besucherzahlendaten sie haben. Während das Maximum bei Donut Charts im Chart impliziert ist, kann bei Balken Charts unabhängig von den Daten ein manueller Maximalwert definiert werden.
+  - __Linien Charts__ zeigen ebenfalls historische Werte und ähneln sich von ihrer Funktionsweise sehr mit den Balken Charts. Ein wesentlicher Unterschied ist aber, dass Werte nicht beim Nullpunkt beginnen, womit sich Linien Charts besser zur Visualisierung kleinerer Wertschwankungen eignen. So können durch Liniendiagramme z. B. Temperaturschwankungen von wenigen Grad aufgezeigt werden.
 
 Der Titel der Panels ist jeweils optional und außer bei Werte Panels kann noch eine weitere Unterteilung in bis zu drei Tabs vorgenommen werden. Diese Unterteilung ermöglicht es beispielsweise, in einem Panel bestimmte Werte über verschiedene Zeiträume darzustellen und die Daten zu beschreiben.
 
@@ -86,7 +86,7 @@ Grob unterteilt besteht der Prototyp aus einem Frontend und einem Backend. Das F
 - Bei der Webseite (dem Frontend) handelt es sich um eine mit [React](https://reactjs.org/) erstellte Single-Page-App.
 - Das zugehörige Backend besteht aus zwei separat agierenden [Express](https://expressjs.com/de/) Anwendungen, die eine [MongoDB](https://www.mongodb.com/) Datenbank verwenden.
   - Der Frontend-Service ist für die Verarbeitung jeglicher Anfragen des Frontends zuständig.
-  - Der QuantumLeap-Service ist für das Abrufen der Daten aus der Open Data Plattform zuständig.
+  - Der QuantumLeap-Service ist für das Abrufen der Daten aus der Open Data Plattform zuständig. Abhängig davon, ob es sich um aktuelle Daten (Werte & Donut-Charts) oder historische Daten (Balken- und Linien-Charts) handelt, wird eine Abfrage an den Context-Broker (für aktuelle Daten) oder QuantumLeap (für historische Daten) gesendet.
   - In der MongoDB werden sämtliche relevanten Daten gehalten: Die Nutzerdaten, Dashboarddaten und Querydaten.
 
 
@@ -105,6 +105,6 @@ Zusätzlich zu den Abläufen bei Standard Nutzer:innen wird beim Anmelden von Ad
 So kann z. B. ein Panel angelegt werden, welches neue Daten aus der Open Data Plattform visualisieren soll. Wenn diese Änderung von den Administrator:innen durch das Speichern im Frontend bestätigt wird, wird sie an den Frontend-Service übermittelt. Dieser speichert die aktualisierte Dashboard-Struktur in die Dashboard-Kollektion der Datenbank und referenziert eine neue Query, die in der Query-Kollektion angelegt wird. Nun kann den Administrator:innen das aktuelle Dashboard übermittelt werden, was somit die durchgeführte Änderung beinhaltet.
 
 - **Caching Datenfluss**  
-Der Frontend-Service und QuantumLeap-Service agieren wie erwähnt gesondert. Die einzige benötigte gemeinsame Schnittstelle ist die Datenbank. Ein Scheduler des QuantumLeap-Service prüft in regelmässigen Abständen, ob Datenstände in der Query-Kollektion der Datenbank leer oder veraltet sind. Nur wenn dies der Fall ist, resultiert daraus eine Anfrage an die QuantumLeap-API der Open Data Plattform.  
-Infolgedessen können beispielsweise die Daten für einen Donut-Chart, der die aktuelle Auslastung anzeigen soll, bei jedem Durchgang aktualisiert werden während die Daten für ein historisches Säulendiagramm nur jede Stunde aktualisert werden, da keine hohe Frequenz zur Visualiserung der Daten der letzten 30 Tage benötigt wird.  
+Der Frontend-Service und QuantumLeap-Service agieren wie erwähnt gesondert. Die einzige benötigte gemeinsame Schnittstelle ist die Datenbank. Ein Scheduler des QuantumLeap-Service prüft in regelmässigen Abständen, ob Datenstände in der Query-Kollektion der Datenbank leer oder veraltet sind. Nur wenn dies der Fall ist, resultiert daraus eine Anfrage an die Open Data Plattform.  
+Infolgedessen können beispielsweise die Daten für einen Donut-Chart, der die aktuelle Auslastung anzeigen soll, bei jedem Durchgang aktualisiert werden, während die Daten für ein historisches Säulendiagramm nur jede Stunde aktualisert werden, da keine hohe Frequenz zur Visualiserung der Daten der letzten 30 Tage benötigt wird.  
 Da Abfragen über einen längeren Zeitraum mehr Daten enthalten, impliziert diese Umsetzung eine intelligente Verminderung der Last auf QuantumLeap und den QuantumLeap-Service.
