@@ -5,6 +5,13 @@ const db = require("./app/models");
 
 const app = express();
 app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.append(
+    "Content-Security-Policy",
+    "frame-ancestors 'self';form-action 'self';"
+  );
+  next();
+});
 
 var corsOptions = {
   origin: process.env.FRONTEND_HOST,
