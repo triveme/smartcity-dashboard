@@ -52,9 +52,6 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.176",
-    "@types/react-router-dom": "^5.3.1",
-    "csp-html-webpack-plugin": "^5.1.0",
-    "customize-cra": "^1.0.0",
-    "react-app-rewired": "^2.2.1"
+    "@types/react-router-dom": "^5.3.1"
   }
 }
