@@ -61,6 +61,8 @@ jobs:
           envkey_DB_PASS: ${{ secrets.DEMO_DB_PASS }}
           envkey_DB_NAME: ${{ secrets.DEMO_DB_NAME }}
           envkey_SECRET: ${{ secrets.DEMO_SECRET }}
+          envkey_INLINE_RUNTIME_CHUNK: false
+          envkey_IMAGE_INLINE_SIZE_LIMIT: 0
           directory: backend/frontendService
       - name: Deploy frontendService with rsync
         working-directory: backend/frontendService
