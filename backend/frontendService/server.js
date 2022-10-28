@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./app/models");
 
 const app = express();
+app.disable("x-powered-by");
 
 var corsOptions = {
   origin: process.env.FRONTEND_HOST,
