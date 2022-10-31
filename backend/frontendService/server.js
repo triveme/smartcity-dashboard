@@ -10,6 +10,10 @@ app.use((req, res, next) => {
     "Content-Security-Policy",
     "frame-ancestors 'self';form-action 'self';"
   );
+  res.append(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains"
+  );
   next();
 });
 
@@ -50,6 +54,10 @@ db.mongoose
 //routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+
+app.use((req, res, next) => {
+  res.status(404).send({ message: "Not found" });
+});
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
