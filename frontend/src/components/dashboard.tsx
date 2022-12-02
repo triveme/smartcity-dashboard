@@ -136,7 +136,6 @@ export function Dashboard(props: DashboardProps) {
             onClose={handleWidgetCreationClose}
             editMode={false}
             widget={initialWidget}
-            parents={[dashboard.name]}
             parentsUids={[(dashboard._id!=="" ? dashboard._id : dashboard.uid)]}
           />
         </>

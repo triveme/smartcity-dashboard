@@ -23,13 +23,11 @@ type WidgetDialogProps = {
   onClose: () => void;
   widget: WidgetComponent;
   editMode: boolean;
-  parents: string[];
   parentsUids: string[];
 };
 
 export function WidgetDialog(props: WidgetDialogProps) {
-  const { open, onClose, widget, editMode, parents, parentsUids } = props;
-  const [parentDashboardName] = parents;
+  const { open, onClose, widget, editMode, parentsUids } = props;
   const [parentDashboardUid] = parentsUids;
 
   const { architectureContext, setArchitectureContext } =

@@ -410,7 +410,6 @@ export function ArchitectureEditButtons(
         onClose={handleWidgetCreationClose}
         editMode={true}
         widget={component as WidgetComponent}
-        parents={parents}
         parentsUids={parentsUids}
       />
       <PanelDialog
