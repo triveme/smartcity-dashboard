@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Switch, Route, Redirect } from "react-router-dom";
 
 import colors from "theme/colors";
-import kielRegionDashboardLogo from "assets/kielRegionDashboardLogo.png";
+import smartCityLogo from "assets/logoSmartCity.png";
 
 import { Spinner } from "components/elements/spinner";
 
@@ -130,7 +130,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
             >
               <img
                 height="50px"
-                src={kielRegionDashboardLogo}
+                src={smartCityLogo}
                 alt="logo smart city"
               />
             </Box>

@@ -25,44 +25,16 @@ export function Impressum() {
           }}
           elevation={0}
         >
-          <Typography marginBottom={0} variant="h3">
-            KielRegion GmbH
-          </Typography>
           <p>
-            Neufeldtstraße 6 <br />
-            Wissenschaftspark Kiel <br />
-            24118 Kiel <br />
-          </p>
-
-          <p>
-            Telefon: 0431 – 53 03 55 0 <br />
-            Fax: 0431 – 53 03 55 29
-            <br />
-            Mail: info@kielregion.de <br />
-          </p>
-
-          <p>
-            HRB 10353 KI, Amtsgericht Kiel
-            <br />
-            Geschäftsführung und inhaltlich verantwortlich:
-            <br />
-            Ulrike Schrabback-Wielatt
-          </p>
-          <br />
-          <Typography marginBottom={0} variant="h3">
-            Bildquellen
-          </Typography>
-          <p>EDAG</p>
-          <br />
-          <Typography marginBottom={0} variant="h3">
-            Textquellen
-          </Typography>
-          <p>
-            Leon Jamaer
-            <br />
-            Die KielRegion GmbH übernimmt keine Haftung für die Inhalte externer
-            Links. Verantwortlich für den Inhalt verlinkter Seiten sind deren
-            Betreiber.
+            Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam
+            nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam
+            erat, sed diam voluptua. At vero eos et accusam et justo duo dolores
+            et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est
+            Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur
+            sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+            et dolore magna aliquyam erat, sed diam voluptua. At vero eos et
+            accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren,
+            no sea takimata sanctus est Lorem ipsum dolor sit amet.
           </p>
         </Paper>
       </WidgetCard>

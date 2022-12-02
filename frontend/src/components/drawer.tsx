@@ -25,8 +25,8 @@ import { ArchitectureEditButtons } from "components/architectureConfig/architect
 import { DashboardIcon } from "components/architectureConfig/dashboard-icons";
 
 import colors from "theme/colors";
-// import logoSmall from "assets/kielRegionDashboardSmall.png";
-// import logoTextOnly from "assets/kielRegionDashboardLogo.png";
+import logoSmall from "assets/smartCityLogoSmall.svg";
+import logoTextOnly from "assets/smartCityTextOnly.svg";
 import borderRadius from "theme/border-radius";
 import {
   BUTTON_TEXTS,
@@ -251,10 +251,12 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
           <Box
             display="flex"
             justifyContent={open ? "start" : "center"}
-            marginLeft={open ? "10px" : 0}
+            marginLeft={open ? "30px" : 0}
             marginTop="auto"
             marginBottom={2}
-          ></Box>          
+          >
+            <img src={logoSmall} width={open ? "80%" : "50%"} alt="Smart City Dashbaord Logo" />
+          </Box>
           <InformationMenuBox open={open}/>
         </MiniVariantDrawer>
       ) : (
@@ -342,7 +344,9 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             marginLeft={1.65}
             marginTop="auto"
             marginBottom={1.5}
-          ></Box>
+          >
+            <img src={logoTextOnly} alt="Smart City Dashbaord Logo" />
+          </Box>
           <InformationMenuBox open={open}/>
         </Drawer>
       )}

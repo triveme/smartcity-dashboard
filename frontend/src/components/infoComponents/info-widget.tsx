@@ -5,8 +5,8 @@ import InfoIcon from "@mui/icons-material/Info";
 
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
-import logoKielSailingCity from "../../assets/kielSailingCity.svg";
-import logoKielRegion from "../../assets/logo.svg";
+import logoCity from "../../assets/logo.svg";
+import logoRegion from "../../assets/logo.svg";
 import { Contact } from "./contact";
 import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import { About } from "./about";
@@ -57,20 +57,20 @@ export function InfoWidget(props: InfoWidgetProps) {
             <Grid container spacing={7}>
               <Grid item xs={12} md={6} lg={3} xl={2}>
                 <Contact
-                  name="Leon Jamaer"
-                  companyName="KielRegion GmbH"
-                  department="Mobilitätsmanagement"
-                  address="Neufeldstraße 6"
-                  city="24118 Kiel"
+                  name="name"
+                  companyName="companyName"
+                  department="department"
+                  address="address"
+                  city="city"
                 />
               </Grid>
               <Grid item xs={12} md={6} lg={3} xl={2}>
                 <Contact
-                  name="Robert Ernstmeyer"
-                  companyName="Tiefbauamt Kiel"
-                  department="Mobilität und Strategie"
-                  address="Fleethörn 9"
-                  city="24103 Kiel"
+                  name="name"
+                  companyName="companyName"
+                  department="department"
+                  address="address"
+                  city="city"
                 />
               </Grid>
             </Grid>
@@ -79,9 +79,9 @@ export function InfoWidget(props: InfoWidgetProps) {
           <Grid container spacing={7} alignItems="center">
             <Grid item xs={12} md={6} lg={3} xl={2}>
               <img
-                src={logoKielRegion}
+                src={logoRegion}
                 width={"90%"}
-                alt="Kiel Region Logo"
+                alt="Logo"
                 style={{
                   borderRadius: borderRadius.fragmentRadius,
                   marginTop: 20,
@@ -90,9 +90,9 @@ export function InfoWidget(props: InfoWidgetProps) {
             </Grid>
             <Grid item xs={12} md={6} lg={3} xl={2}>
               <img
-                src={logoKielSailingCity}
+                src={logoCity}
                 width={"100%"}
-                alt="Kiel Sailing City Logo"
+                alt="Logo"
                 style={{
                   borderRadius: borderRadius.fragmentRadius,
                   marginTop: 20,

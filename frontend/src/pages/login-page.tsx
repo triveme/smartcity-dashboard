@@ -11,7 +11,7 @@ import { useAuthContext } from "context/auth-provider";
 import { SmallField } from "components/elements/text-fields";
 import { LoginButton } from "components/elements/buttons";
 
-import kielRegionDashboardLogo from "assets/kielRegionDashboardLogo.png";
+import smartCityLogo from "assets/logoSmartCity.png";
 import loginBackground from "assets/loginBackground.png";
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
@@ -144,7 +144,7 @@ export function LoginPage(props: LoginPageProps) {
           >
             <img
               height="62px"
-              src={kielRegionDashboardLogo}
+              src={smartCityLogo}
               alt="logo smart city"
             />
           </Box>
