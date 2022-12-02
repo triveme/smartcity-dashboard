@@ -25,14 +25,14 @@ import { ArchitectureEditButtons } from "components/architectureConfig/architect
 import { DashboardIcon } from "components/architectureConfig/dashboard-icons";
 
 import colors from "theme/colors";
-import logoSmall from "assets/smartCityLogoSmall.svg";
-import logoTextOnly from "assets/smartCityTextOnly.svg";
+// import logoSmall from "assets/kielRegionDashboardSmall.png";
+// import logoTextOnly from "assets/kielRegionDashboardLogo.png";
 import borderRadius from "theme/border-radius";
 import {
   BUTTON_TEXTS,
   DRAWER_TITLE,
-  INFORMATION_PAGE_TITLE,
 } from "constants/text";
+import { InformationMenuBox } from "./elements/information-menu-box";
 
 const drawerWidth = 240;
 
@@ -206,6 +206,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
                       type="Dashboard"
                       component={dashboard}
                       parents={[]}
+                      parentsUids={[]}
                       editMode={editMode}
                     />
                   </Box>
@@ -250,27 +251,11 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
           <Box
             display="flex"
             justifyContent={open ? "start" : "center"}
-            marginLeft={open ? "20px" : 0}
+            marginLeft={open ? "10px" : 0}
             marginTop="auto"
             marginBottom={2}
-          >
-            <img
-              src={open ? logoTextOnly : logoSmall}
-              alt="Smart City Logo"
-              width={open ? "80%" : "50%"}
-            />
-          </Box>
-
-          <Link to="/information" style={{ color: colors.inputFieldOutline }}>
-            <Typography
-              marginLeft={open ? "26px" : 0}
-              marginBottom={3}
-              fontSize={14}
-              textAlign={open ? "start" : "center"}
-            >
-              {open ? "Informationen" : "Info"}
-            </Typography>
-          </Link>
+          ></Box>          
+          <InformationMenuBox open={open}/>
         </MiniVariantDrawer>
       ) : (
         <Drawer
@@ -351,20 +336,14 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             </List>
           </Box>
           <Box
-            display="flex"
+            display="inline-block"
+            overflow={"hidden"}
             justifyContent="center"
-            margin={3}
+            marginLeft={1.65}
             marginTop="auto"
-            marginBottom={2}
-          >
-            <img src={logoTextOnly} alt="Smart City Dashbaord Logo" />
-          </Box>
-
-          <Link to="/information" style={{ color: colors.inputFieldOutline }}>
-            <Typography marginLeft={3.75} marginBottom={3} fontSize={14}>
-              {INFORMATION_PAGE_TITLE}
-            </Typography>
-          </Link>
+            marginBottom={1.5}
+          ></Box>
+          <InformationMenuBox open={open}/>
         </Drawer>
       )}
     </>

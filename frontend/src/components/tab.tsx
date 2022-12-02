@@ -16,6 +16,7 @@ export type TabComponent = {
   _id: string;
   type: string;
   name: string;
+  uid: string;
   donutToTotalLabel?: boolean;
   text?: string;
   apexType?: string;
@@ -57,7 +58,7 @@ function SingleTab(props: SingleTabProps) {
   if (tab.type === "chart") {
     return (
       <Box sx={{ position: "relative" }}>
-        <Chart key={"chart-" + tab.name} height={height - 50} tab={tab} />
+        <Chart key={"chart-" + tab._id!==""? tab._id : tab.uid} height={height - 50} tab={tab} />
         {!tab.apexSeries || (tab.apexSeries && tab.apexSeries?.length < 1) ? (
           alertText === "" ? (
             <TransitionAlert alertText={alertText} info={true} />
@@ -69,7 +70,7 @@ function SingleTab(props: SingleTabProps) {
     );
   } else if (tab.type === "description") {
     return (
-      <Box key={"box-" + tab.name} height={height - 49} style={{ padding: 10 }}>
+      <Box key={"box-" + (tab._id!=="" ? tab._id : tab.uid)} height={height - 49} style={{ padding: 10 }}>
         <Typography
           overflow="auto"
           height="100%"
@@ -84,7 +85,7 @@ function SingleTab(props: SingleTabProps) {
   } else if (tab.type === "value") {
     return (
       <Box sx={{ position: "relative", height: "inherit" }}>
-        <Value key={"value-" + tab.name} tab={tab} />
+        <Value key={"value-" + (tab._id!==""? tab._id : tab.uid)} tab={tab} />
         {!tab.values || (tab.values && tab.values?.length < 1) ? (
           alertText === "" ? (
             <TransitionAlert alertText={alertText} info={true} />
@@ -117,7 +118,7 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={tab.name + "-" + index}
     >
       {value === index && (
-        <SingleTab key={"singletab-" + tab.name} height={height} tab={tab} />
+        <SingleTab key={"singletab-" + (tab._id!==""? tab._id : tab.uid)} height={height} tab={tab} />
       )}
     </div>
   );
@@ -148,7 +149,7 @@ export function Tabbing(props: TabbingProps) {
   if (panel.tabs.length === 1) {
     return (
       <SingleTab
-        key={"singletab-" + panel.tabs[0].name}
+        key={"singletab-" + (panel.tabs[0]._id!=="" ? panel.tabs[0]._id : panel.tabs[0].uid)}
         height={panel.name ? panel.height - 24 : panel.height}
         tab={panel.tabs[0]}
       />
@@ -158,7 +159,7 @@ export function Tabbing(props: TabbingProps) {
       <>
         {panel.tabs.map((tab: TabComponent, index: number) => (
           <TabPanel
-            key={"tabpanel-" + tab.name + index}
+            key={"tabpanel-" + (tab._id!=="" ? tab._id : tab.uid + index)}
             value={tabValue < panel.tabs.length ? tabValue : 0}
             tab={tab}
             height={panel.name ? panel.height - 24 - 49 : panel.height - 49}
@@ -180,7 +181,7 @@ export function Tabbing(props: TabbingProps) {
           >
             {panel.tabs.map((tab: TabComponent, index: number) => (
               <Tab
-                key={"tab-" + tab.name + index}
+                key={"tab-" + (tab._id!=="" ? tab._id : tab.uid + index)}
                 style={{
                   fontSize: "small",
                   padding: 0,

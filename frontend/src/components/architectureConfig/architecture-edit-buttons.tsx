@@ -28,13 +28,14 @@ type ArchitectureEditDeleteButtonsProps = {
   type: string;
   component: DashboardComponent | WidgetComponent | PanelComponent;
   parents: string[];
+  parentsUids: string[];
   editMode: boolean;
 };
 
 export function ArchitectureEditButtons(
   props: ArchitectureEditDeleteButtonsProps
 ) {
-  const { type, component, parents, editMode } = props;
+  const { type, component, parents, parentsUids, editMode } = props;
 
   const theme = useTheme();
   const matchesDesktop = useMediaQuery(theme.breakpoints.up("sm"));
@@ -410,6 +411,7 @@ export function ArchitectureEditButtons(
         editMode={true}
         widget={component as WidgetComponent}
         parents={parents}
+        parentsUids={parentsUids}
       />
       <PanelDialog
         open={panelCreationOpen}
@@ -417,6 +419,7 @@ export function ArchitectureEditButtons(
         editMode={true}
         panel={component as PanelComponent}
         parents={parents}
+        parentsUids={parentsUids}
       />
     </>
   ) : null;

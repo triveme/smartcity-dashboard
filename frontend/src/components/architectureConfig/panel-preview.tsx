@@ -7,11 +7,12 @@ import borderRadius from "theme/border-radius";
 
 type PanelPreviewProps = {
   parents: string[];
+  parentsUids: string[];
   panelToPreview: PanelComponent;
 };
 
 export function PanelPreview(props: PanelPreviewProps) {
-  const { parents, panelToPreview } = props;
+  const { parents, parentsUids, panelToPreview } = props;
 
   return (
     <Paper
@@ -27,6 +28,7 @@ export function PanelPreview(props: PanelPreviewProps) {
         <Panel
           editMode={false}
           parents={parents}
+          parentsUids={parentsUids}
           previewMode
           panel={panelToPreview}
         />

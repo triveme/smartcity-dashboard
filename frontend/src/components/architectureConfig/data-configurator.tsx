@@ -21,7 +21,7 @@ type DataConfiguratorProps = {
   currentValueIndex?: number;
   currentTabIndex: number;
   tempPanel: PanelComponent;
-  setNewTabValue: (key: string, tabValue: any) => void;
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
 };
 
 export function DataConfigurator(props: DataConfiguratorProps) {
@@ -51,12 +51,19 @@ export function DataConfigurator(props: DataConfiguratorProps) {
       } else {
         newValueKeys.push(newAttr);
       }
-      setNewTabValue("attributeKeys", newValueKeys);
+      setNewTabValue([{ key: "attributeKeys", tabValue: newValueKeys }]);
     }
   };
 
   return (
-    <>
+    <>    
+      <ColorDialog
+        open={colorPickerOpen}
+        onClose={handleColorPickerClose}
+        setNewTabValue={setNewTabValue}
+        currentTab={currentTab}
+        attrColorIndex={colorIndex}
+      />
       <Divider style={{ marginTop: "8px" }} />
       <Typography
         marginTop={1}
@@ -72,7 +79,9 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         label="Fiware-Service"
         type="text"
         value={currentTab.fiwareService ? currentTab.fiwareService : ""}
-        onChange={(e) => setNewTabValue("fiwareService", e.target.value)}
+        onChange={(e) =>
+          setNewTabValue([{ key: "fiwareService", tabValue: e.target.value }])
+        }
       />
       {aggrMode !== "single" ? (
         <Autocomplete
@@ -80,7 +89,9 @@ export function DataConfigurator(props: DataConfiguratorProps) {
           id="entityIds"
           options={[]}
           value={currentTab.entityId ? currentTab.entityId : []}
-          onChange={(e, v) => setNewTabValue("entityIds", v)}
+          onChange={(e, v) =>
+            setNewTabValue([{ key: "entityIds", tabValue: v }])
+          }
           freeSolo
           renderInput={(params) => (
             <TextField
@@ -103,7 +114,9 @@ export function DataConfigurator(props: DataConfiguratorProps) {
               ? currentTab.entityId[0]
               : ""
           }
-          onChange={(e) => setNewTabValue("entityId", e.target.value)}
+          onChange={(e) =>
+            setNewTabValue([{ key: "entityId", tabValue: e.target.value }])
+          }
         />
       )}
       {currentValueIndex === undefined ? (
@@ -113,7 +126,9 @@ export function DataConfigurator(props: DataConfiguratorProps) {
             id="valueKeys"
             options={[]}
             value={currentTab.attribute ? currentTab.attribute?.keys : []}
-            onChange={(e, v) => setNewTabValue("attributeKeys", v)}
+            onChange={(e, v) =>
+              setNewTabValue([{ key: "attributeKeys", tabValue: v }])
+            }
             freeSolo
             renderInput={(params) => (
               <TextField
@@ -166,10 +181,15 @@ export function DataConfigurator(props: DataConfiguratorProps) {
                         type="text"
                         value={currentTab.attribute!.aliases[index]}
                         onChange={(e) =>
-                          setNewTabValue("attributeAlias", {
-                            key: key,
-                            alias: e.target.value,
-                          })
+                          setNewTabValue([
+                            {
+                              key: "attributeAlias",
+                              tabValue: {
+                                key: key,
+                                alias: e.target.value,
+                              },
+                            },
+                          ])
                         }
                       />
                       <Button
@@ -196,28 +216,61 @@ export function DataConfigurator(props: DataConfiguratorProps) {
                   </>
                 );
               })}
-              <ColorDialog
+              {/* <ColorDialog
                 open={colorPickerOpen}
                 onClose={handleColorPickerClose}
                 setNewTabValue={setNewTabValue}
                 currentTab={currentTab}
                 attrColorIndex={colorIndex}
-              />
+              /> */}
             </Box>
           ) : null}
         </>
-      ) : (
-        <SmallField
-          label="Attribut"
-          type="text"
-          value={
-            currentTab.attribute &&
-            currentTab.attribute?.keys[currentValueIndex]
-              ? currentTab.attribute?.keys[currentValueIndex]
-              : ""
-          }
-          onChange={(e) => handleValueAttrChange(e.target.value)}
-        />
+      ) : (        
+        <Paper
+          key={currentTab.attribute?.keys[currentValueIndex] + "-alias-paper"}
+          style={{
+            height: "100%",
+            padding: 2,
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.backgroundColor,
+          }}
+          elevation={0}
+        >
+          <SmallField
+            label="Attribut"
+            type="text"
+            value={
+              currentTab.attribute &&
+              currentTab.attribute?.keys[currentValueIndex]
+                ? currentTab.attribute?.keys[currentValueIndex]
+                : ""
+            }
+            onChange={(e) => handleValueAttrChange(e.target.value)}
+          />
+          <Button
+            size="small"
+            key={currentTab.attribute?.keys[currentValueIndex] + "-alias-color-button"}
+            variant="contained"
+            onClick={() => handleColorPickerClickOpen(colorIndex)}
+            style={{
+              marginLeft: 15,
+              marginRight: 10,
+              fontWeight: "bold",
+              backgroundColor:
+                !currentTab.apexOptions ||
+                !currentTab.apexOptions!.colors ||
+                !currentTab.apexOptions!.colors![currentValueIndex]
+                  ? colors.attributeColors[0]
+                  : currentTab.apexOptions!.colors![currentValueIndex],
+            }}
+          >
+            Farbe
+          </Button>
+        </Paper>        
       )}
       <Divider style={{ marginTop: "8px", marginBottom: "8px" }} />
     </>

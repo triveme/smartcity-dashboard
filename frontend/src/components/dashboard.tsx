@@ -21,6 +21,7 @@ import { DashboardWrapper } from "./elements/dashboard-wrapper";
 export type DashboardComponent = {
   _id: string;
   name: string;
+  uid: string;
   url: string;
   icon: string;
   widgets: WidgetComponent[];
@@ -116,9 +117,10 @@ export function Dashboard(props: DashboardProps) {
       ) : (
         dashboard.widgets.map((widget: WidgetComponent) => (
           <Widget
-            key={"widget-" + widget.name}
+            key={"widget-" + (widget._id!==""? widget._id : widget.uid)}
             widget={widget}
             parentName={dashboard.name}
+            parentsUid={(dashboard._id!=="" ? dashboard._id : dashboard.uid)}
             editMode={editMode}
           />
         ))
@@ -135,6 +137,7 @@ export function Dashboard(props: DashboardProps) {
             editMode={false}
             widget={initialWidget}
             parents={[dashboard.name]}
+            parentsUids={[(dashboard._id!=="" ? dashboard._id : dashboard.uid)]}
           />
         </>
       ) : null}

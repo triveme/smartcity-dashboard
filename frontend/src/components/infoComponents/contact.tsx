@@ -1,56 +1,42 @@
 import { Box, Typography } from "@mui/material";
-import ContactPicture from "assets/KontaktAlexanderSuessemilch.png";
-import borderRadius from "theme/border-radius";
+
 import colors from "theme/colors";
 
 type ContactProps = {
   name: string;
+  companyName: string;
+  department: string;
+  address: string;
+  city: string;
 };
 
 export function Contact(props: ContactProps) {
-  const { name } = props;
+  const { name, companyName, department, address, city } = props;
 
   return (
     <div>
-      <img
+      {/* <img
         src={ContactPicture}
         width={"100%"}
         alt="Contact"
         style={{ borderRadius: borderRadius.componentRadius }}
-      />
+      /> */}
 
       <Typography variant="h3" marginTop={2} marginBottom={1}>
         {name}
       </Typography>
       <Box sx={{ fontSize: "12px", lineHeight: 2, color: colors.textDark }}>
-        EDAG Engineering GmbH <br />
+        {companyName} <br />
         <table style={{ borderSpacing: 0 }}>
           <tbody>
             <tr>
-              <td>Telefon:</td>
-              <td>0661 6000 – 25854 </td>
+              <td>{department}</td>
             </tr>
             <tr>
-              <td>Email:</td>
-              <td>
-                <a
-                  href="mailto:Alexander.suessemilch@edag.com"
-                  style={{ color: colors.grayed }}
-                >
-                  Alexander.suessemilch@edag.com
-                </a>
-              </td>
+              <td> {address} </td>
             </tr>
             <tr>
-              <td>LinkedIn:</td>
-              <td>
-                <a
-                  style={{ lineBreak: "anywhere", color: colors.grayed }}
-                  href="https://www.linkedin.com/in/asuessemilch/"
-                >
-                  www.linkedin.com/in/asuessemilch/
-                </a>{" "}
-              </td>
+              <td>{city} </td>
             </tr>
           </tbody>
         </table>

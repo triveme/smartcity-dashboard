@@ -21,9 +21,11 @@ import { DashboardComponent } from "components/dashboard";
 import { WidgetComponent } from "components/widget";
 import Typography from "@mui/material/Typography";
 import { DIALOG_TITLES } from "constants/text";
+import { v4 as uuidv4 } from 'uuid';
 
 type PanelDialogProps = {
   parents: string[];
+  parentsUids: string[];
   editMode: boolean;
   panel: PanelComponent;
   open: boolean;
@@ -31,27 +33,30 @@ type PanelDialogProps = {
 };
 
 export function PanelDialog(props: PanelDialogProps) {
-  const { parents, panel, open, editMode, onClose } = props;
+  const { parents, parentsUids, panel, open, editMode, onClose } = props;
 
   const { architectureContext, setArchitectureContext } =
     useArchitectureContext();
 
   const addPanel = () => {
+    //Setting temppanels uid and initial tabs uid
+    let tPanel: PanelComponent = cloneDeep(tempPanel);
+    tPanel.uid = uuidv4();
+    tPanel.tabs[0].uid = uuidv4();
+
     let newArchitectureContext = cloneDeep(architectureContext);
-    let newCurrentArchitectureContext = cloneDeep(
-      newArchitectureContext.currentArchitectureContext
-    );
+    let newCurrentArchitectureContext = cloneDeep(newArchitectureContext.currentArchitectureContext);
     const dashboardIndex = newCurrentArchitectureContext.findIndex(
-      (d: DashboardComponent) => d.name === parents[0]
+      (d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentsUids[0]
     );
     if (dashboardIndex > -1) {
       const widgetIndex = newCurrentArchitectureContext[
         dashboardIndex
-      ].widgets.findIndex((w: WidgetComponent) => w.name === parents[1]);
+      ].widgets.findIndex((w: WidgetComponent) => (w._id!=="" ? w._id : w.uid) === parentsUids[1]);
       if (widgetIndex > -1) {
         newCurrentArchitectureContext[dashboardIndex].widgets[
           widgetIndex
-        ].panels.push(cloneDeep(tempPanel));
+        ].panels.push(cloneDeep(tPanel));
         newArchitectureContext.currentArchitectureContext =
           newCurrentArchitectureContext;
         newArchitectureContext.queryEnabled = false;
@@ -64,21 +69,19 @@ export function PanelDialog(props: PanelDialogProps) {
 
   const editPanel = () => {
     let newArchitectureContext = cloneDeep(architectureContext);
-    let newCurrentArchitectureContext = cloneDeep(
-      newArchitectureContext.currentArchitectureContext
-    );
+    let newCurrentArchitectureContext = cloneDeep(newArchitectureContext.currentArchitectureContext);
     const dashboardIndex = newCurrentArchitectureContext.findIndex(
-      (d: DashboardComponent) => d.name === parents[0]
+      (d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentsUids[0]
     );
     if (dashboardIndex > -1) {
       const widgetIndex = newCurrentArchitectureContext[
         dashboardIndex
-      ].widgets.findIndex((w: WidgetComponent) => w.name === parents[1]);
+      ].widgets.findIndex((w: WidgetComponent) => (w._id!=="" ? w._id : w.uid) === parentsUids[1]);
       if (widgetIndex > -1) {
         const panelIndex = newCurrentArchitectureContext[
           dashboardIndex
         ].widgets[widgetIndex].panels.findIndex(
-          (p: PanelComponent) => p.name === parents[2]
+          (p: PanelComponent) => (p._id!=="" ? p._id : p.uid) === parentsUids[2]
         );
         if (panelIndex > -1) {
           newCurrentArchitectureContext[dashboardIndex].widgets[
@@ -90,7 +93,7 @@ export function PanelDialog(props: PanelDialogProps) {
           setArchitectureContext(newArchitectureContext);
         }
       }
-    }
+    }    
     onClose();
   };
 
@@ -106,17 +109,17 @@ export function PanelDialog(props: PanelDialogProps) {
   const softResettingClose = () => {
     const dashboardIndex =
       architectureContext.currentArchitectureContext.findIndex(
-        (d: DashboardComponent) => d.name === parents[0]
+        (d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentsUids[0]
       );
     if (dashboardIndex > -1) {
       const widgetIndex = architectureContext.currentArchitectureContext[
         dashboardIndex
-      ].widgets.findIndex((w: WidgetComponent) => w.name === parents[1]);
+      ].widgets.findIndex((w: WidgetComponent) => (w._id!=="" ? w._id : w.uid) === parentsUids[1]);
       if (widgetIndex > -1) {
         const panelIndex = architectureContext.currentArchitectureContext[
           dashboardIndex
         ].widgets[widgetIndex].panels.findIndex(
-          (p: PanelComponent) => p.name === parents[2]
+          (p: PanelComponent) => (p._id!=="" ? p._id : p.uid) === parentsUids[2]
         );
         if (panelIndex > -1) {
           architectureContext.currentArchitectureContext[dashboardIndex]
@@ -183,7 +186,11 @@ export function PanelDialog(props: PanelDialogProps) {
             <Typography variant="h3" marginBottom={1}>
               {DIALOG_TITLES.PANEL_PREVIEW}
             </Typography>
-            <PanelPreview parents={parents} panelToPreview={tempPanel} />
+            <PanelPreview
+              parents={parents}
+              parentsUids={parentsUids}
+              panelToPreview={tempPanel}
+            />
           </Grid>
           <Grid
             item

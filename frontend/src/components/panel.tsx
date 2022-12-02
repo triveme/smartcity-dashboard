@@ -14,6 +14,7 @@ import colors from "theme/colors";
 export type PanelComponent = {
   _id: string;
   name: string;
+  uid: string;
   width: number;
   height: number;
   tabs: TabComponent[];
@@ -23,11 +24,12 @@ type PanelProps = {
   panel: PanelComponent;
   previewMode: boolean;
   parents: string[];
+  parentsUids: string[];
   editMode: boolean;
 };
 
 export function Panel(props: PanelProps) {
-  const { panel, previewMode, parents, editMode } = props;
+  const { panel, previewMode, parents, parentsUids, editMode } = props;
 
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
@@ -89,6 +91,7 @@ export function Panel(props: PanelProps) {
                       type="Panel"
                       component={panel}
                       parents={[...parents, panel.name]}
+                      parentsUids={[...parentsUids, (panel._id!=="" ? panel._id : panel.uid)]}
                       editMode={editMode}
                     />
                   </Box>
@@ -108,6 +111,7 @@ export function Panel(props: PanelProps) {
                 type="Panel"
                 component={panel}
                 parents={[...parents, panel.name]}
+                parentsUids={[...parentsUids, (panel._id!==""?panel._id:panel.uid)]}
                 editMode={editMode}
               />
             </Box>

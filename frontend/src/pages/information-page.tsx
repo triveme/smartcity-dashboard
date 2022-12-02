@@ -13,6 +13,7 @@ export function Information() {
         title="Kontakte"
         panelTitle="Ihr direkter Smart City Kontakt"
       />
+      <InfoWidget logo title="" panelTitle="Ihr direkter Smart City Kontakt" />
 
       <Grid container spacing={1} justifyContent="center">
         <Grid item xs={12} md={3} margin={0}>

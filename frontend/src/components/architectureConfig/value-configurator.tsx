@@ -19,7 +19,7 @@ import colors from "theme/colors";
 type ValueConfiguratorProps = {
   currentTabIndex: number;
   tempPanel: PanelComponent;
-  setNewTabValue: (key: string, tabValue: any) => void;
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
 };
 
 export function ValueConfigurator(props: ValueConfiguratorProps) {
@@ -44,7 +44,7 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
         if (newKeys.length > newValueAmount) {
           newKeys.pop();
         }
-        setNewTabValue("attributeKeys", newKeys);
+        setNewTabValue([{ key: "attributeKeys", tabValue: newKeys }]);
       }
       setCurrentValueIndex(0);
     } else {
@@ -53,7 +53,9 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
         currentTab.attribute.keys.length < newValueAmount
       ) {
         currentTab.attribute.keys = [currentTab.attribute.keys[0], "attribut2"];
-        setNewTabValue("attributeKeys", currentTab.attribute.keys);
+        setNewTabValue([
+          { key: "attributeKeys", tabValue: currentTab.attribute.keys },
+        ]);
       }
     }
     setValueAmount(newValueAmount);
@@ -62,10 +64,15 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
 
   const handleValueNameChange = (newName: string) => {
     if (currentTab.attribute) {
-      setNewTabValue("attributeAlias", {
-        key: currentTab.attribute.keys[currentValueIndex],
-        alias: newName,
-      });
+      setNewTabValue([
+        {
+          key: "attributeAlias",
+          tabValue: {
+            key: currentTab.attribute.keys[currentValueIndex],
+            alias: newName,
+          },
+        },
+      ]);
     }
   };
 
@@ -160,7 +167,9 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
           labelId="modus-simple-select-filled-label"
           id="modus-simple-select-filled"
           value={currentTab.aggrMode ? currentTab.aggrMode : "single"}
-          onChange={(e) => setNewTabValue("aggrMode", e.target.value)}
+          onChange={(e) =>
+            setNewTabValue([{ key: "aggrMode", tabValue: e.target.value }])
+          }
           style={{
             backgroundColor: colors.backgroundColor,
           }}
@@ -180,17 +189,19 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
         type="number"
         value={!currentTab.decimals ? 0 : currentTab.decimals}
         onChange={(e) =>
-          setNewTabValue(
-            "attributeDecimals",
-            parseInt(e.target.value) ? parseInt(e.target.value) : 0
-          )
+          setNewTabValue([
+            {
+              key: "attributeDecimals",
+              tabValue: parseInt(e.target.value) ? parseInt(e.target.value) : 0,
+            },
+          ])
         }
         onBlur={() => {
           if (
             currentTab.decimals &&
             (currentTab.decimals < 0 || currentTab.decimals > 5)
           ) {
-            setNewTabValue("attributeDecimals", 0);
+            setNewTabValue([{ key: "attributeDecimals", tabValue: 0 }]);
           }
         }}
       />

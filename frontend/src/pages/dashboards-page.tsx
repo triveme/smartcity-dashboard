@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { Switch, Route, Redirect } from "react-router-dom";
 
 import colors from "theme/colors";
-import smartCityLogo from "assets/smartCityLogo.svg";
+import kielRegionDashboardLogo from "assets/kielRegionDashboardLogo.png";
 
 import { Spinner } from "components/elements/spinner";
 
@@ -25,6 +25,7 @@ import { Information } from "./information-page";
 import { Impressum } from "./legal/impressum";
 import { PrivacyPolicy } from "./legal/privacy-policy";
 import { TermsOfUse } from "./legal/terms-of-use";
+import { Stack } from "@mui/material";
 
 const drawerWidth = 240;
 
@@ -116,9 +117,25 @@ export function DashboardsPage(props: DashboardsPageProps) {
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1, marginTop: "8px", marginBottom: "2px" }}>
-            <img height="42px" src={smartCityLogo} alt="logo smart city" />
-          </Box>
+          <Stack
+            direction="row"
+            spacing={6}
+            sx={{ marginTop: "6px", flexGrow: 1 }}
+          >
+            <Box
+              sx={{
+                marginTop: "2px",
+                marginBottom: "0px",
+              }}
+            >
+              <img
+                height="50px"
+                src={kielRegionDashboardLogo}
+                alt="logo smart city"
+              />
+            </Box>
+          </Stack>
+
           {authContext.authToken ? (
             <>
               {matchesDesktop ? (

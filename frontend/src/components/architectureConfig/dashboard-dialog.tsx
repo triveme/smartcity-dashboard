@@ -13,6 +13,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import cloneDeep from "lodash/cloneDeep";
 
+import { v4 as uuidv4 } from 'uuid';
 import { DIALOG_TITLES } from "constants/text";
 
 import { SmallField } from "components/elements/text-fields";
@@ -87,6 +88,7 @@ export function DashboardDialog(props: DashboardDialogProps) {
       newCurrentArchitectureContext.push({
         _id: "",
         name: newDashboardName,
+        uid: uuidv4(),
         icon: newDashboardIcon,
         url: newDashboardUrl,
         visible: dashboardVisibility,

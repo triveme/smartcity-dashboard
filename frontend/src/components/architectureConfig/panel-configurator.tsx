@@ -11,6 +11,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import cloneDeep from "lodash/cloneDeep";
 
+import { v4 as uuidv4 } from 'uuid';
 import { initialTab } from "components/architectureConfig/initial-components";
 import { TabConfigurator } from "components/architectureConfig/tab-configurator";
 import { PanelComponent } from "components/panel";
@@ -18,6 +19,7 @@ import { SmallField } from "components/elements/text-fields";
 
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
+import { TabComponent } from "components/tab";
 
 type PanelConfiguratorProps = {
   tempPanel: PanelComponent;
@@ -59,7 +61,9 @@ export function PanelConfigurator(props: PanelConfiguratorProps) {
     } else if (newAmountOfTabs > newTempTabs.length) {
       const numberToAdd = newAmountOfTabs - newTempTabs.length;
       for (let i = 0; i < numberToAdd; i++) {
-        newTempTabs.push({ ...initialTab });
+        let tab: TabComponent = {...initialTab};
+        tab.uid = uuidv4();
+        newTempTabs.push({ ...tab });
       }
       // type value is only allowed for panels without tabs (so tabs.length === 1)
       if (newTempTabs[0].type === "value") {

@@ -142,9 +142,11 @@ export function LineChart(props: LineChartProps) {
 
   if (tab.apexSeries) {
     tab.apexSeries = tab.apexSeries.map((series) => {
-      series.data = series.data.map((val: string | number) => {
-        return roundDecimalPlaces(val, tab.decimals);
-      });
+      if (series && series.data) {
+        series.data = series.data.map((val: string | number) => {
+          return roundDecimalPlaces(val, tab.decimals);
+        });
+      }
       return series;
     });
   }
@@ -168,11 +170,11 @@ export function LineChart(props: LineChartProps) {
       justifyContent="center"
     >
       <Box
-        key={"box-" + tab.name}
+        key={"box-" + (tab._id!=="" ? tab._id : tab.uid)}
         style={{ padding: 5, marginBottom: -15, width: "100%" }}
       >
         <ApexChart
-          key={"apexchart-" + tab.name + tickAmountKey + trigger}
+          key={"apexchart-" + (tab._id!=="" ? tab._id : tab.uid) + tickAmountKey + trigger}
           height={height}
           series={tab.apexSeries}
           options={

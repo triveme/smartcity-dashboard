@@ -18,21 +18,24 @@ import { initialPanel } from "./architectureConfig/initial-components";
 import { useAuthContext } from "context/auth-provider";
 import { BUTTON_TEXTS } from "constants/text";
 import { WidgetCard } from "./elements/widget-card";
+import { v4 as uuidv4 } from 'uuid';
 
 export type WidgetComponent = {
   _id: string;
   name: string;
+  uid: string;
   panels: PanelComponent[];
 };
 
 type WidgetProps = {
   widget: WidgetComponent;
   parentName: string;
+  parentsUid: string
   editMode: boolean;
 };
 
 export function Widget(props: WidgetProps) {
-  const { widget, parentName, editMode } = props;
+  const { widget, parentName, parentsUid, editMode } = props;
   const { authContext } = useAuthContext();
 
   const theme = useTheme();
@@ -57,6 +60,13 @@ export function Widget(props: WidgetProps) {
   const handleTooltipOpen = () => {
     setTooltipOpen(true);
   };
+
+  const provideInitialPanelWithUid = () => {
+    let panel = {...initialPanel};
+    panel.uid = uuidv4();
+
+    return panel;
+  }
 
   return (
     <WidgetCard>
@@ -89,6 +99,7 @@ export function Widget(props: WidgetProps) {
                     type="Widget"
                     component={widget}
                     parents={[parentName]}
+                    parentsUids={[parentsUid]}
                     editMode={editMode}
                   />
                 </Box>
@@ -101,10 +112,11 @@ export function Widget(props: WidgetProps) {
         {widget.panels &&
           widget.panels.map((panel: PanelComponent, index: number) => (
             <Panel
-              key={"panel-" + panel.name + index}
+              key={"panel-" + (panel._id!=="" ? panel._id : panel.uid) + index}
               panel={panel}
               previewMode={false}
               parents={[parentName, widget.name]}
+              parentsUids={[parentsUid, (widget._id!=="" ? widget._id : widget.uid)]}
               editMode={editMode}
             />
           ))}
@@ -121,8 +133,9 @@ export function Widget(props: WidgetProps) {
             open={panelCreationOpen}
             onClose={handlePanelCreationClose}
             editMode={false}
-            panel={initialPanel}
+            panel={provideInitialPanelWithUid()}
             parents={[parentName, widget.name]}
+            parentsUids={[parentsUid, (widget._id!=="" ? widget._id : widget.uid)]}
           />
         </>
       ) : null}

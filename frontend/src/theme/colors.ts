@@ -21,6 +21,7 @@ const colors = {
   drawerBackgroundTransparent: "#1e273882",
   value: "#04beaf",
   invisibleDashboardColor: "#6c7687",
+  green: "#95C11F",
 };
 
 export default colors;

@@ -11,7 +11,7 @@ import { useAuthContext } from "context/auth-provider";
 import { SmallField } from "components/elements/text-fields";
 import { LoginButton } from "components/elements/buttons";
 
-import smartCityLogo from "assets/smartCityLogo.svg";
+import kielRegionDashboardLogo from "assets/kielRegionDashboardLogo.png";
 import loginBackground from "assets/loginBackground.png";
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
@@ -69,12 +69,7 @@ export function LoginPage(props: LoginPageProps) {
           refreshDashboardData(true);
           setAuthContext({ authToken: authData.accessToken });
           enableEditMode();
-          console.log(
-            "Logged in as " +
-              authData.roles[0] +
-              " with token " +
-              authData.accessToken
-          );
+          console.log("Logged in as " + authData.roles[0]);
         })
         .catch((e) => {
           alert(
@@ -147,7 +142,11 @@ export function LoginPage(props: LoginPageProps) {
               borderRadius: borderRadius.componentRadius,
             }}
           >
-            <img height="62px" src={smartCityLogo} alt="logo smart city" />
+            <img
+              height="62px"
+              src={kielRegionDashboardLogo}
+              alt="logo smart city"
+            />
           </Box>
           <Typography variant="h1" paddingTop={1}>
             {LOGIN_TITLE}

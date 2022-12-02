@@ -5,8 +5,6 @@ import type { TabComponent } from "components/tab";
 
 import { roundDecimalPlaces } from "utils/decimal-helper";
 
-import colors from "theme/colors";
-
 type TabProps = {
   tab: TabComponent;
 };
@@ -30,7 +28,7 @@ export function Value(props: TabProps) {
             <Typography
               fontWeight="bold"
               fontSize={52}
-              color={colors.value}
+              color={tab.apexOptions!.colors![0]}
               key={"value-typo-value-" + i}
             >
               {roundDecimalPlaces(tab.values[i], tab.decimals)}

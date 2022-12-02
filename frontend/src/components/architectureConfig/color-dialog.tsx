@@ -16,7 +16,7 @@ import borderRadius from "theme/border-radius";
 type ColorDialogProps = {
   open: boolean;
   onClose: () => void;
-  setNewTabValue: (key: string, tabValue: any) => void;
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
   currentTab: TabComponent;
   attrColorIndex: number;
 };
@@ -69,14 +69,16 @@ export function ColorDialog(props: ColorDialogProps) {
             <IconButton
               key={"icon-button-" + attrColor}
               onClick={() => {
-                setNewTabValue(
-                  "apexOptions",
-                  set(
-                    cloneDeep(currentTab.apexOptions!),
-                    "colors",
-                    updatedColorArray(attrColor)
-                  )
-                );
+                setNewTabValue([
+                  {
+                    key: "apexOptions",
+                    tabValue: set(
+                      cloneDeep(currentTab.apexOptions!),
+                      "colors",
+                      updatedColorArray(attrColor)
+                    ),
+                  },
+                ]);
               }}
             >
               <PaletteIcon
@@ -110,7 +112,7 @@ export function ColorDialog(props: ColorDialogProps) {
 type MaxColorDialogProps = {
   open: boolean;
   onClose: () => void;
-  setNewTabValue: (key: string, tabValue: any) => void;
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
   currentTab: TabComponent;
 };
 
@@ -136,7 +138,7 @@ export function MaxColorDialog(props: MaxColorDialogProps) {
             <IconButton
               key={"icon-button-" + attrColor}
               onClick={() => {
-                setNewTabValue("apexMaxColor", attrColor);
+                setNewTabValue([{ key: "apexMaxColor", tabValue: attrColor }]);
               }}
             >
               <PaletteIcon
