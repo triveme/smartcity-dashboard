@@ -7,7 +7,7 @@ import Toolbar from "@mui/material/Toolbar";
 import CssBaseline from "@mui/material/CssBaseline";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import colors from "theme/colors";
 import smartCityLogo from "assets/smartCityLogo.svg";
@@ -15,7 +15,7 @@ import smartCityLogo from "assets/smartCityLogo.svg";
 import { Spinner } from "components/elements/spinner";
 
 import { useArchitectureContext } from "context/architecture-provider";
-import { useAuthContext } from "context/auth-provider";
+import { useStateContext } from "../providers/state-provider";
 
 import { SideMenue } from "components/drawer";
 import { Dashboard, DashboardComponent } from "components/dashboard";
@@ -90,7 +90,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
     setDashboardSavedToggle(!dashboardSavedToggle);
   };
 
-  const { authContext } = useAuthContext();
+  const { stateContext } = useStateContext();
 
   const { architectureContext } = useArchitectureContext();
   let { currentArchitectureContext } = architectureContext;
@@ -119,7 +119,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
           <Box sx={{ flexGrow: 1, marginTop: "8px", marginBottom: "2px" }}>
             <img height="42px" src={smartCityLogo} alt="logo smart city" />
           </Box>
-          {authContext.authToken ? (
+          {stateContext.authToken ? (
             <>
               {matchesDesktop ? (
                 <ArchitectureActionButtons
@@ -153,45 +153,44 @@ export function DashboardsPage(props: DashboardsPageProps) {
         }}
       >
         {matchesDesktop ? <DrawerHeader /> : null}
-        <Switch>
-          <Route exact path={"/impressum"}>
+        <Routes>
+          <Route path={"/impressum"} element={
             <Impressum />
+          }>
           </Route>
-          <Route exact path={"/datenschutzerklaerung"}>
-            {" "}
+          <Route path={"/datenschutzerklaerung"} element={
             <PrivacyPolicy />
-          </Route>
-          <Route exact path={"/nutzungsbedingungen"}>
-            {" "}
+          }></Route>
+          <Route path={"/nutzungsbedingungen"} element={
             <TermsOfUse />
-          </Route>
-          <Route exact path={"/information"}>
+          }></Route>
+          <Route path={"/information"} element={
             <Information />
-          </Route>
+          }></Route>
           {currentArchitectureContext.map((dashboard: DashboardComponent) => (
             <Route
               key={"route-" + dashboard.url}
-              exact
               path={"/" + dashboard.url}
-            >
-              <Dashboard
-                dashboardSaved={dashboardSavedToggle}
-                loggedIn={loggedIn}
-                editMode={editMode}
-                dashboard={dashboard}
-              />
-            </Route>
+              element={
+                <Dashboard
+                  dashboardSaved={dashboardSavedToggle}
+                  loggedIn={loggedIn}
+                  editMode={editMode}
+                  dashboard={dashboard}
+                />
+              }></Route>
           ))}
-          <Route path="*">
-            {currentArchitectureContext.length > 0 ? (
-              <Redirect to={"/" + currentArchitectureContext[0].url} />
+          <Route path="*" element={
+            currentArchitectureContext.length > 0 ? (
+              <Navigate to={"/"+currentArchitectureContext[0].url} />
+              // <Route render={() => <Redirect to={"/"+currentArchitectureContext[0].url} />} />
             ) : architectureContext.isLoading ? (
               <Spinner />
             ) : (
               <p>Es können keine Dashboards abgerufen werden.</p>
-            )}
-          </Route>
-        </Switch>
+            )
+          }></Route>
+        </Routes>
       </Box>
     </Box>
   );

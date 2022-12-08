@@ -5,16 +5,7 @@ export type AuthRequestData = {
   password: string;
 };
 
-export async function getAuthToken(args: AuthRequestData) {
-  return client
-    .post("/auth/signin", {
-      username: args.username,
-      password: args.password,
-    })
-    .then((response) => {
-      return response.data;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+export function signin(data: AuthRequestData) {
+  return client.post("/auth/signin", data);
 }
+

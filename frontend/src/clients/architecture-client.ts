@@ -1,7 +1,6 @@
 import { useQuery } from "react-query";
 
 import { DashboardComponent } from "components/dashboard";
-
 import { client } from "clients/client";
 
 export type ArchitectureRequestData = {
@@ -50,16 +49,12 @@ export type ArchitecturePostData = {
 };
 
 export async function postArchitecture(args: ArchitecturePostData) {
+  console.log("postArchitecture");
+  console.log(args.dashboards);
   return client
     .post("/dashboards", args.dashboards, {
       headers: {
         "x-access-token": args.token,
       },
     })
-    .then((response) => {
-      return response.data;
-    })
-    .catch((err) => {
-      console.log(err);
-    });
 }

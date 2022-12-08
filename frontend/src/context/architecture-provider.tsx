@@ -2,7 +2,7 @@ import React, { useState, createContext, useContext } from "react";
 import { cloneDeep, isEqual, omit } from "lodash";
 
 import { useDashboardArchitecture } from "clients/architecture-client";
-import { useAuthContext } from "./auth-provider";
+import { useStateContext } from "../providers/state-provider";
 
 type ArchitectureValue = any;
 
@@ -25,7 +25,7 @@ export function ArchitectureContextProvider(
 ) {
   const { children } = props;
 
-  const { authContext } = useAuthContext();
+  const { stateContext } = useStateContext();
 
   const [architectureContext, setArchitectureContext] = useState(
     initialCombinedArchitectureContext
@@ -33,7 +33,7 @@ export function ArchitectureContextProvider(
 
   const queriedArchitectureData = useDashboardArchitecture({
     dashboardUrl: architectureContext.dashboardUrl,
-    isAdmin: authContext.authToken ? true : false,
+    isAdmin: stateContext.authToken ? true : false,
     queryEnabled: architectureContext.queryEnabled,
   });
 

@@ -12,20 +12,20 @@ import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import cloneDeep from "lodash/cloneDeep";
+import { v4 as uuidv4 } from 'uuid';
 
 import { DIALOG_TITLES } from "constants/text";
-
-import { SmallField } from "components/elements/text-fields";
-import { SaveButton, CancelButton } from "components/elements/buttons";
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
-
+import { SmallField } from "components/elements/text-fields";
+import { SaveButton, CancelButton } from "components/elements/buttons";
+import { snackActions } from "../../utils/snackbar-utils";
 import {
   DashboardIcon,
   iconList,
 } from "components/architectureConfig/dashboard-icons";
 import { DashboardComponent } from "components/dashboard";
-import { ToggleIconButton } from "components/elements/toggle-icon-button";
+import { ToggleVisibilityButton } from "components/elements/toggle-visibility-button";
 
 type DashboardDialogProps = {
   open: boolean;
@@ -75,27 +75,29 @@ export function DashboardDialog(props: DashboardDialogProps) {
     if (
       newDashboardName.length > 0 &&
       newDashboardIcon.length > 0 &&
-      newDashboardUrl.length > 0 &&
-      architectureContext.currentArchitectureContext.filter(
-        (d: DashboardComponent) => d.url === newDashboardUrl
-      ).length < 1
+      newDashboardUrl.length > 0
     ) {
-      let newArchitectureContext = cloneDeep(architectureContext);
-      let newCurrentArchitectureContext = cloneDeep(
-        newArchitectureContext.currentArchitectureContext
-      );
-      newCurrentArchitectureContext.push({
-        _id: "",
-        name: newDashboardName,
-        icon: newDashboardIcon,
-        url: newDashboardUrl,
-        visible: dashboardVisibility,
-        widgets: [],
-      });
-      newArchitectureContext.currentArchitectureContext =
-        newCurrentArchitectureContext;
-      newArchitectureContext.queryEnabled = false;
-      setArchitectureContext(newArchitectureContext);
+      if (isNewDashboardUrlUnique()) {
+        let newArchitectureContext = cloneDeep(architectureContext);
+        let newCurrentArchitectureContext = cloneDeep(
+          newArchitectureContext.currentArchitectureContext
+        );
+        newCurrentArchitectureContext.push({
+          _id: "",
+          name: newDashboardName,
+          uid: uuidv4(),
+          icon: newDashboardIcon,
+          url: newDashboardUrl,
+          visible: dashboardVisibility,
+          widgets: [],
+        });
+        newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext;
+        newArchitectureContext.queryEnabled = false;
+        setArchitectureContext(newArchitectureContext);
+      } else {
+        snackActions.error("URL bereits vergeben");
+        return;
+      }
     }
     resetFields();
     onClose();
@@ -108,25 +110,30 @@ export function DashboardDialog(props: DashboardDialogProps) {
       newDashboardUrl.length > 0 &&
       typeof dashboardVisibility !== "undefined"
     ) {
-      let newArchitectureContext = cloneDeep(architectureContext);
-      let newCurrentArchitectureContext = cloneDeep(
-        newArchitectureContext.currentArchitectureContext
-      );
-      const dashboardIndex = newCurrentArchitectureContext.findIndex(
-        (d: DashboardComponent) =>
-          d._id === dashboard._id && d.url === dashboard.url
-      );
-      if (dashboardIndex !== -1) {
-        newCurrentArchitectureContext[dashboardIndex].name = newDashboardName;
-        newCurrentArchitectureContext[dashboardIndex].icon = newDashboardIcon;
-        newCurrentArchitectureContext[dashboardIndex].url = newDashboardUrl;
-        newCurrentArchitectureContext[dashboardIndex].visible =
-          dashboardVisibility;
+      if (isNewDashboardUrlUnique()) {
+        let newArchitectureContext = cloneDeep(architectureContext);
+        let newCurrentArchitectureContext = cloneDeep(
+          newArchitectureContext.currentArchitectureContext
+        );
+        const dashboardIndex = newCurrentArchitectureContext.findIndex(
+          (d: DashboardComponent) =>
+            d._id === dashboard._id && d.url === dashboard.url
+        );
+        if (dashboardIndex !== -1) {
+          newCurrentArchitectureContext[dashboardIndex].name = newDashboardName;
+          newCurrentArchitectureContext[dashboardIndex].icon = newDashboardIcon;
+          newCurrentArchitectureContext[dashboardIndex].url = newDashboardUrl;
+          newCurrentArchitectureContext[dashboardIndex].visible =
+            dashboardVisibility;
+        }
+        newArchitectureContext.currentArchitectureContext =
+          newCurrentArchitectureContext;
+        newArchitectureContext.queryEnabled = false;
+        setArchitectureContext(newArchitectureContext);
+      } else {
+        snackActions.error("URL bereits vergeben");
+        return;
       }
-      newArchitectureContext.currentArchitectureContext =
-        newCurrentArchitectureContext;
-      newArchitectureContext.queryEnabled = false;
-      setArchitectureContext(newArchitectureContext);
     }
     onClose();
   };
@@ -181,6 +188,27 @@ export function DashboardDialog(props: DashboardDialogProps) {
     onClose();
   };
 
+  const isNewDashboardUrlUnique = () => {    
+    if (architectureContext.currentArchitectureContext.filter(
+      (d: DashboardComponent) => d.url === newDashboardUrl
+    ).length < 1) {
+      return true;
+    } else {
+      if (dashboard.url === newDashboardUrl) {
+        return true;
+      }
+      return false;
+    }
+  }
+
+  const limitUrlInput = (val:string) => {
+    if (/^[a-zA-Z0-9_-]+$/.test(val) || val === "") {
+      setNewDashboardUrl(val);
+    } else {
+      snackActions.error(val[val.length-1] + " ist ein ungültiges Zeichen");
+    }
+  }
+
   return (
     <Dialog
       open={open}
@@ -224,7 +252,7 @@ export function DashboardDialog(props: DashboardDialogProps) {
           label="URL"
           type="text"
           value={newDashboardUrl}
-          onChange={(e) => setNewDashboardUrl(e.target.value)}
+          onChange={(e) => limitUrlInput(e.target.value)}
         />
         <Box display="flex" alignItems="center">
           <IconButton onClick={handleIconChooserClickOpen}>
@@ -232,21 +260,18 @@ export function DashboardDialog(props: DashboardDialogProps) {
           </IconButton>
           <Button onClick={handleIconChooserClickOpen}>Icon ändern</Button>
         </Box>
-        <ToggleIconButton
+        <ToggleVisibilityButton
           onClick={handleOnVisibleClick}
-          toggleIcon={dashboardVisibility}
-          icon1={
-            <VisibilityIcon
-              style={{ color: colors.text, fontSize: "1.25rem" }}
-            />
+          icon = {
+            dashboardVisibility ?
+              <VisibilityIcon
+                style={{ color: colors.text, fontSize: "1.25rem" }}
+              /> :
+              <VisibilityOffIcon
+                style={{ color: colors.text, fontSize: "1.25rem" }}
+              />
           }
-          icon2={
-            <VisibilityOffIcon
-              style={{ color: colors.text, fontSize: "1.25rem" }}
-            />
-          }
-          text1="Sichtbar"
-          text2="Unsichtbar"
+          text = {dashboardVisibility ? "Sichtbar" : "Unsichtbar"}
         />
         <Dialog
           disableEscapeKeyDown

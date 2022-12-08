@@ -7,56 +7,52 @@ import Tooltip from "@mui/material/Tooltip";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import { v4 as uuidv4 } from 'uuid';
 
 import { AddButton } from "components/elements/buttons";
-
 import { Panel, PanelComponent } from "components/panel";
 import { PanelDialog } from "components/architectureConfig/panel-dialog";
-
 import { ArchitectureEditButtons } from "components/architectureConfig/architecture-edit-buttons";
 import { initialPanel } from "./architectureConfig/initial-components";
-import { useAuthContext } from "context/auth-provider";
+import { useStateContext } from "../providers/state-provider";
 import { BUTTON_TEXTS } from "constants/text";
 import { WidgetCard } from "./elements/widget-card";
 
 export type WidgetComponent = {
   _id: string;
   name: string;
+  uid: string;
   panels: PanelComponent[];
 };
 
 type WidgetProps = {
   widget: WidgetComponent;
   parentName: string;
+  parentsUid: string;
   editMode: boolean;
 };
 
 export function Widget(props: WidgetProps) {
-  const { widget, parentName, editMode } = props;
-  const { authContext } = useAuthContext();
+  const { widget, parentName, parentsUid, editMode } = props;
+  const { stateContext } = useStateContext();
 
   const theme = useTheme();
   const matchesDesktop = useMediaQuery(theme.breakpoints.up("sm"));
 
   const [panelCreationOpen, setPanelCreationOpen] = useState(false);
-
-  const handlePanelCreationClickOpen = () => {
-    setPanelCreationOpen(true);
-  };
-
-  const handlePanelCreationClose = () => {
-    setPanelCreationOpen(false);
-  };
+  const handlePanelCreationClickOpen = () => { setPanelCreationOpen(true); };
+  const handlePanelCreationClose = () => { setPanelCreationOpen(false); };
 
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const handleTooltipClose = () => { setTooltipOpen(false); };
+  const handleTooltipOpen = () => { setTooltipOpen(true); };
 
-  const handleTooltipClose = () => {
-    setTooltipOpen(false);
-  };
+  const provideInitialPanelWithUid = () => {
+    let panel = {...initialPanel};
+    panel.uid = uuidv4();
 
-  const handleTooltipOpen = () => {
-    setTooltipOpen(true);
-  };
+    return panel;
+  }
 
   return (
     <WidgetCard>
@@ -89,6 +85,7 @@ export function Widget(props: WidgetProps) {
                     type="Widget"
                     component={widget}
                     parents={[parentName]}
+                    parentsUids={[parentsUid]}
                     editMode={editMode}
                   />
                 </Box>
@@ -101,15 +98,16 @@ export function Widget(props: WidgetProps) {
         {widget.panels &&
           widget.panels.map((panel: PanelComponent, index: number) => (
             <Panel
-              key={"panel-" + panel.name + index}
+              key={"panel-" + (panel._id!=="" ? panel._id : panel.uid) + index}
               panel={panel}
               previewMode={false}
               parents={[parentName, widget.name]}
+              parentsUids={[parentsUid, (widget._id!=="" ? widget._id : widget.uid)]}
               editMode={editMode}
             />
           ))}
       </Grid>
-      {authContext.authToken && editMode && matchesDesktop ? (
+      {stateContext.authToken && editMode && matchesDesktop ? (
         <>
           <Box style={{ marginTop: 16 }}>
             <AddButton
@@ -121,8 +119,9 @@ export function Widget(props: WidgetProps) {
             open={panelCreationOpen}
             onClose={handlePanelCreationClose}
             editMode={false}
-            panel={initialPanel}
+            panel={provideInitialPanelWithUid()}
             parents={[parentName, widget.name]}
+            parentsUids={[parentsUid, (widget._id!=="" ? widget._id : widget.uid)]}
           />
         </>
       ) : null}

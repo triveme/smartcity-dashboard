@@ -78,98 +78,81 @@ type DashboardIconProps = {
 export function DashboardIcon(props: DashboardIconProps) {
   const { icon, color } = props;
 
+  let iconStyle: React.CSSProperties = {
+    color: color,
+    fontSize: "1.25rem"
+  }
+
   switch (icon) {
     case "money":
-      return <AttachMoneyIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <AttachMoneyIcon style={iconStyle} />;
     case "accessibility":
-      return (
-        <AccessibilityIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <AccessibilityIcon style={iconStyle} />;
     case "accessible":
-      return <AccessibleIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <AccessibleIcon style={iconStyle} />;
     case "tree":
-      return <ParkIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <ParkIcon style={iconStyle} />;
     case "book":
-      return <AutoStoriesIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <AutoStoriesIcon style={iconStyle} />;
     case "battery":
-      return (
-        <BatteryChargingFullIcon
-          style={{ color: color, fontSize: "1.25rem" }}
-        />
-      );
+      return <BatteryChargingFullIcon style={iconStyle} />;
     case "phone":
-      return <CallIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <CallIcon style={iconStyle} />;
     case "camera":
-      return <CameraAltIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <CameraAltIcon style={iconStyle} />;
     case "cloud":
-      return <CloudIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <CloudIcon style={iconStyle} />;
     case "house":
-      return <HomeIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <HomeIcon style={iconStyle} />;
     case "parking":
-      return <LocalParkingIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <LocalParkingIcon style={iconStyle} />;
     case "water":
-      return <WaterIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <WaterIcon style={iconStyle} />;
     case "dashboard":
-      return <DashIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <DashIcon style={iconStyle} />;
     case "trash":
-      return <DeleteIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <DeleteIcon style={iconStyle} />;
     case "bike":
-      return (
-        <DirectionsBikeIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <DirectionsBikeIcon style={iconStyle} />;
     case "bus":
-      return (
-        <DirectionsBusIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <DirectionsBusIcon style={iconStyle} />;
     case "nightlight":
-      return <NightlightIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <NightlightIcon style={iconStyle} />;
     case "daylight":
-      return <LightModeIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <LightModeIcon style={iconStyle} />;
     case "flash":
-      return <FlashOnIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <FlashOnIcon style={iconStyle} />;
     case "education":
-      return <SchoolIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <SchoolIcon style={iconStyle} />;
     case "healthcare":
-      return (
-        <LocalHospitalIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <LocalHospitalIcon style={iconStyle} />;
     case "light":
-      return (
-        <WbIncandescentIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <WbIncandescentIcon style={iconStyle} />;
     case "hotel":
-      return <HotelIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <HotelIcon style={iconStyle} />;
     case "run":
-      return (
-        <DirectionsRunIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <DirectionsRunIcon style={iconStyle} />;
     case "drink":
-      return <LocalBarIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <LocalBarIcon style={iconStyle} />;
     case "eat":
-      return <LocalDiningIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <LocalDiningIcon style={iconStyle} />;
     case "cable":
-      return (
-        <ElectricalServicesIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <ElectricalServicesIcon style={iconStyle} />;
     case "child":
-      return (
-        <ChildFriendlyIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <ChildFriendlyIcon style={iconStyle} />;
     case "electriccar":
-      return <ElectricCarIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <ElectricCarIcon style={iconStyle} />;
     case "car":
-      return (
-        <DirectionsCarIcon style={{ color: color, fontSize: "1.25rem" }} />
-      );
+      return <DirectionsCarIcon style={iconStyle} />;
     case "traffic":
-      return <TrafficIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <TrafficIcon style={iconStyle} />;
     case "air":
-      return <AirIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <AirIcon style={iconStyle} />;
     case "swim":
-      return <PoolIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <PoolIcon style={iconStyle} />;
     case "right":
-      return <ChevronRightIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <ChevronRightIcon style={iconStyle} />;
     default:
-      return <ChevronRightIcon style={{ color: color, fontSize: "1.25rem" }} />;
+      return <ChevronRightIcon style={iconStyle} />;
   }
 }
