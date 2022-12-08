@@ -1,4 +1,5 @@
 import { useMediaQuery } from "@mui/material";
+
 import theme from "theme/theme";
 
 type DashboardWrapperProps = {

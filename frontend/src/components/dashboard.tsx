@@ -14,13 +14,14 @@ import { Spinner } from "components/elements/spinner";
 
 import { getDashboardArchitecture } from "clients/architecture-client";
 import { useArchitectureContext } from "context/architecture-provider";
-import { useAuthContext } from "context/auth-provider";
+import { useStateContext } from "../providers/state-provider";
 import { BUTTON_TEXTS, EMPTY_DASHBOARD } from "constants/text";
 import { DashboardWrapper } from "./elements/dashboard-wrapper";
 
 export type DashboardComponent = {
   _id: string;
   name: string;
+  uid: string;
   url: string;
   icon: string;
   widgets: WidgetComponent[];
@@ -41,9 +42,8 @@ export function Dashboard(props: DashboardProps) {
   const theme = useTheme();
   const matchesDesktop = useMediaQuery(theme.breakpoints.up("sm"));
 
-  const { architectureContext, setArchitectureContext } =
-    useArchitectureContext();
-  const { authContext } = useAuthContext();
+  const { architectureContext, setArchitectureContext } = useArchitectureContext();
+  const { stateContext } = useStateContext();
 
   useEffect(() => {
     if (dashboard && dashboard._id) {
@@ -54,7 +54,7 @@ export function Dashboard(props: DashboardProps) {
       ) {
         getDashboardArchitecture({
           dashboardUrl: dashboard.url,
-          isAdmin: authContext.authToken ? true : false,
+          isAdmin: stateContext.authToken ? true : false,
           queryEnabled: false,
         }).then((architectureData) => {
           const dIndex = architectureData.findIndex((d: DashboardComponent) => {
@@ -94,7 +94,7 @@ export function Dashboard(props: DashboardProps) {
       }
     }
     // eslint-disable-next-line
-  }, [dashboard.url, dashboardSaved, authContext.authToken, loggedIn]);
+  }, [dashboard.url, dashboardSaved, stateContext.authToken, loggedIn]);
 
   const [widgetCreationOpen, setWidgetCreationOpen] = useState(false);
 
@@ -106,24 +106,34 @@ export function Dashboard(props: DashboardProps) {
     setWidgetCreationOpen(false);
   };
 
+  const displayDashboardContent = () => {
+    // Dashboard not loaded
+    if (!dashboard.widgets) {
+      return <Spinner />;
+    }
+    // No widgets in dashboard
+    if (dashboard.widgets.length === 0) {
+      return <Typography marginBottom={1}>{EMPTY_DASHBOARD}</Typography>;
+    }
+    // Dashboard with widgets
+    else {
+      return dashboard.widgets.map((widget: WidgetComponent) => (
+        <Widget
+          key={"widget-" + (widget._id!==""? widget._id : widget.uid)}
+          widget={widget}
+          parentName={dashboard.name}
+          parentsUid={(dashboard._id!=="" ? dashboard._id : dashboard.uid)}
+          editMode={editMode}
+        />
+      ))
+    }
+  }
+
   return (
     <DashboardWrapper>
       <Typography variant="h1">{dashboard.name}</Typography>
-      {!dashboard.widgets ? (
-        <Spinner />
-      ) : dashboard.widgets.length === 0 ? (
-        <Typography marginBottom={1}>{EMPTY_DASHBOARD}</Typography>
-      ) : (
-        dashboard.widgets.map((widget: WidgetComponent) => (
-          <Widget
-            key={"widget-" + widget.name}
-            widget={widget}
-            parentName={dashboard.name}
-            editMode={editMode}
-          />
-        ))
-      )}
-      {authContext.authToken && editMode && matchesDesktop ? (
+      {displayDashboardContent()}
+      {stateContext.authToken && editMode && matchesDesktop ? (
         <>
           <AddButton
             onClick={handleWidgetCreationClickOpen}
@@ -134,7 +144,7 @@ export function Dashboard(props: DashboardProps) {
             onClose={handleWidgetCreationClose}
             editMode={false}
             widget={initialWidget}
-            parents={[dashboard.name]}
+            parentsUids={[(dashboard._id!=="" ? dashboard._id : dashboard.uid)]}
           />
         </>
       ) : null}

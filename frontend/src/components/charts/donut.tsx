@@ -121,11 +121,11 @@ export function DonutChart(props: DonutChartProps) {
       justifyContent="center"
     >
       <Box
-        key={"box-" + tab.name}
+        key={"box-" + (tab._id!=="" ? tab._id : tab.uid)}
         style={{ padding: 5, marginBottom: -15, width: "100%" }}
       >
         <ApexChart
-          key={"apexchart-" + tab.name}
+          key={"apexchart-" + (tab._id!=="" ? tab._id : tab.uid)}
           height={height}
           series={tab.apexSeries}
           options={tab.apexOptions ? getDonutApexOptionsWithMax() : {}}

@@ -4,11 +4,11 @@ import isEqual from "lodash/isEqual";
 import { cloneDeep, omit } from "lodash";
 
 import { SaveButton, CancelButton } from "components/elements/buttons";
-
-import { useAuthContext } from "context/auth-provider";
+import { useStateContext } from "providers/state-provider";
 import { useArchitectureContext } from "context/architecture-provider";
 import { postArchitecture } from "clients/architecture-client";
 import { DashboardComponent } from "components/dashboard";
+import { snackActions } from "../../utils/snackbar-utils";
 
 type ArchitectureActionButtonsProps = {
   onSavedDashboard: VoidFunction;
@@ -18,13 +18,9 @@ export function ArchitectureActionButtons(
   props: ArchitectureActionButtonsProps
 ) {
   const { onSavedDashboard } = props;
-  const { authContext } = useAuthContext();
-
-  const { architectureContext, setArchitectureContext } =
-    useArchitectureContext();
-
-  const { initialArchitectureContext, currentArchitectureContext } =
-    architectureContext;
+  const { stateContext } = useStateContext();
+  const { architectureContext, setArchitectureContext } = useArchitectureContext();
+  const { initialArchitectureContext, currentArchitectureContext } = architectureContext;
 
   const saveArchitecture = () => {
     let contextToSend: (DashboardComponent | { _id: string })[] = [];
@@ -59,6 +55,8 @@ export function ArchitectureActionButtons(
         }
       }
     );
+    console.log("Saving");
+    console.log(contextToSend);
     initialArchitectureContext.forEach((d: DashboardComponent) => {
       // deleted dashboard
       if (d._id !== "") {
@@ -71,11 +69,12 @@ export function ArchitectureActionButtons(
         }
       }
     });
+    console.log(contextToSend);
     postArchitecture({
-      token: authContext.authToken,
+      token: stateContext.authToken,
       dashboards: contextToSend,
     })
-      .then((architectureData) => {
+      .then((architectureData: any) => {
         setArchitectureContext({
           ...architectureContext,
           initialArchitectureContext: cloneDeep(architectureData),
@@ -85,8 +84,8 @@ export function ArchitectureActionButtons(
         });
         onSavedDashboard();
       })
-      .catch((e) => {
-        console.log("Seitenaufbau konnte nicht aktualisiert werden.");
+      .catch((e: any) => {
+        snackActions.error("Fehler beim speichern: " + e);
       });
   };
 

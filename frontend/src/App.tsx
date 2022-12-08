@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
+import { SnackbarProvider } from "notistack";
 
-import { AuthContextProvider } from "context/auth-provider";
+import { SnackbarUtilsConfigurator } from "./utils/snackbar-utils";
+import { StateProvider } from "./providers/state-provider";
 import { ArchitectureContextProvider } from "context/architecture-provider";
 
 import { Spinner } from "components/elements/spinner";
@@ -33,34 +35,37 @@ function App() {
 
   return (
     <React.Suspense fallback={<Spinner />}>
-      <QueryClientProvider client={queryClient}>
-        <AuthContextProvider>
-          <ArchitectureContextProvider>
-            <BrowserRouter>
-              <Switch>
-                <Route exact path="/login">
-                  <LoginPage
-                    handleLogin={() => {
-                      setLoggedIn(true);
-                    }}
-                    enableEditMode={() => {
-                      setEditMode(true);
-                    }}
-                  />
-                </Route>
-                <Route path="*">
-                  <DashboardsPage
-                    setLoggedIn={setLoggedIn}
-                    loggedIn={loggedIn}
-                    editMode={editMode}
-                    setEditMode={handleSetEditMode}
-                  />
-                </Route>
-              </Switch>
-            </BrowserRouter>
-          </ArchitectureContextProvider>
-        </AuthContextProvider>
-      </QueryClientProvider>
+      <SnackbarProvider maxSnack={3} anchorOrigin={{ horizontal: "right", vertical: "top" }}>
+        <SnackbarUtilsConfigurator />
+        <StateProvider>
+          <QueryClientProvider client={queryClient}>
+            <ArchitectureContextProvider>
+              <BrowserRouter basename={process.env.PUBLIC_URL}>
+                <Routes>
+                  <Route path="/login" element={
+                    <LoginPage
+                      handleLogin={() => {
+                        setLoggedIn(true);
+                      }}
+                      enableEditMode={() => {
+                        setEditMode(true);
+                      }}
+                    />
+                  }></Route>
+                  <Route path="*" element={
+                    <DashboardsPage
+                      setLoggedIn={setLoggedIn}
+                      loggedIn={loggedIn}
+                      editMode={editMode}
+                      setEditMode={handleSetEditMode}
+                    />
+                  }></Route>
+                </Routes>
+              </BrowserRouter>
+            </ArchitectureContextProvider>
+          </QueryClientProvider>
+        </StateProvider>
+      </SnackbarProvider>
     </React.Suspense>
   );
 }

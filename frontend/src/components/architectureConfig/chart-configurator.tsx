@@ -21,7 +21,7 @@ import colors from "theme/colors";
 type ChartConfiguratorProps = {
   currentTabIndex: number;
   tempPanel: PanelComponent;
-  setNewTabValue: (key: string, tabValue: any) => void;
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
 };
 
 export function ChartConfigurator(props: ChartConfiguratorProps) {
@@ -67,11 +67,15 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
       tempPanel.tabs[currentTabIndex].apexOptions?.colors &&
       tempPanel.tabs[currentTabIndex].apexOptions!.colors!.length > 0
     ) {
-      let newOptionsForColors = cloneDeep(
-        tempPanel.tabs[currentTabIndex].apexOptions
-      );
+      let newOptionsForColors = cloneDeep(tempPanel.tabs[currentTabIndex].apexOptions);
       newOptionsForColors!.colors!.shift();
-      setNewTabValue("apexOptions", newOptionsForColors);
+      newOptionsForColors!.labels!.shift();
+      newOptionsForColors!.series!.shift();
+      setNewTabValue([
+        { key: "apexOptions", tabValue: newOptionsForColors },
+        { key: "apexMaxValue", tabValue: 100 },
+        { key: "apexMaxAlias", tabValue: "" },
+      ]);
     }
   };
 
@@ -99,7 +103,9 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
               ? tempPanel.tabs[currentTabIndex].apexType
               : "donut"
           }
-          onChange={(e) => setNewTabValue("apexType", e.target.value)}
+          onChange={(e) =>
+            setNewTabValue([{ key: "apexType", tabValue: e.target.value }])
+          }
           style={{ backgroundColor: colors.backgroundColor }}
         >
           <MenuItem value="donut">Donut</MenuItem>
@@ -134,7 +140,9 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                         : 0
                     }
                     onChange={(e) =>
-                      setNewTabValue("timeframe", e.target.value)
+                      setNewTabValue([
+                        { key: "timeframe", tabValue: e.target.value },
+                      ])
                     }
                     style={{ backgroundColor: colors.backgroundColor }}
                   >
@@ -151,14 +159,18 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                       ?.title?.text || ""
                   }
                   onChange={(e) =>
-                    setNewTabValue(
-                      "apexOptions",
-                      set(
-                        cloneDeep(tempPanel.tabs[currentTabIndex].apexOptions!),
-                        "yaxis.title.text",
-                        e.target.value
-                      )
-                    )
+                    setNewTabValue([
+                      {
+                        key: "apexOptions",
+                        tabValue: set(
+                          cloneDeep(
+                            tempPanel.tabs[currentTabIndex].apexOptions!
+                          ),
+                          "yaxis.title.text",
+                          e.target.value
+                        )
+                      }
+                    ])
                   }
                 />
                 <SmallField
@@ -172,14 +184,18 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                       : ""
                   }
                   onChange={(e) =>
-                    setNewTabValue(
-                      "apexOptions",
-                      set(
-                        cloneDeep(tempPanel.tabs[currentTabIndex].apexOptions!),
-                        "xaxis.title.text",
-                        e.target.value
-                      )
-                    )
+                    setNewTabValue([
+                      {
+                        key: "apexOptions",
+                        tabValue: set(
+                          cloneDeep(
+                            tempPanel.tabs[currentTabIndex].apexOptions!
+                          ),
+                          "xaxis.title.text",
+                          e.target.value
+                        ),
+                      },
+                    ])
                   }
                 />
               </>
@@ -212,11 +228,15 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                 value={maxManual}
                 onChange={(e) =>
                   e.target.value === "auto"
-                    ? (setNewTabValue("apexMaxValue", "100"),
-                      setNewTabValue("apexMaxAlias", ""),
+                    ? (setNewTabValue([
+                        { key: "apexMaxValue", tabValue: 0 },
+                        { key: "apexMaxAlias", tabValue: "" },
+                      ]),
                       donutCleanup(),
                       setMaxManual(e.target.value))
-                    : (setNewTabValue("apexMaxAlias", "frei"),
+                    : (setNewTabValue([
+                        { key: "apexMaxAlias", tabValue: "frei" },
+                      ]),
                       setMaxManual(e.target.value))
                 }
                 style={{
@@ -236,7 +256,11 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                     ? tempPanel.tabs[currentTabIndex].apexMaxValue
                     : 100
                 }
-                onChange={(e) => setNewTabValue("apexMaxValue", e.target.value)}
+                onChange={(e) =>
+                  setNewTabValue([
+                    { key: "apexMaxValue", tabValue: e.target.value },
+                  ])
+                }
               />
             ) : null}
           </Box>
@@ -268,7 +292,9 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                       : tempPanel.tabs[currentTabIndex].apexMaxAlias
                   }
                   onChange={(e) =>
-                    setNewTabValue("apexMaxAlias", e.target.value)
+                    setNewTabValue([
+                      { key: "apexMaxAlias", tabValue: e.target.value },
+                    ])
                   }
                 />
                 <Button
@@ -306,10 +332,14 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                 : tempPanel.tabs[currentTabIndex].decimals
             }
             onChange={(e) =>
-              setNewTabValue(
-                "attributeDecimals",
-                parseInt(e.target.value) ? parseInt(e.target.value) : 0
-              )
+              setNewTabValue([
+                {
+                  key: "attributeDecimals",
+                  tabValue: parseInt(e.target.value)
+                    ? parseInt(e.target.value)
+                    : 0,
+                },
+              ])
             }
             onBlur={() => {
               if (
@@ -317,7 +347,7 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                 (tempPanel.tabs[currentTabIndex].decimals! < 0 ||
                   tempPanel.tabs[currentTabIndex].decimals! > 5)
               ) {
-                setNewTabValue("attributeDecimals", 0);
+                setNewTabValue([{ key: "attributeDecimals", tabValue: 0 }]);
               }
             }}
           />
