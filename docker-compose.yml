@@ -1,7 +1,7 @@
 version: '3'
 services:
   frontend:
-    container_name: smartcity-dashboard
+    container_name: smartcity-dashboard-dev
     image: smartcity-dashboard-dev
     build:
       context: .
@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
   frontend-service:
-    container_name: frontend-service
+    container_name: frontend-service-dev
     image: smartcity-frontend-service-dev
     build:
       context: .
@@ -30,7 +30,7 @@ services:
     env_file:
       - .env
   api-service:
-    container_name: api-service
+    container_name: api-service-dev
     image: smartcity-api-service-dev
     build:
       context: .
@@ -42,7 +42,7 @@ services:
     env_file:
       - .env
   mongodb:
-    container_name: smartcity-mongodb
+    container_name: smartcity-mongodb-dev
     image: mongo
     command: mongod --port 27021
     ports:
