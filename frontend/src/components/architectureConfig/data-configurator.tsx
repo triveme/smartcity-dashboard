@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { cloneDeep } from "lodash";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -30,7 +29,6 @@ export function DataConfigurator(props: DataConfiguratorProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
   const aggrMode = currentTab && currentTab.aggrMode ? currentTab.aggrMode : "single";
-  const [selectedFilter, setSelectedFilter] = useState("");
 
   const handleColorPickerClickOpen = (index: number) => {
     setColorIndex(index);
@@ -39,18 +37,6 @@ export function DataConfigurator(props: DataConfiguratorProps) {
 
   const handleColorPickerClose = () => {
     setColorPickerOpen(false);
-  };
-
-  const handleValueAttrChange = (newAttr: string) => {
-    if (currentTab.attribute) {
-      let newValueKeys = cloneDeep(currentTab.attribute.keys);
-      if (currentTab.attribute!.keys.length > currentValueIndex!) {
-        newValueKeys[currentValueIndex!] = newAttr;
-      } else {
-        newValueKeys.push(newAttr);
-      }
-      setNewTabValue([{ key: "attributeKeys", tabValue: newValueKeys }]);
-    }
   };
   
   //Autocompletion dropdown
