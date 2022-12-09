@@ -1,7 +1,7 @@
 {
   "name": "smartcity-dashboards",
   "version": "0.1.0",
-  "homepage": "/dashboard",
+  "homepage": "",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
