@@ -5,7 +5,7 @@ services:
     image: smartcity-dashboard-dev
     build:
       context: .
-      dockerfile: ./frontend/DockerfileDev
+      dockerfile: ./frontend/Dockerfile
     ports:
       - "3000:3000"
     volumes:
@@ -20,7 +20,7 @@ services:
     image: smartcity-frontend-service-dev
     build:
       context: .
-      dockerfile: ./backend/frontendService/DockerfileDev
+      dockerfile: ./backend/frontendService/Dockerfile
     ports:
       - "8080:8080"
     volumes:
@@ -34,7 +34,7 @@ services:
     image: smartcity-api-service-dev
     build:
       context: .
-      dockerfile: ./backend/apiService/DockerfileDev
+      dockerfile: ./backend/apiService/Dockerfile
     ports:
       - "8081:8081"
     volumes:
