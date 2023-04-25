@@ -3,17 +3,26 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-// import LoginIcon from "@mui/icons-material/Login";
+import IconButton from "@mui/material/IconButton";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 
 import colors from "theme/colors";
 
-type SafeButtonProps = {
+type GenericButtonProps = {
   onClick: () => void;
   text?: string;
   customStyle?: object;
+  bgColor?: string;
 };
 
-export function SaveButton(props: SafeButtonProps) {
+type SwapButtonProps = {
+  swapFunction: () => void;
+};
+
+export function SaveButton(props: GenericButtonProps) {
   const { onClick, text, customStyle } = props;
 
   return (
@@ -29,44 +38,14 @@ export function SaveButton(props: SafeButtonProps) {
               fontWeight: "bold",
             }
       }
+      startIcon={<SaveIcon />}
     >
-      <SaveIcon style={{ marginRight: 6 }} />
       {text ? text : "Speichern"}
     </Button>
   );
 }
 
-type CancelButtonProps = {
-  onClick: () => void;
-  text?: string;
-  noIcon?: boolean;
-};
-
-export function CancelButton(props: CancelButtonProps) {
-  const { onClick, text, noIcon } = props;
-
-  return (
-    <Button
-      onClick={onClick}
-      style={{
-        border: 0,
-        backgroundColor: colors.edit,
-        color: colors.white,
-        fontWeight: "bold",
-      }}
-    >
-      {noIcon ? null : <CancelIcon style={{ marginRight: 6 }} />}
-      {text ? text : "Abbrechen"}
-    </Button>
-  );
-}
-
-type DeleteButtonProps = {
-  onClick: () => void;
-  text?: string;
-};
-
-export function DeleteButton(props: DeleteButtonProps) {
+export function DeleteButton(props: GenericButtonProps) {
   const { onClick, text } = props;
 
   return (
@@ -78,19 +57,33 @@ export function DeleteButton(props: DeleteButtonProps) {
         color: colors.white,
         fontWeight: "bold",
       }}
+      startIcon={<DeleteIcon />}
     >
-      <DeleteIcon style={{ marginRight: 6 }} />
       {text ? text : "Löschen"}
     </Button>
   );
 }
 
-type AddButtonProps = {
-  onClick: () => void;
-  text: string;
-};
+export function CancelButton(props: GenericButtonProps) {
+  const { onClick, text } = props;
 
-export function AddButton(props: AddButtonProps) {
+  return (
+    <Button
+      onClick={onClick}
+      style={{
+        border: 0,
+        backgroundColor: colors.edit,
+        color: colors.white,
+        fontWeight: "bold",
+      }}
+      startIcon={<CancelIcon />}
+    >
+      {text ? text : "Abbrechen"}
+    </Button>
+  );
+}
+
+export function AddButton(props: GenericButtonProps) {
   const { onClick, text } = props;
 
   return (
@@ -105,17 +98,12 @@ export function AddButton(props: AddButtonProps) {
       }}
       startIcon={<AddIcon />}
     >
-      {text}
+      {text ? text : "Add"}
     </Button>
   );
 }
 
-type LoginButtonProps = {
-  onClick: () => void;
-  text: string;
-};
-
-export function LoginButton(props: LoginButtonProps) {
+export function LoginButton(props: GenericButtonProps) {
   const { onClick, text } = props;
 
   return (
@@ -124,14 +112,69 @@ export function LoginButton(props: LoginButtonProps) {
       onClick={onClick}
       style={{
         border: 0,
-        height: "40px",
-        backgroundColor: colors.selectedDashboard,
+        backgroundColor: colors.primary,
         color: colors.white,
         fontWeight: "bold",
-        textTransform: "none",
       }}
     >
-      {text}
+      {text ? text : "Login"}
     </Button>
   );
 }
+
+
+export function UpButton (props: SwapButtonProps) {
+  const { swapFunction } = props;
+
+  return (
+    <IconButton
+      size="small"
+      onClick={swapFunction}
+      style={{ padding: 0, color: colors.edit }}
+    >
+      <KeyboardArrowUpIcon style={{ fontSize: "1.25rem" }} />
+    </IconButton>
+  );
+};
+
+export function DownButton (props: SwapButtonProps) {
+  const { swapFunction } = props;
+
+  return (
+    <IconButton
+      size="small"
+      onClick={swapFunction}
+      style={{ padding: 0, color: colors.edit }}
+    >
+      <KeyboardArrowDownIcon style={{ fontSize: "1.25rem" }} />
+    </IconButton>
+  );
+};
+
+export function LeftButton (props: SwapButtonProps) {
+  const { swapFunction } = props;
+
+  return (
+    <IconButton
+      size="small"
+      onClick={swapFunction}
+      style={{ padding: 0, color: colors.edit }}
+    >
+      <KeyboardArrowLeftIcon style={{ fontSize: "1.25rem" }} />
+    </IconButton>
+  );
+};
+
+export function RightButton (props: SwapButtonProps) {
+  const { swapFunction } = props;
+
+  return (
+    <IconButton
+      size="small"
+      onClick={swapFunction}
+      style={{ padding: 0, color: colors.edit }}
+    >
+      <KeyboardArrowRightIcon style={{ fontSize: "1.25rem" }} />
+    </IconButton>
+  );
+};

@@ -12,10 +12,12 @@ let status = [];
  * @param {response} res
  */
 exports.postDashboards = (req, res) => {
+  console.log(`incoming ${req.method}-request on ${req.url}`);
   createUpdateDelete(req, res, updateStatus);
 };
 
 const createUpdateDelete = async (req, res, fun) => {
+  console.log(`incoming ${req.method}-request on ${req.url}`);
   status = [];
   await Promise.all(
     req.body.map(async (dashboard) => {
@@ -65,7 +67,6 @@ function updateStatus(newStatus) {
  * @param {response} res
  */
 exports.getDashboards = (req, res) => {
-  console.log("incoming request");
   sendDashboards(req.params.url, req.get("Is-Admin"), res);
 };
 
@@ -403,6 +404,9 @@ function getQdToAddAndUpdate(dashboard) {
                     type: tab.type,
                     fiwareService: tab.fiwareService,
                     entityId: tab.entityId,
+                    filterProperty: tab.filterProperty ? tab.filterProperty : "",
+                    filterValues: tab.filterValues ? tab.filterValues : [],
+                    filterAttribute: tab.filterAttribute ? tab.filterAttribute : "",
                     attribute: {
                       keys: tab.attribute.keys,
                       aliases: tab.attribute.aliases,

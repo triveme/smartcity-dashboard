@@ -7,7 +7,7 @@ import { updateQuerydata } from "./mongoDB.controller.js";
 function formattedDates(dateArray, granularity) {
   if (granularity === "day") {
     return dateArray.map((date) => {
-      return moment.utc(date).local().format("DD.MM");
+      return moment.utc(date).local().format("DD.MM.");
     });
   } else if (granularity === "hour") {
     return dateArray.map((date) => {

@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import Grid, { GridSize } from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -14,6 +13,7 @@ import colors from "theme/colors";
 export type PanelComponent = {
   _id: string;
   name: string;
+  uid: string;
   width: number;
   height: number;
   tabs: TabComponent[];
@@ -23,21 +23,23 @@ type PanelProps = {
   panel: PanelComponent;
   previewMode: boolean;
   parents: string[];
+  parentsUids: string[];
   editMode: boolean;
 };
 
 export function Panel(props: PanelProps) {
-  const { panel, previewMode, parents, editMode } = props;
+  const { panel, previewMode, parents, parentsUids, editMode } = props;
 
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
-  const handleTooltipClose = () => {
-    setTooltipOpen(false);
-  };
+  const handleTooltipClose = () => { setTooltipOpen(false); };
+  const handleTooltipOpen = () => { setTooltipOpen(true); };
 
-  const handleTooltipOpen = () => {
-    setTooltipOpen(true);
-  };
+  //Set grid size and limit to max of 12 to reduce errors
+  let mdGrid = (Number(panel.width) * 2) as GridSize;
+  mdGrid = (mdGrid > 12 ? 12 : mdGrid) as GridSize;  
+  let smGrid = (Number(panel.width) * 2.5) as GridSize;
+  smGrid = (smGrid > 12 ? 12 : smGrid) as GridSize;
 
   return (
     <Grid
@@ -45,8 +47,8 @@ export function Panel(props: PanelProps) {
       container
       direction="column"
       lg={Number(panel.width) as GridSize}
-      md={(Number(panel.width) * 2) as GridSize}
-      sm={(Number(panel.width) * 2.5) as GridSize}
+      md={mdGrid}
+      sm={smGrid}
       height={panel.height}
       display="block"
     >
@@ -89,6 +91,7 @@ export function Panel(props: PanelProps) {
                       type="Panel"
                       component={panel}
                       parents={[...parents, panel.name]}
+                      parentsUids={[...parentsUids, (panel._id!=="" ? panel._id : panel.uid)]}
                       editMode={editMode}
                     />
                   </Box>
@@ -108,6 +111,7 @@ export function Panel(props: PanelProps) {
                 type="Panel"
                 component={panel}
                 parents={[...parents, panel.name]}
+                parentsUids={[...parentsUids, (panel._id !== "" ? panel._id : panel.uid)]}
                 editMode={editMode}
               />
             </Box>

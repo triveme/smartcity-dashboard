@@ -15,6 +15,9 @@ const Querydata = mongoose.model(
         apexType: String,
         apexMaxValue: Number,
         apexMaxAlias: String,
+        filterProperty: String,
+        filterAttribute: String,
+        filterValues: [String],
         attribute: {
           keys: [String],
           aliases: [String],

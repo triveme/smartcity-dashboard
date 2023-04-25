@@ -1,24 +1,23 @@
 import { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import jwt_decode, { JwtPayload } from "jwt-decode";
+import { cloneDeep } from "lodash";
 
-import { getAuthToken } from "clients/auth-client";
-import { useAuthContext } from "context/auth-provider";
-
+import { signin } from "../clients/auth-client";
+import { useStateContext } from "../providers/state-provider";
 import { SmallField } from "components/elements/text-fields";
-import { LoginButton } from "components/elements/buttons";
-
 import smartCityLogo from "assets/smartCityLogo.svg";
 import loginBackground from "assets/loginBackground.png";
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
 import { getDashboardArchitecture } from "clients/architecture-client";
-import { cloneDeep } from "lodash";
 import { useArchitectureContext } from "context/architecture-provider";
-import { BUTTON_TEXTS, LOGIN_TITLE } from "constants/text";
+import { LOGIN_TITLE } from "constants/text";
+import { LoadingButton } from "components/elements/loading-button";
 
 type LoginPageProps = {
   handleLogin: VoidFunction;
@@ -26,15 +25,12 @@ type LoginPageProps = {
 };
 
 export function LoginPage(props: LoginPageProps) {
-  const { enableEditMode } = props;
   const [userName, setUserName] = useState("");
   const [userPassword, setUserPassword] = useState("");
-
   const { setArchitectureContext } = useArchitectureContext();
+  const { stateContext, setStateContext } = useStateContext();
 
-  const { setAuthContext } = useAuthContext();
-
-  let history = useHistory();
+  let navigate = useNavigate();
 
   const refreshDashboardData = (isAdmin: boolean) => {
     getDashboardArchitecture({
@@ -50,7 +46,8 @@ export function LoginPage(props: LoginPageProps) {
           queryEnabled: true,
           isLoading: true,
         });
-        history.replace("/");
+        // history.replace("/");
+        navigate("/", {replace: true});
       })
       .catch((e) => {
         console.log(
@@ -59,33 +56,29 @@ export function LoginPage(props: LoginPageProps) {
       });
   };
 
-  const login = () => {
-    if (userName.length > 2 && userPassword.length > 7) {
-      getAuthToken({
-        username: userName,
-        password: userPassword,
-      })
-        .then((authData) => {
-          refreshDashboardData(true);
-          setAuthContext({ authToken: authData.accessToken });
-          enableEditMode();
-          console.log(
-            "Logged in as " +
-              authData.roles[0] +
-              " with token " +
-              authData.accessToken
-          );
-        })
-        .catch((e) => {
-          alert(
-            "Das Backend (frontend-service) scheint nicht erreichbar zu sein."
-          );
-        });
-    } else {
-      alert("Passwort oder Benutzername zu kurz");
-    }
+  const handleLoginSubmit = (event: any) => {
+    event.preventDefault();
+    return signin({
+      username: userName,
+      password: userPassword,
+    });
   };
 
+  const handleLoginSuccess = (res: any) => {
+    sessionStorage.setItem("authToken", res.data.accessToken);
+    
+    refreshDashboardData(true);
+
+    setStateContext({
+      ...stateContext,
+      authToken: res.data.accessToken,
+      adminId: jwt_decode<JwtPayload>(res.data.accessToken),
+    });
+    console.log("Logged in as admin");
+    // history.replace("/");
+    navigate("/", {replace: true});
+  };
+  
   return (
     <Box
       sx={{
@@ -127,6 +120,8 @@ export function LoginPage(props: LoginPageProps) {
         elevation={0}
       >
         <Box
+          component="form"
+          noValidate
           style={{
             maxWidth: 320,
             minWidth: 320,
@@ -167,7 +162,20 @@ export function LoginPage(props: LoginPageProps) {
             customStyle={{ marginBottom: 16, color: colors.edit }}
           />
           <Box paddingTop={2} width="100%" display="grid">
-            <LoginButton onClick={login} text={BUTTON_TEXTS.LOGIN} />
+            <LoadingButton
+              type="submit"
+              size="large"
+              fullWidth
+              style={{
+                mt: 10,
+                mb: 2,
+                backgroundColor: colors.primary,
+                color: colors.white,
+              }}
+              queryFun={handleLoginSubmit}
+              queryCompleteFun={handleLoginSuccess}
+              queryText="Anmelden"
+            />
           </Box>
           <Box
             paddingTop={2}

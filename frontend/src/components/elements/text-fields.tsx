@@ -22,7 +22,7 @@ export function SmallField(props: SmallFieldProps) {
     customStyle,
     multiline,
   } = props;
-
+  
   return (
     <TextField
       id={"text-field-" + type + "-" + label}

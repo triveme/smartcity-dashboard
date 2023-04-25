@@ -10,58 +10,63 @@ const Role = db.role;
  * --> then use jsonwebtoken's verify() function
  */
 verifyToken = (req, res, next) => {
-    let token = req.headers["x-access-token"];
+  let token = req.headers["x-access-token"];
 
-    if (!token) {
-        return res.status(403).send({ message: "No token provided!" });
+  if (!token) {
+    console.log("No token provided!");
+    return res.status(403).send({ message: "No token provided!" });
+  }
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "Unauthorized!" });
     }
-
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).send({ message: "Unauthorized!" });
-        }
-        req.userId = decoded.id;
-        next();
-    });
+    req.userId = decoded.id;
+    next();
+  });
 };
 
 /**
  * check if roles of the user contains required role or not
  */
 isAdmin = (req, res, next) => {
-    User.findById(req.userId).exec((err, user) => {
+  User.findById(req.userId).exec((err, user) => {
+    if (err) {
+      res.status(500).send({ message: err });
+      return;
+    }
+    if (user == null) {
+      res.status(404).send({ message: "User Not found." });
+      return;
+    }
+    Role.find(
+      {
+        _id: { $in: user.roles },
+      },
+      (err, roles) => {
         if (err) {
-            res.status(500).send({ message: err });
-            return;
+          console.log(err);
+          res.status(500).send({ message: err });
+          return;
         }
 
-        Role.find(
-            {
-                _id: { $in: user.roles }
-            },
-            (err, roles) => {
-                if (err) {
-                    res.status(500).send({ message: err });
-                    return;
-                }
-
-                for (let i = 0; i < roles.length; i++) {
-                    if (roles[i].name === "admin") {
-                        next();
-                        return;
-                    }
-                }
-
-                res.status(403).send({ message: "Require Admin Role!" });
-                return;
-            }
-        );
-    });
+        for (let i = 0; i < roles.length; i++) {
+          if (roles[i].name === "admin") {
+            console.log("Admin role found");
+            next();
+            return;
+          }
+        }
+        console.log(`User ${user.username} is not an admin`);
+        res.status(403).send({ message: "Require Admin Role!" });
+        return;
+      }
+    );
+  });
 };
 
-
 const authJwt = {
-    verifyToken,
-    isAdmin
+  verifyToken,
+  isAdmin,
 };
 module.exports = authJwt;
