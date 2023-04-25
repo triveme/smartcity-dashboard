@@ -16,47 +16,37 @@ import { SaveButton, CancelButton } from "components/elements/buttons";
 import colors from "theme/colors";
 import borderRadius from "theme/border-radius";
 import { DIALOG_TITLES } from "constants/text";
+import { v4 as uuidv4 } from 'uuid';
 
 type WidgetDialogProps = {
   open: boolean;
   onClose: () => void;
   widget: WidgetComponent;
   editMode: boolean;
-  parents: string[];
+  parentsUids: string[];
 };
 
 export function WidgetDialog(props: WidgetDialogProps) {
-  const { open, onClose, widget, editMode, parents } = props;
-  const [parentDashboardName] = parents;
+  const { open, onClose, widget, editMode, parentsUids } = props;
+  const [parentDashboardUid] = parentsUids;
 
-  const { architectureContext, setArchitectureContext } =
-    useArchitectureContext();
+  const { architectureContext, setArchitectureContext } = useArchitectureContext();
 
-  const [newWidgetName, setNewWidgetName] = useState(
-    editMode ? widget.name : ""
-  );
+  const [newWidgetName, setNewWidgetName] = useState(editMode ? widget.name : "");
 
   const addWidget = () => {
-    if (
-      newWidgetName.length > 0 &&
-      architectureContext.currentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
-        .widgets.filter((w: WidgetComponent) => w.name === newWidgetName)
-        .length < 1
-    ) {
+    if (newWidgetName.length > 0) {
       let newArchitectureContext = cloneDeep(architectureContext);
-      let newCurrentArchitectureContext = cloneDeep(
-        newArchitectureContext.currentArchitectureContext
-      );
+      let newCurrentArchitectureContext = cloneDeep(newArchitectureContext.currentArchitectureContext);
       newCurrentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
+      .find((d: DashboardComponent) => (d._id !== "" ? d._id : d.uid) === parentDashboardUid)
         .widgets.push({
           _id: "",
           name: newWidgetName,
+          uid: uuidv4(),
           panels: [],
         });
-      newArchitectureContext.currentArchitectureContext =
-        newCurrentArchitectureContext;
+      newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext;
       newArchitectureContext.queryEnabled = false;
       setArchitectureContext(newArchitectureContext);
     }
@@ -65,23 +55,13 @@ export function WidgetDialog(props: WidgetDialogProps) {
   };
 
   const editWidget = () => {
-    if (
-      newWidgetName.length > 0 &&
-      architectureContext.currentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
-        .widgets.filter((w: WidgetComponent) => w.name === widget.name)
-        .length === 1
-    ) {
+    if (newWidgetName.length > 0) {
       let newArchitectureContext = cloneDeep(architectureContext);
-      let newCurrentArchitectureContext = cloneDeep(
-        newArchitectureContext.currentArchitectureContext
-      );
+      let newCurrentArchitectureContext = cloneDeep(newArchitectureContext.currentArchitectureContext);
       newCurrentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
-        .widgets.find((w: WidgetComponent) => w.name === widget.name).name =
-        newWidgetName;
-      newArchitectureContext.currentArchitectureContext =
-        newCurrentArchitectureContext;
+        .find((d: DashboardComponent) => (d._id !== "" ? d._id : d.uid) === parentDashboardUid)
+        .widgets.find((w: WidgetComponent) => (widget.uid ? (w.uid === widget.uid) : (w._id === widget._id))).name = newWidgetName;
+      newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext;
       newArchitectureContext.queryEnabled = false;
       setArchitectureContext(newArchitectureContext);
     }
@@ -96,17 +76,17 @@ export function WidgetDialog(props: WidgetDialogProps) {
   const softResettingClose = () => {
     if (
       architectureContext.currentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
-        .widgets.filter((w: WidgetComponent) => w.name === widget.name)
+      .find((d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentDashboardUid)
+        .widgets.filter((w: WidgetComponent) => (widget.uid ? (w.uid === widget.uid) : (w._id === widget._id)))
         .length === 1
     ) {
       architectureContext.currentArchitectureContext
-        .find((d: DashboardComponent) => d.name === parentDashboardName)
-        .widgets.find((w: WidgetComponent) => w.name === widget.name).name
+      .find((d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentDashboardUid)
+        .widgets.find((w: WidgetComponent) => (widget.uid ? (w.uid === widget.uid) : (w._id === widget._id))).name
         ? setNewWidgetName(
             architectureContext.currentArchitectureContext
-              .find((d: DashboardComponent) => d.name === parentDashboardName)
-              .widgets.find((w: WidgetComponent) => w.name === widget.name).name
+            .find((d: DashboardComponent) => (d._id!=="" ? d._id : d.uid) === parentDashboardUid)
+              .widgets.find((w: WidgetComponent) => (widget.uid ? (w.uid === widget.uid) : (w._id === widget._id))).name
           )
         : setNewWidgetName("");
     }

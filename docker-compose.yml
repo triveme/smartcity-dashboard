@@ -1,0 +1,51 @@
+version: '3'
+services:
+  frontend:
+    container_name: smartcity-dashboard-dev
+    image: smartcity-dashboard-dev
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/home/node/app
+    environment:
+      - PORT=3000
+      - WATCHPACK_POLLING=true
+    env_file:
+      - .env
+  frontend-service:
+    container_name: frontend-service-dev
+    image: smartcity-frontend-service-dev
+    build:
+      context: .
+      dockerfile: ./backend/frontendService/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/frontendService:/home/node/app
+    environment:
+      - PORT=8080
+    env_file:
+      - .env
+  api-service:
+    container_name: api-service-dev
+    image: smartcity-api-service-dev
+    build:
+      context: .
+      dockerfile: ./backend/apiService/Dockerfile
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend/apiService:/home/node/app
+    env_file:
+      - .env
+  mongodb:
+    container_name: smartcity-mongodb-dev
+    image: mongo
+    command: mongod --port 27021
+    ports:
+      - "27021:27021"
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro

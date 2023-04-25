@@ -9,7 +9,7 @@ const port = 8081;
 
 var loginString = "";
 if (process.env.DB_USER && process.env.DB_PASS) {
-  loginString = `${process.env.DB_USER}:${process.env.DB_PASS}@`;
+  loginString = `${process.env.DB_USER}:${process.env.DB_PWD}@`;
 }
 
 //connect to MongoDB

@@ -26,18 +26,15 @@ type DeleteDialogProps = {
 
 export function DeleteDialog(props: DeleteDialogProps) {
   const { type, component, open, onClose, parents } = props;
-
-  const { architectureContext, setArchitectureContext } =
-    useArchitectureContext();
+  const { architectureContext, setArchitectureContext } = useArchitectureContext();
 
   const handleDelete = () => {
     let newArchitectureContext = cloneDeep(architectureContext);
-    let newCurrentArchitectureContext = cloneDeep(
-      newArchitectureContext.currentArchitectureContext
-    );
+    let newCurrentArchitectureContext = cloneDeep(newArchitectureContext.currentArchitectureContext);
+
     if (type === "Dashboard") {
       newCurrentArchitectureContext = newCurrentArchitectureContext.filter(
-        (d: DashboardComponent) => d.name !== component.name
+        (d: DashboardComponent) => (component.uid ? (d.uid !== component.uid) : (d._id !== component._id))
       );
     } else if (type === "Widget") {
       const dashboardIndex = newCurrentArchitectureContext.findIndex(
@@ -46,7 +43,7 @@ export function DeleteDialog(props: DeleteDialogProps) {
       if (dashboardIndex !== -1)
         newCurrentArchitectureContext[dashboardIndex].widgets =
           newCurrentArchitectureContext[dashboardIndex].widgets.filter(
-            (w: WidgetComponent) => w.name !== component.name
+            (w: WidgetComponent) => (component.uid ? (w.uid !== component.uid) : (w._id !== component._id))
           );
     } else if (type === "Panel") {
       const dashboardIndex = newCurrentArchitectureContext.findIndex(
@@ -60,10 +57,9 @@ export function DeleteDialog(props: DeleteDialogProps) {
           widgetIndex
         ].panels = newCurrentArchitectureContext[dashboardIndex].widgets[
           widgetIndex
-        ].panels.filter((p: PanelComponent) => p.name !== component.name);
+        ].panels.filter((p: PanelComponent) => (component.uid ? (p.uid !== component.uid) : (p._id !== component._id)));
     }
-    newArchitectureContext.currentArchitectureContext =
-      newCurrentArchitectureContext;
+    newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext;
     newArchitectureContext.queryEnabled = false;
     setArchitectureContext(newArchitectureContext);
     onClose();

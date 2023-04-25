@@ -4,19 +4,21 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import IconButton from "@mui/material/IconButton";
 import PowerSettingsNewOutlinedIcon from "@mui/icons-material/PowerSettingsNewOutlined";
-
-import { useAuthContext } from "context/auth-provider";
 import {
   FormControlLabel,
   ListItemIcon,
   ListItemText,
   MenuList,
 } from "@mui/material";
-import { CustomSwitch } from "./elements/switch";
+
+import { useStateContext } from "../providers/state-provider";
+import { 
+  // CustomSwitch,
+  SmileySwitch 
+} from "./elements/switch";
 import { useArchitectureContext } from "context/architecture-provider";
 import { getDashboardArchitecture } from "clients/architecture-client";
 import { cloneDeep } from "lodash";
-
 import borderRadius from "theme/border-radius";
 import colors from "theme/colors";
 
@@ -29,9 +31,8 @@ type SettingsProps = {
 
 export function Settings(props: SettingsProps) {
   const { switchChecked, handleSwitchChange, setEditMode, setLoggedIn } = props;
-
+  const { stateContext, setStateContext } = useStateContext();
   const { setArchitectureContext } = useArchitectureContext();
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleSettingsOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -42,13 +43,16 @@ export function Settings(props: SettingsProps) {
     setAnchorEl(null);
   };
 
-  const { authContext, setAuthContext } = useAuthContext();
-
-  const handleLogoutClick = () => {
-    setAuthContext({ authToken: null });
+  const handleLogout = () => {
+    sessionStorage.removeItem("authToken");
+    setStateContext({
+      ...stateContext,
+      authToken: null,
+    });
     setEditMode(false);
     refreshDashboardData(false);
     handleSettingsClose();
+    console.log("logged out");
   };
 
   const refreshDashboardData = (isAdmin: boolean) => {
@@ -103,22 +107,27 @@ export function Settings(props: SettingsProps) {
           },
         }}
       >
-        {authContext.authToken ? (
+        {stateContext.authToken ? (
+        // {authContext.authToken ? (
           <MenuList>
             <MenuItem disableRipple>
               <FormControlLabel
                 control={
-                  <CustomSwitch
-                    disableRipple
-                    size="small"
-                    checked={switchChecked}
-                    onChange={handleSwitchChange}
+                  // <CustomSwitch
+                  //   disableRipple
+                  //   size="small"
+                  //   checked={switchChecked}
+                  //   onChange={handleSwitchChange}
+                  // />
+                  <SmileySwitch
+                    isChecked={switchChecked}
+                    handleCheck={handleSwitchChange}
                   />
                 }
                 label={<span style={{ paddingLeft: 6 }}>Bearbeiten</span>}
               />
             </MenuItem>
-            <MenuItem onClick={handleLogoutClick}>
+            <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <PowerSettingsNewOutlinedIcon fontSize="small" />
               </ListItemIcon>

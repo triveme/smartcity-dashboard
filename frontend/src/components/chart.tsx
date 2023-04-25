@@ -15,8 +15,8 @@ export function Chart(props: TabProps) {
   const [tickAmountKey, setTickAmountKey] = useState(1);
 
   function useWindowWidth() {
-    const [windowWidth, setWindowWidth] =
-      useState<number | undefined>(undefined);
+    const [windowWidth, setWindowWidth] = useState<number | undefined>(undefined);
+    
     useEffect(() => {
       function handleResize() {
         setWindowWidth(window.innerWidth);

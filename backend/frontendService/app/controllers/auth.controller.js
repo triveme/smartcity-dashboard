@@ -11,15 +11,16 @@ exports.signin = (req, res) => {
   })
     .populate("roles", "-__v")
     .exec((err, user) => {
-      console.log("sign in user:" + req.body.username);
       // 500 - internal server error
       if (err) {
+        console.log(err);
         res.status(500).send({ message: err });
         return;
       }
 
       // 404 - Not Found
       if (!user) {
+        console.log(`User ${req.body.username} not found`);
         return res.status(404).send({ message: "User Not found." });
       }
 
@@ -30,6 +31,7 @@ exports.signin = (req, res) => {
 
       // 401 - Unauthorized
       if (!passwordIsValid) {
+        console.log(`Password for user ${req.body.username} is invalid`);
         return res.status(401).send({
           accessToken: null,
           message: "Invalid Password!",
@@ -41,12 +43,6 @@ exports.signin = (req, res) => {
       });
 
       var authorities = [];
-
-      console.log("user:");
-      console.log(user);
-
-      console.log("user.roles:");
-      console.log(user.roles);
 
       if (user.roles) {
         for (let i = 0; i < user.roles.length; i++) {
@@ -60,8 +56,7 @@ exports.signin = (req, res) => {
         id: user._id,
         username: user.username,
         roles: authorities,
-        accessToken: token
+        accessToken: token,
       });
     });
 };
-
