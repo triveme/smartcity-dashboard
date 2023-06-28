@@ -7,7 +7,7 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 
 import colors from "theme/colors";
-import smartCityLogo from "assets/logos/logo_wuppertal.svg";
+import smartCityLogo from "assets/smartCityLogo.svg";
 
 const drawerWidth = 240;
 

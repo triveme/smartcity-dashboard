@@ -12,7 +12,7 @@ import iconWaterActive from '../../assets/images/marker/pin-water-active.png';
 import iconZooActive from '../../assets/images/marker/pin-zoo-active.png';
 import { Card, CardContent, CardMedia } from '@mui/material';
 import { HeadlineYellow } from 'components/elements/font-types';
-import parkingImage from '../../assets/images/parking_image.png';
+// import parkingImage from '../../assets/images/parking_image.png';
 import { CopyrightElement } from 'components/elements/copyright-element';
 
 type MapMoveToMarkerProps = {
@@ -148,7 +148,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                 >
                   <CardMedia
                     sx={{ height: {xs:80, md:120}, position: "relative" }}
-                    image={(info.image && info.image !== "none") ? info.image : parkingImage}
+                    image={(info.image && info.image !== "none") ? info.image : ''}
                     title={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
                   >
                   </CardMedia>

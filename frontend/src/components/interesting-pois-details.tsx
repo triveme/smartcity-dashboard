@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { InterestingPlace } from "models/data-types";
 import { BackButton, DisplayOnMapButton } from "./elements/buttons";
-import parkingImage from '../assets/images/parking_image.png'
+// import parkingImage from '../assets/images/parking_image.png'
 import { HeadlineGray, HeadlineYellow } from "./elements/font-types";
 import { CopyrightElement } from "./elements/copyright-element";
 import colors from "theme/colors";
@@ -57,7 +57,7 @@ export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
             maxWidth={"130px"}
           >
             <img 
-              src={(info.image && info.image !== "none") ? info.image : parkingImage}
+              src={(info.image && info.image !== "none") ? info.image : ''}
               alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
               style={{borderRadius: "5px", width: "100%", minWidth: "110px"}}
             ></img>

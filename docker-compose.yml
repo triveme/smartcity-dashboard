@@ -1,11 +1,11 @@
 version: '3'
 services:
   frontend:
-    container_name: smartcity-dashboard-dev
+    container_name: smartcity-dashboard-${PROJECT_NAME}
     image: smartcity-dashboard-dev
     build:
       context: .
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: ./frontend/DockerfileDev
     ports:
       - "3000:3000"
     volumes:
@@ -16,11 +16,11 @@ services:
     env_file:
       - .env
   frontend-service:
-    container_name: frontend-service-dev
+    container_name: frontend-service-${PROJECT_NAME}
     image: smartcity-frontend-service-dev
     build:
       context: .
-      dockerfile: ./backend/frontendService/Dockerfile
+      dockerfile: ./backend/frontendService/DockerfileDev
     ports:
       - "8080:8080"
     volumes:
@@ -29,23 +29,25 @@ services:
       - PORT=8080
     env_file:
       - .env
-  api-service:
-    container_name: api-service-dev
-    image: smartcity-api-service-dev
+  ql-service:
+    container_name: ql-service-${PROJECT_NAME}
+    image: smartcity-frontend-service-dev
     build:
       context: .
-      dockerfile: ./backend/apiService/Dockerfile
+      dockerfile: ./backend/qlService/DockerfileDev
     ports:
-      - "8081:8081"
+      - "8081:8080"
     volumes:
-      - ./backend/apiService:/home/node/app
+      - ./backend/qlService:/home/node/app
+    environment:
+      - PORT=8080
     env_file:
       - .env
   mongodb:
-    container_name: smartcity-mongodb-dev
+    container_name: smartcity-mongodb-${PROJECT_NAME}
     image: mongo
     command: mongod --port 27021
     ports:
       - "27021:27021"
     volumes:
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongodb-init.js:ro
