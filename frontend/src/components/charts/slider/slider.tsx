@@ -207,7 +207,7 @@ export function SliderWithoutKnobs(props: SliderBasicProps) {
         alignItems="center"
         flexBasis="10%"
       >
-        <Typography color={colors.iconColor}>{currentValue}</Typography>
+        <Typography color={colors.white}>{currentValue}</Typography>
         <Typography color={colors.white}>&nbsp;{unit}</Typography>
       </Box>
     </Box>

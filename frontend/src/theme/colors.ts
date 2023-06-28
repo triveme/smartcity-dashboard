@@ -28,7 +28,7 @@ const colors = {
   grey: '#666666',
   subheadline: '#737373',
   chartGrid: '#444444',
-  chartBar: '#DBE027',
+  chartBar: '#f0407e',
   chartFont: '#7A7A7A',
   activeButtonBackground: '#323232',
   poiBackground: '#1B1B1B',
