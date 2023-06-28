@@ -26,7 +26,7 @@ export function RadialChart180(props: RadialChartProps) {
     return 0;
   }
   
-  const [seriesData, setSeriesData] = useState(
+  const [seriesData] = useState(
     currentValue
       ? (currentValue * 100) / maxValue
       : (getRandomValueBetweenMinAndMax() * 100) / maxValue

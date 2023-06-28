@@ -34,7 +34,7 @@ export function InterestingPois (props: InterestingPoisProps) {
   const { infos } = props;
   const [mapKey, setMapKey] = useState(Math.random());
   
-  const [poiData, setPoiData] = useState(
+  const [poiData] = useState(
     infos && infos.length > 0
       ? infos
       : [emptyPointOfInterest]
@@ -253,6 +253,7 @@ export function InterestingPois (props: InterestingPoisProps) {
           })}
       </Box>
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredInfos]);
 
   return(

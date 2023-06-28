@@ -5,8 +5,8 @@ import type { TabComponent } from "components/tab";
 
 import { roundDecimalPlaces } from "utils/decimal-helper";
 import { HeadlineYellow } from "./elements/font-types";
-import { IconButton } from "@mui/material";
-import { DashboardIcon } from "./architectureConfig/dashboard-icons";
+// import { IconButton } from "@mui/material";
+// import { DashboardIcon } from "./architectureConfig/dashboard-icons";
 import colors from "theme/colors";
 
 type TabProps = {
@@ -62,10 +62,6 @@ export function Value(props: TabProps) {
 
 export function SingleValue(props: TabProps) {
   const { tab } = props;
-
-  const handleSingleValueClickOpen = () => {
-
-  }
 
   return (
     <>
