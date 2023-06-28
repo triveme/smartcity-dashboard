@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const dbUtil = require("./app/utils/database.util");
 const envVarsUtil = require("./app/utils/envVars.util");
+const bodyParser = require("body-parser");
 
 envVarsUtil.checkEnvVars();
 
@@ -13,7 +14,7 @@ var corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
+app.use(bodyParser.json({ limit: "50mb" }));
 // parse requests of content-type - application/json
 app.use(express.json());
 

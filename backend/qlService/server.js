@@ -8,7 +8,7 @@ const app = express();
 const port = 8081;
 
 var loginString = "";
-if (process.env.DB_USER && process.env.DB_PASS) {
+if (process.env.DB_USER && process.env.DB_PWD) {
   loginString = `${process.env.DB_USER}:${process.env.DB_PWD}@`;
 }
 
@@ -35,5 +35,5 @@ app.listen(port, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
 
-getInitialToken();
+// getInitialToken();
 runSchedule();

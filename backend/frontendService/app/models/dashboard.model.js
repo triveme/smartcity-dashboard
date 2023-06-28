@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const InfoLink = require("./link.model");
 
 const Dashboard = mongoose.model(
   "Dashboard",
@@ -11,6 +12,13 @@ const Dashboard = mongoose.model(
     widgets: [
       {
         name: String,
+        width: Number,
+        height: Number,
+        widgetIcon: String,
+        tabIcons: [String],
+        infoHeadline: String,
+        infoText: String,
+        infoLinks: [{}],
         panels: [
           {
             name: String,
@@ -29,6 +37,18 @@ const Dashboard = mongoose.model(
                 apexMaxValue: Number,
                 apexMaxAlias: String,
                 apexMaxColor: String,
+                componentType: String,
+                componentDataType: String,
+                componentData: [],
+                componentName: String,
+                componentDescription: String,
+                componentIcon: String,
+                componentMinimum: Number,
+                componentMaximum: Number,
+                componentWarning: Number,
+                componentAlarm: Number,
+                componentUnit: String,
+                componentValue: Number,
                 donutToTotalLabel: Boolean,
                 timeframe: Number,
                 fiwareService: String,
@@ -43,6 +63,7 @@ const Dashboard = mongoose.model(
                 filterValues: [String],
                 values: [Number],
                 decimals: Number,
+                attributeType: String,
                 aggrMode: String,
                 queryData: {
                   id: {
