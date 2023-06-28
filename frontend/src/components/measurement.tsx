@@ -18,8 +18,8 @@ export function MeasurementComponent(props: UtilizationProps) {
   const [ dayActive, setDayActive ] = useState(true);
   const [ weekActive, setWeekActive ] = useState(false);
   const [ monthActive, setMonthActive ] = useState(false);
-  const [ dataValues, setDataValues ] = useState([]);
-  const [ dataDates, setDataDates ] = useState([]);
+  // const [ dataValues, setDataValues ] = useState([]);
+  // const [ dataDates, setDataDates ] = useState([]);
   
   const handleIntervalClick = (interval: string) => {
     switch (interval) {
@@ -161,9 +161,9 @@ export function MeasurementComponent(props: UtilizationProps) {
             <SingleColumnChart
               data={[18.29]}
               timeValue={["13.01.2023"]}
-              warningValue={tab.componentWarning}
-              alarmValue={tab.componentAlarm}
-              maxValue={tab.componentMaximum}
+              warningValue={tab.componentWarning ? tab.componentWarning : 0}
+              alarmValue={tab.componentAlarm ? tab.componentAlarm : 20}
+              maxValue={tab.componentMaximum ? tab.componentMaximum : 40}
             />
           </Box>
           {/* Description Box */}
