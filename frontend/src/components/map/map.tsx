@@ -21,16 +21,16 @@ type MapComponentProps = {
 
 export function MapComponent(props: MapComponentProps) {
   const { iconType, mapData, markerToDisplay } = props;
-
+  
   const defaultLocation = {
-    latitude: 51.272065568215524,
-    longitude: 7.200007788461502
+    latitude: 50.57455669751585,
+    longitude: 9.706126750761428
   }
 
-  const bounds = new LatLngBounds([
-    [51.43865214506609, 6.777741881509436],
-    [51.10557297544067, 7.646565643152505]
-  ]);
+  // const bounds = new LatLngBounds([
+  //   [51.43865214506609, 6.777741881509436],
+  //   [51.10557297544067, 7.646565643152505]
+  // ]);
 
   const IconChooser = () => {
     switch (iconType) {
@@ -67,7 +67,7 @@ export function MapComponent(props: MapComponentProps) {
       key={"MapContainer-"}
       style={{height: "100%", width: "100%"}}
       center={mapData[0] ? [mapData[0].location.latitude, mapData[0].location.longitude] : [defaultLocation.latitude, defaultLocation.longitude]}
-      maxBounds={bounds}
+      // maxBounds={bounds}
       zoom={14}
       minZoom={10}
       scrollWheelZoom={true}
@@ -83,8 +83,8 @@ export function MapComponent(props: MapComponentProps) {
         markerToDisplay={markerToDisplay}
       />
       <TileLayer
-        attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
-        url={`https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${process.env.REACT_APP_STADIA_API_KEY}`}
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
     </MapContainer>
   );
