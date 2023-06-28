@@ -9,8 +9,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import smartCityLogo from "assets/logos/logo_wuppertal.svg";
-// import smartCityLogo from "assets/smartCityLogo.svg";
+import smartCityLogo from "assets/smartCityLogo.svg";
 
 import { Spinner } from "components/elements/spinner";
 

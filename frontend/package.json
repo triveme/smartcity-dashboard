@@ -7,7 +7,6 @@
     "@mui/icons-material": "^5.0.3",
     "@mui/lab": "^5.0.0-alpha.77",
     "@mui/material": "^5.10.16",
-    "@tabler/icons": "^2.17.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -31,6 +30,7 @@
     "react-router-dom": "^6.4.0",
     "react-scripts": "^5.0.1",
     "styled-components": "^5.3.6",
+    "tabler-icons-react": "^1.56.0",
     "typescript": "^4.8.4",
     "uuid": "^9.0.0",
     "web-vitals": "^3.0.4"

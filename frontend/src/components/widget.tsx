@@ -20,9 +20,9 @@ import colors from "theme/colors";
 import { HeadlineYellow } from "./elements/font-types";
 import IconButton from "@mui/material/IconButton";
 import { MapComponent } from "./map/map";
-import MenuUnstyled from '@mui/base/MenuUnstyled';
 import Link from "@mui/material/Link";
 import { MapData, ParkingInfo } from "models/data-types";
+import { Menu } from "@mui/material";
 
 export type WidgetComponent = {
   _id: string;
@@ -68,7 +68,7 @@ export function Widget(props: WidgetProps) {
   const [panelCreationOpen, setPanelCreationOpen] = useState(false);
 
   const [ displayStatus, setDisplayStatus ] = useState(DisplayStatus.LIST);
-  const [ activeTabIcon, setActiveTabIcon ] = useState(widget.tabIcons[0]);
+  const [ activeTabIcon, setActiveTabIcon ] = useState(widget.tabIcons ? widget.tabIcons[0] : null);
 
   const [threeDotsMenuAnchorEl, setThreeDotsMenuAnchorEl] = useState<null | HTMLElement>(null);
   const threeDotsMenuOpen = Boolean(threeDotsMenuAnchorEl);
@@ -197,7 +197,7 @@ export function Widget(props: WidgetProps) {
   const createWidgetTabIcons = (tabIcons: string[]) => {
     return (
       <>
-        {tabIcons.map((icon) => (
+        {tabIcons?.map((icon) => (
           <IconButton
             key={'IconButton-Widget-' + icon}
             onClick={() => {
@@ -275,7 +275,7 @@ export function Widget(props: WidgetProps) {
               <WidgetTabIcons color={colors.grey} icon={"verticalThreeDotsMenu"} />
             </IconButton>
             
-            <MenuUnstyled
+            <Menu
               id='widget-three-dots-menu'
               open={threeDotsMenuOpen}
               onClose={handleThreeDotsMenuClose}
@@ -285,7 +285,7 @@ export function Widget(props: WidgetProps) {
               }}
             >
               {createWidgetTabIcons(widget.tabIcons)}
-            </MenuUnstyled>
+            </Menu>
           </>
         ) : (
           <Box

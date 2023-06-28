@@ -5,7 +5,7 @@ import { HeadlineYellow, HeadlineGray } from "./elements/font-types";
 import { CopyrightElement } from "./elements/copyright-element";
 
 import { InterestingPlace } from "models/data-types";
-import parkingImage from '../assets/images/parking_image.png';
+// import parkingImage from '../assets/images/parking_image.png';
 import colors from "theme/colors";
 import { InterestingPointsDetails } from "components/interesting-pois-details";
 import { BackButton } from "./elements/buttons";
@@ -191,7 +191,7 @@ export function InterestingPois (props: InterestingPoisProps) {
                 >
                   <img 
                     style={{height: "100%"}}
-                    src={(info.image && info.image !== "none") ? info.image : parkingImage}
+                    src={(info.image && info.image !== "none") ? info.image : ''}
                     alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}>
                   </img>
                   {info.creator && <CopyrightElement  creator={info.creator}/>}

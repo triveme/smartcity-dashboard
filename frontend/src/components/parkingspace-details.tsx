@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { ParkingCapacity, ParkingInfo } from "models/data-types";
 import { BackButton, DisplayOnMapButton } from "./elements/buttons";
-import parkingImage from '../assets/images/parking_image.png'
+// import parkingImage from '../assets/images/parking_image.png'
 import { HeadlineGray, HeadlineYellow } from "./elements/font-types";
 
 type ParkingspaceDetailsProps = {
@@ -34,10 +34,10 @@ export function ParkingspaceDetails(props: ParkingspaceDetailsProps) {
           flexGrow={"1 1 0"}
           padding={"10px"}
         >
-          <img 
+          {/* <img 
             width={"100%"}
-            src={parkingImage}
-            alt="Bild eines Parkhauses"></img>
+            src={}
+            alt="Bild eines Parkhauses"></img> */}
         </Box>
         {/* Infobox */}
         <Box
