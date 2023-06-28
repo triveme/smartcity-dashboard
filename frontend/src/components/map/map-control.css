@@ -1,0 +1,19 @@
+.leaflet-touch .leaflet-bar a:first-child{
+    background-color: #323232;
+    color: #DBE027;
+}
+.leaflet-touch .leaflet-bar a:last-child{
+    background-color: #323232;
+    color: #9EA226;
+}
+.leaflet-touch .leaflet-control-attribution{
+    background-color: #323232;
+    color: #9EA226;
+}
+.map-marker-popup .leaflet-popup-tip,
+.map-marker-popup .leaflet-popup-content-wrapper {
+    background: transparent;
+}
+.map-marker-popup .leaflet-popup-content {
+    margin: 0;
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { SnackbarProvider } from "notistack";
@@ -12,8 +12,9 @@ import { Spinner } from "components/elements/spinner";
 export const queryClient = new QueryClient();
 
 const LoginPage = React.lazy(() =>
-  import(/* webpackPrefetch: true */ "pages/login-page").then((module) => ({
-    default: module.LoginPage,
+  import(/* webpackPrefetch: true */ "pages/login-page").then(
+    (module) => ({
+      default: module.LoginPage,
   }))
 );
 
@@ -26,12 +27,12 @@ const DashboardsPage = React.lazy(() =>
 );
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(true);
-  const [editMode, setEditMode] = useState(true);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
-  const handleSetEditMode = (input: boolean) => {
+  const handleSetEditMode = useCallback((input: boolean) => {
     setEditMode(input);
-  };
+  }, [setEditMode]);
 
   return (
     <React.Suspense fallback={<Spinner />}>

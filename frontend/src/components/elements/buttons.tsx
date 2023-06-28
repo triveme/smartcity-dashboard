@@ -18,6 +18,12 @@ type GenericButtonProps = {
   bgColor?: string;
 };
 
+type IntervalButtonProps = {
+  onClick: () => void;
+  text: string;
+  active: boolean;
+};
+
 type SwapButtonProps = {
   swapFunction: () => void;
 };
@@ -176,5 +182,75 @@ export function RightButton (props: SwapButtonProps) {
     >
       <KeyboardArrowRightIcon style={{ fontSize: "1.25rem" }} />
     </IconButton>
+  );
+};
+
+export function BackButton (props: GenericButtonProps) {
+  const { onClick, text } = props;
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={onClick}
+      style={{
+        fontWeight: "bold",
+        color: colors.grey
+      }}
+    >
+      {text ? text : "ZURÜCK"}
+    </Button>
+  );
+};
+
+export function DisplayOnMapButton (props: GenericButtonProps) {
+  const { onClick, text } = props;
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={onClick}
+      style={{
+        fontWeight: "bold",
+        color: colors.iconColor
+      }}
+    >
+      {text ? text : "AUF KARTE ANZEIGEN"}
+    </Button>
+  );
+};
+
+export function IntervalButton (props: IntervalButtonProps) {
+  const { onClick, text, active } = props;
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={onClick}
+      style={{
+        fontWeight: "bold",
+        color: active ? colors.white : colors.grey,
+        backgroundColor: active ? colors.activeButtonBackground : colors.widgetBackground
+      }}
+    >
+      {text ? text : "ZURÜCK"}
+    </Button>
+  );
+};
+
+export function FilterButton (props: GenericButtonProps) {
+  const { onClick } = props;
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={onClick}
+      style={{
+        fontWeight: "bold",
+        color: colors.grey,
+        backgroundColor: colors.widgetBackground
+      }}
+    >
+      FILTER
+    </Button>
   );
 };

@@ -4,6 +4,10 @@ import Box from "@mui/material/Box";
 import type { TabComponent } from "components/tab";
 
 import { roundDecimalPlaces } from "utils/decimal-helper";
+import { HeadlineYellow } from "./elements/font-types";
+import { IconButton } from "@mui/material";
+import { DashboardIcon } from "./architectureConfig/dashboard-icons";
+import colors from "theme/colors";
 
 type TabProps = {
   tab: TabComponent;
@@ -52,6 +56,65 @@ export function Value(props: TabProps) {
         {renderValues()}
       </Box>
       <Box id="valueBottomSpacer" />
+    </>
+  );
+}
+
+export function SingleValue(props: TabProps) {
+  const { tab } = props;
+
+  const handleSingleValueClickOpen = () => {
+
+  }
+
+  return (
+    <>
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="flex-start"
+        alignItems="center"
+        height="inherit"
+      >
+        <HeadlineYellow text={tab.componentName}></HeadlineYellow>
+        <Box
+          display={"flex"}
+          flexDirection={"row"}
+          justifyContent="flex-start"
+        >
+          <Typography
+            fontSize={"42px"}
+            color={colors.text}
+          >
+            {tab.componentValue}
+          </Typography>
+          <Typography
+            fontSize={"32px"}
+            color={colors.grey}
+          >
+            {tab.componentUnit}
+          </Typography>
+        </Box>
+        {/* <Box
+          display="flex"
+          flexDirection="column"
+          justifyContent="flex-start"
+          alignItems="flex-end"
+          width="40%"
+        >
+          <IconButton
+            sx={{
+              top: "-30px"
+            }}
+            onClick={() => handleSingleValueClickOpen()}
+          >
+            <DashboardIcon
+              icon='IconArrowNarrowRight'
+              color={colors.grey}
+            />
+          </IconButton>
+        </Box> */}
+      </Box>
     </>
   );
 }
