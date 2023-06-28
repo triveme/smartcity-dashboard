@@ -21,7 +21,7 @@ import { HeadlineYellow } from "./elements/font-types";
 import IconButton from "@mui/material/IconButton";
 import { MapComponent } from "./map/map";
 import Link from "@mui/material/Link";
-import { MapData, ParkingInfo } from "models/data-types";
+import { MapData } from "models/data-types";
 import { Menu } from "@mui/material";
 
 export type WidgetComponent = {
@@ -229,7 +229,7 @@ export function Widget(props: WidgetProps) {
         justifyContent={"space-between"}
         gap="20px"
         style={{
-          backgroundColor: colors.primary,
+          backgroundColor: colors.widgetTop,
           paddingLeft: "20px",
           paddingTop: "10px",
         }}
