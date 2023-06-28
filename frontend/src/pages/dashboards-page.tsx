@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { styled, useTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Toolbar from "@mui/material/Toolbar";
 import CssBaseline from "@mui/material/CssBaseline";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import colors from "theme/colors";
-import smartCityLogo from "assets/smartCityLogo.svg";
+import smartCityLogo from "assets/logos/logo_wuppertal.svg";
+// import smartCityLogo from "assets/smartCityLogo.svg";
 
 import { Spinner } from "components/elements/spinner";
 
@@ -25,42 +25,9 @@ import { Information } from "./information-page";
 import { Impressum } from "./legal/impressum";
 import { PrivacyPolicy } from "./legal/privacy-policy";
 import { TermsOfUse } from "./legal/terms-of-use";
+import { AppBar, DrawerHeader } from "./app-bar";
 
-const drawerWidth = 240;
-
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-
-interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})<AppBarProps>(({ theme, open }) => ({
-  background: colors.menuBarBackground,
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
-
-type DashboardsPageProps = {
+interface DashboardsPageProps {
   loggedIn: boolean;
   editMode: boolean;
   setEditMode: (input: boolean) => void;
@@ -71,7 +38,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
   const { loggedIn, editMode, setEditMode, setLoggedIn } = props;
   const theme = useTheme();
   const matchesDesktop = useMediaQuery(theme.breakpoints.up("sm"));
-  const [open, setOpen] = useState(window.innerWidth > 768 ? true : false);
+  const [open, setOpen] = useState(matchesDesktop);
   const [dashboardSavedToggle, setDashboardSavedToggle] = useState(false);
 
   const handleDrawerClose = () => {
@@ -95,9 +62,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
   const { architectureContext } = useArchitectureContext();
   let { currentArchitectureContext } = architectureContext;
 
-  if (!currentArchitectureContext) {
-    currentArchitectureContext = [];
-  }
+  currentArchitectureContext = architectureContext.currentArchitectureContext || [];
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -116,7 +81,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1, marginTop: "8px", marginBottom: "2px" }}>
+          <Box sx={{ flexGrow: 1, marginTop: "0px", marginBottom: "2px" }}>
             <img height="42px" src={smartCityLogo} alt="logo smart city" />
           </Box>
           {stateContext.authToken ? (
@@ -145,11 +110,11 @@ export function DashboardsPage(props: DashboardsPageProps) {
       />
       <Box
         component="main"
-        padding="20px"
         style={{
           width: matchesDesktop
             ? `calc(100% - ${open ? "240px" : "0px"})`
             : "100%",
+          height: "100vh"
         }}
       >
         {matchesDesktop ? <DrawerHeader /> : null}

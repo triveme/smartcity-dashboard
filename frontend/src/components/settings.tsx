@@ -12,10 +12,7 @@ import {
 } from "@mui/material";
 
 import { useStateContext } from "../providers/state-provider";
-import { 
-  // CustomSwitch,
-  SmileySwitch 
-} from "./elements/switch";
+import { CustomSwitch } from "./elements/switch";
 import { useArchitectureContext } from "context/architecture-provider";
 import { getDashboardArchitecture } from "clients/architecture-client";
 import { cloneDeep } from "lodash";
@@ -113,15 +110,11 @@ export function Settings(props: SettingsProps) {
             <MenuItem disableRipple>
               <FormControlLabel
                 control={
-                  // <CustomSwitch
-                  //   disableRipple
-                  //   size="small"
-                  //   checked={switchChecked}
-                  //   onChange={handleSwitchChange}
-                  // />
-                  <SmileySwitch
-                    isChecked={switchChecked}
-                    handleCheck={handleSwitchChange}
+                  <CustomSwitch
+                    disableRipple
+                    size="small"
+                    checked={switchChecked}
+                    onChange={handleSwitchChange}
                   />
                 }
                 label={<span style={{ paddingLeft: 6 }}>Bearbeiten</span>}

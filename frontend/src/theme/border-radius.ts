@@ -1,6 +1,6 @@
 const borderRadius = {
-  fragmentRadius: 5,
-  componentRadius: 10,
+  fragmentRadius: 10,
+  componentRadius: 20,
 };
 
 export default borderRadius;

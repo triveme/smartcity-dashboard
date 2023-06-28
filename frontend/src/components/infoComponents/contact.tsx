@@ -35,7 +35,7 @@ export function Contact(props: ContactProps) {
               <td>
                 <a
                   href="mailto:Alexander.suessemilch@edag.com"
-                  style={{ color: colors.grayed }}
+                  style={{ color: colors.iconColor }}
                 >
                   Alexander.suessemilch@edag.com
                 </a>
@@ -45,7 +45,7 @@ export function Contact(props: ContactProps) {
               <td>LinkedIn:</td>
               <td>
                 <a
-                  style={{ lineBreak: "anywhere", color: colors.grayed }}
+                  style={{ lineBreak: "anywhere", color: colors.iconColor }}
                   href="https://www.linkedin.com/in/asuessemilch/"
                 >
                   www.linkedin.com/in/asuessemilch/

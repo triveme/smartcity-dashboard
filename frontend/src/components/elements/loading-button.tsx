@@ -33,7 +33,7 @@ export function LoadingButton(props: any) {
         setLoading(false);
         if (err.response) {
           snackActions.error(err.response.data.message);
-          console.log(err.response.data.message);
+          console.error(err.response.data.message);
           return;
         }
         snackActions.error(err.toString());

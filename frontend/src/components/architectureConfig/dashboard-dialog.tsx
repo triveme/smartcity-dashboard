@@ -37,11 +37,8 @@ type DashboardDialogProps = {
 export function DashboardDialog(props: DashboardDialogProps) {
   const { open, onClose, dashboard, editMode } = props;
 
-  const { architectureContext, setArchitectureContext } =
-    useArchitectureContext();
-
+  const { architectureContext, setArchitectureContext } = useArchitectureContext();
   const [iconChooserOpen, setIconChooserOpen] = useState(false);
-
   const handleIconChooserClickOpen = () => {
     setIconChooserOpen(true);
   };
@@ -123,11 +120,9 @@ export function DashboardDialog(props: DashboardDialogProps) {
           newCurrentArchitectureContext[dashboardIndex].name = newDashboardName;
           newCurrentArchitectureContext[dashboardIndex].icon = newDashboardIcon;
           newCurrentArchitectureContext[dashboardIndex].url = newDashboardUrl;
-          newCurrentArchitectureContext[dashboardIndex].visible =
-            dashboardVisibility;
+          newCurrentArchitectureContext[dashboardIndex].visible = dashboardVisibility;
         }
-        newArchitectureContext.currentArchitectureContext =
-          newCurrentArchitectureContext;
+        newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext;
         newArchitectureContext.queryEnabled = false;
         setArchitectureContext(newArchitectureContext);
       } else {

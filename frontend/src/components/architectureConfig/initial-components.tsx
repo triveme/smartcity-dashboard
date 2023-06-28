@@ -53,7 +53,20 @@ export const initialTab: TabComponent = {
   filterAttribute: "",
   values: [],
   decimals: 0,
+  attributeType: "old",
   aggrMode: "single",
+  componentType: "",
+  componentData: [],
+  componentDataType: "",
+  componentName: "",
+  componentDescription: "",
+  componentIcon: "",
+  componentMinimum: 0,
+  componentMaximum: 0,
+  componentWarning: 0,
+  componentAlarm: 0,
+  componentUnit: "",
+  componentValue: 0,
 };
 
 export const initialPanel: PanelComponent = {
@@ -69,6 +82,13 @@ export const initialWidget: WidgetComponent = {
   _id: "",
   name: "",
   uid: NIL_UUID,
+  width: 12,
+  height: 400,
+  widgetIcon: "",
+  tabIcons: [],
+  infoHeadline: "Info Überschrift",
+  infoText: "Infotext",
+  infoLinks: [],
   panels: []
 };
 
