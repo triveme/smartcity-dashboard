@@ -28,7 +28,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
 
   const [selectedMarker, setSelectedMarker] = useState<string|number|undefined>("");
   const [icon, setIcon] = useState(defaultIcon);
-  const [zoomLevel, setZoomLevel] = useState(20);
+  const [zoomLevel] = useState(20);
   const markerRefs = useRef<ElementRef<typeof Marker>[]>([]);
 
   const ActiveIconChooser = () => {

@@ -32,7 +32,7 @@ export function ValueConfigurator(props: ValueConfiguratorProps) {
   //     ? tempPanel.tabs[currentTabIndex].attribute!.keys.length
   //     : 1
   // );
-  const [currentValueIndex, setCurrentValueIndex] = useState(0);
+  const [currentValueIndex] = useState(0);
   const [ useOldType, setUseOldType ] = useState("");
 
   // const handleValueAmountChange = (newValueAmount: number) => {

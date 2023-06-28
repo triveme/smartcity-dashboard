@@ -1,4 +1,4 @@
-import L, { LatLngBounds } from 'leaflet';
+import L from 'leaflet';
 import { MapContainer, TileLayer } from "react-leaflet";
 import 'leaflet/dist/leaflet.css';
 import './map-control.css';
