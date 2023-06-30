@@ -363,7 +363,11 @@ export function Widget(props: WidgetProps) {
               height="100%"
             >
               <MapComponent
-                mapData={widget.panels[0] && widget.panels[0].tabs[0] ? getInfoAsMapData(widget.panels[0].tabs[0].componentData) : []}
+                mapData={
+                  widget.panels[0] && widget.panels[0].tabs[0] && widget.panels[0].tabs[0].componentData
+                    ? getInfoAsMapData(widget.panels[0].tabs[0].componentData)
+                    : []
+                }
                 iconType={getIconSymbol()}
                 markerToDisplay={marker}
               />
