@@ -1,4 +1,4 @@
-import { response } from "express";
+import { query, response } from "express";
 import moment from "moment";
 import { updateQuerydata } from "./mongoDB.controller.js";
 
@@ -166,6 +166,249 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
   }
 }
 
+function processMapData(queryItem, queryData) {
+  console.log(`processing map data for queryItem ${queryItem._id}`);
+  // Liste Long/Lat
+  /**
+   * 
+    {
+        longitude: 7.1250042768,
+        latitude: 51.2501771092
+    }
+   */
+  var dataEntries = [];
+  if (
+    queryData !== undefined &&
+    queryData !== null &&
+    queryData !== undefined &&
+    queryData !== null
+  ) {
+    queryData.forEach((dataItem) => {
+      var dataEntry = {
+        longitude: dataItem.geometry.coordinates[0],
+        latitude: dataItem.geometry.coordinates[1],
+      };
+
+      dataEntries.push(dataEntry);
+    });
+  }
+
+  queryItem.data = dataEntries;
+  queryItem.updateMsg = "";
+  updateQuerydata(queryItem);
+}
+
+function processListData(queryItem, queryData) {
+  console.log(`processing list data for queryItem ${queryItem._id}`);
+  /**
+   * {
+        name: "Kaltenbachtal",
+        types: ["Grünanlagen und Wälder"],
+        adress: "Wuppertal",
+        image: "none",
+        location: {
+            longitude: 7.120197671,
+            latitude: 51.1951799443
+        },
+    }
+   */
+  var dataType = queryItem.queryConfig.componentDataType;
+  var dataEntries = [];
+
+  if (queryData !== undefined && queryData !== null && Object.keys(queryData).length > 0) {
+    queryData.forEach((dataItem) => {
+      var dataEntry = {
+        location: {
+          longitude: dataItem.geometry.coordinates[0],
+          latitude: dataItem.geometry.coordinates[1],
+        },
+      };
+
+      var properties = dataItem.properties;
+
+      if (dataType === "pois") {
+        dataEntry.name = properties.HAUPTNAME;
+        dataEntry.types = [properties.HAUPTTHEMA];
+        dataEntry.address = buildAddressForPoi(properties);
+        dataEntry.image = properties.URL_BILD;
+        dataEntry.creator = properties.URHEBER;
+        dataEntry.info = properties.INFO;
+      } else if (dataType === "bikes" || dataType === "cars") {
+        dataEntry.name = properties.STANDORT;
+        dataEntry.address = properties.ADRESSE;
+        dataEntry.image = properties.URL;
+        dataEntry.status = properties.STATUS;
+        dataEntry.operator = properties.BETREIBER;
+        dataEntry.times = properties.BETREIBER;
+        dataEntry.parkingFees = properties.PARKGEB;
+        dataEntry.amountSpaces = properties.ANZ_LADEPL;
+        dataEntry.notes = properties.BEMERKUNG;
+        dataEntry.additionalInfo = properties.ZUSATZINFO;
+
+        if (dataType === "cars") {
+          dataEntry.electricity = properties.STROM;
+        }
+      }
+
+      dataEntries.push(dataEntry);
+    });
+  }
+
+  queryItem.data = dataEntries;
+  queryItem.updateMsg = "";
+  updateQuerydata(queryItem);
+}
+
+function processUtilizationData(queryItem, queryData1, queryData2) {
+  var counterA = 0;
+  var counterB = 0;
+
+  if (
+    queryData1.body != null &&
+    queryData1.body != undefined &&
+    queryData1.body.size != 0
+  ) {
+    counterA = queryData1.body[0].data.counterA;
+  }
+
+  if (
+    queryData2.body != null &&
+    queryData2.body != undefined &&
+    queryData2.body.size != 0
+  ) {
+    counterB = queryData2.body[0].data.counterB;
+  }
+
+  queryItem.data[0] = generateHistoricData();
+  queryItem.data[1] = { currentUtilization: counterA - counterB };
+  queryItem.dataLabels = generateHistoricDataLabels();
+
+  updateQuerydata(queryItem);
+}
+
+
+function processParkingData(queryItem, queryData) {
+  /**
+   * {
+        
+     }
+   */
+  var dataEntries = [];
+
+  if (queryData !== undefined && queryData !== null && Object.keys(queryData).length > 0) {
+    queryData.forEach((dataItem) => {
+      try {
+        var dataEntry = {};
+        dataEntry.name = dataItem.name;
+        dataEntry.address = dataItem.adresse;
+        dataEntry.maxHeight = dataItem.zulaessigeEinfahrtshoeheInMeterDisplay;
+        dataEntry.maxValue = dataItem.kapazitaet;
+        dataEntry.currentlyUsed = dataItem.kapazitaetFrei;
+        dataEntry.location = {        
+          longitude: dataItem.adresse.laengengrad,
+          latitude: dataItem.adresse.breitengrad,
+        }
+        dataEntry.capacity = dataItem.nutzer;
+        dataEntry.type = dataItem.typDisplay;
+        dataEntries.push(dataEntry);        
+      } catch (error) {
+        console.error(`Error handling parking item ${dataItem}: ${error}`);
+      }
+    });
+  }
+
+  queryItem.data = dataEntries;
+  queryItem.updateMsg = "";
+  updateQuerydata(queryItem);
+}
+
+function generateHistoricData() {
+  var data = new Map();
+
+  var today = [];
+  for (let i = 0; i < 48; i++) {
+    today.push(0);
+  }
+
+  var week = [];
+  for (let i = 0; i < 7; i++) {
+    week.push(0);
+  }
+
+  var month = [];
+  for (let i = 0; i < 31; i++) {
+    month.push(0);
+  }
+  data.set("today", today);
+  data.set("week", week);
+  data.set("month", month);
+
+  return data;
+}
+
+function generateHistoricDataLabels() {
+  var dataLabels = new Map();
+  let currentTime = new Date().getTime();
+  let twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;
+
+  var today = [];
+  var yesterday = new Date(currentTime - twentyFourHoursInMilliseconds);
+  yesterday.setMinutes(0);
+  for (let i = 0; i < 48; i++) {
+    today.push(moment(yesterday).format("HH:mm"));
+
+    var time = yesterday.getTime();
+    let thirtyMinutesInMilliseconds = 30 * 60 * 1000;
+    yesterday.setTime(time + thirtyMinutesInMilliseconds);
+  }
+
+  var week = [];
+  var lastWeek = new Date(currentTime - 7 * twentyFourHoursInMilliseconds);
+  for (let i = 0; i < 7; i++) {
+    week.push(moment(lastWeek).format("dddd"));
+
+    var time = lastWeek.getTime();
+    lastWeek.setTime(time + twentyFourHoursInMilliseconds);
+  }
+
+  var month = [];
+  var lastMonth = new Date(currentTime - 31 * twentyFourHoursInMilliseconds);
+  for (let i = 0; i < 31; i++) {
+    month.push(moment(lastMonth).format("DD.MM.YYYY"));
+
+    var time = lastMonth.getTime();
+    lastMonth.setTime(time + twentyFourHoursInMilliseconds);
+  }
+
+  dataLabels.set("today", today);
+  dataLabels.set("week", week);
+  dataLabels.set("month", month);
+
+  return dataLabels;
+}
+
+function buildAddressForPoi(properties) {
+  var address = "";
+
+  if (properties.STRASSE !== null && properties.STRASSE !== "") {
+    address += properties.STRASSE;
+  }
+  if (properties.PLZ !== null && properties.PLZ !== "") {
+    if (address.length !== 0) {
+      address += ", ";
+    }
+    address += properties.PLZ;
+  }
+  if (properties.STADT !== null && properties.STADT !== "") {
+    if (address.length !== 0) {
+      address += ", ";
+    }
+    address += properties.STADT;
+  }
+
+  return address;
+}
+
 function getAggregatedValue(queryItem, queriedValues) {
   let val = 0;
   switch (queryItem.queryConfig.aggrMode) {
@@ -201,4 +444,8 @@ export {
   processCurrentDonutData,
   processCurrentValueData,
   processMultiCurrentData,
+  processMapData,
+  processListData,
+  processUtilizationData,
+  processParkingData,
 };

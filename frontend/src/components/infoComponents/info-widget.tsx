@@ -22,10 +22,10 @@ export function InfoWidget(props: InfoWidgetProps) {
   const { title, contact, panelTitle } = props;
   return (
     <WidgetCard>
-      <Box>
-        <Typography variant="h2" noWrap marginBottom={2}>
+      <Box sx={{ml: 1, mt: 2}}>
+        <Typography variant="h2" noWrap>
           <Box display="flex" alignItems="center">
-            <InfoIcon style={{ color: colors.grayed, marginRight: 10 }} />
+            <InfoIcon style={{ color: colors.iconColor, marginRight: 10 }} />
             {title}
           </Box>
         </Typography>

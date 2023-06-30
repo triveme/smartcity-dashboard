@@ -6,7 +6,7 @@ export const DIALOG_TITLES = {
   ADD_PANEL: "Neues Panel anlegen",
   EDIT_PANEL: "Panel bearbeiten",
   PANEL_PREVIEW: "Vorschau",
-  PANEL_CONFIG: "Konfuguration des Panels",
+  PANEL_CONFIG: "Konfiguration des Panels",
   DATA_CONFIG: "Datenanbindung",
 };
 
@@ -14,7 +14,7 @@ export const DRAWER_TITLE = "Dashboards";
 
 export const INFORMATION_PAGE_TITLE = "Informationen";
 
-export const LOGIN_TITLE = "Smart City Login";
+export const LOGIN_TITLE = "Login";
 
 export const BUTTON_TEXTS = {
   ADD_WIDGET: "WIDGET",

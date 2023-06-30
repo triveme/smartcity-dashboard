@@ -13,6 +13,7 @@ import { ValueConfigurator } from "components/architectureConfig/value-configura
 import { SmallField } from "components/elements/text-fields";
 
 import colors from "theme/colors";
+import { ComponentConfigurator } from "./component-configurator";
 
 const re = new RegExp("^[A-Za-z0-9:_-]+$");
 function isValidDataConfigString(str: string) {
@@ -168,6 +169,9 @@ export function TabConfigurator(props: TabConfiguratorProps) {
         case "attributeDecimals":
           newTempTabs[currentTabIndex].decimals = newTabValue.tabValue;
           break;
+        case "attributeType":
+          newTempTabs[currentTabIndex].attributeType = newTabValue.tabValue;
+          break;
         case "apexSeries":
           console.log("Setting ApexSeries");
           console.log(newTabValue.tabValue);
@@ -186,6 +190,39 @@ export function TabConfigurator(props: TabConfiguratorProps) {
         case "filterAttribute":
           console.log("filterAttribute: " + newTabValue.tabValue);
           newTempTabs[currentTabIndex].filterAttribute = newTabValue.tabValue;
+          break;
+        case "componentType":
+          newTempTabs[currentTabIndex].componentType = newTabValue.tabValue;
+          break;
+        case "componentDataType":
+          newTempTabs[currentTabIndex].componentDataType = newTabValue.tabValue;
+          break;
+        case "componentName":
+          newTempTabs[currentTabIndex].componentName = newTabValue.tabValue;
+          break;
+        case "componentDescription":
+          newTempTabs[currentTabIndex].componentDescription = newTabValue.tabValue;
+          break;          
+        case "componentIcon":
+          newTempTabs[currentTabIndex].componentIcon = newTabValue.tabValue;
+          break;
+        case "componentMinimum":
+          newTempTabs[currentTabIndex].componentMinimum = newTabValue.tabValue;
+          break;
+        case "componentMaximum":
+          newTempTabs[currentTabIndex].componentMaximum = newTabValue.tabValue;
+          break;
+        case "componentWarning":
+          newTempTabs[currentTabIndex].componentWarning = newTabValue.tabValue;
+          break;
+        case "componentAlarm":
+          newTempTabs[currentTabIndex].componentAlarm = newTabValue.tabValue;
+          break;
+        case "componentUnit":
+          newTempTabs[currentTabIndex].componentUnit = newTabValue.tabValue;
+          break;
+        case "componentValue":
+          newTempTabs[currentTabIndex].componentValue = newTabValue.tabValue;
           break;
       }
     });
@@ -222,9 +259,8 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           >
             <MenuItem value="description">Beschreibung</MenuItem>
             <MenuItem value="chart">Chart</MenuItem>
-            {tempPanel.tabs && tempPanel.tabs.length === 1 ? (
-              <MenuItem value="value">Wert(e)</MenuItem>
-            ) : null}
+            <MenuItem value="value">Wert</MenuItem>
+            <MenuItem value="component">Komponente</MenuItem>
           </Select>
         </FormControl>
         {tempPanel.tabs.length > 1 && (
@@ -272,6 +308,12 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           />
         ) : tempPanel.tabs[currentTabIndex].type === "value" ? (
           <ValueConfigurator
+            currentTabIndex={currentTabIndex}
+            tempPanel={tempPanel}
+            setNewTabValue={setNewTabValue}
+          />
+        ) : tempPanel.tabs[currentTabIndex].type === "component" ? (
+          <ComponentConfigurator
             currentTabIndex={currentTabIndex}
             tempPanel={tempPanel}
             setNewTabValue={setNewTabValue}

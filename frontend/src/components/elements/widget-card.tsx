@@ -5,7 +5,7 @@ import borderRadius from "theme/border-radius";
 import colors from "theme/colors";
 
 let cardStyle = {
-  marginBottom: 15,
+  margin: "10px",
   backgroundColor: colors.widgetBackground,
   borderRadius: borderRadius.componentRadius,
 };
@@ -19,7 +19,7 @@ export function WidgetCard(props: WidgetCardProps) {
 
   return (
     <Card style={{ ...cardStyle }} elevation={0}>
-      <CardContent style={{padding: 16}}>{children}</CardContent>
+      <CardContent style={{padding:"0px"}}>{children}</CardContent>
     </Card>
   );
 }

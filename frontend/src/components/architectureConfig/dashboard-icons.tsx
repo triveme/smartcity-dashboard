@@ -32,6 +32,34 @@ import AirIcon from "@mui/icons-material/Air";
 import PoolIcon from "@mui/icons-material/Pool";
 import WaterIcon from "@mui/icons-material/Water";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CloseIcon from '@mui/icons-material/Close';
+import {
+  BatteryCharging2,
+  DropletFilled2,
+  Haze,
+  Parking,
+  Paw,
+  Pin,
+  Ripple,
+  Swimming,
+  Temperature,
+  Wind,
+  Droplet,
+  Dashboard,
+  Sun,
+  Point,
+  ArrowNarrowRight,
+  ArrowNarrowLeft,
+  Map,
+  List,
+  InfoCircle,
+  Filter,
+  MapSearch,
+  Car,
+  Bike,
+  ArrowWaveRightDown,
+  DotsVertical,
+} from 'tabler-icons-react';
 
 export const iconList = [
   "money",
@@ -68,19 +96,45 @@ export const iconList = [
   "air",
   "swim",
   "right",
+  "IconBatteryCharging2",
+  "IconDropletFilled2",
+  "IconHaze",
+  "IconParking",
+  "IconPaw",
+  "IconPin",
+  "IconRipple",
+  "IconSwimming",
+  "IconTemperature",
+  "IconWind",
+  "IconDroplet",
+  "IconDashboard",
+  "IconSun",
+  "IconPoint",
+  "IconArrowNarrowRight",
+  "IconArrowNarrowLeft",
+  "IconMap",
+  "IconList",
+  "IconInfoCircle",
+  "IconFilter",
+  "IconMapSearch",
+  "IconCar",
+  "IconBike",
+  "IconArrowWaveRightDown",
+  "IconDotsVertical"
 ];
 
 type DashboardIconProps = {
   icon: string;
   color: string;
+  fontSize?: string;
 };
 
 export function DashboardIcon(props: DashboardIconProps) {
-  const { icon, color } = props;
+  const { icon, color, fontSize } = props;
 
   let iconStyle: React.CSSProperties = {
     color: color,
-    fontSize: "1.25rem"
+    fontSize: fontSize ? fontSize : "1.25rem"
   }
 
   switch (icon) {
@@ -152,7 +206,131 @@ export function DashboardIcon(props: DashboardIconProps) {
       return <PoolIcon style={iconStyle} />;
     case "right":
       return <ChevronRightIcon style={iconStyle} />;
+    case "IconBatteryCharging2":
+      return <BatteryCharging2 style={iconStyle} />;
+    case "IconDropletFilled2":
+      return <DropletFilled2 style={iconStyle} />;
+    case "IconHaze":
+      return <Haze style={iconStyle} />;
+    case "IconParking":
+      return <Parking style={iconStyle} />;
+    case "IconPaw":
+      return <Paw style={iconStyle} />;
+    case "IconPin":
+      return <Pin style={iconStyle} />;
+    case "IconRipple":
+      return <Ripple style={iconStyle} />;
+    case "IconSwimming":
+      return <Swimming style={iconStyle} />;    
+    case "IconTemperature":
+      return <Temperature style={iconStyle} />;
+    case "IconWind":
+      return <Wind style={iconStyle} />;
+    case "IconDroplet":
+      return <Droplet style={iconStyle} />;
+    case "IconDashboard":
+      return <Dashboard style={iconStyle} />;
+    case "IconSun":
+      return <Sun style={iconStyle} />;
+    case "IconPoint":
+      return <Point style={iconStyle} />;
+    case "IconArrowNarrowRight":
+      return <ArrowNarrowRight style={iconStyle} />;
+    case "IconArrowNarrowLeft":
+      return <ArrowNarrowLeft style={iconStyle} />;    
+    case "IconMap":
+      return <Map style={iconStyle} />;
+    case "IconList":
+      return <List style={iconStyle} />;
+    case "IconInfoCircle":
+      return <InfoCircle style={iconStyle} />;
+    case "IconFilter":
+      return <Filter style={iconStyle} />;
+    case "IconMapSearch":
+      return <MapSearch style={iconStyle} />;
+    case "IconCar":
+      return <Car style={iconStyle} />;
+    case "IconBike":
+      return <Bike style={iconStyle} />;
+    case "IconArrowWaveRightDown":
+      return <ArrowWaveRightDown style={iconStyle} />;
+    case "IconDotsVertical":
+      return <DotsVertical style={iconStyle} />;
+    case "IconClose":
+      return <CloseIcon style={iconStyle} />;
     default:
       return <ChevronRightIcon style={iconStyle} />;
+  }
+}
+
+export const widgetTabIconList = [
+  "listView",
+  "mapCar",
+  "mapBike",
+  "mapView",
+  "infoView",
+]
+
+export function WidgetTabIcons(props: DashboardIconProps) {
+  const { icon, color, fontSize } = props;
+
+  let iconStyle: React.CSSProperties = {
+    color: color,
+    fontSize: fontSize ? fontSize : "1.25rem"
+  }
+
+  switch (icon) {
+    case "mapView":
+      return <Map style={iconStyle} />;
+    case "listView":
+      return <List style={iconStyle} />;
+    case "infoView":
+      return <InfoCircle style={iconStyle} />;
+    case "mapCar":
+      return <Car style={iconStyle} />;
+    case "mapBike":
+      return <Bike style={iconStyle} />;
+    case "verticalThreeDotsMenu":
+      return <DotsVertical style={iconStyle} />;
+    default:
+      return <></>;
+  }
+}
+
+export const widgetMapPinIconList = [
+  "bikes",
+  "cars",
+  "parking",
+  "pois",
+  "swimming",
+  "water",
+  "zoo",
+]
+
+export function WidgetMapPinIcon(props: DashboardIconProps) {
+  const { icon, color, fontSize } = props;
+
+  let iconStyle: React.CSSProperties = {
+    color: color,
+    fontSize: fontSize ? fontSize : "1.25rem"
+  }
+
+  switch (icon) {
+    case "bikes":
+      return <Bike style={iconStyle} />;
+    case "cars":
+      return <Car style={iconStyle} />;
+    case "parking":
+      return <Parking style={iconStyle} />;
+    case "pois":
+      return <Pin style={iconStyle} />;
+    case "swimming":
+      return <Swimming style={iconStyle} />;
+    case "water":
+      return <Haze style={iconStyle} />;
+    case "zoo":
+      return <Paw style={iconStyle} />;
+    default:
+      return <></>;
   }
 }

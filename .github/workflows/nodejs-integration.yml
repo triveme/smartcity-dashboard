@@ -1,4 +1,4 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# This workflow will do a clean installation of node dependeninstalles, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 
 name: Build
@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [18.x]
 
     defaults:
       run:
@@ -30,7 +30,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing Frontend-Service"
-      - run: npm ci
+      - run: npm install
       - run: npm run build --if-present
 
   build-ql-service:
@@ -38,7 +38,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [18.x]
 
     defaults:
       run:
@@ -53,7 +53,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
       - run: echo "Testing QL-Service"
-      - run: npm ci
+      - run: npm install
       - run: npm run build --if-present
 
   build-frontend:
@@ -61,7 +61,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [18.x]
 
     defaults:
       run:

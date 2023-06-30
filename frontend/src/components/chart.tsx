@@ -4,6 +4,9 @@ import type { TabComponent } from "components/tab";
 import { DonutChart } from "components/charts/donut";
 import { BarChart } from "components/charts/bar";
 import { LineChart } from "components/charts/line";
+import { RadialChart180 } from "./charts/radial/radial180";
+import { RadialChart360 } from "./charts/radial/radial360";
+import { SliderWithKnobs, SliderWithoutKnobs } from "./charts/slider/slider";
 
 type TabProps = {
   tab: TabComponent;
@@ -57,6 +60,34 @@ export function Chart(props: TabProps) {
         tickAmountKey={tickAmountKey}
         windowWidth={windowWidth}
       />
+    );
+  } else if (tab.apexType === "radial180") {
+    return (
+      <RadialChart180
+        key={"apex-radial180-" + tab.componentName}
+        chartName={tab.componentName}
+        minValue={tab.componentMinimum}
+        maxValue={tab.componentMaximum}
+        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0].currentValue : undefined}
+        unit={tab.componentUnit}
+        icon={tab.componentIcon}
+      ></RadialChart180>
+    );
+  } else if (tab.apexType === "radial360") {
+    return (
+      <RadialChart360 description={tab.componentDescription} currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}></RadialChart360>
+    );
+  }  else if (tab.apexType === "slider") {
+    return (
+      <SliderWithoutKnobs
+        name={tab.componentName}
+        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}
+        unit={tab.componentUnit}
+      ></SliderWithoutKnobs>
+    );
+  }  else if (tab.apexType === "sliderKnobs") {
+    return (
+      <SliderWithKnobs name={tab.componentName} currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : tab.componentMaximum-1} maximumValue={tab.componentMaximum}></SliderWithKnobs>
     );
   } else {
     return <>Invalider Chart-Typ</>;

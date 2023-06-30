@@ -130,7 +130,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
               style={{ minWidth: 50 }}>
               <AddIcon
                 key={"listItem-editbuttons-icon-add"}
-                style={{ color: colors.white, fontSize: "1.25rem" }}
+                style={{ color: colors.iconColor, fontSize: "1.25rem" }}
               />
             </ListItemIcon>
             <ListItemText
@@ -181,33 +181,32 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
                 <DashboardIcon
                   icon={dashboard.icon}
                   color={
-                    !dashboard.visible && stateContext.authToken
-                      ? colors.invisibleDashboardColor
-                      : colors.white
+                    colors.iconColor
                   }
                 />
               ) : (
                 <ChevronRightIcon
                   sx={{
                     color:
-                      !dashboard.visible && stateContext.authToken
-                        ? colors.invisibleDashboardColor
-                        : colors.white,
+                      colors.iconColor
                   }}
                 />
               )}
             </ListItemIcon>
-            <ListItemText
-              primary={dashboard.name}
-              sx={{
-                color:
-                  !dashboard.visible && stateContext.authToken
-                    ? colors.invisibleDashboardColor
-                    : colors.white,
-                marginTop: 0,
-                marginBottom: 0,
-              }}
-            />
+            {open ? (
+              <ListItemText
+                primary={dashboard.name}
+                sx={{
+                  color:
+                    !dashboard.visible && stateContext.authToken
+                      ? colors.invisibleDashboardColor
+                      : colors.white,
+                  marginTop: 0,
+                  marginBottom: 0,
+                  whiteSpace: "break-spaces"
+                }}
+              />
+            ): null}
             <Box
               bgcolor={() => {
                 if ("/" + dashboard.url === location.pathname) {
@@ -247,6 +246,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
         <img
           src={open ? logoTextOnly : logoSmall}
           alt="Smart City Logo"
+          width={"100%"}
         />
       </Box>
       );
@@ -255,6 +255,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   return (
     <>
       {matchesDesktop ? (
+        // <Drawer variant={variant} open={open}>
         <MiniVariantDrawer variant={variant} open={open}>
           <DrawerHeader>
             <Typography noWrap variant="h2">
@@ -273,7 +274,14 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             </IconButton>
           </DrawerHeader>
           <Divider />
-          <List sx={styleList}>
+          <List
+            sx={styleList}
+            style={{
+              // paddingTop: "62px",
+              padding: " 0px 10px 10px 3px",
+              backgroundColor: colors.drawerBackground,
+            }}
+          >
             <>
               {displayDashboardItems()}
               {displayEditButtonsInMenu()}
@@ -281,6 +289,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
           </List>
           {displayLogo()}
           <InformationMenuBox open={open}/>
+        {/* </Drawer> */}
         </MiniVariantDrawer>
       ) : (
         <Drawer

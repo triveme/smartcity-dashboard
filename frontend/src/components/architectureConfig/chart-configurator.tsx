@@ -17,6 +17,10 @@ import { SmallField } from "components/elements/text-fields";
 import { MaxColorDialog } from "components/architectureConfig/color-dialog";
 
 import colors from "theme/colors";
+import { Dialog, DialogContent, IconButton, DialogActions } from "@mui/material";
+import { SaveButton } from "components/elements/buttons";
+import { iconList, DashboardIcon } from "./dashboard-icons";
+import borderRadius from "theme/border-radius";
 
 type ChartConfiguratorProps = {
   currentTabIndex: number;
@@ -26,6 +30,19 @@ type ChartConfiguratorProps = {
 
 export function ChartConfigurator(props: ChartConfiguratorProps) {
   const { currentTabIndex, tempPanel, setNewTabValue } = props;
+
+  const [iconChooserOpen, setIconChooserOpen] = useState(false);
+  const [newComponentIcon, setNewComponentIcon] = useState("");
+  const handleIconChooserClickOpen = () => {
+    setIconChooserOpen(true);
+  };
+
+  const handleIconChooserClose = () => {
+    setIconChooserOpen(false);
+    setNewTabValue([
+      { key: "componentIcon", tabValue: newComponentIcon },
+    ])
+  };
 
   // create missing tab properties
   if (!tempPanel.tabs[currentTabIndex].apexOptions) {
@@ -68,9 +85,16 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
       tempPanel.tabs[currentTabIndex].apexOptions!.colors!.length > 0
     ) {
       let newOptionsForColors = cloneDeep(tempPanel.tabs[currentTabIndex].apexOptions);
-      newOptionsForColors!.colors!.shift();
-      newOptionsForColors!.labels!.shift();
-      newOptionsForColors!.series!.shift();
+
+      if (newOptionsForColors!.colors! && newOptionsForColors!.colors!.length > 0) {
+        newOptionsForColors!.colors!.shift();
+      }
+      if (newOptionsForColors!.labels! && newOptionsForColors!.labels!.length > 0) {
+        newOptionsForColors!.labels!.shift();
+      }
+      if (newOptionsForColors!.series! && newOptionsForColors!.series!.length > 0) {
+        newOptionsForColors!.series!.shift();
+      }
       setNewTabValue([
         { key: "apexOptions", tabValue: newOptionsForColors },
         { key: "apexMaxValue", tabValue: 100 },
@@ -111,6 +135,10 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
           <MenuItem value="donut">Donut</MenuItem>
           <MenuItem value="bar">Säulen</MenuItem>
           <MenuItem value="line">Linien</MenuItem>
+          <MenuItem value="radial180">Radial 180°</MenuItem>
+          <MenuItem value="radial360">Radial 360°</MenuItem>
+          <MenuItem value="slider">Slider</MenuItem>
+          <MenuItem value="sliderKnobs">Slider mit Label</MenuItem>
         </Select>
       </FormControl>
       {tempPanel.tabs[currentTabIndex] &&
@@ -205,6 +233,9 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
       {tempPanel.tabs[currentTabIndex] &&
       tempPanel.tabs[currentTabIndex].type === "chart" ? (
         <>
+          {tempPanel.tabs[currentTabIndex].apexType === "line" ||
+          tempPanel.tabs[currentTabIndex].apexType === "bar" ||
+          tempPanel.tabs[currentTabIndex].apexType === "donut" ? (
           <Box display="flex" alignItems="center">
             <FormControl
               variant="outlined"
@@ -263,8 +294,11 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                 }
               />
             ) : null}
-          </Box>
-          {maxManual === "manual" ? (
+          </Box>) : null}
+          {maxManual === "manual" &&
+            (tempPanel.tabs[currentTabIndex].apexType === "line" ||
+            tempPanel.tabs[currentTabIndex].apexType === "bar" ||
+            tempPanel.tabs[currentTabIndex].apexType === "donut") ? (
             <Box margin={0.5} marginTop={0}>
               <Paper
                 key={"manual-max-paper"}
@@ -321,6 +355,171 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                   currentTab={tempPanel.tabs[currentTabIndex]}
                 />
               </Paper>
+            </Box>
+          ) : null}
+          {tempPanel.tabs[currentTabIndex].apexType === "radial180" ? (
+            <Box>
+              <Box display="flex" flexDirection="row" gap="5px">
+                <SmallField
+                  key={"component-name-text-field"}
+                  label="Name"
+                  type="text"
+                  value={tempPanel.tabs[currentTabIndex].componentName}
+                  onChange={(e) =>
+                    setNewTabValue([
+                      { key: "componentName", tabValue: e.target.value },
+                    ])
+                  }
+                />
+                <Box display="flex" alignItems="center">
+                  <IconButton onClick={handleIconChooserClickOpen}>
+                    <DashboardIcon icon={newComponentIcon} color={colors.iconColor} />
+                  </IconButton>
+                  <Button onClick={handleIconChooserClickOpen}>Icon ändern</Button>
+                </Box>
+              </Box>
+              <Box display="flex" flexDirection="row" gap="5px">
+                <SmallField
+                  key={"radial-minimum-text-field"}
+                  label="Minimum"
+                  type="number"
+                  value={tempPanel.tabs[currentTabIndex].componentMinimum}
+                  onChange={(e) =>
+                    setNewTabValue([
+                      { key: "componentMinimum", tabValue: e.target.value },
+                    ])
+                  }
+                />
+                <SmallField
+                  key={"radial-maximum-text-field"}
+                  label="Maximum"
+                  type="number"
+                  value={tempPanel.tabs[currentTabIndex].componentMaximum}
+                  onChange={(e) =>
+                    setNewTabValue([
+                      { key: "componentMaximum", tabValue: e.target.value },
+                    ])
+                  }
+                />
+                <SmallField
+                  key={"radial-unit-text-field"}
+                  label="Einheit"
+                  type="text"
+                  value={tempPanel.tabs[currentTabIndex].componentUnit}
+                  onChange={(e) =>
+                    setNewTabValue([
+                      { key: "componentUnit", tabValue: e.target.value },
+                    ])
+                  }
+                />
+              </Box>
+              <Dialog
+                disableEscapeKeyDown
+                open={iconChooserOpen}
+                onClose={handleIconChooserClose}
+                PaperProps={{
+                  style: {
+                    borderRadius: borderRadius.componentRadius,
+                    backgroundColor: colors.backgroundColor,
+                    backgroundImage: "none",
+                  },
+                }}
+              >
+                <DialogContent>
+                  <Box component="form" sx={{ display: "flex", flexWrap: "wrap" }}>
+                    {iconList.map((icon) => (
+                      <IconButton
+                        key={"box-widgetIcon-" + icon}
+                        onClick={() => setNewComponentIcon(icon)}
+                      >
+                        <DashboardIcon
+                          key={"dashboardicon-widgetIcon-" + icon}
+                          icon={icon}
+                          color={
+                            newComponentIcon === icon ? colors.iconColor : colors.white
+                          }
+                        />
+                      </IconButton>
+                    ))}
+                  </Box>
+                </DialogContent>
+                <DialogActions style={{ justifyContent: "center" }}>
+                  <SaveButton text="Schließen" onClick={handleIconChooserClose} />
+                </DialogActions>
+              </Dialog>
+            </Box>
+          ) : null}
+          {tempPanel.tabs[currentTabIndex].apexType === "radial360" ? (
+            <Box>
+              <SmallField
+                  key={"component-raial360-description-text-field"}
+                  label="Beschreibung"
+                  type="text"
+                  value={tempPanel.tabs[currentTabIndex].componentDescription}
+                  onChange={(e) =>
+                    setNewTabValue([
+                      { key: "componentDescription", tabValue: e.target.value },
+                    ])
+                  }
+                />
+            </Box>
+          ) : null}
+          {tempPanel.tabs[currentTabIndex].apexType === "slider" ? (
+            <Box
+              display="flex"
+              flexDirection="row"
+            >
+              <SmallField
+                key={"component-raial360-name-text-field"}
+                label="Name"
+                type="text"
+                value={tempPanel.tabs[currentTabIndex].componentName}
+                onChange={(e) =>
+                  setNewTabValue([
+                    { key: "componentName", tabValue: e.target.value },
+                  ])
+                }
+              />
+              <SmallField
+                key={"component-unit-text-field"}
+                label="Einheit"
+                type="text"
+                value={tempPanel.tabs[currentTabIndex].componentUnit}
+                onChange={(e) =>
+                  setNewTabValue([
+                    { key: "componentUnit", tabValue: e.target.value },
+                  ])
+                }
+              />
+            </Box>
+          ) : null}
+          {tempPanel.tabs[currentTabIndex].apexType === "sliderKnobs" ? (
+            <Box
+              display="flex"
+              flexDirection="row"
+            >              
+              <SmallField
+                key={"component-raial360-name-text-field"}
+                label="Name"
+                type="text"
+                value={tempPanel.tabs[currentTabIndex].componentName}
+                onChange={(e) =>
+                  setNewTabValue([
+                    { key: "componentName", tabValue: e.target.value },
+                  ])
+                }
+              />              
+              <SmallField
+                key={"radial-maximum-text-field"}
+                label="Maximum"
+                type="number"
+                value={tempPanel.tabs[currentTabIndex].componentMaximum}
+                onChange={(e) =>
+                  setNewTabValue([
+                    { key: "componentMaximum", tabValue: e.target.value },
+                  ])
+                }
+              />
             </Box>
           ) : null}
           <SmallField

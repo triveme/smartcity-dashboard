@@ -12,6 +12,9 @@ export function DashboardWrapper(props: DashboardWrapperProps) {
   const matchesDesktop = useMediaQuery(theme.breakpoints.up("sm"));
 
   return (
-    <div style={{ marginTop: matchesDesktop ? 0 : "56px" }}>{children}</div>
+    <div style={{
+      marginTop: matchesDesktop ? 0 : "70px",
+    }}
+    >{children}</div>
   );
 }
