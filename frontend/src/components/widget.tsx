@@ -217,7 +217,9 @@ export function Widget(props: WidgetProps) {
 
   //Activate the first icon on initial loading
   useEffect(() => {
-    handleWidgetTabIconClick(widget.tabIcons[0]);
+    if (widget.tabIcons) {
+      handleWidgetTabIconClick(widget.tabIcons[0]);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
