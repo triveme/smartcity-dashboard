@@ -236,6 +236,18 @@ async function fillApexDataWithQd(dashboards) {
                                   ) {
                                     tab.values = result.data;
                                   }
+                                } else if (tab.type === "component") {
+                                  if (tab.componentType === "utilization") {
+                                    tab.apexSeries = result.data[0];
+                                    _.set(
+                                      tab,
+                                      "apexOptions.xaxis.categories",
+                                      result.dataLabels
+                                    );
+                                    tab.componentData = result.data[1];
+                                  } else {
+                                    tab.componentData = result.data;
+                                  }
                                 }
                               });
                           }
@@ -404,9 +416,13 @@ function getQdToAddAndUpdate(dashboard) {
                     type: tab.type,
                     fiwareService: tab.fiwareService,
                     entityId: tab.entityId,
-                    filterProperty: tab.filterProperty ? tab.filterProperty : "",
+                    filterProperty: tab.filterProperty
+                      ? tab.filterProperty
+                      : "",
                     filterValues: tab.filterValues ? tab.filterValues : [],
-                    filterAttribute: tab.filterAttribute ? tab.filterAttribute : "",
+                    filterAttribute: tab.filterAttribute
+                      ? tab.filterAttribute
+                      : "",
                     attribute: {
                       keys: tab.attribute.keys,
                       aliases: tab.attribute.aliases,
@@ -419,6 +435,25 @@ function getQdToAddAndUpdate(dashboard) {
                     apexMaxAlias: tab.apexMaxAlias
                       ? tab.apexMaxAlias
                       : undefined,
+                    intervalInMinutes: getIntervalFromTimeframe(tab.timeframe),
+                  },
+                };
+                if (tab.queryData) {
+                  if (tab.queryData.id) {
+                    queryData = { ...queryData, queryData: tab.queryData };
+                    dataToUpdate.push(queryData);
+                  } else {
+                    dataToAdd.push(queryData);
+                  }
+                } else {
+                  dataToAdd.push(queryData);
+                }
+              } else if (tab.componentType) {
+                let queryData = {
+                  parents: [widgetIndex, panelIndex, tabIndex],
+                  queryConfig: {
+                    componentType: tab.componentType,
+                    componentDataType: tab.componentDataType,
                     intervalInMinutes: getIntervalFromTimeframe(tab.timeframe),
                   },
                 };

@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
 import cloneDeep from "lodash/cloneDeep";
-
 import Typography from "@mui/material/Typography";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
+import Grid, { GridSize } from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 
 import { Widget, WidgetComponent } from "components/widget";
 import { WidgetDialog } from "components/architectureConfig/widget-dialog";
 import { AddButton } from "components/elements/buttons";
 import { initialWidget } from "./architectureConfig/initial-components";
-
 import { Spinner } from "components/elements/spinner";
-
 import { getDashboardArchitecture } from "clients/architecture-client";
 import { useArchitectureContext } from "context/architecture-provider";
 import { useStateContext } from "../providers/state-provider";
@@ -117,21 +116,40 @@ export function Dashboard(props: DashboardProps) {
     }
     // Dashboard with widgets
     else {
-      return dashboard.widgets.map((widget: WidgetComponent) => (
-        <Widget
-          key={"widget-" + (widget._id!==""? widget._id : widget.uid)}
-          widget={widget}
-          parentName={dashboard.name}
-          parentsUid={(dashboard._id!=="" ? dashboard._id : dashboard.uid)}
-          editMode={editMode}
-        />
-      ))
+      return (   
+        <Box
+          width={"100%"}
+        >
+          <Grid
+            container
+            spacing={2}
+          >
+            {dashboard.widgets.map((widget: WidgetComponent) => (
+              <Grid
+                key={"grid-item-widget-" + widget.name}
+                item
+                container
+                direction="column"
+                lg={Number(widget.width) as GridSize}
+                display="block"
+              >
+                <Widget
+                  key={"widget-" + (widget._id!==""? widget._id : widget.uid)}
+                  widget={widget}
+                  parentName={dashboard.name}
+                  parentsUid={(dashboard._id!=="" ? dashboard._id : dashboard.uid)}
+                  editMode={editMode}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )
     }
   }
 
   return (
     <DashboardWrapper>
-      <Typography variant="h1">{dashboard.name}</Typography>
       {displayDashboardContent()}
       {stateContext.authToken && editMode && matchesDesktop ? (
         <>

@@ -54,8 +54,7 @@ function updateToken() {
       }
     })
     .catch((err) => {
-      console.log("authentication request failed");
-      console.log(err);
+      console.error("authentication request failed: " + err);
     });
 }
 
@@ -92,8 +91,7 @@ function getInitialToken() {
       }
     })
     .catch((err) => {
-      console.log("authentication request failed");
-      console.log(err);
+      console.error("authentication request failed: " + err);
     });
 }
 

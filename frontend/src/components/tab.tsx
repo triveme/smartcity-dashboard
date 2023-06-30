@@ -5,12 +5,19 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 import { Chart } from "components/chart";
-import { Value } from "components/value";
+import { SingleValue, Value } from "components/value";
 import { ApexOptions } from "apexcharts";
 import { PanelComponent } from "components/panel";
 
 import colors from "theme/colors";
 import { TransitionAlert } from "./elements/transition-alert";
+import { MeasurementComponent } from "./measurement";
+import { MapComponent } from "./map/map";
+import { PARKING_DATA_SLIDER, POI_DATA, SWIMMING_DATA_SLIDER, ZOO_UTILIZATION_DATA } from "constants/dummy-data";
+import { ParkingComponent } from "./charts/slider/parking-component";
+import { InterestingPois } from "./interesting-pois";
+import { SwimmingDetails } from "./swimming-details";
+import { Utilization } from "./utilization";
 
 export type TabComponent = {
   _id: string;
@@ -25,6 +32,19 @@ export type TabComponent = {
   apexMaxValue?: number;
   apexMaxAlias?: string;
   apexMaxColor?: string;
+  componentType: string;
+  componentData: Array<any>;
+  // componentData: [];
+  componentDataType: string;
+  componentName: string;
+  componentDescription: string;
+  componentIcon: string;
+  componentMinimum: number;
+  componentMaximum: number;
+  componentWarning: number;
+  componentAlarm: number;
+  componentUnit: string;
+  componentValue: number;
   timeframe?: number;
   fiwareService?: string;
   entityId?: string[];
@@ -37,6 +57,7 @@ export type TabComponent = {
   };
   values?: number[];
   decimals?: number;
+  attributeType? : string;
   aggrMode?: string;
   queryData?: {
     id?: string;
@@ -46,11 +67,12 @@ export type TabComponent = {
 
 type SingleTabProps = {
   tab: TabComponent;
-  height: number;
+  height: number;  
+  showOnMap?: (index: number, lat: number, lng: number) => void;
 };
 
 function SingleTab(props: SingleTabProps) {
-  const { tab, height } = props;
+  const { tab, height, showOnMap } = props;
 
   //init alertText
   let alertText: String = "";
@@ -60,8 +82,8 @@ function SingleTab(props: SingleTabProps) {
 
   if (tab.type === "chart") {
     return (
-      <Box sx={{ position: "relative" }}>
-      <Chart key={"chart-" + (tab._id!=="" ? tab._id : tab.uid)} height={height - 50} tab={tab} />
+      <Box height="100%" sx={{ position: "relative" }}>
+        <Chart key={"chart-" + (tab._id!=="" ? tab._id : tab.uid)} height={height - 50} tab={tab} />
         {!tab.apexSeries || (tab.apexSeries && tab.apexSeries?.length < 1) ? (
           alertText === "" ? (
             <TransitionAlert alertText={alertText} info={true} />
@@ -88,7 +110,11 @@ function SingleTab(props: SingleTabProps) {
   } else if (tab.type === "value") {
     return (
       <Box sx={{ position: "relative", height: "inherit" }}>
-        <Value key={"value-" + (tab._id!==""? tab._id : tab.uid)} tab={tab} />
+        {tab.attributeType && tab.attributeType === "old" ? (
+          <Value key={"value-" + (tab._id!==""? tab._id : tab.uid)} tab={tab} />
+        ) : (
+          <SingleValue key={"value-" + (tab._id!==""? tab._id : tab.uid)} tab={tab} />
+        )}
         {!tab.values || (tab.values && tab.values?.length < 1) ? (
           alertText === "" ? (
             <TransitionAlert alertText={alertText} info={true} />
@@ -96,6 +122,52 @@ function SingleTab(props: SingleTabProps) {
             <TransitionAlert alertText={alertText} />
           )
         ) : null}
+      </Box>
+    );
+  } else if (tab.type === "component") {
+    return (
+      <Box 
+        key="box-tab-componenttype"
+        height="100%"
+        sx={{ position: "relative" }}
+      >
+
+        {tab.componentType === "map" ? (
+          <MapComponent
+            key={"map-component-tab-" + tab.componentDataType}
+            mapData={tab.componentData}
+            iconType={tab.componentDataType}
+          ></MapComponent>
+        ): null}
+        
+        {tab.componentType === "parking" ? (
+          <ParkingComponent
+            sliders={tab.componentData && tab.componentData.length > 0 ? tab.componentData : PARKING_DATA_SLIDER}
+            showOnMap={showOnMap ? showOnMap : () => {}}
+          ></ParkingComponent>
+        ): null}
+        
+        {tab.componentType === "measurement" ? (
+          <MeasurementComponent tab={tab}></MeasurementComponent>
+        ): null}
+
+        {tab.componentType === "swimming" ? (
+          <SwimmingDetails infos={SWIMMING_DATA_SLIDER}></SwimmingDetails>
+        ): null}
+        
+        {tab.componentType === "pois" ? (
+          <InterestingPois
+            key={"interesting-poi-tab-" + tab.componentDataType}
+            infos={tab.componentData ? tab.componentData : POI_DATA}
+          ></InterestingPois>
+        ): null}
+        
+        {tab.componentType === "utilization" ? (
+          <Utilization
+            data={ZOO_UTILIZATION_DATA}
+            currentValue={tab.componentData && tab.componentData[0] ? Number(tab.componentData[0].currentUtilization) : 0}
+          ></Utilization>
+        ): null}
       </Box>
     );
   } else {
@@ -107,11 +179,12 @@ type TabPanelProps = {
   value: number;
   tab: TabComponent;
   index: number;
-  height: number;
+  height: number;  
+  showOnMap?: (index: number, lat: number, lng: number) => void;
 };
 
 function TabPanel(props: TabPanelProps) {
-  const { value, tab, height, index } = props;
+  const { value, tab, height, index, showOnMap } = props;
 
   return (
     <div
@@ -121,7 +194,11 @@ function TabPanel(props: TabPanelProps) {
       aria-labelledby={tab.name + "-" + index}
     >
       {value === index && (
-        <SingleTab key={"singletab-" + (tab._id!==""? tab._id : tab.uid)} height={height} tab={tab} />
+        <SingleTab
+          key={"singletab-" + (tab._id!==""? tab._id : tab.uid)}
+          height={height} tab={tab}
+          showOnMap={showOnMap ? showOnMap : () => {}}
+        />
       )}
     </div>
   );
@@ -136,10 +213,11 @@ function a11yProps(tab: TabComponent, index: number) {
 
 type TabbingProps = {
   panel: PanelComponent;
+  showOnMap?: (index: number, lat: number, lng: number) => void;
 };
 
 export function Tabbing(props: TabbingProps) {
-  const { panel } = props;
+  const { panel, showOnMap } = props;
 
   const [tabValue, setTabValue] = React.useState(0);
   const handleTabValueChange = (
@@ -155,6 +233,7 @@ export function Tabbing(props: TabbingProps) {
         key={"singletab-" + (panel.tabs[0]._id!=="" ? panel.tabs[0]._id : panel.tabs[0].uid)}
         height={panel.name ? panel.height - 24 : panel.height}
         tab={panel.tabs[0]}
+        showOnMap={showOnMap ? showOnMap : () => {}}
       />
     );
   } else if (panel.tabs.length > 1) {

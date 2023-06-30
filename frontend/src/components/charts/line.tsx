@@ -10,6 +10,7 @@ import type { TabComponent } from "components/tab";
 import { roundDecimalPlaces } from "utils/decimal-helper";
 
 import colors from "theme/colors";
+import { WarningChartProps } from "./column";
 
 type LineChartProps = {
   tab: TabComponent;
@@ -185,6 +186,129 @@ export function LineChart(props: LineChartProps) {
           type="line"
         />
       </Box>
+    </Box>
+  );
+}
+
+export function AlarmLineChart(props: WarningChartProps) {
+  const { data, timeValue, warningValue, alarmValue, maxValue } = props;
+
+  let lineOptions: ApexOptions = {
+    series: [
+      {
+        type: 'line',
+        data: data
+      },
+      {
+        type: 'area',
+        data: data
+      }
+    ],
+    chart: {
+      type: 'line',
+      toolbar: {
+        show: false
+      }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+        borderRadiusApplication: "end",
+        columnWidth: "10%"
+      },
+    },
+    dataLabels: {
+      enabled: false
+    },
+    fill: {
+      type: "solid",
+      opacity: 1,
+    },
+    xaxis: {
+      categories: timeValue,
+      tickAmount: 4,
+      axisTicks: {
+        show: false,
+        color: colors.chartGrid
+      },
+      labels: {
+        style: {
+          colors: colors.chartFont
+        }
+      }
+    },
+    yaxis: {
+      min: 0,
+      max: maxValue,
+      tickAmount: 5,
+      axisTicks: {
+        color: colors.chartGrid
+      },
+      labels: {
+        formatter: (value) => { return value + ""},
+        style: {
+          colors: colors.chartFont
+        }
+      }
+    },
+    stroke: {
+      curve: "smooth",
+    },
+    grid: {
+      borderColor: colors.chartGrid
+    },
+    legend: {
+      show: false
+    },
+    colors: [colors.chartBar],    
+    annotations: {
+      yaxis: [
+        {
+          y: alarmValue,
+          strokeDashArray: 0,
+          borderColor: colors.pink,
+          fillColor: "white",
+          label: {
+            borderColor: colors.pink,
+            style: {
+              color: "white",
+              background: colors.pink,
+            },
+            text: "Alarm",
+          },
+        },
+        {
+          y: warningValue,
+          strokeDashArray: 0,
+          borderColor: colors.petrol,
+          fillColor: "white",
+          label: {
+            borderColor: colors.petrol,
+            style: {
+              color: "white",
+              background: colors.petrol,
+            },
+            text: "Warnung",
+          },
+        },
+      ],
+    },
+  };
+
+  return (
+    <Box
+      height="100%"
+      width="100%"
+    >
+      <ApexChart
+        key={"warning-line-chart"}
+        type="line"
+        width={"100%"}
+        height={"100%"}
+        options={lineOptions}
+        series={lineOptions.series}
+      />
     </Box>
   );
 }

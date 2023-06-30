@@ -11,12 +11,17 @@ import {
   processCurrentDonutData,
   processCurrentValueData,
   processMultiCurrentData,
+  processMapData,
+  processListData,
+  processUtilizationData,
+  processParkingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
   checkIfTokenNeedsToUpdate,
   updateToken,
 } from "./authenticationController.js";
+import { loadData } from "./apiData.controller.js";
 
 function updateTokenIfNecessary() {
   if (checkIfTokenNeedsToUpdate()) {
@@ -27,11 +32,11 @@ function updateTokenIfNecessary() {
 // runs every 15 seconds
 function runSchedule() {
   cron.schedule("*/15 * * * * *", () => {
-    updateTokenIfNecessary();
+    // updateTokenIfNecessary();
 
     getQuerydata((querydata) => {
       const now = new Date();
-      querydata.map((queryItem) => {
+      querydata.map(async (queryItem) => {
         // current values, update them always
         // TO DO: get current values from context broker
         if (queryItem.queryConfig.type === "value") {
@@ -122,8 +127,41 @@ function runSchedule() {
               }
             );
           }
+        } else if (queryItem.queryConfig.componentType == "map") {
+          var itemData = await loadData(
+            queryItem.queryConfig.componentDataType
+          ).catch((err) => console.error(err));
+
+          processListData(queryItem, itemData);
+          // processMapData(queryItem, itemData);
+        } else if (queryItem.queryConfig.componentType == "list") {
+          var itemData = await loadData(
+            queryItem.queryConfig.componentDataType
+          ).catch((err) => console.error(err));
+
+          processListData(queryItem, itemData);
+        } else if (queryItem.queryConfig.componentType == "pois") {
+          var itemData = await loadData(
+            queryItem.queryConfig.componentDataType
+          ).catch((err) => console.error(err));
+
+          processListData(queryItem, itemData);
+        } else if (queryItem.queryConfig.componentType == "utilization") {
+          var itemData1 = await loadData("zooutilization1").catch((err) =>
+            console.error(err)
+          );
+          var itemData2 = await loadData("zooutilization2").catch((err) =>
+            console.error(err)
+          );
+
+          processUtilizationData(queryItem, itemData1, itemData2);
+        } else if (queryItem.queryConfig.componentType == "parking") {
+          var parkingData = await loadData("parking").catch((err) =>
+            console.error(err)
+          );
+          processParkingData(queryItem, parkingData);
         } else {
-          console.log("Unknown tab type encountered in schedule.controller.js");
+          console.log("Unknown tab type encountered in schedule.controller.js: " + queryItem.queryConfig.componentType);
         }
       });
     });

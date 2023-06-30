@@ -8,7 +8,6 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 
 import { Tabbing, TabComponent } from "components/tab";
 import { ArchitectureEditButtons } from "components/architectureConfig/architecture-edit-buttons";
-import colors from "theme/colors";
 
 export type PanelComponent = {
   _id: string;
@@ -25,10 +24,11 @@ type PanelProps = {
   parents: string[];
   parentsUids: string[];
   editMode: boolean;
+  showOnMap?: (index: number, lat: number, lng: number) => void;
 };
 
 export function Panel(props: PanelProps) {
-  const { panel, previewMode, parents, parentsUids, editMode } = props;
+  const { panel, previewMode, parents, parentsUids, editMode, showOnMap } = props;
 
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
@@ -55,11 +55,9 @@ export function Panel(props: PanelProps) {
       <Paper
         style={{
           height: "100%",
-          padding: 10,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
-          backgroundColor: colors.panelBackground,
+          justifyContent: "center",
         }}
         elevation={0}
       >
@@ -105,7 +103,6 @@ export function Panel(props: PanelProps) {
             <Box
               position="absolute"
               zIndex={1100}
-              bgcolor={colors.panelBackground}
             >
               <ArchitectureEditButtons
                 type="Panel"
@@ -117,7 +114,10 @@ export function Panel(props: PanelProps) {
             </Box>
           </Box>
         )}
-        <Tabbing panel={panel} />
+        <Tabbing
+          panel={panel}
+          showOnMap={showOnMap ? showOnMap : () => {}}
+        />
       </Paper>
     </Grid>
   );

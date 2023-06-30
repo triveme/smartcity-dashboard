@@ -25,6 +25,7 @@ type LoginPageProps = {
 };
 
 export function LoginPage(props: LoginPageProps) {
+  const { handleLogin, enableEditMode } = props;
   const [userName, setUserName] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const { setArchitectureContext } = useArchitectureContext();
@@ -50,7 +51,7 @@ export function LoginPage(props: LoginPageProps) {
         navigate("/", {replace: true});
       })
       .catch((e) => {
-        console.log(
+        console.error(
           "Seitenaufbau konnte nicht abgerufen & aktualisiert werden."
         );
       });
@@ -75,7 +76,9 @@ export function LoginPage(props: LoginPageProps) {
       adminId: jwt_decode<JwtPayload>(res.data.accessToken),
     });
     console.log("Logged in as admin");
-    // history.replace("/");
+    handleLogin();
+    enableEditMode();
+
     navigate("/", {replace: true});
   };
   

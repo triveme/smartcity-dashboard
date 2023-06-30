@@ -45,9 +45,6 @@ export function PanelConfigurator(props: PanelConfiguratorProps) {
         break;
       case "tabs":
         newTempPanel.tabs = cloneDeep(value);
-        console.log("setNewPanelValue");
-        console.log(value);
-        console.log(newTempPanel);
         break;
     }
     setTempPanel(newTempPanel);
