@@ -10,6 +10,9 @@
     background-color: #2f3a4e;
     color: #f0407e;
 }
+.leaflet-layer {
+    filter: grayscale(0.9)brightness(0.9)invert(1);
+}
 .map-marker-popup .leaflet-popup-tip,
 .map-marker-popup .leaflet-popup-content-wrapper {
     background: transparent;
