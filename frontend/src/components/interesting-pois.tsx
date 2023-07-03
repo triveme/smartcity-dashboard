@@ -191,7 +191,7 @@ export function InterestingPois(props: InterestingPoisProps) {
                   style={{ height: '100%' }}
                   src={info.image && info.image !== 'none' ? info.image : ''}
                   alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
-                ></img>
+                />
                 {info.creator && <CopyrightElement creator={info.creator} />}
               </Box>
               {/* Infobox */}
@@ -258,7 +258,7 @@ export function InterestingPois(props: InterestingPoisProps) {
               handleBackClick={handlePoiClose}
               handleDisplayOnMapClick={handleDisplayOnMapClick}
               index={selectedPointOfInterestIndex}
-            ></InterestingPointsDetails>
+            />
           </Box>
         ) : pointOfInterestFilterOpen ? (
           // Filter Menue

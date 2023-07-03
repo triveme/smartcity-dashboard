@@ -25,11 +25,7 @@ export function SwimmingDetails(props: ParkingspaceDetailsProps) {
                 display={'flex'}
                 flexDirection={'row'}
               >
-                <SliderWithoutKnobs
-                  name={sensor.name}
-                  currentValue={sensor.currentlyUsed}
-                  unit={'%'}
-                ></SliderWithoutKnobs>
+                <SliderWithoutKnobs name={sensor.name} currentValue={sensor.currentlyUsed} unit={'%'} />
               </Box>
             ))}
           </Grid>

@@ -110,30 +110,20 @@ export function MeasurementComponent(props: UtilizationProps) {
               justifyContent='space-evenly'
               alignItems='flex-end'
             >
-              <InfoDisplayComponent
-                headline={'Mittelwert'}
-                icon={''}
-                iconColor={''}
-                value={'30 cm'}
-              ></InfoDisplayComponent>
+              <InfoDisplayComponent headline={'Mittelwert'} icon={''} iconColor={''} value={'30 cm'} />
               <InfoDisplayComponent
                 headline={'Abweichung'}
                 icon={'IconArrowWaveRightDown'}
                 iconColor={colors.iconColor}
                 value={'-60 %'}
-              ></InfoDisplayComponent>
+              />
               <InfoDisplayComponent
                 headline={'Warnung'}
                 icon={'IconPoint'}
                 iconColor={colors.orange}
                 value={'130 cm'}
-              ></InfoDisplayComponent>
-              <InfoDisplayComponent
-                headline={'Alarm'}
-                icon={'IconPoint'}
-                iconColor={colors.pink}
-                value={'210 cm'}
-              ></InfoDisplayComponent>
+              />
+              <InfoDisplayComponent headline={'Alarm'} icon={'IconPoint'} iconColor={colors.pink} value={'210 cm'} />
             </Box>
           ) : null}
         </Box>

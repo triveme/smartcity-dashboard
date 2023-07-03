@@ -57,14 +57,14 @@ export function Chart(props: TabProps) {
         currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0].currentValue : undefined}
         unit={tab.componentUnit}
         icon={tab.componentIcon}
-      ></RadialChart180>
+      />
     )
   } else if (tab.apexType === 'radial360') {
     return (
       <RadialChart360
         description={tab.componentDescription}
         currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}
-      ></RadialChart360>
+      />
     )
   } else if (tab.apexType === 'slider') {
     return (
@@ -72,7 +72,7 @@ export function Chart(props: TabProps) {
         name={tab.componentName}
         currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}
         unit={tab.componentUnit}
-      ></SliderWithoutKnobs>
+      />
     )
   } else if (tab.apexType === 'sliderKnobs') {
     return (
@@ -80,7 +80,7 @@ export function Chart(props: TabProps) {
         name={tab.componentName}
         currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : tab.componentMaximum - 1}
         maximumValue={tab.componentMaximum}
-      ></SliderWithKnobs>
+      />
     )
   } else {
     return <>Invalider Chart-Typ</>

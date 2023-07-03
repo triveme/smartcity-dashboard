@@ -126,14 +126,14 @@ function SingleTab(props: SingleTabProps) {
             key={'map-component-tab-' + tab.componentDataType}
             mapData={tab.componentData}
             iconType={tab.componentDataType}
-          ></MapComponent>
+          />
         ) : null}
 
         {tab.componentType === 'parking' ? (
           <ParkingComponent
             sliders={tab.componentData && tab.componentData.length > 0 ? tab.componentData : PARKING_DATA_SLIDER}
             showOnMap={showOnMap ? showOnMap : () => {}}
-          ></ParkingComponent>
+          />
         ) : null}
 
         {tab.componentType === 'measurement' ? <MeasurementComponent tab={tab}></MeasurementComponent> : null}
@@ -144,7 +144,7 @@ function SingleTab(props: SingleTabProps) {
           <InterestingPois
             key={'interesting-poi-tab-' + tab.componentDataType}
             infos={tab.componentData ? tab.componentData : POI_DATA}
-          ></InterestingPois>
+          />
         ) : null}
 
         {tab.componentType === 'utilization' ? (
@@ -153,7 +153,7 @@ function SingleTab(props: SingleTabProps) {
             currentValue={
               tab.componentData && tab.componentData[0] ? Number(tab.componentData[0].currentUtilization) : 0
             }
-          ></Utilization>
+          />
         ) : null}
       </Box>
     )

@@ -142,7 +142,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                       sx={{ height: { xs: 80, md: 120 }, position: 'relative' }}
                       image={info.image && info.image !== 'none' ? info.image : ''}
                       title={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
-                    ></CardMedia>
+                    />
                     {info.creator && <CopyrightElement creator={info.creator} />}
                     <CardContent
                       sx={{
