@@ -15,25 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-import { Box, Typography } from '@mui/material';
-import { Suspense } from 'react';
-import Skeleton from 'react-loading-skeleton';
-import styled from 'styled-components';
-import colors from 'theme/colors';
+import { Box, Typography } from '@mui/material'
+import { Suspense } from 'react'
+import Skeleton from 'react-loading-skeleton'
+import styled from 'styled-components'
+import colors from 'theme/colors'
 
 interface SliderProps {
-  name: string,
-  currentValue: number,
+  name: string
+  currentValue: number
   maximumValue: number
 }
 interface SliderBasicProps {
-  name: string,
-  currentValue: number,
+  name: string
+  currentValue: number
   unit: string
 }
 
 interface SliderBarProps {
-  value: number;
+  value: number
 }
 
 const ProgressComponentWrapper = styled.div`
@@ -42,7 +42,7 @@ const ProgressComponentWrapper = styled.div`
   min-height: 32px; // this is a safari fix
   margin-bottom: 0.3rem;
   align-items: center;
-`;
+`
 
 const Title = styled.p`
   color: ${colors.white};
@@ -54,7 +54,7 @@ const Title = styled.p`
   width: 170px;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
+`
 
 const ProgressWrapper = styled.div`
   position: relative;
@@ -63,7 +63,7 @@ const ProgressWrapper = styled.div`
   margin: 0 1rem;
   display: flex;
   align-items: center;
-`;
+`
 
 const ProgressBar = styled.div`
   background-color: ${colors.attributeColors[1]};
@@ -72,13 +72,13 @@ const ProgressBar = styled.div`
   margin: 1rem 0;
   height: 3px;
   width: 100%;
-`;
+`
 
 const ProgressKnobs = styled.div`
   position: absolute;
   width: 100%;
   display: flex;
-`;
+`
 
 const ProgressKnob = styled.div`
   width: 2rem;
@@ -94,11 +94,11 @@ const ProgressKnob = styled.div`
   &:hover {
     z-index: 10;
   }
-`;
+`
 
 const ProgressKnobHidden = styled(ProgressKnob)`
   visibility: hidden;
-`;
+`
 
 const ProgressStatus = styled(ProgressKnob)<SliderBarProps>`
   background-color: ${colors.attributeColors[0]};
@@ -106,14 +106,14 @@ const ProgressStatus = styled(ProgressKnob)<SliderBarProps>`
   margin-left: -1rem;
   left: ${(props) => `${props.value}%` || '0%'};
   transition: 1s ease;
-`;
+`
 
 const ProgressEnd = styled(ProgressKnob)`
   background-color: ${colors.attributeColors[1]};
   position: absolute;
   right: 0;
   margin-right: -1rem;
-`;
+`
 
 const ProgressDone = styled.div<SliderBarProps>`
   background: ${colors.attributeColors[0]};
@@ -125,7 +125,7 @@ const ProgressDone = styled.div<SliderBarProps>`
   height: 100%;
   width: ${(props) => `${props.value}%` || '0%'};
   transition: 1s ease;
-`;
+`
 
 /**
  * Custom progress bar starting from 0
@@ -133,17 +133,15 @@ const ProgressDone = styled.div<SliderBarProps>`
  * @returns Component that renders single progress bar
  */
 export function SliderWithKnobs(props: SliderProps) {
-  const { name, currentValue, maximumValue } = props;
+  const { name, currentValue, maximumValue } = props
 
-  return(
+  return (
     <ProgressComponentWrapper>
       <Title>{name}</Title>
       <ProgressWrapper>
         {/* This is the horizontal line displaying the progress */}
         <ProgressBar>
-          <ProgressDone
-              value={(1 - currentValue / maximumValue) * 100}
-          ></ProgressDone>
+          <ProgressDone value={(1 - currentValue / maximumValue) * 100}></ProgressDone>
         </ProgressBar>
         {/* Here are the knobs / buttons in the progress bar */}
         <ProgressKnobs>
@@ -157,16 +155,14 @@ export function SliderWithKnobs(props: SliderProps) {
               <span>{maximumValue}</span>
             </ProgressEnd>
             {/* This is the circular knob sliding in the progress bar */}
-            <ProgressStatus
-              value={(1 - currentValue / maximumValue) * 100}
-            >
-              <span>{(maximumValue - currentValue)}</span>
+            <ProgressStatus value={(1 - currentValue / maximumValue) * 100}>
+              <span>{maximumValue - currentValue}</span>
             </ProgressStatus>
           </Suspense>
         </ProgressKnobs>
       </ProgressWrapper>
     </ProgressComponentWrapper>
-  );
+  )
 }
 
 /**
@@ -175,41 +171,32 @@ export function SliderWithKnobs(props: SliderProps) {
  * @returns Component that renders single progress bar
  */
 export function SliderWithoutKnobs(props: SliderBasicProps) {
-  const { name, currentValue, unit } = props;
+  const { name, currentValue, unit } = props
 
-  return(
-    <Box
-      display="flex"
-      flexDirection="row"
-      width="100%"
-    >
-      <Box
-        width="100%"
-        flexBasis="90%"
-      >
+  return (
+    <Box display='flex' flexDirection='row' width='100%'>
+      <Box width='100%' flexBasis='90%'>
         <ProgressComponentWrapper>
           <Title>{name}</Title>
           <ProgressWrapper>
             {/* This is the horizontal line displaying the progress */}
             <ProgressBar>
-              <ProgressDone
-                  value={currentValue}
-              ></ProgressDone>
+              <ProgressDone value={currentValue}></ProgressDone>
             </ProgressBar>
           </ProgressWrapper>
         </ProgressComponentWrapper>
       </Box>
       <Box
-        display={"flex"}
-        flexDirection={"row"}
-        flexWrap={"nowrap"}
-        justifyContent="center"
-        alignItems="center"
-        flexBasis="10%"
+        display={'flex'}
+        flexDirection={'row'}
+        flexWrap={'nowrap'}
+        justifyContent='center'
+        alignItems='center'
+        flexBasis='10%'
       >
         <Typography color={colors.white}>{currentValue}</Typography>
         <Typography color={colors.white}>&nbsp;{unit}</Typography>
       </Box>
     </Box>
-  );
+  )
 }
