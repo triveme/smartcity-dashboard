@@ -128,7 +128,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
                   dashboard={dashboard}
                 />
               }
-            ></Route>
+            />
           ))}
           <Route
             path='*'
@@ -142,7 +142,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
                 <p>Es können keine Dashboards abgerufen werden.</p>
               )
             }
-          ></Route>
+          />
         </Routes>
       </Box>
     </Box>

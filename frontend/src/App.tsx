@@ -55,7 +55,7 @@ function App() {
                         }}
                       />
                     }
-                  ></Route>
+                  />
                   <Route
                     path='*'
                     element={
@@ -66,7 +66,7 @@ function App() {
                         setEditMode={handleSetEditMode}
                       />
                     }
-                  ></Route>
+                  />
                 </Routes>
               </BrowserRouter>
             </ArchitectureContextProvider>

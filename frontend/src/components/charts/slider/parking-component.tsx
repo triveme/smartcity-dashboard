@@ -56,7 +56,7 @@ export function ParkingComponent(props: ParkingComponentProps) {
           info={selectedParkingspace!}
           handleBackClick={handleParkingspaceClickClose}
           handleShowOnMapClick={handleShowOnMapClick}
-        ></ParkingspaceDetails>
+        />
       ) : (
         <Box width='100%' display={'flex'} flexDirection={'column'} padding={'10px'}>
           <SliderHeader />
@@ -64,11 +64,7 @@ export function ParkingComponent(props: ParkingComponentProps) {
             {sliders.map((obj, index) => {
               return (
                 <Box key={'SliderWrapper-Box-' + obj.name} display={'flex'} flexDirection={'row'}>
-                  <SliderWithKnobs
-                    name={obj.name}
-                    currentValue={obj.currentlyUsed}
-                    maximumValue={obj.maxValue}
-                  ></SliderWithKnobs>
+                  <SliderWithKnobs name={obj.name} currentValue={obj.currentlyUsed} maximumValue={obj.maxValue} />
                   <Box paddingLeft={'5px'} paddingBottom={'6px'} margin='auto'>
                     <IconButton onClick={() => handleParkingspaceClickOpen(obj, index)}>
                       <DashboardIcon icon='IconArrowNarrowRight' color={colors.grey} />

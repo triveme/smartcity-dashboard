@@ -105,7 +105,7 @@ export function LoginPage(props: LoginPageProps) {
           lg: 'none',
           xl: 'block',
         }}
-      ></Box>
+      />
       <Paper
         style={{
           minWidth: 360,

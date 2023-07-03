@@ -48,7 +48,7 @@ export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
               src={info.image && info.image !== 'none' ? info.image : ''}
               alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
               style={{ borderRadius: '5px', width: '100%', minWidth: '110px' }}
-            ></img>
+            />
             {info.creator && <CopyrightElement creator={info.creator} />}
           </Box>
           {/* Infobox */}
@@ -93,10 +93,7 @@ export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
         <Box sx={{ px: 1 }}>
           <Stack direction={{ md: 'column', lg: 'row' }} spacing={2}>
             <BackButton onClick={handleBackClick} text={'ZURÜCK'}></BackButton>
-            <DisplayOnMapButton
-              onClick={() => handleDisplayOnMapClick(markerId, lat, lng)}
-              text={''}
-            ></DisplayOnMapButton>
+            <DisplayOnMapButton onClick={() => handleDisplayOnMapClick(markerId, lat, lng)} text={''} />
           </Stack>
         </Box>
       </Box>
