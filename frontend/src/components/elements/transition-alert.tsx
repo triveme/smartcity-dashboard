@@ -1,49 +1,49 @@
-import * as React from "react";
-import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
-import Collapse from "@mui/material/Collapse";
-import CloseIcon from "@mui/icons-material/Close";
+import * as React from 'react'
+import Alert from '@mui/material/Alert'
+import IconButton from '@mui/material/IconButton'
+import Collapse from '@mui/material/Collapse'
+import CloseIcon from '@mui/icons-material/Close'
 
-import colors from "theme/colors";
-import { useStateContext } from "providers/state-provider";
+import colors from 'theme/colors'
+import { useStateContext } from 'providers/state-provider'
 
 type TransitionAlertProps = {
-  alertText: String;
-  info?: Boolean;
-};
+  alertText: String
+  info?: Boolean
+}
 
 export function TransitionAlert(props: TransitionAlertProps) {
-  const { alertText, info } = props;
-  const [open, setOpen] = React.useState(true);
-  const { stateContext } = useStateContext();
+  const { alertText, info } = props
+  const [open, setOpen] = React.useState(true)
+  const { stateContext } = useStateContext()
 
-  const infoText: String = "Daten werden geladen.";
+  const infoText: String = 'Daten werden geladen.'
 
   return (
     <Collapse
       in={open}
       sx={{
-        width: "80%",
-        position: "absolute",
-        top: "50%",
-        left: "50%",
+        width: '80%',
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
         transform: `translate(-50%, -50%)`,
       }}
     >
       <Alert
-        className="alert"
-        severity={info ? "info" : "warning"}
-        variant="outlined"
+        className='alert'
+        severity={info ? 'info' : 'warning'}
+        variant='outlined'
         action={
           <IconButton
-            aria-label="close"
-            color="inherit"
-            size="small"
+            aria-label='close'
+            color='inherit'
+            size='small'
             onClick={() => {
-              setOpen(false);
+              setOpen(false)
             }}
           >
-            <CloseIcon fontSize="inherit" />
+            <CloseIcon fontSize='inherit' />
           </IconButton>
         }
         sx={{
@@ -51,12 +51,8 @@ export function TransitionAlert(props: TransitionAlertProps) {
           backgroundColor: colors.panelBackground,
         }}
       >
-        {info
-          ? infoText
-          : stateContext.authToken
-          ? alertText
-          : "Es konnten keine Daten geladen werden"}
+        {info ? infoText : stateContext.authToken ? alertText : 'Es konnten keine Daten geladen werden'}
       </Alert>
     </Collapse>
-  );
+  )
 }

@@ -1,28 +1,23 @@
-import { Box, Typography } from "@mui/material";
-import ContactPicture from "assets/KontaktAlexanderSuessemilch.png";
-import borderRadius from "theme/border-radius";
-import colors from "theme/colors";
+import { Box, Typography } from '@mui/material'
+import ContactPicture from 'assets/KontaktAlexanderSuessemilch.png'
+import borderRadius from 'theme/border-radius'
+import colors from 'theme/colors'
 
 type ContactProps = {
-  name: string;
-};
+  name: string
+}
 
 export function Contact(props: ContactProps) {
-  const { name } = props;
+  const { name } = props
 
   return (
     <div>
-      <img
-        src={ContactPicture}
-        width={"100%"}
-        alt="Contact"
-        style={{ borderRadius: borderRadius.componentRadius }}
-      />
+      <img src={ContactPicture} width={'100%'} alt='Contact' style={{ borderRadius: borderRadius.componentRadius }} />
 
-      <Typography variant="h3" marginTop={2} marginBottom={1}>
+      <Typography variant='h3' marginTop={2} marginBottom={1}>
         {name}
       </Typography>
-      <Box sx={{ fontSize: "12px", lineHeight: 2, color: colors.textDark }}>
+      <Box sx={{ fontSize: '12px', lineHeight: 2, color: colors.textDark }}>
         EDAG Engineering GmbH <br />
         <table style={{ borderSpacing: 0 }}>
           <tbody>
@@ -33,10 +28,7 @@ export function Contact(props: ContactProps) {
             <tr>
               <td>Email:</td>
               <td>
-                <a
-                  href="mailto:Alexander.suessemilch@edag.com"
-                  style={{ color: colors.iconColor }}
-                >
+                <a href='mailto:Alexander.suessemilch@edag.com' style={{ color: colors.iconColor }}>
                   Alexander.suessemilch@edag.com
                 </a>
               </td>
@@ -45,16 +37,16 @@ export function Contact(props: ContactProps) {
               <td>LinkedIn:</td>
               <td>
                 <a
-                  style={{ lineBreak: "anywhere", color: colors.iconColor }}
-                  href="https://www.linkedin.com/in/asuessemilch/"
+                  style={{ lineBreak: 'anywhere', color: colors.iconColor }}
+                  href='https://www.linkedin.com/in/asuessemilch/'
                 >
                   www.linkedin.com/in/asuessemilch/
-                </a>{" "}
+                </a>{' '}
               </td>
             </tr>
           </tbody>
         </table>
       </Box>
     </div>
-  );
+  )
 }
