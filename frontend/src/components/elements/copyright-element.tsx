@@ -1,32 +1,32 @@
-import Typography from "@mui/material/Typography";
-import colors from "theme/colors";
+import Typography from '@mui/material/Typography'
+import colors from 'theme/colors'
 
 type CopyrightProps = {
-  creator: string;
+  creator: string
 }
 
 export function CopyrightElement(props: CopyrightProps) {
-  const { creator } = props;
+  const { creator } = props
 
-  return(
-    <div style={{display: "flex"}}>
+  return (
+    <div style={{ display: 'flex' }}>
       <Typography
         sx={{
-          position: "relative",
-          mt: "-17px",
+          position: 'relative',
+          mt: '-17px',
           py: 0.4,
           pl: 0.5,
           background: colors.poiImageCopyrightBackground,
-          width: "0px",
+          width: '0px',
           flexGrow: 1,
-          fontSize: "0.5rem"
+          fontSize: '0.5rem',
         }}
-        variant="body2"
-        component="div"
+        variant='body2'
+        component='div'
         noWrap
       >
         &copy;: {creator}
       </Typography>
     </div>
-  );
+  )
 }

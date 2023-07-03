@@ -1,30 +1,30 @@
-import L from 'leaflet';
-import { MapContainer, TileLayer } from "react-leaflet";
-import 'leaflet/dist/leaflet.css';
-import './map-control.css';
-import { MapData } from "models/data-types";
-import icon from '../../assets/images/marker/map-pin.png';
-import iconEbike from '../../assets/images/marker/pin-ebike.png';
-import iconEcar from '../../assets/images/marker/pin-ecar.png';
-import iconParking from '../../assets/images/marker/pin-parking.png';
-import iconPoi from '../../assets/images/marker/pin-poi.png';
-import iconSwimming from '../../assets/images/marker/pin-swimming.png';
-import iconWater from '../../assets/images/marker/pin-water.png';
-import iconZooActive from '../../assets/images/marker/pin-zoo-active.png';
-import { MapMoveToMarker } from './map-move-to-marker';
+import L from 'leaflet'
+import { MapContainer, TileLayer } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import './map-control.css'
+import { MapData } from 'models/data-types'
+import icon from '../../assets/images/marker/map-pin.png'
+import iconEbike from '../../assets/images/marker/pin-ebike.png'
+import iconEcar from '../../assets/images/marker/pin-ecar.png'
+import iconParking from '../../assets/images/marker/pin-parking.png'
+import iconPoi from '../../assets/images/marker/pin-poi.png'
+import iconSwimming from '../../assets/images/marker/pin-swimming.png'
+import iconWater from '../../assets/images/marker/pin-water.png'
+import iconZooActive from '../../assets/images/marker/pin-zoo-active.png'
+import { MapMoveToMarker } from './map-move-to-marker'
 
 type MapComponentProps = {
-  iconType: string;
-  mapData: MapData[];
-  markerToDisplay? : (string | number)[];
+  iconType: string
+  mapData: MapData[]
+  markerToDisplay?: (string | number)[]
 }
 
 export function MapComponent(props: MapComponentProps) {
-  const { iconType, mapData, markerToDisplay } = props;
-  
+  const { iconType, mapData, markerToDisplay } = props
+
   const defaultLocation = {
     latitude: 50.57455669751585,
-    longitude: 9.706126750761428
+    longitude: 9.706126750761428,
   }
 
   // const bounds = new LatLngBounds([
@@ -34,22 +34,22 @@ export function MapComponent(props: MapComponentProps) {
 
   const IconChooser = () => {
     switch (iconType) {
-      case "bikes":
-        return iconEbike;
-      case "cars":
-        return iconEcar;
-      case "parking":
-        return iconParking;
-      case "pois":
-        return iconPoi;
-      case "swimming":
-        return iconSwimming;
-      case "water":
-        return iconWater;
-      case "zoo":
-        return iconZooActive;
+      case 'bikes':
+        return iconEbike
+      case 'cars':
+        return iconEcar
+      case 'parking':
+        return iconParking
+      case 'pois':
+        return iconPoi
+      case 'swimming':
+        return iconSwimming
+      case 'water':
+        return iconWater
+      case 'zoo':
+        return iconZooActive
       default:
-        return icon;
+        return icon
     }
   }
 
@@ -60,13 +60,17 @@ export function MapComponent(props: MapComponentProps) {
     shadowAnchor: [35, 60],
     popupAnchor: [2, -40],
     iconUrl: IconChooser(),
-  });
+  })
 
   return (
     <MapContainer
-      key={"MapContainer-"}
-      style={{height: "100%", width: "100%"}}
-      center={mapData[0] ? [mapData[0].location.latitude, mapData[0].location.longitude] : [defaultLocation.latitude, defaultLocation.longitude]}
+      key={'MapContainer-'}
+      style={{ height: '100%', width: '100%' }}
+      center={
+        mapData[0]
+          ? [mapData[0].location.latitude, mapData[0].location.longitude]
+          : [defaultLocation.latitude, defaultLocation.longitude]
+      }
       // maxBounds={bounds}
       zoom={14}
       minZoom={10}
@@ -78,14 +82,14 @@ export function MapComponent(props: MapComponentProps) {
     >
       <MapMoveToMarker
         defaultIcon={DefaultIcon}
-        iconType={iconType} 
+        iconType={iconType}
         markerData={mapData}
         markerToDisplay={markerToDisplay}
       />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
       />
     </MapContainer>
-  );
+  )
 }

@@ -1,59 +1,59 @@
-import { useState } from "react";
+import { useState } from 'react'
 
-import MuiLoadingButton from "@mui/lab/LoadingButton";
-import Typography from "@mui/material/Typography";
+import MuiLoadingButton from '@mui/lab/LoadingButton'
+import Typography from '@mui/material/Typography'
 
-import { useStateContext } from "../../providers/state-provider";
-import { snackActions } from "../../utils/snackbar-utils";
+import { useStateContext } from '../../providers/state-provider'
+import { snackActions } from '../../utils/snackbar-utils'
 
 export function LoadingButton(props: any) {
-  const { stateContext, setStateContext } = useStateContext();
-  const [loading, setLoading] = useState(false);
-  const { queryFun, queryCompleteFun, queryText, queryColor, style, type, size, fullWidth } = props;
+  const { stateContext, setStateContext } = useStateContext()
+  const [loading, setLoading] = useState(false)
+  const { queryFun, queryCompleteFun, queryText, queryColor, style, type, size, fullWidth } = props
 
   const handleQueryComplete = (res: any) => {
     if (queryCompleteFun) {
-      queryCompleteFun(res);
-      return;
+      queryCompleteFun(res)
+      return
     }
     setStateContext({
       ...stateContext,
       queryTrigger: stateContext.queryTrigger + 1,
-    });
-  };
+    })
+  }
 
   const handleQueryFun = (e: any) => {
-    setLoading(true);
+    setLoading(true)
     queryFun(e)
       .then((res: any) => {
-        setLoading(false);
-        handleQueryComplete(res);
+        setLoading(false)
+        handleQueryComplete(res)
       })
       .catch((err: any) => {
-        setLoading(false);
+        setLoading(false)
         if (err.response) {
-          snackActions.error(err.response.data.message);
-          console.error(err.response.data.message);
-          return;
+          snackActions.error(err.response.data.message)
+          console.error(err.response.data.message)
+          return
         }
-        snackActions.error(err.toString());
-      });
-  };
+        snackActions.error(err.toString())
+      })
+  }
 
   return (
     <MuiLoadingButton
       loading={loading}
       onClick={handleQueryFun}
       sx={style ? style : null}
-      type={type ? type : "button"}
-      size={size ? size : "medium"}
+      type={type ? type : 'button'}
+      size={size ? size : 'medium'}
       fullWidth={fullWidth ? fullWidth : false}
-      variant="contained"
-      color={queryColor ? queryColor : "primary"}
+      variant='contained'
+      color={queryColor ? queryColor : 'primary'}
     >
-      <Typography variant="button" component="div">
+      <Typography variant='button' component='div'>
         {queryText}
       </Typography>
     </MuiLoadingButton>
-  );
+  )
 }

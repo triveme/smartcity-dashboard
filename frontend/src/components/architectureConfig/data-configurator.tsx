@@ -1,87 +1,89 @@
-import { useEffect, useState } from "react";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Autocomplete from "@mui/material/Autocomplete";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
+import { useEffect, useState } from 'react'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Autocomplete from '@mui/material/Autocomplete'
+import Paper from '@mui/material/Paper'
+import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
+import Button from '@mui/material/Button'
+import Divider from '@mui/material/Divider'
 
-import { ColorDialog } from "components/architectureConfig/color-dialog";
-import { PanelComponent } from "components/panel";
-import { SmallField } from "components/elements/text-fields";
-import colors from "theme/colors";
-import { DIALOG_TITLES } from "constants/text";
-import { DateConfigRequestType, getAttributeForSource, getCollections, getSensorsForSource, getSourcesForCollection } from "clients/data-config-client";
+import { ColorDialog } from 'components/architectureConfig/color-dialog'
+import { PanelComponent } from 'components/panel'
+import { SmallField } from 'components/elements/text-fields'
+import colors from 'theme/colors'
+import { DIALOG_TITLES } from 'constants/text'
+import {
+  DateConfigRequestType,
+  getAttributeForSource,
+  getCollections,
+  getSensorsForSource,
+  getSourcesForCollection,
+} from 'clients/data-config-client'
 
 type DataConfiguratorProps = {
-  currentValueIndex?: number;
-  currentTabIndex: number;
-  tempPanel: PanelComponent;
-  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void;
-};
+  currentValueIndex?: number
+  currentTabIndex: number
+  tempPanel: PanelComponent
+  setNewTabValue: (newTabValue: Array<{ key: string; tabValue: any }>) => void
+}
 
 export function DataConfigurator(props: DataConfiguratorProps) {
-  const { currentValueIndex, currentTabIndex, tempPanel, setNewTabValue } =
-    props;
-  const currentTab = tempPanel.tabs[currentTabIndex];
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
-  const [colorIndex, setColorIndex] = useState(0);
-  const aggrMode = currentTab && currentTab.aggrMode ? currentTab.aggrMode : "single";
+  const { currentValueIndex, currentTabIndex, tempPanel, setNewTabValue } = props
+  const currentTab = tempPanel.tabs[currentTabIndex]
+  const [colorPickerOpen, setColorPickerOpen] = useState(false)
+  const [colorIndex, setColorIndex] = useState(0)
+  const aggrMode = currentTab && currentTab.aggrMode ? currentTab.aggrMode : 'single'
 
   const handleColorPickerClickOpen = (index: number) => {
-    setColorIndex(index);
-    setColorPickerOpen(true);
-  };
+    setColorIndex(index)
+    setColorPickerOpen(true)
+  }
 
   const handleColorPickerClose = () => {
-    setColorPickerOpen(false);
-  };
-  
+    setColorPickerOpen(false)
+  }
+
   //Autocompletion dropdown
-  const [openCollection, setOpenCollection] = useState(false);
-  const [optionsCollection, setOptionsCollection] = useState<readonly string[]>([]);
-  const loadingCollection = openCollection && optionsCollection.length === 0;
+  const [openCollection, setOpenCollection] = useState(false)
+  const [optionsCollection, setOptionsCollection] = useState<readonly string[]>([])
+  const loadingCollection = openCollection && optionsCollection.length === 0
 
-  const [openSource, setOpenSource] = useState(false);
-  const [optionsSources, setOptionsSource] = useState<readonly string[]>([]);
-  const loadingSource = openSource && optionsSources.length === 0;
+  const [openSource, setOpenSource] = useState(false)
+  const [optionsSources, setOptionsSource] = useState<readonly string[]>([])
+  const loadingSource = openSource && optionsSources.length === 0
 
-  const [openAttribute, setOpenAttribute] = useState(false);
-  const [optionsAttributes, setOptionsAttribute] = useState<readonly string[]>([]);
-  const loadingAttribute = openAttribute && optionsAttributes.length === 0;
+  const [openAttribute, setOpenAttribute] = useState(false)
+  const [optionsAttributes, setOptionsAttribute] = useState<readonly string[]>([])
+  const loadingAttribute = openAttribute && optionsAttributes.length === 0
 
-  const [openGroupingAttribute, setOpenGroupingAttribute] = useState(false);
-  const [optionsGroupingAttributes, setOptionsGroupingAttribute] = useState<readonly string[]>([]);
-  const loadingGroupingAttribute = openGroupingAttribute && optionsGroupingAttributes.length === 0;
-  
-  const [openFilterAttribute, setOpenFilterAttribute] = useState(false);
-  const [optionsFilterAttributes, setOptionsFilterAttribute] = useState<readonly string[]>([]);
-  const loadingFilterAttribute = openFilterAttribute && optionsFilterAttributes.length === 0;
+  const [openGroupingAttribute, setOpenGroupingAttribute] = useState(false)
+  const [optionsGroupingAttributes, setOptionsGroupingAttribute] = useState<readonly string[]>([])
+  const loadingGroupingAttribute = openGroupingAttribute && optionsGroupingAttributes.length === 0
 
-  const [optionsSensors, setOptionsSensors] = useState<readonly string[]>([]);
+  const [openFilterAttribute, setOpenFilterAttribute] = useState(false)
+  const [optionsFilterAttributes, setOptionsFilterAttribute] = useState<readonly string[]>([])
+  const loadingFilterAttribute = openFilterAttribute && optionsFilterAttributes.length === 0
 
+  const [optionsSensors, setOptionsSensors] = useState<readonly string[]>([])
 
   const requestCollections = () => {
-    getCollections()
-    .then((collectionData) => {
-      if(collectionData && collectionData !== null) {
-        setOptionsCollection([...collectionData]);
-        setOptionsSource([]);
-        setOptionsAttribute([]);
+    getCollections().then((collectionData) => {
+      if (collectionData && collectionData !== null) {
+        setOptionsCollection([...collectionData])
+        setOptionsSource([])
+        setOptionsAttribute([])
       }
     })
   }
 
   const requestSources = () => {
-    let collection = currentTab.fiwareService ? currentTab.fiwareService : "";
-    if (collection && collection !== "") {
-      getSourcesForCollection(collection)
-      .then((sourcesData) => {
-        if(sourcesData && sourcesData !== null) {
-          setOptionsSource([...sourcesData]);
-          setOptionsAttribute([]);
+    let collection = currentTab.fiwareService ? currentTab.fiwareService : ''
+    if (collection && collection !== '') {
+      getSourcesForCollection(collection).then((sourcesData) => {
+        if (sourcesData && sourcesData !== null) {
+          setOptionsSource([...sourcesData])
+          setOptionsAttribute([])
         }
       })
     }
@@ -89,22 +91,20 @@ export function DataConfigurator(props: DataConfiguratorProps) {
 
   const requestAttributes = () => {
     let reqArgs: DateConfigRequestType = {
-      collection: currentTab.fiwareService ? currentTab.fiwareService : "",
-      source: currentTab.entityId?.length === 1 ? currentTab.entityId[0] : "",
-    };
-    if (reqArgs.collection !== "" && reqArgs.source !== "") {
-      if(currentTab.filterProperty === "keine") {
-        getAttributeForSource(reqArgs)
-        .then((attributesData) => {
+      collection: currentTab.fiwareService ? currentTab.fiwareService : '',
+      source: currentTab.entityId?.length === 1 ? currentTab.entityId[0] : '',
+    }
+    if (reqArgs.collection !== '' && reqArgs.source !== '') {
+      if (currentTab.filterProperty === 'keine') {
+        getAttributeForSource(reqArgs).then((attributesData) => {
           if (attributesData && attributesData !== null) {
-            setOptionsAttribute([...attributesData]);
+            setOptionsAttribute([...attributesData])
           }
         })
       } else {
-        getSensorsForSource(reqArgs)
-        .then((sensorData) => {
+        getSensorsForSource(reqArgs).then((sensorData) => {
           if (sensorData && sensorData !== null) {
-            setOptionsAttribute([...sensorData]);
+            setOptionsAttribute([...sensorData])
             setOptionsSensors([...sensorData])
           }
         })
@@ -114,20 +114,19 @@ export function DataConfigurator(props: DataConfiguratorProps) {
 
   const requestGroupingAttributes = () => {
     let reqArgs: DateConfigRequestType = {
-      collection: currentTab.fiwareService ? currentTab.fiwareService : "",
-      source: currentTab.entityId?.length === 1 ? currentTab.entityId[0] : "",
-    };
-    if (reqArgs.collection !== "" && reqArgs.source !== "") {
-      getAttributeForSource(reqArgs)
-      .then((attributesData) => {
-        if(attributesData && attributesData !== null) {
-          let temp: string[] = ["keine"];
-          temp = temp.concat(...attributesData);
-          console.log(temp);
-          setOptionsGroupingAttribute([...temp]);
-          console.log("FilterAttribute");
-          console.log(attributesData);
-          setOptionsFilterAttribute([...attributesData]);
+      collection: currentTab.fiwareService ? currentTab.fiwareService : '',
+      source: currentTab.entityId?.length === 1 ? currentTab.entityId[0] : '',
+    }
+    if (reqArgs.collection !== '' && reqArgs.source !== '') {
+      getAttributeForSource(reqArgs).then((attributesData) => {
+        if (attributesData && attributesData !== null) {
+          let temp: string[] = ['keine']
+          temp = temp.concat(...attributesData)
+          console.log(temp)
+          setOptionsGroupingAttribute([...temp])
+          console.log('FilterAttribute')
+          console.log(attributesData)
+          setOptionsFilterAttribute([...attributesData])
         }
       })
     }
@@ -135,87 +134,87 @@ export function DataConfigurator(props: DataConfiguratorProps) {
 
   useEffect(() => {
     if (!loadingCollection) {
-      return undefined;
+      return undefined
     }
 
-    (async () => {
-      await requestCollections();
-    })();
-  }, [loadingCollection]);
+    ;(async () => {
+      await requestCollections()
+    })()
+  }, [loadingCollection])
 
   useEffect(() => {
     if (!openCollection) {
-      setOptionsCollection([]);
+      setOptionsCollection([])
     }
-  }, [openCollection]);
+  }, [openCollection])
 
   useEffect(() => {
     if (!loadingSource) {
-      return undefined;
+      return undefined
     }
 
-    (async () => {
-      await requestSources();
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingSource]);
+    ;(async () => {
+      await requestSources()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingSource])
 
   useEffect(() => {
     if (!openSource) {
-      setOptionsSource([]);
+      setOptionsSource([])
     }
-  }, [openSource]);
+  }, [openSource])
 
   useEffect(() => {
     if (!loadingAttribute) {
-      return undefined;
+      return undefined
     }
 
-    (async () => {
-      await requestAttributes();
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAttribute]);
+    ;(async () => {
+      await requestAttributes()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingAttribute])
 
   useEffect(() => {
     if (!openAttribute) {
-      setOptionsAttribute([]);
+      setOptionsAttribute([])
     }
-  }, [openAttribute]);
+  }, [openAttribute])
 
   useEffect(() => {
     if (!loadingGroupingAttribute) {
-      return undefined;
+      return undefined
     }
 
-    (async () => {
-      await requestGroupingAttributes();
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingGroupingAttribute]);
+    ;(async () => {
+      await requestGroupingAttributes()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingGroupingAttribute])
 
   useEffect(() => {
     if (!openGroupingAttribute) {
-      setOptionsGroupingAttribute([]);
+      setOptionsGroupingAttribute([])
     }
-  }, [openGroupingAttribute]);
+  }, [openGroupingAttribute])
 
   useEffect(() => {
     if (!loadingFilterAttribute) {
-      return undefined;
+      return undefined
     }
 
-    (async () => {
-      await requestGroupingAttributes();
-    })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingFilterAttribute]);
+    ;(async () => {
+      await requestGroupingAttributes()
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingFilterAttribute])
 
   useEffect(() => {
     if (!openFilterAttribute) {
-      setOptionsFilterAttribute([]);
+      setOptionsFilterAttribute([])
     }
-  }, [openFilterAttribute]);
+  }, [openFilterAttribute])
 
   return (
     <>
@@ -226,14 +225,14 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         currentTab={currentTab}
         attrColorIndex={colorIndex}
       />
-      <Divider style={{ marginTop: "8px" }} />
+      <Divider style={{ marginTop: '8px' }} />
       <Typography
         marginTop={1}
         marginLeft={1}
         marginBottom={1}
         sx={{ fontSize: 14 }}
         color={colors.text}
-        fontWeight="bold"
+        fontWeight='bold'
       >
         {DIALOG_TITLES.DATA_CONFIG}
       </Typography>
@@ -242,26 +241,26 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         loading={loadingCollection}
         open={openCollection}
         onOpen={() => {
-          setOpenCollection(true);
+          setOpenCollection(true)
         }}
         onClose={() => {
-          setOpenCollection(false);
+          setOpenCollection(false)
         }}
-        value={currentTab.fiwareService !== "" ? currentTab.fiwareService : null}
+        value={currentTab.fiwareService !== '' ? currentTab.fiwareService : null}
         isOptionEqualToValue={(option, value) => option === value}
         onChange={(e, value) => {
-          setNewTabValue([{ key: "fiwareService", tabValue: value }])
-          requestSources();
+          setNewTabValue([{ key: 'fiwareService', tabValue: value }])
+          requestSources()
         }}
         renderInput={(params) => (
           <TextField
             {...params}
-            key={params.id + "-eIds-text-field"}
-            size="small"
-            margin="dense"
-            variant="outlined"
+            key={params.id + '-eIds-text-field'}
+            size='small'
+            margin='dense'
+            variant='outlined'
             style={{ backgroundColor: colors.backgroundColor }}
-            label="Collections"
+            label='Collections'
           />
         )}
       />
@@ -270,15 +269,15 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         loading={loadingSource}
         open={openSource}
         onOpen={() => {
-          setOpenSource(true);
+          setOpenSource(true)
         }}
         onClose={() => {
-          setOpenSource(false);
+          setOpenSource(false)
         }}
         // value={selectedSource !== "" ? selectedSource : null}
         value={currentTab.entityId?.length === 1 ? currentTab.entityId[0] : null}
         onChange={async (e, value) => {
-          setNewTabValue([{ key: "entityId", tabValue: value }])
+          setNewTabValue([{ key: 'entityId', tabValue: value }])
           // requestAttributes();
           // requestGroupingAttributes();
         }}
@@ -286,56 +285,51 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         renderInput={(params) => (
           <TextField
             {...params}
-            key={params.id + "-eIds-text-field"}
-            size="small"
-            margin="dense"
-            variant="outlined"
+            key={params.id + '-eIds-text-field'}
+            size='small'
+            margin='dense'
+            variant='outlined'
             style={{ backgroundColor: colors.backgroundColor }}
-            label="Source"
+            label='Source'
           />
         )}
       />
-      <Box    
-        display="flex"
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
-      >
+      <Box display='flex' flexDirection='row' justifyContent='center' alignItems='center'>
         <Autocomplete
           fullWidth
           options={optionsGroupingAttributes}
           loading={loadingGroupingAttribute}
           open={openGroupingAttribute}
           onOpen={() => {
-            setOpenGroupingAttribute(true);
+            setOpenGroupingAttribute(true)
           }}
           onClose={() => {
-            setOpenGroupingAttribute(false);
+            setOpenGroupingAttribute(false)
           }}
           // value={selectedSource !== "" ? selectedSource : null}
-          value={currentTab.filterProperty ? currentTab.filterProperty : "keine"}
+          value={currentTab.filterProperty ? currentTab.filterProperty : 'keine'}
           // defaultValue={"keine"}
           onChange={async (e, value) => {
             setNewTabValue([
-              { key: "filterValues", tabValue: [] },
-              { key: "attributeKeys", tabValue: [] },
-              { key: "filterProperty", tabValue: value }
+              { key: 'filterValues', tabValue: [] },
+              { key: 'attributeKeys', tabValue: [] },
+              { key: 'filterProperty', tabValue: value },
             ])
           }}
           isOptionEqualToValue={(option, value) => option === value}
           renderInput={(params) => (
             <TextField
               {...params}
-              key={params.id + "-groupingIds-text-field"}
-              size="small"
-              margin="dense"
-              variant="outlined"
+              key={params.id + '-groupingIds-text-field'}
+              size='small'
+              margin='dense'
+              variant='outlined'
               style={{ backgroundColor: colors.backgroundColor }}
-              label="Grouping Attribute"
+              label='Grouping Attribute'
             />
           )}
         />
-        {currentTab.filterProperty !== "keine" || !currentTab.filterProperty ? (
+        {currentTab.filterProperty !== 'keine' || !currentTab.filterProperty ? (
           <Autocomplete
             fullWidth
             freeSolo
@@ -343,95 +337,94 @@ export function DataConfigurator(props: DataConfiguratorProps) {
             loading={loadingFilterAttribute}
             open={openFilterAttribute}
             onOpen={() => {
-              setOpenFilterAttribute(true);
+              setOpenFilterAttribute(true)
             }}
             onClose={() => {
-              setOpenFilterAttribute(false);
+              setOpenFilterAttribute(false)
             }}
-            value={currentTab.filterAttribute ? currentTab.filterAttribute : ""}
+            value={currentTab.filterAttribute ? currentTab.filterAttribute : ''}
             onChange={(e, v) => {
-              setNewTabValue([{ key: "filterAttribute", tabValue: v }])
+              setNewTabValue([{ key: 'filterAttribute', tabValue: v }])
             }}
             // isOptionEqualToValue={(option, value) => option === value}
             renderInput={(params) => (
               <TextField
                 {...params}
-                key={params.id + "-filterIds-text-field"}
-                size="small"
-                margin="dense"
-                variant="outlined"
+                key={params.id + '-filterIds-text-field'}
+                size='small'
+                margin='dense'
+                variant='outlined'
                 style={{ backgroundColor: colors.backgroundColor }}
-                label="Filter Attribute"
+                label='Filter Attribute'
               />
             )}
           />
-        ) : null
-      }
+        ) : null}
       </Box>
-      {currentValueIndex === undefined || aggrMode !== "single" ? (
+      {currentValueIndex === undefined || aggrMode !== 'single' ? (
         <>
-          {currentTab.filterProperty === "keine" ? (
+          {currentTab.filterProperty === 'keine' ? (
             <Autocomplete
               multiple
-              id="valueKeys"
+              id='valueKeys'
               options={optionsAttributes}
               loading={loadingAttribute}
               open={openAttribute}
               onOpen={() => {
-                setOpenAttribute(true);
+                setOpenAttribute(true)
               }}
               onClose={() => {
-                setOpenAttribute(false);
+                setOpenAttribute(false)
               }}
               value={currentTab.attribute ? currentTab.attribute?.keys : []}
               onChange={(e, v) => {
-                setNewTabValue([{ key: "attributeKeys", tabValue: v }])
+                setNewTabValue([{ key: 'attributeKeys', tabValue: v }])
               }}
               freeSolo
               isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  key={params.id + "-valKeys-text-field"}
-                  size="small"
-                  margin="dense"
-                  variant="outlined"
+                  key={params.id + '-valKeys-text-field'}
+                  size='small'
+                  margin='dense'
+                  variant='outlined'
                   style={{ backgroundColor: colors.backgroundColor }}
-                  label="Multiple Attributes"
+                  label='Multiple Attributes'
                 />
               )}
             />
           ) : (
             <Autocomplete
               multiple
-              id="valueKeys"
+              id='valueKeys'
               options={optionsSensors}
               loading={loadingAttribute}
               open={openAttribute}
               onOpen={() => {
-                setOpenAttribute(true);
+                setOpenAttribute(true)
               }}
               onClose={() => {
-                setOpenAttribute(false);
+                setOpenAttribute(false)
               }}
               value={currentTab.filterValues ? currentTab.filterValues : []}
               onChange={(e, v) => {
                 setNewTabValue([
-                  { key: "filterValues", tabValue: v },
-                  { key: "attributeKeys", tabValue: v }
+                  { key: 'filterValues', tabValue: v },
+                  { key: 'attributeKeys', tabValue: v },
                   // { key: "attributeKeys", tabValue: Array(v.length).fill(selectedFilter) }
-                ]);
+                ])
               }}
               // isOptionEqualToValue={(option, value) => option === value}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  key={params.id + "-valKeys-text-field"}
-                  size="small"
-                  margin="dense"
-                  variant="outlined"
+                  key={params.id + '-valKeys-text-field'}
+                  size='small'
+                  margin='dense'
+                  variant='outlined'
                   style={{ backgroundColor: colors.backgroundColor }}
-                  label="Sensoren"
+                  label='Sensoren'
                 />
               )}
             />
@@ -439,44 +432,40 @@ export function DataConfigurator(props: DataConfiguratorProps) {
           {currentTab.attribute ? (
             <Box margin={0.5} marginTop={0}>
               {currentTab.attribute!.keys.map((key, index) => {
-                let colIndex = index;
+                let colIndex = index
                 if (
                   currentTab.apexMaxAlias &&
-                  currentTab.apexMaxAlias !== "" &&
+                  currentTab.apexMaxAlias !== '' &&
                   currentTab.apexType &&
-                  currentTab.apexType === "donut"
+                  currentTab.apexType === 'donut'
                 ) {
-                  colIndex = index + 1;
+                  colIndex = index + 1
                 }
 
                 return (
                   <Paper
-                    key={index + "-alias-paper"}
+                    key={index + '-alias-paper'}
                     style={{
-                      height: "100%",
+                      height: '100%',
                       padding: 2,
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "center",
-                      alignItems: "center",
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                       backgroundColor: colors.backgroundColor,
                     }}
                     elevation={0}
                   >
-                    <Chip
-                      key={index + "-chip"}
-                      label={key}
-                      style={{ marginRight: 15, marginLeft: 10 }}
-                    />
+                    <Chip key={index + '-chip'} label={key} style={{ marginRight: 15, marginLeft: 10 }} />
                     <SmallField
-                      key={index + "-alias-text-field"}
-                      label="Alias"
-                      type="text"
+                      key={index + '-alias-text-field'}
+                      label='Alias'
+                      type='text'
                       value={currentTab.attribute!.aliases[colIndex]}
                       onChange={(e) =>
                         setNewTabValue([
                           {
-                            key: "attributeAlias",
+                            key: 'attributeAlias',
                             tabValue: {
                               key: currentTab.attribute!.keys[colIndex],
                               alias: e.target.value,
@@ -486,14 +475,14 @@ export function DataConfigurator(props: DataConfiguratorProps) {
                       }
                     />
                     <Button
-                      size="small"
-                      key={index + "-alias-color-button"}
-                      variant="contained"
+                      size='small'
+                      key={index + '-alias-color-button'}
+                      variant='contained'
                       onClick={() => handleColorPickerClickOpen(colIndex)}
                       style={{
                         marginLeft: 15,
                         marginRight: 10,
-                        fontWeight: "bold",
+                        fontWeight: 'bold',
                         backgroundColor:
                           !currentTab.apexOptions ||
                           !currentTab.apexOptions!.colors ||
@@ -506,22 +495,22 @@ export function DataConfigurator(props: DataConfiguratorProps) {
                     </Button>
                   </Paper>
                   // <Divider key={key + "-divider"} />
-                );
+                )
               })}
             </Box>
           ) : null}
         </>
       ) : (
         <Paper
-          key={currentTab.attribute?.keys[currentValueIndex] + "-alias-paper"}
+          key={currentTab.attribute?.keys[currentValueIndex] + '-alias-paper'}
           style={{
-            height: "100%",
-            width: "100%",
+            height: '100%',
+            width: '100%',
             padding: 2,
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center',
             backgroundColor: colors.backgroundColor,
           }}
           elevation={0}
@@ -531,52 +520,51 @@ export function DataConfigurator(props: DataConfiguratorProps) {
             loading={loadingAttribute}
             open={openAttribute}
             onOpen={() => {
-              setOpenAttribute(true);
+              setOpenAttribute(true)
             }}
             onClose={() => {
-              setOpenAttribute(false);
+              setOpenAttribute(false)
             }}
             value={
-              currentTab.attribute &&
-              currentTab.attribute?.keys[currentValueIndex]
+              currentTab.attribute && currentTab.attribute?.keys[currentValueIndex]
                 ? currentTab.attribute?.keys[currentValueIndex]
                 : null
             }
             fullWidth
             onChange={(e, value) => {
               // handleValueAttrChange(value ? value : "");
-              if (currentTab.filterAttribute && currentTab.filterAttribute !== "") {
+              if (currentTab.filterAttribute && currentTab.filterAttribute !== '') {
                 setNewTabValue([
-                  { key: "filterValues", tabValue: [value] },
-                  { key: "attributeKeys", tabValue: [value] }
-                ]);
+                  { key: 'filterValues', tabValue: [value] },
+                  { key: 'attributeKeys', tabValue: [value] },
+                ])
               } else {
-                setNewTabValue([{ key: "attributeKeys", tabValue: [value] }]);
+                setNewTabValue([{ key: 'attributeKeys', tabValue: [value] }])
               }
             }}
             isOptionEqualToValue={(option, value) => option === value}
             renderInput={(params) => (
               <TextField
                 {...params}
-                key={params.id + "-eIds-text-field"}
-                size="small"
-                margin="dense"
-                variant="outlined"
+                key={params.id + '-eIds-text-field'}
+                size='small'
+                margin='dense'
+                variant='outlined'
                 style={{ backgroundColor: colors.backgroundColor }}
-                label="Single Attribute"
+                label='Single Attribute'
                 fullWidth
               />
             )}
           />
           <Button
-            size="small"
-            key={currentTab.attribute?.keys[currentValueIndex] + "-alias-color-button"}
-            variant="contained"
+            size='small'
+            key={currentTab.attribute?.keys[currentValueIndex] + '-alias-color-button'}
+            variant='contained'
             onClick={() => handleColorPickerClickOpen(colorIndex)}
             style={{
               marginLeft: 15,
               marginRight: 10,
-              fontWeight: "bold",
+              fontWeight: 'bold',
               backgroundColor:
                 !currentTab.apexOptions ||
                 !currentTab.apexOptions!.colors ||
@@ -589,7 +577,7 @@ export function DataConfigurator(props: DataConfiguratorProps) {
           </Button>
         </Paper>
       )}
-      <Divider style={{ marginTop: "8px", marginBottom: "8px" }} />
+      <Divider style={{ marginTop: '8px', marginBottom: '8px' }} />
     </>
-  );
+  )
 }
