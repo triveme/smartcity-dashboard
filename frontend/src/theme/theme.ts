@@ -1,12 +1,12 @@
-import { PaletteMode } from "@mui/material";
-import { createTheme } from "@mui/system";
-import borderRadius from "./border-radius";
-import colors from "./colors";
+import { PaletteMode } from '@mui/material'
+import { createTheme } from '@mui/system'
+import borderRadius from './border-radius'
+import colors from './colors'
 
 export const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
     mode,
-    ...(mode === "light"
+    ...(mode === 'light'
       ? {
           // palette values for light mode
         }
@@ -32,7 +32,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         }),
   },
   typography: {
-    fontFamily: ["Lato", "Helvetica", "Arial", "sans-serif"].join(","),
+    fontFamily: ['Lato', 'Helvetica', 'Arial', 'sans-serif'].join(','),
   },
   shape: {
     borderRadius: borderRadius.fragmentRadius,
@@ -41,20 +41,20 @@ export const getDesignTokens = (mode: PaletteMode) => ({
     MuiCssBaseline: {
       styleOverrides: {
         p: {
-          ...(mode === "light" ? {} : { color: colors.textDark }),
-          fontSize: "0.85em",
-          lineHeight: "2.25",
-          marginBottom: "25px",
+          ...(mode === 'light' ? {} : { color: colors.textDark }),
+          fontSize: '0.85em',
+          lineHeight: '2.25',
+          marginBottom: '25px',
         },
-        "& .MuiList-root": {
-          ...(mode === "light"
+        '& .MuiList-root': {
+          ...(mode === 'light'
             ? {}
             : {
                 backgroundColor: colors.backgroundColor,
               }),
         },
-        "& .MuiList-root &$selected": {
-          ...(mode === "light"
+        '& .MuiList-root &$selected': {
+          ...(mode === 'light'
             ? {}
             : {
                 backgroundColor: colors.white,
@@ -65,7 +65,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          ...(mode === "light" ? {} : { background: colors.drawerBackground }),
+          ...(mode === 'light' ? {} : { background: colors.drawerBackground }),
         },
       },
     },
@@ -73,19 +73,19 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       styleOverrides: {
         //DashboardTitle + LoginPage-Title
         h1: {
-          fontSize: "1.5rem",
+          fontSize: '1.5rem',
           fontWeight: 600,
-          marginBottom: "1rem",
+          marginBottom: '1rem',
         },
         //DrawerHeader + WidgetTitle
         h2: {
-          fontSize: "1.25rem",
+          fontSize: '1.25rem',
           fontWeight: 600,
           lineHeight: 1.6,
         },
         //PanelTitle
         h3: {
-          fontSize: "1rem",
+          fontSize: '1rem',
           fontWeight: 700,
           lineHeight: 1.5,
         },
@@ -96,13 +96,13 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       },
     },
   },
-});
+})
 
 const darkTheme = createTheme({
   palette: {
-    mode: "dark",
+    mode: 'dark',
     ...{ primary: colors.edit },
   },
-});
+})
 
-export default darkTheme;
+export default darkTheme

@@ -1,45 +1,47 @@
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box'
 
-import { default as ApexChart } from "react-apexcharts";
-import { ApexOptions } from "apexcharts";
-import colors from "theme/colors";
+import { default as ApexChart } from 'react-apexcharts'
+import { ApexOptions } from 'apexcharts'
+import colors from 'theme/colors'
 
 type ColumnChartProps = {
-  data: number[];
-  timeValue: string[];
-};
+  data: number[]
+  timeValue: string[]
+}
 
 export type WarningChartProps = {
-  data: number[];
-  timeValue: string[];
-  warningValue: number;
-  alarmValue: number;
-  maxValue: number;
-};
+  data: number[]
+  timeValue: string[]
+  warningValue: number
+  alarmValue: number
+  maxValue: number
+}
 
 export function ColumnChart(props: ColumnChartProps) {
-  const { data, timeValue } = props;
+  const { data, timeValue } = props
 
   let lineOptions: ApexOptions = {
-    series: [{
-      data: data
-    }],
+    series: [
+      {
+        data: data,
+      },
+    ],
     chart: {
       type: 'bar',
       toolbar: {
-        show: false
-      }
+        show: false,
+      },
     },
     plotOptions: {
       bar: {
         horizontal: false,
         borderRadius: 4,
-        borderRadiusApplication: "end",
-        columnWidth: "10%"
-      }
+        borderRadiusApplication: 'end',
+        columnWidth: '10%',
+      },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     fill: {
       opacity: 1,
@@ -49,76 +51,71 @@ export function ColumnChart(props: ColumnChartProps) {
       tickAmount: 6,
       axisTicks: {
         show: false,
-        color: colors.chartGrid
+        color: colors.chartGrid,
       },
       labels: {
         style: {
-          colors: colors.chartFont
-        }
-      }
+          colors: colors.chartFont,
+        },
+      },
     },
     yaxis: {
       min: 0,
       max: 100,
       tickAmount: 4,
       axisTicks: {
-        color: colors.chartGrid
+        color: colors.chartGrid,
       },
       labels: {
-        formatter: (value) => { return value + "%"},
+        formatter: (value) => {
+          return value + '%'
+        },
         style: {
-          colors: colors.chartFont
-        }
-      }
+          colors: colors.chartFont,
+        },
+      },
     },
     grid: {
-      borderColor: colors.chartGrid
+      borderColor: colors.chartGrid,
     },
     colors: [colors.chartBar],
-  };
+  }
 
   return (
-    <Box
-      height="100%"
-      width="100%"
-    >
-      <ApexChart
-        series={lineOptions.series}
-        options={lineOptions}
-        type="bar"
-        width={"100%"}
-        height={"80%"}
-      />
+    <Box height='100%' width='100%'>
+      <ApexChart series={lineOptions.series} options={lineOptions} type='bar' width={'100%'} height={'80%'} />
     </Box>
-  );
+  )
 }
 
 export function SingleColumnChart(props: WarningChartProps) {
-  const { data, timeValue, warningValue, alarmValue, maxValue } = props;
+  const { data, timeValue, warningValue, alarmValue, maxValue } = props
 
   let lineOptions: ApexOptions = {
-    series: [{
-      data: data
-    }],
+    series: [
+      {
+        data: data,
+      },
+    ],
     chart: {
       type: 'bar',
       toolbar: {
-        show: false
+        show: false,
       },
       sparkline: {
-        enabled: false
-      }
+        enabled: false,
+      },
     },
     plotOptions: {
       bar: {
         horizontal: false,
         borderRadius: 4,
-        borderRadiusApplication: "end",
-        columnWidth: "10%"
-      }
+        borderRadiusApplication: 'end',
+        columnWidth: '10%',
+      },
     },
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     fill: {
       opacity: 1,
@@ -128,25 +125,27 @@ export function SingleColumnChart(props: WarningChartProps) {
       // tickAmount: 6,
       axisTicks: {
         show: false,
-        color: colors.chartGrid
+        color: colors.chartGrid,
       },
       labels: {
         show: false,
-      }
+      },
     },
     yaxis: {
       min: 0,
       max: maxValue,
       tickAmount: 5,
       axisTicks: {
-        color: colors.chartGrid
+        color: colors.chartGrid,
       },
       labels: {
-        formatter: (value) => { return value + "" },
+        formatter: (value) => {
+          return value + ''
+        },
         style: {
-          colors: colors.chartFont
-        }
-      }
+          colors: colors.chartFont,
+        },
+      },
     },
     annotations: {
       yaxis: [
@@ -154,28 +153,28 @@ export function SingleColumnChart(props: WarningChartProps) {
           y: alarmValue,
           strokeDashArray: 0,
           borderColor: colors.pink,
-          fillColor: "white",
+          fillColor: 'white',
           label: {
             borderColor: colors.pink,
             style: {
-              color: "white",
+              color: 'white',
               background: colors.pink,
             },
-            text: "Alarm",
+            text: 'Alarm',
           },
         },
         {
           y: warningValue,
           strokeDashArray: 0,
           borderColor: colors.petrol,
-          fillColor: "white",
+          fillColor: 'white',
           label: {
             borderColor: colors.petrol,
             style: {
-              color: "white",
+              color: 'white',
               background: colors.petrol,
             },
-            text: "Warnung",
+            text: 'Warnung',
           },
         },
       ],
@@ -188,20 +187,11 @@ export function SingleColumnChart(props: WarningChartProps) {
       // }
     },
     colors: [colors.chartBar],
-  };
+  }
 
   return (
-    <Box
-      height="100%"
-      width="100%"
-    >
-      <ApexChart
-        series={lineOptions.series}
-        options={lineOptions}
-        type="bar"
-        width={"100%"}
-        height={"80%"}
-      />
+    <Box height='100%' width='100%'>
+      <ApexChart series={lineOptions.series} options={lineOptions} type='bar' width={'100%'} height={'80%'} />
     </Box>
-  );
+  )
 }
