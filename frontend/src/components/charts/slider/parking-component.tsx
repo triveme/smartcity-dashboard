@@ -21,8 +21,8 @@ export function ParkingComponent(props: ParkingComponentProps) {
     name: '',
     maxHeight: 0,
     location: {
-      latitude: 51.272065568215524,
-      longitude: 7.200007788461502,
+      type: 'point',
+      coordinates: [51.272065568215524, 7.200007788461502],
     },
     capacity: [],
     currentlyUsed: 0,
@@ -45,7 +45,11 @@ export function ParkingComponent(props: ParkingComponentProps) {
 
   const handleShowOnMapClick = () => {
     if (selectedIndex >= 0 && sliders[selectedIndex].location) {
-      showOnMap(selectedIndex, sliders[selectedIndex].location.latitude, sliders[selectedIndex].location.longitude)
+      showOnMap(
+        selectedIndex,
+        sliders[selectedIndex].location.coordinates[0],
+        sliders[selectedIndex].location.coordinates[1],
+      )
     }
   }
 

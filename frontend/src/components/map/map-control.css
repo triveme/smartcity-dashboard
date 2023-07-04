@@ -1,22 +1,37 @@
-.leaflet-touch .leaflet-bar a:first-child{
-    background-color: #2f3a4e;
-    color: #f0407e;
+.leaflet-touch .leaflet-bar a:first-child {
+  background-color: #2f3a4e;
+  color: #f0407e;
 }
-.leaflet-touch .leaflet-bar a:last-child{
-    background-color: #2f3a4e;
-    color: #f0407e;
+.leaflet-touch .leaflet-bar a:last-child {
+  background-color: #2f3a4e;
+  color: #f0407e;
 }
-.leaflet-touch .leaflet-control-attribution{
-    background-color: #2f3a4e;
-    color: #f0407e;
+.leaflet-touch .leaflet-control-attribution {
+  background-color: #2f3a4e;
+  color: #f0407e;
 }
 .leaflet-layer {
-    filter: grayscale(0.9)brightness(0.9)invert(1);
+  filter: grayscale(0.9) brightness(0.9) invert(1);
 }
 .map-marker-popup .leaflet-popup-tip,
 .map-marker-popup .leaflet-popup-content-wrapper {
-    background: transparent;
+  background: transparent;
 }
 .map-marker-popup .leaflet-popup-content {
-    margin: 0;
+  margin: 0;
+}
+/* CSS for available parking space */
+.available-marker {
+  background-color: rgba(0, 255, 0, 0.5); /* Semi-transparent green */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+}
+
+/* CSS for occupied parking space */
+.occupied-marker {
+  background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
 }
