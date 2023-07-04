@@ -18,9 +18,9 @@ type InterestingPointsDetailsProps = {
 export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
   const { info, handleBackClick, handleDisplayOnMapClick, index } = props
 
-  const markerId = `Marker-${info.location.latitude}-${info.location.longitude}-${index}`
-  const lat = info.location.latitude
-  const lng = info.location.longitude
+  const markerId = `Marker-${info.location.coordinates[0]}-${info.location.coordinates[1]}-${index}`
+  const lat = info.location.coordinates[0]
+  const lng = info.location.coordinates[1]
 
   return (
     <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>

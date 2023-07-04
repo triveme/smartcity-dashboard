@@ -4,7 +4,7 @@ export type ParkingInfo = {
   name: string
   maxHeight: number
   capacity: ParkingCapacity[]
-  location: MarkerPosition
+  location: LocationType
   currentlyUsed: number
   maxValue: number
   type: string
@@ -35,27 +35,50 @@ export type SwimmingInfo = {
   sensors: SliderComponent[]
 }
 
-export type MarkerPosition = {
-  latitude: number
-  longitude: number
-}
-
 export type InterestingPlace = {
   name: string
   types: string[]
   address: string
   image: string
   creator: string
-  location: MarkerPosition
+  location: LocationType
   info: string
 }
 
 export type MapData = {
   name: string
-  location: MarkerPosition
+  location: LocationType
   image?: string
   creator?: string
   address?: string
+  available?: boolean
+  status?: string
+  occupancy?: number
+}
+
+export type ParkingSpot = {
+  id: string
+  type: string
+  address: ParkingSpotAddress
+  availableSpotNumber: number
+  description: string
+  location: LocationType
+  name: string
+  occupancy: number
+  occupiedSpotNumber: number
+  status: string
+  totalSpotNumber: number
+}
+
+export type ParkingSpotAddress = {
+  addressLocality: string
+  postalCode: string
+  streetAddress: string
+}
+
+export type LocationType = {
+  type: string
+  coordinates: number[]
 }
 
 export type MeasurementModel = {

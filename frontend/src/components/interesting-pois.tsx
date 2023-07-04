@@ -34,8 +34,8 @@ const emptyPointOfInterest: InterestingPlace = {
   image: '',
   creator: '',
   location: {
-    longitude: 7.120197671,
-    latitude: 51.1951799443,
+    type: 'point',
+    coordinates: [7.120197671, 51.1951799443],
   },
   info: '',
 }

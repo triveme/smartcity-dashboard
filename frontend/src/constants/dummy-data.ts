@@ -1,5 +1,5 @@
 import { RadialComponent, UtilizationComponent } from 'models/chart-types'
-import { InterestingPlace, MarkerPosition, ParkingInfo, SwimmingInfo } from 'models/data-types'
+import { InterestingPlace, LocationType, ParkingInfo, SwimmingInfo } from 'models/data-types'
 
 export const WEATHER_DATA_RADIAL: RadialComponent[] = [
   {
@@ -49,8 +49,8 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
     name: 'Rathaus Galerie',
     maxHeight: 2.1,
     location: {
-      latitude: 51.26044056122102,
-      longitude: 7.147158001187522,
+      type: 'point',
+      coordinates: [51.26044056122102, 7.147158001187522],
     },
     capacity: [
       {
@@ -74,8 +74,8 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
     name: 'Kleine Klotzbahn',
     maxHeight: 4.0,
     location: {
-      latitude: 51.25851251639441,
-      longitude: 7.144072052992271,
+      type: 'point',
+      coordinates: [51.25851251639441, 7.144072052992271],
     },
     capacity: [
       {
@@ -91,8 +91,8 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
     name: 'Stadthalle',
     maxHeight: 1.9,
     location: {
-      latitude: 51.25327156701705,
-      longitude: 7.142151500396632,
+      type: 'point',
+      coordinates: [51.25327156701705, 7.142151500396632],
     },
     capacity: [
       {
@@ -116,8 +116,8 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
     name: 'Karlsplatz',
     maxHeight: 2.2,
     location: {
-      latitude: 51.26063497274156,
-      longitude: 7.145835432073219,
+      type: 'point',
+      coordinates: [51.26063497274156, 7.145835432073219],
     },
     capacity: [
       {
@@ -145,8 +145,8 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
     name: 'Ohligsmühle',
     maxHeight: 2.4,
     location: {
-      latitude: 51.25500378356171,
-      longitude: 7.143474231311426,
+      type: 'point',
+      coordinates: [51.25500378356171, 7.143474231311426],
     },
     capacity: [
       {
@@ -164,26 +164,26 @@ export const PARKING_DATA_SLIDER: ParkingInfo[] = [
   },
 ]
 
-export const PARKING_LOCATIONS: MarkerPosition[] = [
+export const PARKING_LOCATIONS: LocationType[] = [
   {
-    latitude: 51.26044056122102,
-    longitude: 7.147158001187522,
+    type: 'point',
+    coordinates: [51.26044056122102, 7.147158001187522],
   },
   {
-    latitude: 51.25851251639441,
-    longitude: 7.144072052992271,
+    type: 'point',
+    coordinates: [51.25851251639441, 7.144072052992271],
   },
   {
-    latitude: 51.25327156701705,
-    longitude: 7.142151500396632,
+    type: 'point',
+    coordinates: [51.25327156701705, 7.142151500396632],
   },
   {
-    latitude: 51.26063497274156,
-    longitude: 7.145835432073219,
+    type: 'point',
+    coordinates: [51.26063497274156, 7.145835432073219],
   },
   {
-    latitude: 51.25500378356171,
-    longitude: 7.143474231311426,
+    type: 'point',
+    coordinates: [51.25500378356171, 7.143474231311426],
   },
 ]
 
@@ -290,30 +290,30 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
   },
 ]
 
-export const SWIMMING_LOCATIONS: MarkerPosition[] = [
+export const SWIMMING_LOCATIONS: LocationType[] = [
   {
-    latitude: 51.253229410701024,
-    longitude: 7.1406070945760165,
+    type: 'point',
+    coordinates: [51.253229410701024, 7.1406070945760165],
   },
   {
-    latitude: 51.229909187755794,
-    longitude: 7.140263079583519,
+    type: 'point',
+    coordinates: [51.229909187755794, 7.140263079583519],
   },
   {
-    latitude: 51.2050600730376,
-    longitude: 7.138313738394663,
+    type: 'point',
+    coordinates: [51.2050600730376, 7.138313738394663],
   },
   {
-    latitude: 51.283327908105704,
-    longitude: 7.156590184420973,
+    type: 'point',
+    coordinates: [51.283327908105704, 7.156590184420973],
   },
   {
-    latitude: 51.27337099206417,
-    longitude: 7.248797828598606,
+    type: 'point',
+    coordinates: [51.27337099206417, 7.248797828598606],
   },
   {
-    latitude: 51.292927645420455,
-    longitude: 7.23201099976308,
+    type: 'point',
+    coordinates: [51.292927645420455, 7.23201099976308],
   },
 ]
 
@@ -379,118 +379,104 @@ export const ZOO_UTILIZATION_DATA: UtilizationComponent = {
   ],
 }
 
-export const ZOO_LOCATIONS: MarkerPosition[] = [
+export const ZOO_LOCATIONS: LocationType[] = [
   {
-    latitude: 51.24105292197138,
-    longitude: 7.109721440050628,
+    type: 'point',
+    coordinates: [51.24105292197138, 7.109721440050628],
   },
 ]
 
-export const CAR_LOCATIONS: MarkerPosition[] = [
+export const CAR_LOCATIONS: LocationType[] = [
   {
-    longitude: 7.0688478208,
-    latitude: 51.2320437349,
+    type: 'point',
+    coordinates: [51.2320437349, 7.2553009251],
   },
   {
-    longitude: 7.2553009251,
-    latitude: 51.3092673431,
+    type: 'point',
+    coordinates: [51.3092673431, 7.2069645674],
   },
   {
-    longitude: 7.2069645674,
-    latitude: 51.2723886985,
+    type: 'point',
+    coordinates: [51.2723886985, 7.1880699845],
   },
   {
-    longitude: 7.1880699845,
-    latitude: 51.2772299704,
+    type: 'point',
+    coordinates: [51.2772299704, 7.1513606544],
   },
   {
-    longitude: 7.1513606544,
-    latitude: 51.2571366092,
+    type: 'point',
+    coordinates: [51.2571366092, 7.1901737402],
   },
   {
-    longitude: 7.1901737402,
-    latitude: 51.2677692739,
+    type: 'point',
+    coordinates: [51.2677692739, 7.1926831184],
   },
   {
-    longitude: 7.1926831184,
-    latitude: 51.2668603616,
+    type: 'point',
+    coordinates: [51.2668603616, 7.1289047633],
   },
   {
-    longitude: 7.1289047633,
-    latitude: 51.2057701826,
+    type: 'point',
+    coordinates: [51.2057701826, 7.2470899245],
   },
   {
-    longitude: 7.2470899245,
-    latitude: 51.275785308,
+    type: 'point',
+    coordinates: [51.275785308, 7.1515791946],
+  },
+]
+export const BIKE_LOCATIONS: LocationType[] = [
+  {
+    type: 'point',
+    coordinates: [51.2793837029, 7.0690246678],
   },
   {
-    longitude: 7.1515791946,
-    latitude: 51.2586663721,
+    type: 'point',
+    coordinates: [51.2319117551, 7.1321197254],
+  },
+  {
+    type: 'point',
+    coordinates: [51.2065613835, 7.1061097587],
+  },
+  {
+    type: 'point',
+    coordinates: [51.2578063703, 7.151395057],
+  },
+  {
+    type: 'point',
+    coordinates: [51.2322929999, 7.2495310325],
+  },
+  {
+    type: 'point',
+    coordinates: [51.3114059836, 7.1876553212],
+  },
+  {
+    type: 'point',
+    coordinates: [51.2450084008, 7.1121208231],
   },
 ]
 
-export const BIKE_LOCATIONS: MarkerPosition[] = [
+export const POI_LOCATIONS: LocationType[] = [
   {
-    longitude: 7.2239740729,
-    latitude: 51.2793837029,
+    type: 'point',
+    coordinates: [51.1951799443, 7.1660282304],
   },
   {
-    longitude: 7.0690246678,
-    latitude: 51.2319117551,
+    type: 'point',
+    coordinates: [51.2627176015, 7.1598161469],
   },
   {
-    longitude: 7.1321197254,
-    latitude: 51.2065613835,
+    type: 'point',
+    coordinates: [51.2825168533, 7.1842586409],
   },
   {
-    longitude: 7.1061097587,
-    latitude: 51.2578063703,
+    type: 'point',
+    coordinates: [51.2592450201, 7.1063508018],
   },
   {
-    longitude: 7.151395057,
-    latitude: 51.2322929999,
-  },
-  {
-    longitude: 7.2495310325,
-    latitude: 51.3114059836,
-  },
-  {
-    longitude: 7.1876553212,
-    latitude: 51.2450084008,
-  },
-  {
-    longitude: 7.1121208231,
-    latitude: 51.1913497542,
+    type: 'point',
+    coordinates: [51.2579281092, 7.1250042768],
   },
 ]
-
-export const POI_LOCATIONS: MarkerPosition[] = [
-  {
-    longitude: 7.120197671,
-    latitude: 51.1951799443,
-  },
-  {
-    longitude: 7.1660282304,
-    latitude: 51.2627176015,
-  },
-  {
-    longitude: 7.1598161469,
-    latitude: 51.2825168533,
-  },
-  {
-    longitude: 7.1842586409,
-    latitude: 51.2592450201,
-  },
-  {
-    longitude: 7.1063508018,
-    latitude: 51.2579281092,
-  },
-  {
-    longitude: 7.1250042768,
-    latitude: 51.2501771092,
-  },
-]
-
 export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Kaltenbachtal',
@@ -499,8 +485,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-001.jpg',
     creator: 'Artist 1',
     location: {
-      longitude: 7.120197671,
-      latitude: 51.1951799443,
+      type: 'point',
+      coordinates: [51.1951799443, 7.120197671],
     },
     info: '',
   },
@@ -511,8 +497,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-006.jpg',
     creator: 'Artist 1',
     location: {
-      longitude: 7.1660282304,
-      latitude: 51.2627176015,
+      type: 'point',
+      coordinates: [51.2627176015, 7.1660282304],
     },
     info: '',
   },
@@ -523,8 +509,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'none',
     creator: '',
     location: {
-      longitude: 7.1598161469,
-      latitude: 51.2825168533,
+      type: 'point',
+      coordinates: [51.2825168533, 7.1598161469],
     },
     info: '',
   },
@@ -535,8 +521,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-005.jpg',
     creator: 'Artist 2',
     location: {
-      longitude: 7.1842586409,
-      latitude: 51.2592450201,
+      type: 'point',
+      coordinates: [51.2592450201, 7.1842586409],
     },
     info: '',
   },
@@ -547,8 +533,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'none',
     creator: '',
     location: {
-      longitude: 7.1063508018,
-      latitude: 51.2579281092,
+      type: 'point',
+      coordinates: [51.2579281092, 7.1063508018],
     },
     info: '',
   },
@@ -559,8 +545,8 @@ export const POI_DATA: InterestingPlace[] = [
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-004.jpg',
     creator: 'Artist 3',
     location: {
-      longitude: 7.1250042768,
-      latitude: 51.2501771092,
+      type: 'point',
+      coordinates: [51.2501771092, 7.1250042768],
     },
     info: '',
   },
