@@ -128,12 +128,15 @@ function runSchedule() {
             );
           }
         } else if (queryItem.queryConfig.componentType == "map") {
-          var itemData = await loadData(
-            queryItem.queryConfig.componentDataType
-          ).catch((err) => console.error(err));
-
-          processListData(queryItem, itemData);
-          // processMapData(queryItem, itemData);
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processMapData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
         } else if (queryItem.queryConfig.componentType == "list") {
           var itemData = await loadData(
             queryItem.queryConfig.componentDataType
@@ -161,7 +164,10 @@ function runSchedule() {
           );
           processParkingData(queryItem, parkingData);
         } else {
-          console.log("Unknown tab type encountered in schedule.controller.js: " + queryItem.queryConfig.componentType);
+          console.log(
+            "Unknown tab type encountered in schedule.controller.js: "
+          );
+          console.log(queryItem);
         }
       });
     });
