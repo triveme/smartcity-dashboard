@@ -58,13 +58,17 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
     if (markerData !== undefined && markerData.length > 0) {
       //Center on single element
       if (markerData.length === 1) {
-        map.flyTo({ lat: markerData[0].location.latitude, lng: markerData[0].location.longitude }, zoomLevel, {
-          duration: 1,
-        })
+        map.flyTo(
+          { lat: markerData[0].location.coordinates[0], lng: markerData[0].location.coordinates[1] },
+          zoomLevel,
+          {
+            duration: 1,
+          },
+        )
         //Position and zoom map to display all markers
       } else {
         markerData.forEach((marker) => {
-          markerBounds.extend([marker.location.latitude, marker.location.longitude])
+          markerBounds.extend([marker.location.coordinates[0], marker.location.coordinates[1]])
         })
         map.fitBounds(markerBounds)
       }
@@ -113,19 +117,19 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
     <>
       {markerData !== undefined && markerData.length > 0
         ? markerData.map((info, index) => {
-            let markerId = `Marker-${info.location.latitude}-${info.location.longitude}-${index}`
+            let markerId = `Marker-${info.location.coordinates[0]}-${info.location.coordinates[1]}-${index}`
             return (
               <Marker
                 eventHandlers={{
                   click: () => {
-                    handleMarkerClick(markerId, info.location.latitude, info.location.longitude, index)
+                    handleMarkerClick(markerId, info.location.coordinates[0], info.location.coordinates[1], index)
                   },
                 }}
                 ref={(ref) => (markerRefs.current[index] = ref!)}
                 key={markerId}
                 position={{
-                  lat: info.location.latitude,
-                  lng: info.location.longitude,
+                  lat: info.location.coordinates[0],
+                  lng: info.location.coordinates[1],
                 }}
                 icon={selectedMarker === markerId ? icon : defaultIcon}
               >

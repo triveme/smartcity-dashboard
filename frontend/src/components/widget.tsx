@@ -189,8 +189,8 @@ export function Widget(props: WidgetProps) {
       let tempElement: MapData = {
         name: element.name,
         location: {
-          latitude: element.location.latitude,
-          longitude: element.location.longitude,
+          type: 'point',
+          coordinates: [element.location.latitude, element.location.longitude],
         },
       }
       mapData.push(tempElement)

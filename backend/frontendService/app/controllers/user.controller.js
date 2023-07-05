@@ -436,6 +436,12 @@ function getQdToAddAndUpdate(dashboard) {
                       ? tab.apexMaxAlias
                       : undefined,
                     intervalInMinutes: getIntervalFromTimeframe(tab.timeframe),
+                    componentType: tab.componentType
+                      ? tab.componentType
+                      : undefined,
+                    componentDataType: tab.componentDataType
+                      ? tab.componentDataType
+                      : undefined,
                   },
                 };
                 if (tab.queryData) {

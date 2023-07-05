@@ -68,7 +68,7 @@ export function MapComponent(props: MapComponentProps) {
       style={{ height: '100%', width: '100%' }}
       center={
         mapData[0]
-          ? [mapData[0].location.latitude, mapData[0].location.longitude]
+          ? [mapData[0].location.coordinates[0], mapData[0].location.coordinates[1]]
           : [defaultLocation.latitude, defaultLocation.longitude]
       }
       // maxBounds={bounds}
