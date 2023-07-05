@@ -1,5 +1,5 @@
 import { RadialComponent, UtilizationComponent } from 'models/chart-types'
-import { InterestingPlace, LocationType, ParkingInfo, ParkingSpot, SwimmingInfo } from 'models/data-types'
+import { InterestingPlace, LocationType, ParkingInfo, SwimmingInfo } from 'models/data-types'
 
 export const WEATHER_DATA_RADIAL: RadialComponent[] = [
   {
