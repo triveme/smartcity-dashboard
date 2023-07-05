@@ -23,15 +23,15 @@
 /* CSS for available parking space */
 .available-marker {
   background-color: rgba(0, 255, 0, 0.5); /* Semi-transparent green */
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  border-radius: 0%;
+  width: 150px !important;
+  height: 150px !important;
 }
 
 /* CSS for occupied parking space */
 .occupied-marker {
   background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  border-radius: 0%;
+  width: 60px !important;
+  height: 20px !important;
 }

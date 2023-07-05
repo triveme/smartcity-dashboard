@@ -49,7 +49,6 @@ export function InterestingPois(props: InterestingPoisProps) {
   const [pointOfInterestDetailsOpen, setPointOfInterestDetailsOpen] = useState(false)
   const [selectedPointOfInterest, setSelectedPointOfInterest] = useState<InterestingPlace>(emptyPointOfInterest)
   const [selectedPointOfInterestIndex, setSelectedPointOfInterestIndex] = useState(-1)
-  const [marker, setMarker] = useState(['marker', 0, 0])
 
   const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(poiData)
   const [uniqueInfoTypes, setUniqueInfoTypes] = useState<string[]>([])
@@ -139,7 +138,6 @@ export function InterestingPois(props: InterestingPoisProps) {
 
   const handleDisplayOnMapClick = (markerId: string, lat: number, lng: number) => {
     setListVisibility(false)
-    setMarker([markerId, lat, lng])
     if (!matchesDesktop) {
       handleResize()
     }
@@ -365,7 +363,7 @@ export function InterestingPois(props: InterestingPoisProps) {
           }}
           onResize={handleResize}
         >
-          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos} markerToDisplay={marker} />
+          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos} />
         </div>
       </Box>
     </Box>
