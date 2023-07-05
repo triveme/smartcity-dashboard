@@ -5,6 +5,7 @@ import {
   getCurrentDataFromContextBroker,
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
+  getCurrentMapDataFromContextBroker,
 } from "./quantumLeap.controller.js";
 import {
   processHistoricalData,
@@ -128,7 +129,7 @@ function runSchedule() {
             );
           }
         } else if (queryItem.queryConfig.componentType == "map") {
-          getCurrentDataFromContextBroker(
+          getCurrentMapDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               processMapData(queryItem, queriedData);

@@ -235,6 +235,7 @@ function buildParkingSpot(queryParkingSpot) {
     return parkingSpot;
   } catch (error) {
     console.error("ERROR building ParkingSpot Data: " + error);
+    console.error(queryParkingSpot);
   }
 }
 

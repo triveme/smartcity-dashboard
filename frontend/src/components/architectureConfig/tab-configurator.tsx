@@ -15,7 +15,7 @@ import { SmallField } from 'components/elements/text-fields'
 import colors from 'theme/colors'
 import { ComponentConfigurator } from './component-configurator'
 
-const re = new RegExp('^[A-Za-z0-9:_-]+$')
+const re = new RegExp('^[A-Za-z0-9:_,-]+$')
 function isValidDataConfigString(str: string) {
   return re.test(str)
 }

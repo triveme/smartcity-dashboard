@@ -34,7 +34,6 @@ export type TabComponent = {
   apexMaxColor?: string
   componentType: string
   componentData: Array<any>
-  // componentData: [];
   componentDataType: string
   componentName: string
   componentDescription: string
