@@ -74,8 +74,6 @@ export function Widget(props: WidgetProps) {
   const threeDotsMenuOpen = Boolean(threeDotsMenuAnchorEl)
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const [marker, setMarker] = useState(['marker', 0, 0])
-
   const handlePanelCreationClickOpen = () => {
     setPanelCreationOpen(true)
   }
@@ -151,10 +149,6 @@ export function Widget(props: WidgetProps) {
     } else {
       setActiveTabIcon('mapSplit')
     }
-
-    //Move to map marker
-    let markerId = `Marker-${lat}-${lng}-${index}`
-    setMarker([markerId, lat, lng])
   }
 
   const getIconSymbol = () => {
@@ -342,7 +336,6 @@ export function Widget(props: WidgetProps) {
                       : []
                   }
                   iconType={getIconSymbol()}
-                  markerToDisplay={marker}
                 />
               </Box>
             </Grid>

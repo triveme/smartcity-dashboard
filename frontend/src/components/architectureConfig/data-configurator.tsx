@@ -76,7 +76,7 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         value={currentTab.fiwareService ? currentTab.fiwareService : ''}
         onChange={(e) => setNewTabValue([{ key: 'fiwareService', tabValue: e.target.value }])}
       />
-      {aggrMode !== 'single' ? (
+      {aggrMode !== 'single' || currentTab.componentType === 'map' ? (
         <Autocomplete
           multiple
           id='entityIds'

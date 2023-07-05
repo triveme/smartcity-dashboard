@@ -31,6 +31,31 @@ function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
     });
 }
 
+function getCurrentMapDataFromContextBroker(
+  queryConfig,
+  callback,
+  errCallback
+) {
+  cbClient
+    .get(`v2/entities?id=${queryConfig.entityId}`, {
+      params: {
+        attrs: queryConfig.attrs,
+      },
+      headers: {
+        "Fiware-Service": queryConfig.fiwareService,
+        "Fiware-ServicePath": process.env.FIWARE_SERVICE_PATH,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then(function (response) {
+      callback(response.data);
+    })
+    .catch(function (error) {
+      let errString = handleErrorMessage(error);
+      errCallback(errString);
+    });
+}
+
 function getMultiCurrentDataFromContextBroker(
   queryConfig,
   callback,
@@ -115,6 +140,7 @@ function handleErrorMessage(error) {
 
 export {
   getCurrentDataFromContextBroker,
+  getCurrentMapDataFromContextBroker,
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
 };
