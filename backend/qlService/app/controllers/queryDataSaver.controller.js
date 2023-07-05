@@ -167,13 +167,30 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
 }
 
 function processMapData(queryItem, queryData) {
-  console.log(`processing map data for queryItem ${queryItem._id}`);
-  // Liste Long/Lat
   /**
-   * 
+   * PARKING SPOT
     {
-        longitude: 7.1250042768,
-        latitude: 51.2501771092
+      "id": "urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31",
+      "type": "ParkingSpot",
+      "address": {
+          "addressLocality": "Kiel",
+          "postalCode": "24118",
+          "streetAddress": "Schauenburgerstraße 116"
+      },
+      "availableSpotNumber": 0,
+      "description": "Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3",
+      "location": {
+          "type": "Point",
+          "coordinates": [
+              10.120266576,
+              54.334269361
+          ]
+      },
+      "name": "KITZ 08",
+      "occupancy": 1,
+      "occupiedSpotNumber": 1,
+      "status": "occupied",
+      "totalSpotNumber": 1
     }
    */
   var dataEntries = [];
@@ -183,19 +200,42 @@ function processMapData(queryItem, queryData) {
     queryData !== undefined &&
     queryData !== null
   ) {
-    queryData.forEach((dataItem) => {
-      var dataEntry = {
-        longitude: dataItem.geometry.coordinates[0],
-        latitude: dataItem.geometry.coordinates[1],
-      };
-
-      dataEntries.push(dataEntry);
-    });
+    if (queryData.length > 1) {
+      queryData.forEach((dataItem) => {
+        // dataEntries.push(dataItem);
+        dataEntries.push(buildParkingSpot(dataItem));
+      });
+    } else {
+      // dataEntries.push(queryData);
+      dataEntries.push(buildParkingSpot(queryData));
+    }
   }
-
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
+}
+
+function buildParkingSpot(queryParkingSpot) {
+  try {
+    let parkingSpot = {
+      id: queryParkingSpot["id"],
+      type: queryParkingSpot["type"],
+      address: queryParkingSpot["address"].value,
+      availableSpotNumber: queryParkingSpot["availableSpotNumber"].value,
+      description: queryParkingSpot["description"].value,
+      location: {
+        type: queryParkingSpot["location"].value["type"],
+        coordinates: queryParkingSpot["location"].value["coordinates"],
+      },
+      occupancy: queryParkingSpot["occupancy"].value,
+      occupiedSpotNumber: queryParkingSpot["occupiedSpotNumber"].value,
+      status: queryParkingSpot["status"].value,
+      totalSpotNumber: queryParkingSpot["totalSpotNumber"].value,
+    };
+    return parkingSpot;
+  } catch (error) {
+    console.error("ERROR building ParkingSpot Data: " + error);
+  }
 }
 
 function processListData(queryItem, queryData) {
@@ -215,7 +255,11 @@ function processListData(queryItem, queryData) {
   var dataType = queryItem.queryConfig.componentDataType;
   var dataEntries = [];
 
-  if (queryData !== undefined && queryData !== null && Object.keys(queryData).length > 0) {
+  if (
+    queryData !== undefined &&
+    queryData !== null &&
+    Object.keys(queryData).length > 0
+  ) {
     queryData.forEach((dataItem) => {
       var dataEntry = {
         location: {
@@ -286,7 +330,6 @@ function processUtilizationData(queryItem, queryData1, queryData2) {
   updateQuerydata(queryItem);
 }
 
-
 function processParkingData(queryItem, queryData) {
   /**
    * {
@@ -295,7 +338,11 @@ function processParkingData(queryItem, queryData) {
    */
   var dataEntries = [];
 
-  if (queryData !== undefined && queryData !== null && Object.keys(queryData).length > 0) {
+  if (
+    queryData !== undefined &&
+    queryData !== null &&
+    Object.keys(queryData).length > 0
+  ) {
     queryData.forEach((dataItem) => {
       try {
         var dataEntry = {};
@@ -304,13 +351,13 @@ function processParkingData(queryItem, queryData) {
         dataEntry.maxHeight = dataItem.zulaessigeEinfahrtshoeheInMeterDisplay;
         dataEntry.maxValue = dataItem.kapazitaet;
         dataEntry.currentlyUsed = dataItem.kapazitaetFrei;
-        dataEntry.location = {        
+        dataEntry.location = {
           longitude: dataItem.adresse.laengengrad,
           latitude: dataItem.adresse.breitengrad,
-        }
+        };
         dataEntry.capacity = dataItem.nutzer;
         dataEntry.type = dataItem.typDisplay;
-        dataEntries.push(dataEntry);        
+        dataEntries.push(dataEntry);
       } catch (error) {
         console.error(`Error handling parking item ${dataItem}: ${error}`);
       }
