@@ -1,21 +1,21 @@
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import { InterestingPlace } from 'models/data-types'
-import { BackButton, DisplayOnMapButton } from './elements/buttons'
+import { BackButton, DisplayOnMapButton } from '../elements/buttons'
 // import parkingImage from '../assets/images/parking_image.png'
-import { HeadlineGray, HeadlineYellow } from './elements/font-types'
-import { CopyrightElement } from './elements/copyright-element'
+import { HeadlineGray, HeadlineYellow } from '../elements/font-types'
+import { CopyrightElement } from '../elements/copyright-element'
 import colors from 'theme/colors'
 import { Stack } from '@mui/material'
 
-type InterestingPointsDetailsProps = {
+type ListViewDetailsProps = {
   info: InterestingPlace
   handleBackClick: () => void
   handleDisplayOnMapClick: (markerId: string, lat: number, lng: number) => void
   index: number
 }
 
-export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
+export function ListViewDetails(props: ListViewDetailsProps) {
   const { info, handleBackClick, handleDisplayOnMapClick, index } = props
 
   const markerId = `Marker-${info.location.coordinates[0]}-${info.location.coordinates[1]}-${index}`
@@ -80,7 +80,7 @@ export function InterestingPointsDetails(props: InterestingPointsDetailsProps) {
                 </Typography>
               </Box>
               <Box display={'flex'} flexDirection={'row'} alignContent={'center'} alignItems={'center'}>
-                <HeadlineGray text={info.address}></HeadlineGray>
+                <HeadlineGray text={info.address.streetAddress}></HeadlineGray>
               </Box>
             </Box>
           </Box>

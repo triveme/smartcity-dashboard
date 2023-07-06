@@ -38,7 +38,7 @@ export type SwimmingInfo = {
 export type InterestingPlace = {
   name: string
   types: string[]
-  address: string
+  address: AddressModel
   image: string
   creator: string
   location: LocationType
@@ -50,7 +50,7 @@ export type MapData = {
   location: LocationType
   image?: string
   creator?: string
-  address?: string
+  address?: AddressModel
   available?: boolean
   status?: string
   occupancy?: number
@@ -70,7 +70,7 @@ export type ParkingSpot = {
   totalSpotNumber: number
 }
 
-export type ParkingSpotAddress = {
+export type AddressModel = {
   addressLocality: string
   postalCode: string
   streetAddress: string
