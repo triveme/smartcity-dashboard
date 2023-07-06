@@ -135,8 +135,7 @@ export function DashboardsPage(props: DashboardsPageProps) {
             element={
               currentArchitectureContext.length > 0 ? (
                 <Navigate to={'/' + currentArchitectureContext[0].url} />
-              ) : // <Route render={() => <Redirect to={"/"+currentArchitectureContext[0].url} />} />
-              architectureContext.isLoading ? (
+              ) : architectureContext.isLoading ? (
                 <Spinner />
               ) : (
                 <p>Es können keine Dashboards abgerufen werden.</p>

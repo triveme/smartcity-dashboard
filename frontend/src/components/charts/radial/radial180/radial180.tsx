@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography'
 
 import { DashboardIcon } from 'components/architectureConfig/dashboard-icons'
 import colors from 'theme/colors'
+import { GetRadial180ApexOptions } from './radial180ApexOptions'
 
 type RadialChartProps = {
   chartName: string
@@ -30,59 +31,11 @@ export function RadialChart180(props: RadialChartProps) {
     currentValue ? (currentValue * 100) / maxValue : (getRandomValueBetweenMinAndMax() * 100) / maxValue,
   )
 
-  let radialOption: ApexOptions = {
-    chart: {
-      height: 150,
-      type: 'radialBar',
-      offsetY: -20,
-      sparkline: {
-        enabled: true,
-      },
-    },
-    series: [seriesData],
-    colors: [colors.chartBar],
-    plotOptions: {
-      radialBar: {
-        startAngle: -90,
-        endAngle: 90,
-        hollow: {
-          size: '80%',
-        },
-        track: {
-          background: colors.chartGrid,
-          startAngle: -90,
-          endAngle: 90,
-          strokeWidth: '50%',
-        },
-        dataLabels: {
-          name: {
-            show: false,
-          },
-          value: {
-            fontSize: '30px',
-            color: colors.white,
-            show: true,
-            offsetY: -3,
-            formatter: function (val) {
-              try {
-                return ((val * maxValue) / 100).toFixed(0) + ' '
-              } catch (error) {
-                console.warn('PROBLEM: Processing value: ' + val)
-                return val + ''
-              }
-            },
-          },
-        },
-      },
-    },
-    stroke: {
-      lineCap: 'round',
-    },
-  }
+  let radialOption: ApexOptions = GetRadial180ApexOptions(seriesData, maxValue)
 
   return (
     <Box height='100%' display='flex' flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
-      <Box display='flex' flexDirection={'row'} justifyContent='center' flexGrow={0} flexBasis='15%'>
+      <Box display='flex' flexDirection={'row'} justifyContent='center' flexGrow={0} flexBasis='20%'>
         <DashboardIcon icon={icon} color={colors.iconColor}></DashboardIcon>
         <Typography style={{ color: colors.white }}>{chartName}</Typography>
       </Box>
@@ -93,9 +46,8 @@ export function RadialChart180(props: RadialChartProps) {
         display='flex'
         flexDirection={'row'}
         justifyContent={'space-between'}
-        alignItems={'stretch'}
+        alignItems={'start'}
         width='190px'
-        // height="100%"
         flexBasis='15%'
       >
         <Typography>{minValue}</Typography>
