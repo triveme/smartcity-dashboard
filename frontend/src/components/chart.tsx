@@ -5,7 +5,7 @@ import { DonutChart } from 'components/charts/donut'
 import { BarChart } from 'components/charts/bar'
 import { LineChart } from 'components/charts/line'
 import { RadialChart180 } from './charts/radial/radial180/radial180'
-import { RadialChart360 } from './charts/radial/radial360'
+import { RadialChart360 } from './charts/radial/radial360/radial360'
 import { SliderWithKnobs, SliderWithoutKnobs } from './charts/slider/slider'
 
 type TabProps = {
