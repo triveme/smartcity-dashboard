@@ -31,7 +31,7 @@ services:
       - .env
   ql-service:
     container_name: ql-service-${PROJECT_NAME}
-    image: smartcity-frontend-service-dev
+    image: smartcity-ql-service-dev
     build:
       context: .
       dockerfile: ./backend/qlService/DockerfileDev
