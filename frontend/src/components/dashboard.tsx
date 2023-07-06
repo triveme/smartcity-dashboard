@@ -37,12 +37,12 @@ type DashboardProps = {
 
 export function Dashboard(props: DashboardProps) {
   const { dashboard, editMode, loggedIn, dashboardSaved } = props
-
+  const { architectureContext, setArchitectureContext } = useArchitectureContext()
+  const { stateContext } = useStateContext()
   const theme = useTheme()
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 
-  const { architectureContext, setArchitectureContext } = useArchitectureContext()
-  const { stateContext } = useStateContext()
+  const [widgetCreationOpen, setWidgetCreationOpen] = useState(false)
 
   useEffect(() => {
     if (dashboard && dashboard._id) {
@@ -85,8 +85,6 @@ export function Dashboard(props: DashboardProps) {
     }
     // eslint-disable-next-line
   }, [dashboard.url, dashboardSaved, stateContext.authToken, loggedIn])
-
-  const [widgetCreationOpen, setWidgetCreationOpen] = useState(false)
 
   const handleWidgetCreationClickOpen = () => {
     setWidgetCreationOpen(true)

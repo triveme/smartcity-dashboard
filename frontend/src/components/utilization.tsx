@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 
 import { UtilizationComponent } from 'models/chart-types'
 import { ColumnChart } from './charts/column'
-import { RadialChart360 } from './charts/radial/radial360'
+import { RadialChart360 } from './charts/radial/radial360/radial360'
 import { IntervalButton } from './elements/buttons'
 
 type UtilizationProps = {
