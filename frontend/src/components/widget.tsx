@@ -308,7 +308,7 @@ export function Widget(props: WidgetProps) {
       >
         {/* LIST */}
         {displayStatus === DisplayStatus.LIST ? (
-          <Grid container spacing={2}>
+          <Grid container spacing={2} height={'100%'}>
             {widget.panels &&
               widget.panels.map((panel: PanelComponent, index: number) => (
                 <Panel
