@@ -481,7 +481,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Kaltenbachtal',
     types: ['Grünanlagen und Wälder'],
-    address: 'Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: '',
+      postalCode: '',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-001.jpg',
     creator: 'Artist 1',
     location: {
@@ -493,7 +497,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Bismarckturm',
     types: ['Gebäude und Bauwerke', 'Sehenswürdigkeiten'],
-    address: 'Reichsallee 3, 42285 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Reichsallee 3',
+      postalCode: '42285',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-006.jpg',
     creator: 'Artist 1',
     location: {
@@ -505,7 +513,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Zentrum Röttgen',
     types: ['Jugend- und Kindertreffs'],
-    address: 'Röttgen 102a, 42109 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Röttgen 102a',
+      postalCode: '42109',
+    },
     image: 'none',
     creator: '',
     location: {
@@ -517,7 +529,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Inline-/ Skateboardanlage Barmen',
     types: ['Freizeitsportangebote'],
-    address: 'Schluchtstraße, 42285 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Schluchtstraße',
+      postalCode: '42285',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-005.jpg',
     creator: 'Artist 2',
     location: {
@@ -529,7 +545,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Sportcenter Eskesberg',
     types: ['Freizeitsportangebote'],
-    address: 'Am Eskesberg 5, 42115 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Am Eskesberg 5',
+      postalCode: '42115',
+    },
     image: 'none',
     creator: '',
     location: {
@@ -541,7 +561,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Jakobstreppe',
     types: ['Gebäude und Bauwerke', 'Sehenswürdigkeiten'],
-    address: 'Jakobstreppe, 42115 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Jakobstreppe',
+      postalCode: '42115',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-004.jpg',
     creator: 'Artist 3',
     location: {
@@ -556,12 +580,11 @@ export const PARKING_SPOTS: any[] = [
   {
     id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31',
     type: 'ParkingSpot',
-    address: '',
-    // address: {
-    //   addressLocality: 'Kiel',
-    //   postalCode: '24118',
-    //   streetAddress: 'Schauenburgerstraße 116',
-    // },
+    address: {
+      addressLocality: 'Kiel',
+      postalCode: '24118',
+      streetAddress: 'Schauenburgerstraße 116',
+    },
     availableSpotNumber: 0,
     description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3',
     location: {
@@ -577,12 +600,11 @@ export const PARKING_SPOTS: any[] = [
   {
     id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E891B5',
     type: 'ParkingSpot',
-    address: '',
-    // address: {
-    //   addressLocality: 'Kiel',
-    //   postalCode: '24118',
-    //   streetAddress: 'Schauenburgerstraße 116',
-    // },
+    address: {
+      addressLocality: 'Kiel',
+      postalCode: '24118',
+      streetAddress: 'Schauenburgerstraße 116',
+    },
     availableSpotNumber: 1,
     description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 4',
     location: {
@@ -596,3 +618,20 @@ export const PARKING_SPOTS: any[] = [
     totalSpotNumber: 1,
   },
 ]
+
+export const EMPTY_POI: InterestingPlace = {
+  name: '',
+  types: [],
+  address: {
+    addressLocality: '',
+    postalCode: '',
+    streetAddress: '',
+  },
+  image: '',
+  creator: '',
+  location: {
+    type: 'point',
+    coordinates: [7.120197671, 51.1951799443],
+  },
+  info: '',
+}

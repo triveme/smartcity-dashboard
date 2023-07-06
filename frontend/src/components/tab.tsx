@@ -15,7 +15,7 @@ import { MeasurementComponent } from './measurement'
 import { MapComponent } from './map/map'
 import { PARKING_DATA_SLIDER, POI_DATA, SWIMMING_DATA_SLIDER, ZOO_UTILIZATION_DATA } from 'constants/dummy-data'
 import { ParkingComponent } from './charts/slider/parking-component'
-import { InterestingPois } from './interesting-pois'
+import { ListView } from './listview/listview'
 import { SwimmingDetails } from './swimming-details'
 import { Utilization } from './utilization'
 
@@ -140,9 +140,11 @@ function SingleTab(props: SingleTabProps) {
         {tab.componentType === 'swimming' ? <SwimmingDetails infos={SWIMMING_DATA_SLIDER}></SwimmingDetails> : null}
 
         {tab.componentType === 'pois' ? (
-          <InterestingPois
-            key={'interesting-poi-tab-' + tab.componentDataType}
-            infos={tab.componentData ? tab.componentData : POI_DATA}
+          <ListView
+            key={'list-view-tab-' + tab.componentDataType}
+            infos={
+              tab.componentData && tab.componentData.length > 0 && tab.componentData[0] ? tab.componentData : POI_DATA
+            }
           />
         ) : null}
 

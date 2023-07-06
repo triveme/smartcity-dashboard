@@ -10,58 +10,43 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material'
-import { MapComponent } from './map/map'
-import { HeadlineYellow, HeadlineGray } from './elements/font-types'
-import { CopyrightElement } from './elements/copyright-element'
-
-import { InterestingPlace } from 'models/data-types'
-// import parkingImage from '../assets/images/parking_image.png';
-import colors from 'theme/colors'
-import { InterestingPointsDetails } from 'components/interesting-pois-details'
-import { BackButton } from './elements/buttons'
-import { DashboardIcon } from './architectureConfig/dashboard-icons'
 import FilterListIcon from '@mui/icons-material/FilterList'
-import theme from 'theme/theme'
 
-type InterestingPoisProps = {
+import theme from 'theme/theme'
+import colors from 'theme/colors'
+import { MapComponent } from '../map/map'
+import { InterestingPlace, MapData } from 'models/data-types'
+import { BackButton } from '../elements/buttons'
+import { DashboardIcon } from '../architectureConfig/dashboard-icons'
+import { EMPTY_POI } from 'constants/dummy-data'
+import { ListViewDetails } from 'components/listview/listview-details'
+import { ListViewImage } from './listview-image'
+import { ListViewInfo } from './listview-info'
+import { ListViewMapArrow } from './listview-map-arrow'
+
+type ListViewProps = {
   infos: InterestingPlace[]
 }
 
-const emptyPointOfInterest: InterestingPlace = {
-  name: '',
-  types: [],
-  address: '',
-  image: '',
-  creator: '',
-  location: {
-    type: 'point',
-    coordinates: [7.120197671, 51.1951799443],
-  },
-  info: '',
-}
-
-export function InterestingPois(props: InterestingPoisProps) {
+export function ListView(props: ListViewProps) {
   const { infos } = props
+  const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
   const [mapKey, setMapKey] = useState(Math.random())
-
-  const [poiData] = useState(infos && infos.length > 0 ? infos : [emptyPointOfInterest])
-
+  const [poiData] = useState(infos && infos.length > 0 ? infos : [EMPTY_POI])
   const [pointOfInterestDetailsOpen, setPointOfInterestDetailsOpen] = useState(false)
-  const [selectedPointOfInterest, setSelectedPointOfInterest] = useState<InterestingPlace>(emptyPointOfInterest)
+  const [selectedPointOfInterest, setSelectedPointOfInterest] = useState<InterestingPlace>(EMPTY_POI)
   const [selectedPointOfInterestIndex, setSelectedPointOfInterestIndex] = useState(-1)
-
-  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(poiData)
+  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>([])
   const [uniqueInfoTypes, setUniqueInfoTypes] = useState<string[]>([])
   const [pointOfInterestFilterOpen, setPointOfInterestFilterOpen] = useState(false)
   const [filteredInfosCheckbox, setFilteredInfosCheckbox] = useState<string[]>([])
   const [isChecked, setIsChecked] = useState<boolean[]>([])
-  const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
   const [isListVisible, setListVisibility] = useState(true)
 
   useEffect(() => {
     // remove duplicates from the info-types
     let uniqueTypes: string[] = []
-    if (poiData && poiData.length > 0) {
+    if (poiData && poiData.length > 0 && poiData[0]) {
       poiData.forEach((info) => {
         if (info.types && info.types.length > 0) {
           info.types.forEach((type) => {
@@ -78,6 +63,8 @@ export function InterestingPois(props: InterestingPoisProps) {
           handleFilterCheckboxClick(i, true, uniqueTypes[i])
         }
       }
+    } else {
+      poiData[0] = EMPTY_POI
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -131,7 +118,7 @@ export function InterestingPois(props: InterestingPoisProps) {
   const handlePoiClose = () => {
     setPointOfInterestDetailsOpen(false)
     setListVisibility(true)
-    setSelectedPointOfInterest(emptyPointOfInterest)
+    setSelectedPointOfInterest(EMPTY_POI)
     setSelectedPointOfInterestIndex(-1)
     handleResize()
   }
@@ -176,61 +163,14 @@ export function InterestingPois(props: InterestingPoisProps) {
               }}
               padding='10px'
             >
-              {/* Imagebox */}
-              <Box
-                display={'flex'}
-                flexDirection={'column'}
-                flexGrow={'1 1 0'}
-                paddingRight={'5px'}
-                flexBasis='35%'
-                width={'120px'}
-              >
-                <img
-                  style={{ height: '100%' }}
-                  src={info.image && info.image !== 'none' ? info.image : ''}
-                  alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
-                />
-                {info.creator && <CopyrightElement creator={info.creator} />}
-              </Box>
-              {/* Infobox */}
-              <Box
-                height='100%'
-                display={'flex'}
-                flexDirection={'column'}
-                flexBasis={'70%'}
-                justifyContent={'space-between'}
-              >
-                {/* Textinfo */}
-                <Box
-                  height='100%'
-                  display={'flex'}
-                  flexDirection={'column'}
-                  alignContent={'start'}
-                  alignItems={'start'}
-                  justifyContent={'space-around'}
-                >
-                  <Box>
-                    <HeadlineYellow text={info.name} />
-                    <Typography variant='body2'>
-                      {info.types
-                        ? info.types.map((type) => {
-                            return type.toString() + ' '
-                          })
-                        : null}
-                    </Typography>
-                  </Box>
-                  <Box display={'flex'} flexDirection={'row'} alignContent={'center'} alignItems={'center'}>
-                    <DashboardIcon icon='IconPin' color={colors.iconColor}></DashboardIcon>
-                    <HeadlineGray text={info.address}></HeadlineGray>
-                  </Box>
-                </Box>
-              </Box>
-              {/* ArrowBox */}
-              <Box paddingLeft={'2px'} paddingBottom={'6px'} margin='auto' flexBasis={'5%'}>
-                <IconButton onClick={() => handlePoiClick(info!, index)}>
-                  <DashboardIcon icon='IconArrowNarrowRight' color={colors.grey} />
-                </IconButton>
-              </Box>
+              <ListViewImage key={'Poi-Image-Box-' + index} info={info} />
+              <ListViewInfo key={'Listview-Info-Box-' + index} info={info} />
+              <ListViewMapArrow
+                key={'Listview-Map-Arrow-' + index}
+                index={index}
+                info={info}
+                handlePoiClick={handlePoiClick}
+              />
             </Box>
           )
         })}
@@ -251,7 +191,7 @@ export function InterestingPois(props: InterestingPoisProps) {
         {pointOfInterestDetailsOpen ? (
           // POI details
           <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
-            <InterestingPointsDetails
+            <ListViewDetails
               info={selectedPointOfInterest!}
               handleBackClick={handlePoiClose}
               handleDisplayOnMapClick={handleDisplayOnMapClick}
@@ -363,7 +303,7 @@ export function InterestingPois(props: InterestingPoisProps) {
           }}
           onResize={handleResize}
         >
-          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos} />
+          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos as MapData[]} />
         </div>
       </Box>
     </Box>
