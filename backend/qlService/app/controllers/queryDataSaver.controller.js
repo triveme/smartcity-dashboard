@@ -223,6 +223,7 @@ function buildParkingSpot(queryParkingSpot) {
       address: queryParkingSpot["address"].value,
       availableSpotNumber: queryParkingSpot["availableSpotNumber"].value,
       description: queryParkingSpot["description"].value,
+      name: queryParkingSpot["name"].value,
       location: {
         type: queryParkingSpot["location"].value["type"],
         coordinates: queryParkingSpot["location"].value["coordinates"],
