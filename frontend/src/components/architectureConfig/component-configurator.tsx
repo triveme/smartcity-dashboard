@@ -31,11 +31,11 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
         style={{ backgroundColor: colors.backgroundColor }}
       >
         <MenuItem value='map'>Karte</MenuItem>
-        <MenuItem value='measurement'>Messung</MenuItem>
+        {/* <MenuItem value='measurement'>Messung</MenuItem> */}
         <MenuItem value='pois'>Liste mit Karte</MenuItem>
         <MenuItem value='parking'>Auslastung Parkplätze</MenuItem>
-        <MenuItem value='swimming'>Auslastung Schwimmbad</MenuItem>
-        <MenuItem value='utilization'>Auslastung Zoo</MenuItem>
+        {/* <MenuItem value='swimming'>Auslastung Schwimmbad</MenuItem> */}
+        {/* <MenuItem value='utilization'>Auslastung Zoo</MenuItem> */}
       </Select>
       {/* Map and List with Map */}
       {tempPanel.tabs[currentTabIndex].componentType === 'pois' ||
