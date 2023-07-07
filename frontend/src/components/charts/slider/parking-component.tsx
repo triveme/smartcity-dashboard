@@ -2,14 +2,15 @@ import { useState } from 'react'
 import { Box, IconButton } from '@mui/material'
 
 import { DashboardIcon } from 'components/architectureConfig/dashboard-icons'
-import { ParkingInfo } from 'models/data-types'
-import colors from 'theme/colors'
+import { ParkingSpot } from 'models/data-types'
 import { SliderWithKnobs } from './slider'
 import { SliderHeader } from './slider-header'
 import { ParkingspaceDetails } from 'components/parkingspace-details'
+import { EMPTY_PARKING_SPOT } from 'constants/dummy-data'
+import colors from 'theme/colors'
 
 type ParkingComponentProps = {
-  sliders: ParkingInfo[]
+  sliders: ParkingSpot[]
   showOnMap: (index: number, lat: number, lng: number) => void
 }
 export function ParkingComponent(props: ParkingComponentProps) {
@@ -17,21 +18,9 @@ export function ParkingComponent(props: ParkingComponentProps) {
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
 
-  const emptyParkingInfo: ParkingInfo = {
-    name: '',
-    maxHeight: 0,
-    location: {
-      type: 'point',
-      coordinates: [51.272065568215524, 7.200007788461502],
-    },
-    capacity: [],
-    currentlyUsed: 0,
-    maxValue: 42,
-    type: 'Tiefgarage',
-  }
-  const [selectedParkingspace, setSelectedParkingspace] = useState<ParkingInfo>(emptyParkingInfo)
+  const [selectedParkingspace, setSelectedParkingspace] = useState<ParkingSpot>(EMPTY_PARKING_SPOT)
 
-  const handleParkingspaceClickOpen = (parkingspace: ParkingInfo, index: number) => {
+  const handleParkingspaceClickOpen = (parkingspace: ParkingSpot, index: number) => {
     setSelectedParkingspace(parkingspace)
     setDetailsOpen(true)
     setSelectedIndex(index)
@@ -39,7 +28,7 @@ export function ParkingComponent(props: ParkingComponentProps) {
 
   const handleParkingspaceClickClose = () => {
     setDetailsOpen(false)
-    setSelectedParkingspace(emptyParkingInfo)
+    setSelectedParkingspace(EMPTY_PARKING_SPOT)
     setSelectedIndex(-1)
   }
 
@@ -67,8 +56,13 @@ export function ParkingComponent(props: ParkingComponentProps) {
           <Box>
             {sliders.map((obj, index) => {
               return (
-                <Box key={'SliderWrapper-Box-' + obj.name} display={'flex'} flexDirection={'row'}>
-                  <SliderWithKnobs name={obj.name} currentValue={obj.currentlyUsed} maximumValue={obj.maxValue} />
+                <Box key={'SliderWrapper-Box-' + index + obj?.name} display={'flex'} flexDirection={'row'}>
+                  <SliderWithKnobs
+                    name={obj?.name ? obj?.name : 'Parkplatz'}
+                    occupiedSpots={obj?.occupiedSpotNumber !== undefined ? obj?.occupiedSpotNumber : 0}
+                    availableSpots={obj?.availableSpotNumber !== undefined ? obj?.availableSpotNumber : 0}
+                    totalSpots={obj?.totalSpotNumber !== undefined ? obj?.totalSpotNumber : 1}
+                  />
                   <Box paddingLeft={'5px'} paddingBottom={'6px'} margin='auto'>
                     <IconButton onClick={() => handleParkingspaceClickOpen(obj, index)}>
                       <DashboardIcon icon='IconArrowNarrowRight' color={colors.grey} />
