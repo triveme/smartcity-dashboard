@@ -59,7 +59,7 @@ export type MapData = {
 export type ParkingSpot = {
   id: string
   type: string
-  address: string
+  address: AddressModel
   availableSpotNumber: number
   description: string
   location: LocationType

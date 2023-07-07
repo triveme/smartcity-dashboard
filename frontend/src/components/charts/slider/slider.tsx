@@ -23,8 +23,9 @@ import colors from 'theme/colors'
 
 interface SliderProps {
   name: string
-  currentValue: number
-  maximumValue: number
+  occupiedSpots: number
+  availableSpots: number
+  totalSpots: number
 }
 interface SliderBasicProps {
   name: string
@@ -133,7 +134,7 @@ const ProgressDone = styled.div<SliderBarProps>`
  * @returns Component that renders single progress bar
  */
 export function SliderWithKnobs(props: SliderProps) {
-  const { name, currentValue, maximumValue } = props
+  const { name, occupiedSpots, availableSpots, totalSpots } = props
 
   return (
     <ProgressComponentWrapper>
@@ -141,7 +142,7 @@ export function SliderWithKnobs(props: SliderProps) {
       <ProgressWrapper>
         {/* This is the horizontal line displaying the progress */}
         <ProgressBar>
-          <ProgressDone value={(1 - currentValue / maximumValue) * 100}></ProgressDone>
+          <ProgressDone value={(occupiedSpots / totalSpots) * 100}></ProgressDone>
         </ProgressBar>
         {/* Here are the knobs / buttons in the progress bar */}
         <ProgressKnobs>
@@ -152,11 +153,11 @@ export function SliderWithKnobs(props: SliderProps) {
             {/* <ProgressStart>{(info.maxValue - info.currentlyUsed)}</ProgressStart> */}
             {/* This is the circular knob at the end */}
             <ProgressEnd>
-              <span>{maximumValue}</span>
+              <span>{totalSpots}</span>
             </ProgressEnd>
             {/* This is the circular knob sliding in the progress bar */}
-            <ProgressStatus value={(1 - currentValue / maximumValue) * 100}>
-              <span>{maximumValue - currentValue}</span>
+            <ProgressStatus value={(occupiedSpots / totalSpots) * 100}>
+              <span>{totalSpots - availableSpots}</span>
             </ProgressStatus>
           </Suspense>
         </ProgressKnobs>

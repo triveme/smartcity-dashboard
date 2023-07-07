@@ -55,7 +55,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                 icon={
                   iconType === 'parking'
                     ? L.divIcon({
-                        className: info.status === 'available' ? 'available-marker' : 'occupied-marker',
+                        className: info.status === 'free' ? 'available-marker' : 'occupied-marker',
                         iconAnchor: [30, 10],
                       })
                     : defaultIcon

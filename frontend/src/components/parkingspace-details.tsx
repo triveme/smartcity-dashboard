@@ -1,12 +1,12 @@
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { ParkingCapacity, ParkingInfo } from 'models/data-types'
+import { ParkingSpot } from 'models/data-types'
 import { BackButton, DisplayOnMapButton } from './elements/buttons'
 // import parkingImage from '../assets/images/parking_image.png'
 import { HeadlineGray, HeadlineYellow } from './elements/font-types'
 
 type ParkingspaceDetailsProps = {
-  info: ParkingInfo
+  info: ParkingSpot
   handleBackClick: () => void
   handleShowOnMapClick: () => void
 }
@@ -36,27 +36,24 @@ export function ParkingspaceDetails(props: ParkingspaceDetailsProps) {
           {/* Textinfo */}
           <Box display={'flex'} flexDirection={'column'} alignContent={'start'} alignItems={'start'}>
             <Box>
-              <HeadlineYellow text={info.name + ' - ' + info.type} />
+              <HeadlineYellow text={info?.name + ' - ' + info?.type} />
               <Typography>
-                {info.address?.street} {info.address?.streetnumber}
-              </Typography>
-              <Typography>
-                {info.address?.zipcode} {info.address?.city}
+                {info?.address?.streetAddress} {info?.address?.postalCode} {info?.address?.addressLocality}
               </Typography>
             </Box>
             <Box>
               <HeadlineGray text='Zulässige Einfahrtshöhe'></HeadlineGray>
-              <Typography>{info.maxHeight} m</Typography>
+              {/* <Typography>{info?.maxHeight} m</Typography> */}
             </Box>
             <Box>
               <HeadlineGray text='Kapazität'></HeadlineGray>
-              {info.capacity.map((cap: ParkingCapacity) => {
+              {/* {info?.capacity.map((cap: ParkingCapacity) => {
                 return (
-                  <Typography key={'parkingspace-details-typography-capacity-' + info.name + '-' + cap.capacityType}>
+                  <Typography key={'parkingspace-details-typography-capacity-' + info?.name + '-' + cap.capacityType}>
                     {cap.capacityType}: {cap.capacitySpace}
                   </Typography>
                 )
-              })}
+              })} */}
             </Box>
           </Box>
         </Box>

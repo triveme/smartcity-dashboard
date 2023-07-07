@@ -77,9 +77,14 @@ export function Chart(props: TabProps) {
   } else if (tab.apexType === 'sliderKnobs') {
     return (
       <SliderWithKnobs
-        name={tab.componentName}
-        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : tab.componentMaximum - 1}
-        maximumValue={tab.componentMaximum}
+        name={tab.componentData[0].name ? tab.componentData[0].name : 'Parkplatz'}
+        occupiedSpots={
+          tab.componentData[0].occupiedSpotNumber !== undefined ? tab.componentData[0].occupiedSpotNumber : 0
+        }
+        availableSpots={
+          tab.componentData[0].availableSpotNumber !== undefined ? tab.componentData[0].availableSpotNumber : 0
+        }
+        totalSpots={tab.componentData[0].totalSpotNumber !== undefined ? tab.componentData[0].totalSpotNumber : 1}
       />
     )
   } else {

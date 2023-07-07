@@ -1,5 +1,5 @@
 import { RadialComponent, UtilizationComponent } from 'models/chart-types'
-import { InterestingPlace, LocationType, ParkingInfo, SwimmingInfo } from 'models/data-types'
+import { InterestingPlace, LocationType, ParkingInfo, ParkingSpot, SwimmingInfo } from 'models/data-types'
 
 export const WEATHER_DATA_RADIAL: RadialComponent[] = [
   {
@@ -634,4 +634,25 @@ export const EMPTY_POI: InterestingPlace = {
     coordinates: [7.120197671, 51.1951799443],
   },
   info: '',
+}
+
+export const EMPTY_PARKING_SPOT: ParkingSpot = {
+  id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31',
+  type: 'ParkingSpot',
+  address: {
+    addressLocality: 'Kiel',
+    postalCode: '24118',
+    streetAddress: 'Schauenburgerstraße 116',
+  },
+  availableSpotNumber: 0,
+  description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3',
+  location: {
+    type: 'Point',
+    coordinates: [10.120266576, 54.334269361],
+  },
+  name: 'KITZ 08',
+  occupancy: 1,
+  occupiedSpotNumber: 1,
+  status: 'occupied',
+  totalSpotNumber: 1,
 }
