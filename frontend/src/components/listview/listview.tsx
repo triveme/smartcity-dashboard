@@ -1,28 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  Stack,
-  Typography,
-  useMediaQuery,
-} from '@mui/material'
+import { useMemo, useState } from 'react'
+import { Box, Button, Typography, useMediaQuery } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
 
 import theme from 'theme/theme'
 import colors from 'theme/colors'
 import { MapComponent } from '../map/map'
 import { InterestingPlace, MapData } from 'models/data-types'
-import { BackButton } from '../elements/buttons'
-import { DashboardIcon } from '../architectureConfig/dashboard-icons'
 import { EMPTY_POI } from 'constants/dummy-data'
 import { ListViewDetails } from 'components/listview/listview-details'
 import { ListViewImage } from './listview-image'
 import { ListViewInfo } from './listview-info'
 import { ListViewMapArrow } from './listview-map-arrow'
+import { ListViewFilter } from './listview-filter'
 
 type ListViewProps = {
   infos: InterestingPlace[]
@@ -36,77 +25,9 @@ export function ListView(props: ListViewProps) {
   const [pointOfInterestDetailsOpen, setPointOfInterestDetailsOpen] = useState(false)
   const [selectedPointOfInterest, setSelectedPointOfInterest] = useState<InterestingPlace>(EMPTY_POI)
   const [selectedPointOfInterestIndex, setSelectedPointOfInterestIndex] = useState(-1)
-  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>([])
-  const [uniqueInfoTypes, setUniqueInfoTypes] = useState<string[]>([])
+  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(infos)
   const [pointOfInterestFilterOpen, setPointOfInterestFilterOpen] = useState(false)
-  const [filteredInfosCheckbox, setFilteredInfosCheckbox] = useState<string[]>([])
-  const [isChecked, setIsChecked] = useState<boolean[]>([])
   const [isListVisible, setListVisibility] = useState(true)
-
-  useEffect(() => {
-    // remove duplicates from the info-types
-    let uniqueTypes: string[] = []
-    if (poiData && poiData.length > 0 && poiData[0]) {
-      poiData.forEach((info) => {
-        if (info.types && info.types.length > 0) {
-          info.types.forEach((type) => {
-            if (uniqueTypes.indexOf(type) === -1 && type !== '') uniqueTypes.push(type)
-          })
-        }
-      })
-      setUniqueInfoTypes(uniqueTypes)
-      // set all checkboxes to unchecked
-      setIsChecked(new Array(uniqueTypes.length).fill(false))
-      //Set Schwebebahn Haltestelle to default selection
-      for (let i = 0; i < uniqueTypes.length; i++) {
-        if (uniqueTypes[i] === 'Schwebebahn-Haltestellen') {
-          handleFilterCheckboxClick(i, true, uniqueTypes[i])
-        }
-      }
-    } else {
-      poiData[0] = EMPTY_POI
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const handleFilterClick = () => {
-    setPointOfInterestFilterOpen(() => !pointOfInterestFilterOpen)
-  }
-  const handleFilterReset = () => {
-    setIsChecked(new Array(uniqueInfoTypes.length).fill(false))
-    setFilteredInfosCheckbox([])
-  }
-
-  const handleFilterCheckboxClick = (index: number, checked: boolean, type: string) => {
-    let typesToFilter: string[] = [...filteredInfosCheckbox]
-
-    setIsChecked((isChecked) => isChecked.map((item, i) => (i === index ? !item : item)))
-
-    if (checked) {
-      typesToFilter = [...filteredInfosCheckbox, type]
-    } else {
-      typesToFilter.splice(filteredInfosCheckbox.indexOf(type), 1)
-    }
-    setFilteredInfosCheckbox(typesToFilter)
-  }
-
-  useEffect(() => {
-    // set the infos to be displayed according to the selected filters
-    if (filteredInfosCheckbox.length > 0) {
-      let filterList = poiData.filter((info) => filteredInfosCheckbox.some((type) => info.types.includes(type)))
-      //Avoid duplicates
-      let uniqueInfos: InterestingPlace[] = []
-      for (let info of filterList) {
-        if (!uniqueInfos.some((uniqueInfo) => uniqueInfo.name === info.name)) {
-          uniqueInfos.push(info)
-        }
-      }
-      setFilteredInfos(uniqueInfos)
-    } else {
-      setFilteredInfos(infos)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredInfosCheckbox])
 
   const handlePoiClick = (pointOfInterest: InterestingPlace, index: number) => {
     setPointOfInterestDetailsOpen(true)
@@ -147,6 +68,10 @@ export function ListView(props: ListViewProps) {
     setMapKey(Math.random())
   }
 
+  const handleFilterClick = () => {
+    setPointOfInterestFilterOpen(() => !pointOfInterestFilterOpen)
+  }
+
   const poiList = useMemo(() => {
     return (
       <Box display={'flex'} flexDirection={'column'} gap={'5px'} padding='5px' paddingTop={0}>
@@ -155,7 +80,7 @@ export function ListView(props: ListViewProps) {
             // POI-Box
             <Box
               height='125px'
-              key={'Interesting-POI-Box-' + info.name}
+              key={'Interesting-POI-Box-' + index + info.name}
               display={'flex'}
               flexDirection={'row'}
               sx={{
@@ -199,78 +124,7 @@ export function ListView(props: ListViewProps) {
             />
           </Box>
         ) : pointOfInterestFilterOpen ? (
-          // Filter Menue
-          <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
-            <Typography
-              sx={{
-                py: 2,
-                background: colors.poiBackground,
-              }}
-              display='flex'
-              alignContent='space-between'
-            >
-              <Box component='span' sx={{ flex: 1 }}>
-                Filter
-              </Box>
-              <IconButton
-                onClick={handleFilterClick}
-                sx={{
-                  mr: 1,
-                  border: `2px solid ${colors.grey}`,
-                  height: 28,
-                  width: 28,
-                  '&:hover': {
-                    borderColor: colors.iconColor,
-                  },
-                  '& svg': {
-                    margin: '-3px',
-                  },
-                  '& svg:hover': {
-                    color: `${colors.iconColor} !important`,
-                  },
-                }}
-              >
-                <DashboardIcon icon='IconClose' color={colors.grey} />
-              </IconButton>
-            </Typography>
-            <Box
-              sx={{
-                overflowY: 'auto',
-                backgroundColor: colors.poiBackground,
-              }}
-            >
-              <FormGroup>
-                {uniqueInfoTypes.map((type, index) => (
-                  <FormControlLabel
-                    key={type}
-                    label={<Typography variant='body2'>{type}</Typography>}
-                    control={
-                      <Checkbox
-                        sx={{ color: colors.grey }}
-                        size='small'
-                        value={type}
-                        checked={isChecked[index]}
-                        name={type}
-                        onChange={(e) => handleFilterCheckboxClick(index, e.target.checked, e.target.value)}
-                      />
-                    }
-                  />
-                ))}
-              </FormGroup>
-            </Box>
-            <Box
-              sx={{
-                py: 2,
-                pr: 1,
-                background: colors.poiBackground,
-              }}
-            >
-              <Stack direction={{ md: 'column', lg: 'row' }} spacing={2}>
-                <BackButton onClick={handleFilterClick} text={'Filter anwenden'}></BackButton>
-                <Button onClick={handleFilterReset}>Filter Zurücksetzten</Button>
-              </Stack>
-            </Box>
-          </Box>
+          <ListViewFilter listData={infos} setFilteredData={setFilteredInfos} handleFilterClick={handleFilterClick} />
         ) : (
           // POI List
           <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
@@ -284,11 +138,9 @@ export function ListView(props: ListViewProps) {
                   {isListVisible ? 'Karte' : 'Liste'}
                 </Button>
               ) : null}
-              {uniqueInfoTypes.length > 0 && (
-                <Button size='small' onClick={handleFilterClick} variant='outlined' startIcon={<FilterListIcon />}>
-                  Filter
-                </Button>
-              )}
+              <Button size='small' onClick={handleFilterClick} variant='outlined' startIcon={<FilterListIcon />}>
+                Filter
+              </Button>
             </Box>
             {isListVisible && <Box sx={{ overflowY: 'scroll', mt: 1 }}>{poiList}</Box>}
           </Box>
