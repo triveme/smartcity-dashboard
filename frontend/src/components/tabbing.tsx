@@ -1,6 +1,6 @@
 import React from 'react'
 import { PanelComponent } from './panel'
-import { TabConent } from './tab-single'
+import { TabConent } from './tab-content'
 import { TabComponent } from './tab'
 import Box from '@mui/material/Box'
 import colors from 'theme/colors'

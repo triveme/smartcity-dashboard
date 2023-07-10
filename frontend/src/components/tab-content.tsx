@@ -113,7 +113,13 @@ export function TabConent(props: TabProps) {
   }
 
   return (
-    <div role='tabpanel' hidden={value !== index} id={tab.name + '-' + index} aria-labelledby={tab.name + '-' + index}>
+    <div
+      role='tabpanel'
+      hidden={value !== index}
+      id={tab.name + '-' + index}
+      aria-labelledby={tab.name + '-' + index}
+      style={{ height: '100%' }}
+    >
       {value === index && renderTabContent()}
     </div>
   )
