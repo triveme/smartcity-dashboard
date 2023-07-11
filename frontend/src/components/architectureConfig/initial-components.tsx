@@ -41,6 +41,7 @@ export const initialTab: TabComponent = {
   apexMaxValue: 100,
   apexMaxAlias: '',
   apexMaxColor: colors.attributeColors[0],
+  apexStepline: false,
   timeframe: 0,
   fiwareService: '',
   entityId: [],
@@ -67,6 +68,16 @@ export const initialTab: TabComponent = {
   componentAlarm: 0,
   componentUnit: '',
   componentValue: 0,
+  componentOptions: {
+    allowPopups: false,
+    allowScroll: false,
+    allowZoom: false,
+    iconType: '',
+    maxZoom: 20,
+    minZoom: 10,
+    zoom: 20,
+    occupancyRotate: false,
+  },
 }
 
 export const initialPanel: PanelComponent = {
