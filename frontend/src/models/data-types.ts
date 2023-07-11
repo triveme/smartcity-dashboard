@@ -70,6 +70,21 @@ export type ParkingSpot = {
   totalSpotNumber: number
 }
 
+export type EvChargingStation = {
+  id: string
+  type: string
+  socketType: string[]
+  capacity: number
+  name: string
+  allowedVehicleType: string[]
+  source: string
+  location: LocationType
+  chargeType: string[]
+  address: AddressModel
+  operator: string
+  contactPoint: string
+}
+
 export type AddressModel = {
   addressLocality: string
   postalCode: string
@@ -89,4 +104,15 @@ export type MeasurementModel = {
   monthDates: string[]
   warningValue: number
   alarmValue: number
+}
+
+export type MapComponentOptions = {
+  zoom: number
+  minZoom: number
+  maxZoom: number
+  allowPopups: boolean
+  allowZoom: boolean
+  allowScroll: boolean
+  iconType: string
+  occupancyRotate: boolean
 }
