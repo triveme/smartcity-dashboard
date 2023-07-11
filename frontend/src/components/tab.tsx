@@ -18,6 +18,7 @@ import { ParkingComponent } from './charts/slider/parking-component'
 import { ListView } from './listview/listview'
 import { SwimmingDetails } from './swimming-details'
 import { Utilization } from './utilization'
+import { MapComponentOptions } from 'models/data-types'
 
 export type TabComponent = {
   _id: string
@@ -32,6 +33,7 @@ export type TabComponent = {
   apexMaxValue?: number
   apexMaxAlias?: string
   apexMaxColor?: string
+  apexStepline?: boolean
   componentType: string
   componentData: Array<any>
   componentDataType: string
@@ -44,6 +46,7 @@ export type TabComponent = {
   componentAlarm: number
   componentUnit: string
   componentValue: number
+  componentOptions: MapComponentOptions
   timeframe?: number
   fiwareService?: string
   entityId?: string[]
@@ -125,6 +128,7 @@ function SingleTab(props: SingleTabProps) {
             key={'map-component-tab-' + tab.componentDataType}
             mapData={tab.componentData}
             iconType={tab.componentDataType}
+            mapOptions={tab.componentOptions}
           />
         ) : null}
 

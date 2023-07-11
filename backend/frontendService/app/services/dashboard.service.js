@@ -218,6 +218,7 @@ function mapTab(tab, dbTab, queryData) {
   tab.text = dbTab.text;
   tab.apexMaxValue = dbTab.apexMaxValue;
   tab.apexMaxAlias = dbTab.apexMaxAlias;
+  tab.apexStepline = dbTab.apexStepline;
   tab.apexMaxColor = dbTab.apexMaxColor;
   tab.apexSeries = dbTab.apexSeries;
   tab.donutToTotalLabel = dbTab.donutToTotalLabel;
