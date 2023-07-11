@@ -20,7 +20,7 @@ type TabProps = {
   showOnMap?: (index: number, lat: number, lng: number) => void
 }
 
-export function TabConent(props: TabProps) {
+export function TabContent(props: TabProps) {
   const { tab, height, value, index, showOnMap } = props
 
   //init alertText

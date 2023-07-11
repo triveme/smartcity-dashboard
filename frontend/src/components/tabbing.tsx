@@ -1,6 +1,6 @@
 import React from 'react'
 import { PanelComponent } from './panel'
-import { TabConent } from './tab-content'
+import { TabContent } from './tab-content'
 import { TabComponent } from './tab'
 import Box from '@mui/material/Box'
 import colors from 'theme/colors'
@@ -39,6 +39,7 @@ export function Tabbing(props: TabbingProps) {
             id={tab.name + '-' + index}
             aria-labelledby={tab.name + '-' + index}
             key={'tabpanel-' + (tab._id !== '' ? tab._id : tab.uid + index)}
+            style={{ height: '100%' }}
           >
             {tabValue === index && renderTabContent(tab, index)}
           </div>
@@ -78,7 +79,7 @@ export function Tabbing(props: TabbingProps) {
 
   function renderTabContent(tab: TabComponent, index: number) {
     return (
-      <TabConent
+      <TabContent
         key={'singletab-' + (tab._id !== '' ? tab._id : tab.uid)}
         height={panel.name ? panel.height - 24 - (panel.tabs.length > 1 ? 49 : 0) : panel.height}
         tab={tab}
