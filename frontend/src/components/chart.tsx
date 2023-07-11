@@ -46,7 +46,15 @@ export function Chart(props: TabProps) {
   } else if (tab.apexType === 'bar') {
     return <BarChart tab={tab} height={height} tickAmountKey={tickAmountKey} windowWidth={windowWidth} />
   } else if (tab.apexType === 'line') {
-    return <LineChart tab={tab} height={height} tickAmountKey={tickAmountKey} windowWidth={windowWidth} />
+    return (
+      <LineChart
+        tab={tab}
+        height={height}
+        tickAmountKey={tickAmountKey}
+        windowWidth={windowWidth}
+        stepline={tab.apexStepline}
+      />
+    )
   } else if (tab.apexType === 'radial180') {
     return (
       <RadialChart180

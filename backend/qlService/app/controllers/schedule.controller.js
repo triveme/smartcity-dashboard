@@ -108,6 +108,8 @@ function runSchedule() {
                 .toDate();
               queryItem.queryConfig.aggrPeriod = "day";
             }
+            queryItem.queryConfig.attrs =
+              queryItem.queryConfig.attribute.keys.join(",");
             queryItem.queryConfig.aggrMethod = "avg";
             queryItem.queryConfig.toDate = now;
             getHistoricalDataFromQuantumLeap(
