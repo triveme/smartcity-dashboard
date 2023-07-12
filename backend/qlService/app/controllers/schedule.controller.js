@@ -138,7 +138,8 @@ function runSchedule() {
           );
         } else {
           console.log(
-            "Unknown tab type encountered in schedule.controller.js: "
+            "Unknown tab type encountered in schedule.controller.js: " +
+              queryItem.queryConfig.type
           );
           console.log(queryItem);
         }
