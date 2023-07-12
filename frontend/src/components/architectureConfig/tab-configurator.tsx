@@ -37,6 +37,20 @@ export function TabConfigurator(props: TabConfiguratorProps) {
   const setNewTabValue = (newTabValues: newTabValue[]) => {
     let newTempTabs = cloneDeep(tempPanel.tabs)
     newTabValues.forEach((newTabValue) => {
+      //Necessary check and addition for older components
+      if (!newTempTabs[currentTabIndex].componentOptions) {
+        newTempTabs[currentTabIndex].componentOptions = {
+          allowPopups: false,
+          allowScroll: false,
+          allowZoom: false,
+          iconType: '',
+          maxZoom: 20,
+          minZoom: 10,
+          zoom: 20,
+          occupancyRotate: false,
+        }
+      }
+
       switch (newTabValue.key) {
         case 'name':
           newTempTabs[currentTabIndex].name = newTabValue.tabValue
