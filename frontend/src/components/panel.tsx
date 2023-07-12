@@ -6,7 +6,8 @@ import Typography from '@mui/material/Typography'
 import Tooltip from '@mui/material/Tooltip'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 
-import { Tabbing, TabComponent } from 'components/tab'
+import { TabComponent } from 'components/tab'
+import { Tabbing } from 'components/tabbing'
 import { ArchitectureEditButtons } from 'components/architectureConfig/architecture-edit-buttons'
 
 export type PanelComponent = {
