@@ -63,8 +63,16 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
               <FormControlLabel
                 control={
                   <Switch
-                    value={tempPanel.tabs[currentTabIndex].componentOptions.allowPopups}
-                    checked={tempPanel.tabs[currentTabIndex].componentOptions.allowPopups}
+                    value={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowPopups
+                        : false
+                    }
+                    checked={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowPopups
+                        : false
+                    }
                     onChange={(e) => setNewTabValue([{ key: 'allowPopup', tabValue: e.target.checked }])}
                   />
                 }
@@ -73,8 +81,16 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
               <FormControlLabel
                 control={
                   <Switch
-                    value={tempPanel.tabs[currentTabIndex].componentOptions.allowScroll}
-                    checked={tempPanel.tabs[currentTabIndex].componentOptions.allowScroll}
+                    value={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowScroll
+                        : false
+                    }
+                    checked={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowScroll
+                        : false
+                    }
                     onChange={(e) => setNewTabValue([{ key: 'allowScroll', tabValue: e.target.checked }])}
                   />
                 }
@@ -83,8 +99,16 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
               <FormControlLabel
                 control={
                   <Switch
-                    value={tempPanel.tabs[currentTabIndex].componentOptions.allowZoom}
-                    checked={tempPanel.tabs[currentTabIndex].componentOptions.allowZoom}
+                    value={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowZoom
+                        : false
+                    }
+                    checked={
+                      tempPanel.tabs[currentTabIndex].componentOptions
+                        ? tempPanel.tabs[currentTabIndex].componentOptions.allowZoom
+                        : false
+                    }
                     onChange={(e) => setNewTabValue([{ key: 'allowZoom', tabValue: e.target.checked }])}
                   />
                 }
@@ -94,8 +118,16 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
                 <FormControlLabel
                   control={
                     <Switch
-                      value={tempPanel.tabs[currentTabIndex].componentOptions.occupancyRotate}
-                      checked={tempPanel.tabs[currentTabIndex].componentOptions.occupancyRotate}
+                      value={
+                        tempPanel.tabs[currentTabIndex].componentOptions
+                          ? tempPanel.tabs[currentTabIndex].componentOptions.occupancyRotate
+                          : false
+                      }
+                      checked={
+                        tempPanel.tabs[currentTabIndex].componentOptions
+                          ? tempPanel.tabs[currentTabIndex].componentOptions.occupancyRotate
+                          : false
+                      }
                       onChange={(e) => setNewTabValue([{ key: 'occupancyRotate', tabValue: e.target.checked }])}
                     />
                   }
@@ -108,21 +140,33 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
                 key={'mapOptions-zoom-min'}
                 label='Minimaler Zoom'
                 type='number'
-                value={tempPanel.tabs[currentTabIndex].componentOptions.minZoom}
+                value={
+                  tempPanel.tabs[currentTabIndex].componentOptions
+                    ? tempPanel.tabs[currentTabIndex].componentOptions.minZoom
+                    : 10
+                }
                 onChange={(e) => setNewTabValue([{ key: 'mapMinZoom', tabValue: e.target.value }])}
               />
               <SmallField
                 key={'mapOptions-zoom-max'}
                 label='Maximaler Zoom'
                 type='number'
-                value={tempPanel.tabs[currentTabIndex].componentOptions.maxZoom}
+                value={
+                  tempPanel.tabs[currentTabIndex].componentOptions
+                    ? tempPanel.tabs[currentTabIndex].componentOptions.maxZoom
+                    : 20
+                }
                 onChange={(e) => setNewTabValue([{ key: 'mapMaxZoom', tabValue: e.target.value }])}
               />
               <SmallField
                 key={'mapOptions-zoom-current'}
                 label='Standardzoom'
                 type='number'
-                value={tempPanel.tabs[currentTabIndex].componentOptions.zoom}
+                value={
+                  tempPanel.tabs[currentTabIndex].componentOptions
+                    ? tempPanel.tabs[currentTabIndex].componentOptions.zoom
+                    : 20
+                }
                 onChange={(e) => setNewTabValue([{ key: 'mapCurZoom', tabValue: e.target.value }])}
               />
             </Box>
