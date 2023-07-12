@@ -14,7 +14,7 @@ import { IconButton, Button, Slider, Divider } from '@mui/material'
 import { WidgetComponent } from 'components/widget'
 import { DashboardComponent } from 'components/dashboard'
 import { SmallField } from 'components/elements/text-fields'
-import { SaveButton, CancelButton } from 'components/elements/buttons'
+import { SaveButton, CancelButton, DeleteButton, AddButton } from 'components/elements/buttons'
 import colors from 'theme/colors'
 import borderRadius from 'theme/border-radius'
 import { DIALOG_TITLES } from 'constants/text'
@@ -177,6 +177,21 @@ export function WidgetDialog(props: WidgetDialogProps) {
     onClose()
   }
 
+  const deleteLink = (index: number) => {
+    const updatedLinks = [...newWidgetLinks]
+    updatedLinks.splice(index, 1)
+    setNewWidgetLinks(updatedLinks)
+  }
+
+  const addLink = () => {
+    const newLink = {
+      infoLinkTitle: '',
+      infoLinkUrl: '',
+      infoLinkDescription: '',
+    }
+    setNewWidgetLinks([...newWidgetLinks, newLink])
+  }
+
   return (
     <Dialog
       open={open}
@@ -280,6 +295,7 @@ export function WidgetDialog(props: WidgetDialogProps) {
             />
             {newWidgetLinks?.map((link, index) => (
               <div key={index}>
+                <DeleteButton onClick={() => deleteLink(index)} />
                 <SmallField
                   label='Link Titel'
                   type='text'
@@ -303,6 +319,7 @@ export function WidgetDialog(props: WidgetDialogProps) {
                 />
               </div>
             ))}
+            <AddButton onClick={addLink} />
           </Box>
         ) : null}
 
