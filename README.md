@@ -1,110 +1,103 @@
 ![nodejs-integration](https://github.com/triveme/smartcity-dashboard/actions/workflows/nodejs-integration.yml/badge.svg)
 ![nodejs-deployment](https://github.com/triveme/smartcity-dashboard/actions/workflows/nodejs-deployment.yml/badge.svg)
+
 # Smart City Dashboard
 
-![](documentation/overview.png)
+![Overview](documentation/overview.png)
 
-Das Ziel dieses prototypischen Projekts ist die Visualisierung von Daten aus der [FIWARE](https://www.fiware.org/)-basierten zentralen Open Data Plattform. Durch die Bereitstellung der Daten, insbesondere in Form von Charts, kann Bürger:innen und Interessenten ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden. So ist es beispielweise möglich einzusehen, wie viele Besucher sich aktuell im Schwimmbad befinden oder welche Temperatur- und Luftfeuchtigkeitswerte durch Sensoren in verschiedenen Stadtteilen gemessen werden.
+The goal of this prototypical project is to visualize data from the [FIWARE](https://www.fiware.org/)-based central Open Data Platform. By providing data, especially in the form of charts, citizens and interested parties can get an overview of the current state in the city. For example, users can see the number of visitors currently at the swimming pool or the temperature and humidity values measured by sensors in different districts of the city.
 
-Welche Daten wie visualisiert werden sollen kann dabei von den Betreibern im Livebetrieb ohne zusätzlichen Programmieraufwand angepasst werden. Das ist möglich, indem Sie sich als Administrator anmelden und über einen integrierten Wizard die gewünschte Konfiguration vornehmen. Folglich können neu in die Open Data Plattform eingespiesene Daten durch minimale Anpassungen direkt der Öffentlichkeit zugänglich gemacht werden. Die Daten liegen also nicht nur in der Plattform, sondern bieten allen Einwohner:innen einen direkten Mehrwert.
+The visualization of data and its configuration can be adjusted in real-time by administrators without any additional programming efforts. Administrators can log in and use an integrated wizard to configure the desired settings. Consequently, newly injected data into the Open Data Platform can be made accessible to the public with minimal adjustments. This ensures that the data not only resides on the platform but also provides direct value to all residents.
 
-Die oben ersichtiche Webseite setzt sich hauptsächlich aus dem Menü links und dem Hauptbereich des jeweiligen Dashboards rechts davon zusammen. Über das Menü können Nutzer:inner das gewünschte Dashboard wählen und werden über die entsprechende Url zur Unterseite der Single-Page-App weitergeleitet. Der Content Bereich rechts ist in Widgets unterteilt, welche wiederum Panels enthalten. So sind die Panels thematisch gegliedert. Auf mobilen Geräten wird das Menü standardmäßig eingeklappt und Widgets und Panels werden entsprechend der Bildschirmbreite umgebrochen, um den begrenzten Platz auf den kleineren Bildschirmen optimal auszunutzen.
+The website primarily consists of a left-side menu and the main dashboard area on the right. Users can choose the desired dashboard from the menu, and they will be redirected to the corresponding subpage of the single-page app. The content area on the right is divided into widgets, which, in turn, contain panels. Panels are thematically organized, and on mobile devices, the menu is collapsed by default, and widgets and panels are rearranged to optimize the limited space on smaller screens.
 
-## Beschreibung der Inhalte
+## Contents Description
 
-Es folgt eine kurze Beschreibung der wichtigsten Elemente der Webseite, mit Einblicken in die jeweiligen Konfigurationsmöglichkeiten.
+Below is a brief description of the main elements of the website, with insights into their respective configuration options.
 
 ### Panels
 
-![](documentation/data-showing-components.png)
+![Data Showing Components](documentation/data-showing-components.png)
 
-Der Prototyp ermöglicht das Erstellen von Panels in drei verschiedenen Typen:
+The prototype allows creating panels in three different types:
 
-- __Beschreibende Panels__ enthalten Text und können somit beispielsweise dazu verwendet werden um Daten zu beschreiben.
-- __Werte Panels__ enthalten bis zu zwei aktuelle Werte. Dabei kann es sich entweder um Einzelwerte einer Entität handeln, oder um Durchschnitts-, Minimal-, Maximal- oder Summenwerte, die anhand mehrerer Entitäten berechnet werden.
-- __Chart Panels__ visualisieren Informationen anhand von mit [APEXCHARTS](https://apexcharts.com/) erzeugten Diagrammen. Es werden drei Chart-Typen unterstützt.
-  - __Donut Charts__ zeigen Werte in Bezug zu einem bestimmten Maximum und eignen sich damit z. B. gut zur Anzeige von Auslastungen. Falls Entitäten nur ein zur Anzeige relevantes Attribut enthalten kann der Maximalwert manuell festgelegt werden.
-  - __Balken Charts__ visualisieren historische Werte durch Balken. Diese haben ihren Ursprung immer am Nullpunkt und eignen sich deshalb am besten zur Darstellung von Daten mit hohen Wertschwankungen, wie beispielsweise Besucherzahlendaten sie haben. Während das Maximum bei Donut Charts im Chart impliziert ist, kann bei Balken Charts unabhängig von den Daten ein manueller Maximalwert definiert werden.
-  - __Linien Charts__ zeigen ebenfalls historische Werte und ähneln sich von ihrer Funktionsweise sehr mit den Balken Charts. Ein wesentlicher Unterschied ist aber, dass Werte nicht beim Nullpunkt beginnen, womit sich Linien Charts besser zur Visualisierung kleinerer Wertschwankungen eignen. So können durch Liniendiagramme z. B. Temperaturschwankungen von wenigen Grad aufgezeigt werden.
+- **Descriptive Panels:** These panels contain text and can be used, for example, to describe data.
+- **Value Panels:** These panels display up to two current values. They can represent individual entity values or average, minimum, maximum, or sum values calculated from multiple entities.
+- **Chart Panels:** These panels visualize information using charts generated with [APEXCHARTS](https://apexcharts.com/). Three types of charts are supported:
 
-Der Titel der Panels ist jeweils optional und außer bei Werte Panels kann noch eine weitere Unterteilung in bis zu drei Tabs vorgenommen werden. Diese Unterteilung ermöglicht es beispielsweise, in einem Panel bestimmte Werte über verschiedene Zeiträume darzustellen und die Daten zu beschreiben.
+  - **Donut Charts:** Display values in relation to a specific maximum, making them suitable for showing occupancies or utilizations. If entities contain only one relevant attribute for display, the maximum value can be set manually.
+  - **Bar Charts:** Visualize historical values using bars. The bars originate from the zero point, making them ideal for representing data with high fluctuations, such as visitor count data. While the maximum value in Donut Charts is implied in the chart, in Bar Charts, a manual maximum value can be defined independently of the data.
+  - **Line Charts:** Also display historical values and function similarly to Bar Charts. The main difference is that values do not start from the zero point, making Line Charts better suited for visualizing smaller value fluctuations. For instance, they can show temperature changes of a few degrees.
 
-![](documentation/tabs.png)
+The title of each panel is optional, and except for Value Panels, further subdivisions into up to three tabs can be made. This division allows, for example, displaying certain values over different time periods and providing corresponding descriptions for the data.
 
-### Menü
+![Tabs](documentation/tabs.png)
+
+### Menu
 
 <div align="center">
   <img height="250px" src="documentation/drawer-config.png">
 </div>
 
-Das ein- und ausklappbare Menü enthält alle verfügbaren Dashboards. Außerdem enthält es einen Informationsreiter, in dem Informationen zum Impressum, zur Datenschutzerklärung und zu den Nutzungsbedingungen auffindbar sind. Der Reiter ist im Bild oben nicht enthalten, dafür ist ersichtlich, dass das Menü editiert werden kann. Administrator:innen haben die Möglichkeit die Reihenfolge der Dashboards durch die Pfeile anzupassen, durch die Mülleimer zu löschen oder sie durch den Stift zu editieren.  
-Zum Editieren öffnet sich wie beim Klick auf "Neues Dashboard" ein Popup. In diesem Popup können das Icon, der Name und die Url des jeweilgen Boards angepasst werden. Zudem können Boards unsichtbar geschaltet werden (wie das "test"-Dashboard im Bild), was es Administrator:innen ermöglicht diese zu testen, bevor sie veröffentlicht werden.
+The collapsible menu contains all available dashboards and an information tab with links to the imprint, privacy policy, and terms of use. Administrators can edit the menu by using arrows to adjust the dashboard order, delete dashboards with a trash bin icon, or edit them with a pen icon. When editing, a popup opens, allowing adjustments to the icon, name, and URL of each dashboard. Administrators can also make dashboards invisible (like the "test" dashboard in the image) to test them before publishing.
 
 ### Wizard
 
-Alle konfigurierbaren Komponenten der Webseite können wie beim Menü beschrieben durch die Knöpfe angepasst werden. Immer wenn der Stift zum Editieren oder ein Button zum Erstellen einer neuen Komponente geklickt wird, öffnet sich ein entsprechender Konfigurations-Wizard. Der mit Abstand umfangreichste von diesen ist der Panel-Wizard.
+All configurable components of the website can be adjusted using buttons, as described in the Menu section. Whenever administrators click the edit button or a button to create a new component, a corresponding configuration wizard opens. The most comprehensive of these is the Panel Wizard.
 
-![](documentation/panel-wizzard.png)
+![Panel Wizard](documentation/panel-wizard.png)
 
-Der Panel-Wizard ist zweigeteilt. Auf der rechten Seite befinden sich alle Konfigurationsmöglichkeiten, die der jeweilige Paneltyp bieten kann. Änderungen die in diesem Teil durchgeführt werden wirken sich in Echtzeit auf die Vorschau auf der linken Seite des Wizards aus (zumindest bei Änderungen, die keine vorherige Kommunikation mit dem Backend erfordern).
+The Panel Wizard is divided into two parts. On the right side, all configuration options available for the specific panel type are displayed. Changes made in this part are reflected in real-time on the left side of the wizard (except for changes that require communication with the backend).
 
-Folgende Parameter können bei Paneln angepasst werden.
+The following parameters can be adjusted for panels:
 
-- **Name** (Titel des Panels, optional)
-- **Höhe** (in Pixeln, min. 150) und **Breite** (im Gridsystem, Werte von 2 - 12 sind zulässig, wobei von zu gering gewählten Breiten abgeraten wird um visuelle Ungereimtheiten zu vermeiden)
-- **Tabs** (keine, 2 oder 3), falls die Anzahl der Tabs größer als 1 ist, entsteht am unteren Rand des Panels ein Reiter zum Tabwechsel und die Namen der Tabs können zusätzlich konfiguriert werden. Außerdem erscheint ein Eingabefeld zur Auswahl des aktuellen Tabs und alle Konfigurationen darunter beziehen sich jeweils nur auf den aktuellen Tab.
-- **Typ** (entweder Beschreibung, Chart oder Wert(e) - wobei Werte(e) nur zur Auswahl steht, wenn keine Tabs gewählt sind), da sich der Wizard je nach gewähltem Typ anpasst, beziehen sich die folgenden Parameter auf den jeweiligen Typ.
-  - *Beschreibung*
-    - **Beschreibungstext** (Textfeld), ermöglcht die Eingabe langer Beschreibungstexte, da der Text innerhalb des Panels scrollt, wenn er zu viel Platz einnimmt.
-  - *Chart*
-    - **Charttyp** (Donut, Säulen oder Linien)
-    - **Zeitraum** (letze 24h, letzte 7 Tage oder letzte 30 Tage. Wird nur bei historischen Charts (Säulen und Linien) eingeblendet), der Zeitraum aus dem die Daten vom QuantumLeap-Service aus der Open Data Plattform bezogen werden sollen.
-    - **Y-Beschriftung** (Label der Y-Achse. Wird nur bei historischen Charts (Säulen und Linien) eingeblendet)
-    - **X-Beschriftung** (Label der X-Achse. Wird nur bei historischen Charts (Säulen und Linien) eingeblendet)
-    - **Maximum** (Auswahl zwischen automatisch und manuell. Bei der Auwahl von "Manuell" wird der Maximalwert, der Alias für die Zahl bis zum Maximum und die gewünschte Farbe angegeben)
-    - **Nachkommastellen** (0 - 5, Anzahl der maximalen Nachkommstellen der Werte im Chart)
-    - *Datenanbindung:* Die folgenden Parameter werden vom QuantumLeap-Service verwendet um Daten zu beziehen. Deshalb sind nur valide Eingaben erlaubt, sprich: Unerlaubte Sonderzeichen und dergleichen werden nicht übernommen.
-    - **Fiware-Service** (der verwendete Fiware-Service)
-    - **Entitäts-Id** (die Id der Entität, deren Attribut(e) visualisert werden sollen)
-    - **Attribute** (1 - n, die Attribute deren Daten zu Befüllung der Charts verwendet werden), jedes eingegebene Attribut muss mit Enter bestätigt werden. Erst nach der Bestätigung einer validen Eingabe erscheint unter dem Feld eine weitere Konfigurationsmöglichkeit für jedes Attribut. In dieser können der Alias und die Farbe angepasst werden.
-  - *Wert(e)*
-    - **Werte** (1 oder 2), bei zwei Werten erscheint ein Eingabefeld zur Auswahl des aktuellen Werts (ähnlich wie bei der Auswahl der Anzahl der Tabs).
-    - **Modus** (Aktueller Wert, Durchschnitt, Summe, Minimum oder Maximum), wird ein anderer Modus als "Aktueller Wert" gewählt, werden die Attribute von mehreren Entitäten bezogen. Dies funktioniert also etwas gegensätzlich zu den Charts (bei diesen können aus einer Entität mehrere Attribute bezogen werden, bei den Werten kann aus mehreren Entitäten ein Attribut bezogen werden).
-    - **Nachkommastellen** (0 - 5, Anzahl der maximalen Nachkommstellen der Werte)
-    - *Datenanbindung:* Die folgenden Parameter werden vom QuantumLeap-Service verwendet um Daten zu beziehen. Deshalb sind nur valide Eingaben erlaubt, sprich: Unerlaubte Sonderzeichen und dergleichen werden nicht übernommen.
-    - **Fiware-Service** (der verwendete Fiware-Service)
-    - **Entitäts-Id(s)** (die Id(s) der Entität(en), deren Attribut(e) visualisert werden sollen), Vorsicht: Falls ein Attribut von mehreren Entitäten bezogen wird, verwandelt sich die Eingabe in eine Multieingabe und einzelne Ids müssen mit Enter bestätigt werden!
-    - **Attribut** (das Attribut, aus dessen Daten die Werte erhoben werden)
-    - **Wertname** (beschreibender Titel für den Wert)
+- **Name:** (Panel title, optional)
+- **Height:** (in pixels, min. 150) and **Width:** (in grid units, values from 2 to 12 are allowed, though choosing widths too small is discouraged to avoid visual inconsistencies)
+- **Tabs:** (none, 2, or 3). If the number of tabs is greater than 1, a tab bar will appear at the bottom of the panel, allowing users to switch between tabs, and the names of the tabs can also be configured. Additionally, an input field to select the current tab will appear, and all configurations below will apply only to the current tab.
+- **Type:** (either Description, Chart, or Value(s) - Note that Value(s) is only available when no tabs are chosen). The wizard adjusts based on the chosen type, and the following parameters are specific to each type.
+  - *Description:*
+    - **Description Text:** (Text field) allows inputting lengthy description texts that scroll within the panel if they take up too much space.
+  - *Chart:*
+    - **Chart Type:** (Donut, Bar, or Line)
+    - **Time Range:** (last 24 hours, last 7 days, or last 30 days - shown only for historical charts - Bar and Line charts). It defines the time range from which data will be retrieved from the QuantumLeap service on the Open Data Platform.
+    - **Y-Axis Label:** (Label for the Y-axis - shown only for historical charts - Bar and Line charts)
+    - **X-Axis Label:** (Label for the X-axis - shown only for historical charts - Bar and Line charts)
+    - **Maximum:** (Choose between "Automatic" and "Manual." When "Manual" is selected, you can provide the maximum value, an alias for the number up to the maximum, and the desired color.)
+    - **Decimal Places:** (0 - 5, specifies the maximum number of decimal places in chart values)
+    - *Data Binding:* The following parameters are used by the QuantumLeap service to retrieve data. Only valid inputs are allowed, meaning disallowed special characters and similar will not be accepted.
+    - **FIWARE Service:** (the FIWARE service used)
+    - **Entity ID:** (the ID of the entity whose attribute(s) will be visualized)
+    - **Attributes:** (1 - n, the attributes whose data will be used to populate the charts). Each entered attribute must be confirmed with Enter. After confirming a valid input, another configuration option appears below the field for each attribute, allowing adjustments of the alias and color.
+  - *Value(s):*
+    - **Values:** (1 or 2 - for two values, an input field to select the current value will appear, similar to selecting the number of tabs).
+    - **Mode:** (Current Value, Average, Sum, Minimum, or Maximum). When a mode other than "Current Value" is selected, attributes are fetched from multiple entities. This works opposite to charts (where multiple attributes can be fetched from a single entity, in Value(s) multiple entities are used to get a single attribute).
+    - **Decimal Places:** (0 - 5, specifies the maximum number of decimal places in value(s))
+    - *Data Binding:* The following parameters are used by the QuantumLeap service to retrieve data. Only valid inputs are allowed, meaning disallowed special characters and similar will not be accepted.
+    - **FIWARE Service:** (the FIWARE service used)
+    - **Entity ID(s):** (the ID(s) of the entity/entities whose attribute(s) will be visualized). Caution: When an attribute is fetched from multiple entities, the input field converts into a multi-input, and individual IDs must be confirmed with Enter!
+    - **Attribute:** (the attribute from which the value(s) will be derived)
+    - **Value Name:** (descriptive title for the value)
 
-## Architektur des Projekts
+## Project Architecture
 
-Grob unterteilt besteht der Prototyp aus einem Frontend und einem Backend. Das Frontend visualisiert die Daten, die es vom Backend erhält. Das Backend bezieht die Daten durch einen intelligenten Polling-Mechanismus aus der Open Data Plattform und speichert diese zwischen, wodurch die Last auf die Plattform minimal gehalten wird.
+Broadly divided, the prototype consists of a frontend and a backend. The frontend visualizes the data it receives from the backend. The backend obtains data through an intelligent polling mechanism from the Open Data Platform and stores it, thus minimizing the load on the platform.
 
-![](documentation/main-architecture.png)
+![Architecture](documentation/main-architecture.png)
 
-- Bei der Webseite (dem Frontend) handelt es sich um eine mit [React](https://reactjs.org/) erstellte Single-Page-App.
-- Das zugehörige Backend besteht aus zwei separat agierenden [Express](https://expressjs.com/de/) Anwendungen, die eine [MongoDB](https://www.mongodb.com/) Datenbank verwenden.
-  - Der Frontend-Service ist für die Verarbeitung jeglicher Anfragen des Frontends zuständig.
-  - Der QuantumLeap-Service ist für das Abrufen der Daten aus der Open Data Plattform zuständig. Abhängig davon, ob es sich um aktuelle Daten (Werte & Donut-Charts) oder historische Daten (Balken- und Linien-Charts) handelt, wird eine Abfrage an den Context-Broker (für aktuelle Daten) oder QuantumLeap (für historische Daten) gesendet.
-  - In der MongoDB werden sämtliche relevanten Daten gehalten: Die Nutzerdaten, Dashboarddaten und Querydaten.
+- The website (frontend) is a single-page app created with [React](https://reactjs.org/).
+- The corresponding backend consists of two separate [Express](https://expressjs.com/) applications that use a [MongoDB](https://www.mongodb.com/) database.
+  - The Frontend Service handles all frontend-related requests.
+  - The QuantumLeap Service is responsible for retrieving data from the Open Data Platform. Depending on whether it is current data (values and donut charts) or historical data (bar and line charts), it sends queries to the Context Broker (for current data) or QuantumLeap (for historical data).
+  - MongoDB holds all relevant data, including user data, dashboard data, and query data.
 
+## Functionality and Data Flow of Project Components
 
-## Funktionsweise und Datenflüsse der Projektkomponenten
+To illustrate the functionality of the project components, the three main data flows are described below.
 
-Zur Veranschaulichung der Funktionsweise der Projektkomponenten sind nachfolgend die drei wichtigsten Datenflüsse beschrieben.
+![Data Flow](documentation/data-flow.png)
 
-![](documentation/data-flow.png)
+- **User Data Flow:** When users access a specific dashboard through a URL, the frontend sends a corresponding request to the Frontend Service. If the dashboard exists, it is retrieved from the database. As the entire dashboard's design can be adjusted by administrators in real-time, the structure is loaded at this point. However, the data retrieved from the Open Data Platform is not included in the structure. Instead, it is stored in a separate collection in the database and added to the structure through references. This allows updating the data parallel to querying it. In other words, when data is needed for a dashboard, the last available data can always be used. Only after successfully retrieving and processing the data from the Open Data Platform, the database is updated with the latest data. This ensures no delays, and users are always presented with the most current data when the page refreshes in the background.
 
-- **User Datenfluss**  
-Wenn Nutzer:innen durch eine Url ein bestimmtes Dashboard aufrufen, wird eine entsprechende Anfrage vom Frontend an den Frontend-Service gesendet. Falls das Dashboard existiert, wird es vom Frontend-Service aus der Datenbank geholt. Da die gesamte Gestaltung des Dashboards von Administratoren (im Livebetrieb) angepasst werden kann, wird hierbei die Seitenstruktur geladen. Was in der Struktur allerdings nicht enthalten ist, sind die Daten, die aus der Open Data Plattform bezogen wurden. Diese befinden sich in einer gesonderten Kollektion in der Datenbank und werden über Referenzen der Struktur hinzugefügt.  
-Dies ermöglicht das Aktualisieren des Datenstands parallel zur Abfrage des selbigen, sprich: Wenn für ein Dashboard Daten benötigt werden, kann immer der letzte Stand dieser Daten verwendet werden. Erst nach erfolgreichem Abruf und Verarbeitung der aus der Open Data Plattform stammenden Daten werden diese in der Datenbank erneuert. Somit werden Verzögerungen verhindert und sobald aktuelle Daten vorliegen werden diese ohnehin den Nutzer:innen präsentiert, wenn sich die Seite das nächste Mal im Hintergrund aktualisert.
+- **Admin Data Flow:** In addition to the standard user flow, when administrators log in, the Frontend Service checks if the necessary permissions are stored in the corresponding database collection. If so, administrators receive a token that allows them to modify website content. For example, an administrator can create a panel to visualize new data from the Open Data Platform. When this change is confirmed by the administrators by saving it in the frontend, it is sent to the Frontend Service. The service stores the updated dashboard structure in the database's dashboard collection and references a new query created in the query collection. This allows the updated dashboard to be sent back to administrators, including the performed change.
 
-- **Admin Datenfluss**  
-Zusätzlich zu den Abläufen bei Standard Nutzer:innen wird beim Anmelden von Admins geprüft, ob die nötigen Berechtigungen in der entsprechenden Datenbank-Kollektion gespeichert sind. Ist dies der Fall, erhalten die Administrator:innen ein Token, durch welches sie Inhalte der Webseite ändern können.  
-So kann z. B. ein Panel angelegt werden, welches neue Daten aus der Open Data Plattform visualisieren soll. Wenn diese Änderung von den Administrator:innen durch das Speichern im Frontend bestätigt wird, wird sie an den Frontend-Service übermittelt. Dieser speichert die aktualisierte Dashboard-Struktur in die Dashboard-Kollektion der Datenbank und referenziert eine neue Query, die in der Query-Kollektion angelegt wird. Nun kann den Administrator:innen das aktuelle Dashboard übermittelt werden, was somit die durchgeführte Änderung beinhaltet.
-
-- **Caching Datenfluss**  
-Der Frontend-Service und QuantumLeap-Service agieren wie erwähnt gesondert. Die einzige benötigte gemeinsame Schnittstelle ist die Datenbank. Ein Scheduler des QuantumLeap-Service prüft in regelmässigen Abständen, ob Datenstände in der Query-Kollektion der Datenbank leer oder veraltet sind. Nur wenn dies der Fall ist, resultiert daraus eine Anfrage an die Open Data Plattform.  
-Infolgedessen können beispielsweise die Daten für einen Donut-Chart, der die aktuelle Auslastung anzeigen soll, bei jedem Durchgang aktualisiert werden, während die Daten für ein historisches Säulendiagramm nur jede Stunde aktualisert werden, da keine hohe Frequenz zur Visualiserung der Daten der letzten 30 Tage benötigt wird.  
-Da Abfragen über einen längeren Zeitraum mehr Daten enthalten, impliziert diese Umsetzung eine intelligente Verminderung der Last auf QuantumLeap und den QuantumLeap-Service.
+- **Caching Data Flow:** As mentioned earlier, the Frontend Service and QuantumLeap Service operate separately, and the only shared interface between them is the database. A scheduler in the QuantumLeap Service regularly checks if data in the query collection of the database is empty or outdated. Only when this condition is met, it sends a query to the Open Data Platform. As a result, data for a donut chart, showing current utilization, can be updated with each cycle, while data for a historical bar chart may be updated every hour, as there is no need for high-frequency visualization of data over the last 30 days. This approach intelligently reduces the load on QuantumLeap and the QuantumLeap Service over an extended period.
