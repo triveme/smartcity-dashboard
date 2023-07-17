@@ -84,7 +84,7 @@ function SingleTab(props: SingleTabProps) {
 
   if (tab.type === 'chart') {
     return (
-      <Box height='100%' sx={{ position: 'relative' }}>
+      <Box height='100%' sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <Chart key={'chart-' + (tab._id !== '' ? tab._id : tab.uid)} height={height - 50} tab={tab} />
         {!tab.apexSeries || (tab.apexSeries && tab.apexSeries?.length < 1) ? (
           alertText === '' ? (
@@ -97,7 +97,11 @@ function SingleTab(props: SingleTabProps) {
     )
   } else if (tab.type === 'description') {
     return (
-      <Box key={'box-' + (tab._id !== '' ? tab._id : tab.uid)} height={height - 49} style={{ padding: 10 }}>
+      <Box
+        key={'box-' + (tab._id !== '' ? tab._id : tab.uid)}
+        height='100%'
+        style={{ padding: 10, overflow: 'hidden' }}
+      >
         <Typography overflow='auto' height='100%' component='div' variant='body2' lineHeight={1.75}>
           {tab.text}
         </Typography>
@@ -122,7 +126,7 @@ function SingleTab(props: SingleTabProps) {
     )
   } else if (tab.type === 'component') {
     return (
-      <Box key='box-tab-componenttype' height='100%' sx={{ position: 'relative' }}>
+      <Box key='box-tab-componenttype' height='100%' sx={{ position: 'relative', overflow: 'hidden' }}>
         {tab.componentType === 'map' ? (
           <MapComponent
             key={'map-component-tab-' + tab.componentDataType}
@@ -179,7 +183,13 @@ function TabPanel(props: TabPanelProps) {
   const { value, tab, height, index, showOnMap } = props
 
   return (
-    <div role='tabpanel' hidden={value !== index} id={tab.name + '-' + index} aria-labelledby={tab.name + '-' + index}>
+    <div
+      role='tabpanel'
+      style={{ height: '100%' }}
+      hidden={value !== index}
+      id={tab.name + '-' + index}
+      aria-labelledby={tab.name + '-' + index}
+    >
       {value === index && (
         <SingleTab
           key={'singletab-' + (tab._id !== '' ? tab._id : tab.uid)}

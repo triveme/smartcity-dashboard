@@ -277,7 +277,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
         >
           <Box
             sx={{
-              width: drawerWidth,
+              width: '100%',
               display: { xs: 'block', sm: 'none' },
             }}
             role='presentation'
