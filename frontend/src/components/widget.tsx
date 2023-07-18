@@ -193,9 +193,8 @@ export function Widget(props: WidgetProps) {
   }
 
   const createWidgetTabIcons = (tabIcons: string[]) => {
-    return (
-      <>
-        {tabIcons?.map((icon) => (
+    return tabIcons
+      ? tabIcons?.map((icon) => (
           <IconButton
             key={'IconButton-Widget-' + icon}
             onClick={() => {
@@ -208,9 +207,8 @@ export function Widget(props: WidgetProps) {
               color={activeTabIcon === icon ? colors.iconColor : colors.grey}
             />
           </IconButton>
-        ))}
-      </>
-    )
+        ))
+      : null
   }
 
   //Activate the first icon on initial loading

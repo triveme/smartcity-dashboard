@@ -115,7 +115,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   const displayEditButtonsInMenu = () => {
     if (stateContext.authToken && editMode) {
       return (
-        <>
+        <Box>
           <ListItem
             button
             onClick={handleDashboardCreatorClickOpen}
@@ -145,7 +145,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             editMode={false}
             dashboard={initialDashboard}
           />
-        </>
+        </Box>
       )
     }
     return null
