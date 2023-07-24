@@ -6,11 +6,11 @@ import { SingleValue, Value } from 'components/value'
 import { TransitionAlert } from './elements/transition-alert'
 import { MeasurementComponent } from './measurement'
 import { MapComponent } from './map/map'
-import { PARKING_DATA_SLIDER, POI_DATA, SWIMMING_DATA_SLIDER, ZOO_UTILIZATION_DATA } from 'constants/dummy-data'
+import { PARKING_DATA_SLIDER, POI_DATA, SWIMMING_DATA, ZOO_UTILIZATION_DATA } from 'constants/dummy-data'
 import { ParkingComponent } from './charts/slider/parking-component'
-import { InterestingPois } from './interesting-pois'
 import { SwimmingDetails } from './swimming-details'
 import { Utilization } from './utilization'
+import { ListView } from './listview/listview'
 
 type TabProps = {
   tab: TabComponent
@@ -88,10 +88,10 @@ export function TabContent(props: TabProps) {
 
           {tab.componentType === 'measurement' ? <MeasurementComponent tab={tab}></MeasurementComponent> : null}
 
-          {tab.componentType === 'swimming' ? <SwimmingDetails infos={SWIMMING_DATA_SLIDER}></SwimmingDetails> : null}
+          {tab.componentType === 'swimming' ? <SwimmingDetails infos={SWIMMING_DATA}></SwimmingDetails> : null}
 
           {tab.componentType === 'pois' ? (
-            <InterestingPois
+            <ListView
               key={'interesting-poi-tab-' + tab.componentDataType}
               infos={tab.componentData ? tab.componentData : POI_DATA}
             />
