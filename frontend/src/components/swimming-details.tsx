@@ -1,8 +1,7 @@
 import { Typography } from '@mui/material'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
-import { SliderComponent } from 'models/chart-types'
-import { SwimmingInfo, SwimmingUtilizationModel, SwimmingZone } from 'models/data-types'
+import { SwimmingUtilizationModel, SwimmingZone } from 'models/data-types'
 import { SliderWithoutKnobs } from './charts/slider/slider'
 
 type SwimmingDetailsProps = {
