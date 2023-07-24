@@ -148,11 +148,9 @@ export function LineChart(props: LineChartProps) {
   }
 
   if (!tab.apexOptions) {
-    console.log('apexOptions no')
     tab.apexOptions = {}
   }
   if (tab.apexOptions) {
-    console.log('apexOptions yes')
     tab.apexOptions = set(tab.apexOptions, 'xaxis.tickAmount', windowWidth ? Math.round(windowWidth / 150) : 3)
     tab.apexOptions = set(tab.apexOptions, 'stroke.curve', stepline ? ' stepline' : 'straight')
   }
