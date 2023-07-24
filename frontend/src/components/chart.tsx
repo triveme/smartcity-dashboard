@@ -46,7 +46,15 @@ export function Chart(props: TabProps) {
   } else if (tab.apexType === 'bar') {
     return <BarChart tab={tab} height={height} tickAmountKey={tickAmountKey} windowWidth={windowWidth} />
   } else if (tab.apexType === 'line') {
-    return <LineChart tab={tab} height={height} tickAmountKey={tickAmountKey} windowWidth={windowWidth} />
+    return (
+      <LineChart
+        tab={tab}
+        height={height}
+        tickAmountKey={tickAmountKey}
+        windowWidth={windowWidth}
+        stepline={tab.apexStepline}
+      />
+    )
   } else if (tab.apexType === 'radial180') {
     return (
       <RadialChart180
@@ -77,9 +85,14 @@ export function Chart(props: TabProps) {
   } else if (tab.apexType === 'sliderKnobs') {
     return (
       <SliderWithKnobs
-        name={tab.componentName}
-        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : tab.componentMaximum - 1}
-        maximumValue={tab.componentMaximum}
+        name={tab.componentData[0].name ? tab.componentData[0].name : 'Parkplatz'}
+        occupiedSpots={
+          tab.componentData[0].occupiedSpotNumber !== undefined ? tab.componentData[0].occupiedSpotNumber : 0
+        }
+        availableSpots={
+          tab.componentData[0].availableSpotNumber !== undefined ? tab.componentData[0].availableSpotNumber : 0
+        }
+        totalSpots={tab.componentData[0].totalSpotNumber !== undefined ? tab.componentData[0].totalSpotNumber : 1}
       />
     )
   } else {

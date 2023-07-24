@@ -1,18 +1,24 @@
-import { ElementRef, useEffect, useRef, useState } from 'react'
+import { ElementRef, useEffect, useRef } from 'react'
 import L, { latLngBounds } from 'leaflet'
-import { useMap, Marker } from 'react-leaflet'
+import { useMap, Marker, Popup } from 'react-leaflet'
 import { MapData } from 'models/data-types'
+import { Card, CardMedia, CardContent } from '@mui/material'
+import { CopyrightElement } from 'components/elements/copyright-element'
+import { HeadlineYellow } from 'components/elements/font-types'
+import colors from 'theme/colors'
 
 type MapMoveToMarkerProps = {
   defaultIcon: any
   iconType: string
   markerData: MapData[]
+  allowPopup: boolean
+  zoomLevel: number
+  rotate: boolean
 }
 
 export function MapMoveToMarker(props: MapMoveToMarkerProps) {
-  const { defaultIcon, iconType, markerData } = props
+  const { defaultIcon, iconType, markerData, allowPopup, zoomLevel, rotate } = props
   const map = useMap()
-  const [zoomLevel] = useState(20)
   const markerRefs = useRef<ElementRef<typeof Marker>[]>([])
 
   // Center map position
@@ -55,12 +61,54 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                 icon={
                   iconType === 'parking'
                     ? L.divIcon({
-                        className: info.status === 'available' ? 'available-marker' : 'occupied-marker',
+                        className:
+                          info.status === 'free'
+                            ? rotate
+                              ? 'available-marker-rotate'
+                              : 'available-marker'
+                            : rotate
+                            ? 'occupied-marker-rotate'
+                            : 'occupied-marker',
                         iconAnchor: [30, 10],
                       })
                     : defaultIcon
                 }
-              />
+              >
+                {allowPopup ? (
+                  <Popup className={'map-marker-popup'} closeButton={false} closeOnEscapeKey={false}>
+                    <Card
+                      sx={{
+                        maxWidth: { xs: 200, md: 250 },
+                        minWidth: { xs: 200, md: 250 },
+                        border: 2,
+                        borderColor: colors.iconColor,
+                      }}
+                    >
+                      {info.image && info.image !== 'none' ? (
+                        <CardMedia
+                          sx={{ height: { xs: 80, md: 120 }, position: 'relative' }}
+                          image={info.image && info.image !== 'none' ? info.image : ''}
+                          title={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
+                        />
+                      ) : null}
+                      {info.creator && <CopyrightElement creator={info.creator} />}
+                      <CardContent
+                        sx={{
+                          p: {
+                            xs: '8px !important',
+                            md: '12px !important',
+                          },
+                        }}
+                      >
+                        <HeadlineYellow text={info.name} />
+                        <p>
+                          {info.address?.streetAddress} {info.address?.postalCode} {info.address?.addressLocality}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Popup>
+                ) : null}
+              </Marker>
             )
           })
         : null}

@@ -24,8 +24,8 @@
 .available-marker {
   background-color: rgba(0, 255, 0, 0.5); /* Semi-transparent green */
   border-radius: 0%;
-  width: 150px !important;
-  height: 150px !important;
+  width: 60px !important;
+  height: 20px !important;
 }
 
 /* CSS for occupied parking space */
@@ -34,4 +34,16 @@
   border-radius: 0%;
   width: 60px !important;
   height: 20px !important;
+}
+.available-marker-rotate {
+  background-color: rgba(0, 255, 0, 0.5); /* Semi-transparent green */
+  border-radius: 0%;
+  width: 20px !important;
+  height: 60px !important;
+}
+.occupied-marker-rotate {
+  background-color: rgba(255, 0, 0, 0.5); /* Semi-transparent red */
+  border-radius: 0%;
+  width: 20px !important;
+  height: 60px !important;
 }

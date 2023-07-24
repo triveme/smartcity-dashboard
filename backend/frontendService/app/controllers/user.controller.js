@@ -435,6 +435,9 @@ function getQdToAddAndUpdate(dashboard) {
                     apexMaxAlias: tab.apexMaxAlias
                       ? tab.apexMaxAlias
                       : undefined,
+                    apexStepline: tab.apexStepline
+                      ? tab.apexStepline
+                      : undefined,
                     intervalInMinutes: getIntervalFromTimeframe(tab.timeframe),
                     componentType: tab.componentType
                       ? tab.componentType

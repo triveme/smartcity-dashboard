@@ -1,5 +1,12 @@
 import { RadialComponent, UtilizationComponent } from 'models/chart-types'
-import { InterestingPlace, LocationType, ParkingInfo, SwimmingInfo } from 'models/data-types'
+import {
+  InterestingPlace,
+  LocationType,
+  ParkingInfo,
+  ParkingSpot,
+  SwimmingInfo,
+  SwimmingUtilizationModel,
+} from 'models/data-types'
 
 export const WEATHER_DATA_RADIAL: RadialComponent[] = [
   {
@@ -193,18 +200,18 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 63,
+        capacityMax: 100,
+        capacityCurrent: 63,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 12,
+        capacityMax: 100,
+        capacityCurrent: 12,
       },
       {
         name: 'Fitness',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
     ],
   },
@@ -213,18 +220,18 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 25,
+        capacityMax: 100,
+        capacityCurrent: 25,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 51,
+        capacityMax: 100,
+        capacityCurrent: 51,
       },
       {
         name: 'Fitness',
-        maxValue: 100,
-        currentlyUsed: 10,
+        capacityMax: 100,
+        capacityCurrent: 10,
       },
     ],
   },
@@ -233,13 +240,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 48,
+        capacityMax: 100,
+        capacityCurrent: 48,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 26,
+        capacityMax: 100,
+        capacityCurrent: 26,
       },
     ],
   },
@@ -248,13 +255,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 75,
+        capacityMax: 100,
+        capacityCurrent: 75,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 15,
+        capacityMax: 100,
+        capacityCurrent: 15,
       },
     ],
   },
@@ -263,13 +270,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 70,
+        capacityMax: 100,
+        capacityCurrent: 70,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 6,
+        capacityMax: 100,
+        capacityCurrent: 6,
       },
     ],
   },
@@ -278,13 +285,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
     ],
   },
@@ -481,7 +488,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Kaltenbachtal',
     types: ['Grünanlagen und Wälder'],
-    address: 'Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: '',
+      postalCode: '',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-001.jpg',
     creator: 'Artist 1',
     location: {
@@ -493,7 +504,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Bismarckturm',
     types: ['Gebäude und Bauwerke', 'Sehenswürdigkeiten'],
-    address: 'Reichsallee 3, 42285 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Reichsallee 3',
+      postalCode: '42285',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-006.jpg',
     creator: 'Artist 1',
     location: {
@@ -505,7 +520,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Zentrum Röttgen',
     types: ['Jugend- und Kindertreffs'],
-    address: 'Röttgen 102a, 42109 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Röttgen 102a',
+      postalCode: '42109',
+    },
     image: 'none',
     creator: '',
     location: {
@@ -517,7 +536,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Inline-/ Skateboardanlage Barmen',
     types: ['Freizeitsportangebote'],
-    address: 'Schluchtstraße, 42285 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Schluchtstraße',
+      postalCode: '42285',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-005.jpg',
     creator: 'Artist 2',
     location: {
@@ -529,7 +552,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Sportcenter Eskesberg',
     types: ['Freizeitsportangebote'],
-    address: 'Am Eskesberg 5, 42115 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Am Eskesberg 5',
+      postalCode: '42115',
+    },
     image: 'none',
     creator: '',
     location: {
@@ -541,7 +568,11 @@ export const POI_DATA: InterestingPlace[] = [
   {
     name: 'Jakobstreppe',
     types: ['Gebäude und Bauwerke', 'Sehenswürdigkeiten'],
-    address: 'Jakobstreppe, 42115 Wuppertal',
+    address: {
+      addressLocality: 'Wuppertal',
+      streetAddress: 'Jakobstreppe',
+      postalCode: '42115',
+    },
     image: 'http://www.fotokraemer-wuppertal.de/images/POI-Stadt%20Wuppertal-001-004.jpg',
     creator: 'Artist 3',
     location: {
@@ -556,12 +587,11 @@ export const PARKING_SPOTS: any[] = [
   {
     id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31',
     type: 'ParkingSpot',
-    address: '',
-    // address: {
-    //   addressLocality: 'Kiel',
-    //   postalCode: '24118',
-    //   streetAddress: 'Schauenburgerstraße 116',
-    // },
+    address: {
+      addressLocality: 'Kiel',
+      postalCode: '24118',
+      streetAddress: 'Schauenburgerstraße 116',
+    },
     availableSpotNumber: 0,
     description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3',
     location: {
@@ -577,12 +607,11 @@ export const PARKING_SPOTS: any[] = [
   {
     id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E891B5',
     type: 'ParkingSpot',
-    address: '',
-    // address: {
-    //   addressLocality: 'Kiel',
-    //   postalCode: '24118',
-    //   streetAddress: 'Schauenburgerstraße 116',
-    // },
+    address: {
+      addressLocality: 'Kiel',
+      postalCode: '24118',
+      streetAddress: 'Schauenburgerstraße 116',
+    },
     availableSpotNumber: 1,
     description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 4',
     location: {
@@ -594,5 +623,93 @@ export const PARKING_SPOTS: any[] = [
     occupiedSpotNumber: 0,
     status: 'free',
     totalSpotNumber: 1,
+  },
+]
+
+export const EMPTY_POI: InterestingPlace = {
+  name: '',
+  types: [],
+  address: {
+    addressLocality: '',
+    postalCode: '',
+    streetAddress: '',
+  },
+  image: '',
+  creator: '',
+  location: {
+    type: 'point',
+    coordinates: [7.120197671, 51.1951799443],
+  },
+  info: '',
+}
+
+export const EMPTY_PARKING_SPOT: ParkingSpot = {
+  id: 'urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31',
+  type: 'ParkingSpot',
+  address: {
+    addressLocality: 'Kiel',
+    postalCode: '24118',
+    streetAddress: 'Schauenburgerstraße 116',
+  },
+  availableSpotNumber: 0,
+  description: 'Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3',
+  location: {
+    type: 'Point',
+    coordinates: [10.120266576, 54.334269361],
+  },
+  name: 'KITZ 08',
+  occupancy: 1,
+  occupiedSpotNumber: 1,
+  status: 'occupied',
+  totalSpotNumber: 1,
+}
+
+export const SWIMMING_DATA: SwimmingUtilizationModel[] = [
+  {
+    id: 'aff9fc4d-e389-4178-9b34-2b3646ddae32',
+    name: 'Schwimmoper',
+    zones: [
+      {
+        id: 'e32caa82-40f7-4d1d-aa4f-33b74db6834d',
+        name: 'Sauna',
+        capacityCurrent: 9,
+        capacityMaximum: 40,
+        occupancyRate: 0.225,
+      },
+      {
+        id: '4387d99d-7854-461b-998a-d029e8698e69',
+        name: 'Schwimmhalle',
+        capacityCurrent: 132,
+        capacityMaximum: 120,
+        occupancyRate: 1.0,
+      },
+      {
+        id: 'bca47966-8060-468c-8129-dde6068f7d54',
+        name: 'Fitness',
+        capacityCurrent: 0,
+        capacityMaximum: 15,
+        occupancyRate: 0.0,
+      },
+    ],
+  },
+  {
+    id: '4bdc7ebe-9693-444a-9fc3-6dd3d09cd929',
+    name: 'Langerfeld',
+    zones: [
+      {
+        id: 'bddf615b-90ae-4187-b59f-af627350d4ea',
+        name: 'Sauna',
+        capacityCurrent: 9,
+        capacityMaximum: 30,
+        occupancyRate: 0.3,
+      },
+      {
+        id: 'c460822a-7248-43b6-b1bd-c3cae90b6774',
+        name: 'Schwimmhalle',
+        capacityCurrent: 126,
+        capacityMaximum: 70,
+        occupancyRate: 1.0,
+      },
+    ],
   },
 ]

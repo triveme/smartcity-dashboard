@@ -1,4 +1,5 @@
 import { ApexOptions } from 'apexcharts'
+import { MapComponentOptions } from 'models/data-types'
 
 export type TabComponent = {
   _id: string
@@ -13,6 +14,7 @@ export type TabComponent = {
   apexMaxValue?: number
   apexMaxAlias?: string
   apexMaxColor?: string
+  apexStepline?: boolean
   componentType: string
   componentData: Array<any>
   componentDataType: string
@@ -25,6 +27,7 @@ export type TabComponent = {
   componentAlarm: number
   componentUnit: string
   componentValue: number
+  componentOptions: MapComponentOptions
   timeframe?: number
   fiwareService?: string
   entityId?: string[]

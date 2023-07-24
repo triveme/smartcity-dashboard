@@ -38,7 +38,7 @@ export type SwimmingInfo = {
 export type InterestingPlace = {
   name: string
   types: string[]
-  address: string
+  address: AddressModel
   image: string
   creator: string
   location: LocationType
@@ -50,7 +50,7 @@ export type MapData = {
   location: LocationType
   image?: string
   creator?: string
-  address?: string
+  address?: AddressModel
   available?: boolean
   status?: string
   occupancy?: number
@@ -59,7 +59,7 @@ export type MapData = {
 export type ParkingSpot = {
   id: string
   type: string
-  address: string
+  address: AddressModel
   availableSpotNumber: number
   description: string
   location: LocationType
@@ -70,7 +70,22 @@ export type ParkingSpot = {
   totalSpotNumber: number
 }
 
-export type ParkingSpotAddress = {
+export type EvChargingStation = {
+  id: string
+  type: string
+  socketType: string[]
+  capacity: number
+  name: string
+  allowedVehicleType: string[]
+  source: string
+  location: LocationType
+  chargeType: string[]
+  address: AddressModel
+  operator: string
+  contactPoint: string
+}
+
+export type AddressModel = {
   addressLocality: string
   postalCode: string
   streetAddress: string
@@ -89,4 +104,29 @@ export type MeasurementModel = {
   monthDates: string[]
   warningValue: number
   alarmValue: number
+}
+
+export type MapComponentOptions = {
+  zoom: number
+  minZoom: number
+  maxZoom: number
+  allowPopups: boolean
+  allowZoom: boolean
+  allowScroll: boolean
+  iconType: string
+  occupancyRotate: boolean
+}
+
+export type SwimmingUtilizationModel = {
+  id: string
+  name: string
+  zones: SwimmingZone[]
+}
+
+export type SwimmingZone = {
+  id: string
+  name: string
+  capacityCurrent: number
+  capacityMaximum: number
+  occupancyRate: number
 }

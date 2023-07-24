@@ -17,10 +17,11 @@ type LineChartProps = {
   height: number
   tickAmountKey: number
   windowWidth?: number
+  stepline?: boolean
 }
 
 export function LineChart(props: LineChartProps) {
-  const { tab, height, tickAmountKey, windowWidth } = props
+  const { tab, height, tickAmountKey, windowWidth, stepline } = props
 
   let trigger = 'a'
 
@@ -151,6 +152,7 @@ export function LineChart(props: LineChartProps) {
   }
   if (tab.apexOptions) {
     tab.apexOptions = set(tab.apexOptions, 'xaxis.tickAmount', windowWidth ? Math.round(windowWidth / 150) : 3)
+    tab.apexOptions = set(tab.apexOptions, 'stroke.curve', stepline ? ' stepline' : 'straight')
   }
 
   return (
