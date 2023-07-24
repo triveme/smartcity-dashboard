@@ -160,6 +160,7 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
       }
       queryItem.dataLabels = newDataLabels;
     }
+    console.log(newData);
     queryItem.data = newData;
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
@@ -167,32 +168,6 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
 }
 
 function processMapData(queryItem, queryData) {
-  /**
-   * PARKING SPOT
-    {
-      "id": "urn:ngsi:ParkingSpot:ADDIX:0004A30B00E8CD31",
-      "type": "ParkingSpot",
-      "address": {
-          "addressLocality": "Kiel",
-          "postalCode": "24118",
-          "streetAddress": "Schauenburgerstraße 116"
-      },
-      "availableSpotNumber": 0,
-      "description": "Libelium LSP-V2 Parkplatzsensor KITZ E-Säule 3",
-      "location": {
-          "type": "Point",
-          "coordinates": [
-              10.120266576,
-              54.334269361
-          ]
-      },
-      "name": "KITZ 08",
-      "occupancy": 1,
-      "occupiedSpotNumber": 1,
-      "status": "occupied",
-      "totalSpotNumber": 1
-    }
-   */
   var dataEntries = [];
   if (
     queryData !== undefined &&
@@ -223,6 +198,7 @@ function buildParkingSpot(queryParkingSpot) {
       address: queryParkingSpot["address"].value,
       availableSpotNumber: queryParkingSpot["availableSpotNumber"].value,
       description: queryParkingSpot["description"].value,
+      name: queryParkingSpot["name"].value,
       location: {
         type: queryParkingSpot["location"].value["type"],
         coordinates: queryParkingSpot["location"].value["coordinates"],

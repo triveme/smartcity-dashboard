@@ -15,6 +15,7 @@ const Querydata = mongoose.model(
         apexType: String,
         apexMaxValue: Number,
         apexMaxAlias: String,
+        apexStepline: Boolean,
         componentType: String,
         componentDataType: String,
         componentName: String,

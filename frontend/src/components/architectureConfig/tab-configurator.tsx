@@ -37,6 +37,20 @@ export function TabConfigurator(props: TabConfiguratorProps) {
   const setNewTabValue = (newTabValues: newTabValue[]) => {
     let newTempTabs = cloneDeep(tempPanel.tabs)
     newTabValues.forEach((newTabValue) => {
+      //Necessary check and addition for older components
+      if (!newTempTabs[currentTabIndex].componentOptions) {
+        newTempTabs[currentTabIndex].componentOptions = {
+          allowPopups: false,
+          allowScroll: false,
+          allowZoom: false,
+          iconType: '',
+          maxZoom: 20,
+          minZoom: 10,
+          zoom: 20,
+          occupancyRotate: false,
+        }
+      }
+
       switch (newTabValue.key) {
         case 'name':
           newTempTabs[currentTabIndex].name = newTabValue.tabValue
@@ -79,6 +93,9 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           break
         case 'apexMaxColor':
           newTempTabs[currentTabIndex].apexMaxColor = newTabValue.tabValue
+          break
+        case 'apexStepline':
+          newTempTabs[currentTabIndex].apexStepline = newTabValue.tabValue
           break
         case 'timeframe':
           newTempTabs[currentTabIndex].timeframe = newTabValue.tabValue
@@ -216,6 +233,35 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           break
         case 'componentValue':
           newTempTabs[currentTabIndex].componentValue = newTabValue.tabValue
+          break
+        // Map Component Options
+        case 'allowPopup':
+          console.log('allowPopup: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.allowPopups = newTabValue.tabValue
+          break
+        case 'allowScroll':
+          console.log('allowScroll: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.allowScroll = newTabValue.tabValue
+          break
+        case 'allowZoom':
+          console.log('allowZoom: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.allowZoom = newTabValue.tabValue
+          break
+        case 'mapMinZoom':
+          console.log('mapMinZoom: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.minZoom = newTabValue.tabValue
+          break
+        case 'mapMaxZoom':
+          console.log('mapMaxZoom: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.maxZoom = newTabValue.tabValue
+          break
+        case 'mapCurZoom':
+          console.log('mapCurZoom: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.zoom = newTabValue.tabValue
+          break
+        case 'occupancyRotate':
+          console.log('occupancyRotate: ' + newTabValue.tabValue)
+          newTempTabs[currentTabIndex].componentOptions.occupancyRotate = newTabValue.tabValue
           break
       }
     })

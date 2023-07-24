@@ -17,7 +17,7 @@ import { SmallField } from 'components/elements/text-fields'
 import { MaxColorDialog } from 'components/architectureConfig/color-dialog'
 
 import colors from 'theme/colors'
-import { Dialog, DialogContent, IconButton, DialogActions } from '@mui/material'
+import { Dialog, DialogContent, IconButton, DialogActions, Switch, FormControlLabel } from '@mui/material'
 import { SaveButton } from 'components/elements/buttons'
 import { iconList, DashboardIcon } from './dashboard-icons'
 import borderRadius from 'theme/border-radius'
@@ -133,6 +133,18 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
           <MenuItem value='slider'>Slider</MenuItem>
           <MenuItem value='sliderKnobs'>Slider mit Label</MenuItem>
         </Select>
+        {tempPanel.tabs[currentTabIndex].apexType === 'line' && (
+          <FormControlLabel
+            control={
+              <Switch
+                value={tempPanel.tabs[currentTabIndex].apexStepline}
+                checked={tempPanel.tabs[currentTabIndex].apexStepline}
+                onChange={(e) => setNewTabValue([{ key: 'apexStepline', tabValue: e.target.checked }])}
+              />
+            }
+            label='Stepline'
+          />
+        )}
       </FormControl>
       {tempPanel.tabs[currentTabIndex] &&
         tempPanel.tabs[currentTabIndex].type === 'chart' &&

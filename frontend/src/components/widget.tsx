@@ -235,7 +235,7 @@ export function Widget(props: WidgetProps) {
         }}
       >
         <Box display='flex' justifyContent={'flex-start'} alignItems={'center'} gap={'10px'}>
-          <DashboardIcon icon={widget.widgetIcon} color={colors.iconColor}></DashboardIcon>
+          <DashboardIcon icon={widget.widgetIcon ? widget.widgetIcon : ''} color={colors.iconColor}></DashboardIcon>
           <Typography variant='h2' noWrap component='div'>
             {widget.name}
           </Typography>

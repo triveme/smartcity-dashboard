@@ -13,6 +13,9 @@ import {
   processCurrentValueData,
   processMultiCurrentData,
   processMapData,
+  processListData,
+  processUtilizationData,
+  processParkingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
@@ -108,6 +111,8 @@ function runSchedule() {
                 .toDate();
               queryItem.queryConfig.aggrPeriod = "day";
             }
+            queryItem.queryConfig.attrs =
+              queryItem.queryConfig.attribute.keys.join(",");
             queryItem.queryConfig.aggrMethod = "avg";
             queryItem.queryConfig.toDate = now;
             getHistoricalDataFromQuantumLeap(
@@ -124,7 +129,7 @@ function runSchedule() {
               }
             );
           }
-        } else if (queryItem.queryConfig.type == "component") {
+        } else if (queryItem.queryConfig.componentType == "map") {
           getCurrentMapDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
@@ -134,9 +139,36 @@ function runSchedule() {
               handleError(queryItem._id, errString);
             }
           );
+        } else if (queryItem.queryConfig.componentType == "list") {
+          var itemData = await loadData(
+            queryItem.queryConfig.componentDataType
+          ).catch((err) => console.error(err));
+
+          processListData(queryItem, itemData);
+        } else if (queryItem.queryConfig.componentType == "pois") {
+          var itemData = await loadData(
+            queryItem.queryConfig.componentDataType
+          ).catch((err) => console.error(err));
+
+          processListData(queryItem, itemData);
+        } else if (queryItem.queryConfig.componentType == "utilization") {
+          var itemData1 = await loadData("zooutilization1").catch((err) =>
+            console.error(err)
+          );
+          var itemData2 = await loadData("zooutilization2").catch((err) =>
+            console.error(err)
+          );
+
+          processUtilizationData(queryItem, itemData1, itemData2);
+        } else if (queryItem.queryConfig.componentType == "parking") {
+          var parkingData = await loadData("parking").catch((err) =>
+            console.error(err)
+          );
+          processParkingData(queryItem, parkingData);
         } else {
           console.log(
-            "Unknown tab type encountered in schedule.controller.js: "
+            "Unknown tab type encountered in schedule.controller.js: " +
+              queryItem.queryConfig.type
           );
           console.log(queryItem);
         }
