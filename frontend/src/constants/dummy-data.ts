@@ -1,5 +1,12 @@
 import { RadialComponent, UtilizationComponent } from 'models/chart-types'
-import { InterestingPlace, LocationType, ParkingInfo, ParkingSpot, SwimmingInfo } from 'models/data-types'
+import {
+  InterestingPlace,
+  LocationType,
+  ParkingInfo,
+  ParkingSpot,
+  SwimmingInfo,
+  SwimmingUtilizationModel,
+} from 'models/data-types'
 
 export const WEATHER_DATA_RADIAL: RadialComponent[] = [
   {
@@ -193,18 +200,18 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 63,
+        capacityMax: 100,
+        capacityCurrent: 63,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 12,
+        capacityMax: 100,
+        capacityCurrent: 12,
       },
       {
         name: 'Fitness',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
     ],
   },
@@ -213,18 +220,18 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 25,
+        capacityMax: 100,
+        capacityCurrent: 25,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 51,
+        capacityMax: 100,
+        capacityCurrent: 51,
       },
       {
         name: 'Fitness',
-        maxValue: 100,
-        currentlyUsed: 10,
+        capacityMax: 100,
+        capacityCurrent: 10,
       },
     ],
   },
@@ -233,13 +240,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 48,
+        capacityMax: 100,
+        capacityCurrent: 48,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 26,
+        capacityMax: 100,
+        capacityCurrent: 26,
       },
     ],
   },
@@ -248,13 +255,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 75,
+        capacityMax: 100,
+        capacityCurrent: 75,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 15,
+        capacityMax: 100,
+        capacityCurrent: 15,
       },
     ],
   },
@@ -263,13 +270,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 70,
+        capacityMax: 100,
+        capacityCurrent: 70,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 6,
+        capacityMax: 100,
+        capacityCurrent: 6,
       },
     ],
   },
@@ -278,13 +285,13 @@ export const SWIMMING_DATA_SLIDER: SwimmingInfo[] = [
     sensors: [
       {
         name: 'Bad',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
       {
         name: 'Sauna',
-        maxValue: 100,
-        currentlyUsed: 0,
+        capacityMax: 100,
+        capacityCurrent: 0,
       },
     ],
   },
@@ -656,3 +663,53 @@ export const EMPTY_PARKING_SPOT: ParkingSpot = {
   status: 'occupied',
   totalSpotNumber: 1,
 }
+
+export const SWIMMING_DATA: SwimmingUtilizationModel[] = [
+  {
+    id: 'aff9fc4d-e389-4178-9b34-2b3646ddae32',
+    name: 'Schwimmoper',
+    zones: [
+      {
+        id: 'e32caa82-40f7-4d1d-aa4f-33b74db6834d',
+        name: 'Sauna',
+        capacityCurrent: 9,
+        capacityMaximum: 40,
+        occupancyRate: 0.225,
+      },
+      {
+        id: '4387d99d-7854-461b-998a-d029e8698e69',
+        name: 'Schwimmhalle',
+        capacityCurrent: 132,
+        capacityMaximum: 120,
+        occupancyRate: 1.0,
+      },
+      {
+        id: 'bca47966-8060-468c-8129-dde6068f7d54',
+        name: 'Fitness',
+        capacityCurrent: 0,
+        capacityMaximum: 15,
+        occupancyRate: 0.0,
+      },
+    ],
+  },
+  {
+    id: '4bdc7ebe-9693-444a-9fc3-6dd3d09cd929',
+    name: 'Langerfeld',
+    zones: [
+      {
+        id: 'bddf615b-90ae-4187-b59f-af627350d4ea',
+        name: 'Sauna',
+        capacityCurrent: 9,
+        capacityMaximum: 30,
+        occupancyRate: 0.3,
+      },
+      {
+        id: 'c460822a-7248-43b6-b1bd-c3cae90b6774',
+        name: 'Schwimmhalle',
+        capacityCurrent: 126,
+        capacityMaximum: 70,
+        occupancyRate: 1.0,
+      },
+    ],
+  },
+]

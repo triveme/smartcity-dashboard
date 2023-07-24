@@ -116,3 +116,17 @@ export type MapComponentOptions = {
   iconType: string
   occupancyRotate: boolean
 }
+
+export type SwimmingUtilizationModel = {
+  id: string
+  name: string
+  zones: SwimmingZone[]
+}
+
+export type SwimmingZone = {
+  id: string
+  name: string
+  capacityCurrent: number
+  capacityMaximum: number
+  occupancyRate: number
+}
