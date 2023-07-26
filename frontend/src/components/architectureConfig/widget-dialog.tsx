@@ -251,7 +251,7 @@ export function WidgetDialog(props: WidgetDialogProps) {
               min={2}
               max={12}
               style={{
-                color: colors.edit,
+                color: colors.colorDetail,
               }}
             />
           </Box>

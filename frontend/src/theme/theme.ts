@@ -13,7 +13,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
       : {
           // palette values for dark mode
           primary: {
-            main: colors.edit,
+            main: colors.colorDetail,
             light: colors.white,
             dark: colors.textDark,
           },
@@ -101,7 +101,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
-    ...{ primary: colors.edit },
+    ...{ primary: colors.colorDetail },
   },
 })
 

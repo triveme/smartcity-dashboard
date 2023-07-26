@@ -307,7 +307,7 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                     marginRight: 10,
                     fontWeight: 'bold',
                     backgroundColor: !tempPanel.tabs[currentTabIndex].apexMaxColor
-                      ? colors.primary
+                      ? colors.colorDetail
                       : tempPanel.tabs[currentTabIndex].apexMaxColor,
                   }}
                 >

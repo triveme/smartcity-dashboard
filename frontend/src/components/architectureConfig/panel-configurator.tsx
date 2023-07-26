@@ -133,7 +133,7 @@ export function PanelConfigurator(props: PanelConfiguratorProps) {
             min={2}
             max={12}
             style={{
-              color: colors.edit,
+              color: colors.colorDetail,
               marginLeft: 10,
               marginRight: 10,
               paddingTop: 17,
@@ -188,18 +188,18 @@ export function PanelConfigurator(props: PanelConfiguratorProps) {
               >
                 <FormControlLabel
                   value={0}
-                  control={<Radio style={{ color: colors.edit, padding: 6.5 }} />}
+                  control={<Radio style={{ color: colors.colorDetail, padding: 6.5 }} />}
                   label='1. Tab'
                 />
                 <FormControlLabel
                   value={1}
-                  control={<Radio style={{ color: colors.edit, padding: 6.5 }} />}
+                  control={<Radio style={{ color: colors.colorDetail, padding: 6.5 }} />}
                   label='2. Tab'
                 />
                 {tempPanel.tabs.length > 2 && (
                   <FormControlLabel
                     value={2}
-                    control={<Radio style={{ color: colors.edit, padding: 6.5 }} />}
+                    control={<Radio style={{ color: colors.colorDetail, padding: 6.5 }} />}
                     label='3. Tab'
                   />
                 )}
