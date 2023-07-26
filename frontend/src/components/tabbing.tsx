@@ -51,7 +51,7 @@ export function Tabbing(props: TabbingProps) {
               minHeight: 38,
               maxHeight: 38,
               '& .Mui-selected css-1q2h7u5': {
-                color: colors.edit,
+                color: colors.colorDetail,
               },
             }}
             onChange={handleTabValueChange}

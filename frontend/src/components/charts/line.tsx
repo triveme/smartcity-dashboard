@@ -36,7 +36,7 @@ export function LineChart(props: LineChartProps) {
   /** adds annotationLineToApexOptions (apexMaxValue) */
   function getApexOptionsWithMaxLine() {
     const maxAlias = tab.apexMaxAlias ? tab.apexMaxAlias : 'Maximum'
-    const maxColor = tab.apexMaxColor ? tab.apexMaxColor : colors.primary
+    const maxColor = tab.apexMaxColor ? tab.apexMaxColor : colors.colorDetail
     let newApexOptions: ApexOptions = {}
     if (tab.apexOptions && tab.apexMaxValue) {
       newApexOptions = cloneDeep(tab.apexOptions)

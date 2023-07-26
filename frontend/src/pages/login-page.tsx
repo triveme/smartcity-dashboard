@@ -134,7 +134,7 @@ export function LoginPage(props: LoginPageProps) {
         >
           <Box
             style={{
-              backgroundColor: colors.primary,
+              backgroundColor: colors.colorDetail,
               paddingTop: 10,
               paddingBottom: 5,
               justifyContent: 'center',
@@ -160,7 +160,7 @@ export function LoginPage(props: LoginPageProps) {
             type='password'
             value={userPassword}
             onChange={(e) => setUserPassword(e.target.value)}
-            customStyle={{ marginBottom: 16, color: colors.edit }}
+            customStyle={{ marginBottom: 16, color: colors.colorDetail }}
           />
           <Box paddingTop={2} width='100%' display='grid'>
             <LoadingButton
@@ -170,7 +170,7 @@ export function LoginPage(props: LoginPageProps) {
               style={{
                 mt: 10,
                 mb: 2,
-                backgroundColor: colors.primary,
+                backgroundColor: colors.colorDetail,
                 color: colors.white,
               }}
               queryFun={handleLoginSubmit}

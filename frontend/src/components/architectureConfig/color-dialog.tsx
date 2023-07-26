@@ -83,7 +83,7 @@ export function ColorDialog(props: ColorDialogProps) {
               !currentTab.apexOptions ||
               !currentTab.apexOptions.colors ||
               !(currentTab.apexOptions.colors.length > attrColorIndex)
-                ? colors.primary
+                ? colors.colorDetail
                 : currentTab.apexOptions.colors![attrColorIndex],
           }}
         />
@@ -136,7 +136,7 @@ export function MaxColorDialog(props: MaxColorDialogProps) {
           customStyle={{
             fontWeight: 'bold',
             color: 'white',
-            backgroundColor: !currentTab.apexMaxColor ? colors.primary : currentTab.apexMaxColor,
+            backgroundColor: !currentTab.apexMaxColor ? colors.colorDetail : currentTab.apexMaxColor,
           }}
         />
       </DialogActions>

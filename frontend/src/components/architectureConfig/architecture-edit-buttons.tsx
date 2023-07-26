@@ -220,14 +220,14 @@ export function ArchitectureEditButtons(props: ArchitectureEditDeleteButtonsProp
 
   return stateContext.authToken && editMode && matchesDesktop ? (
     <>
-      <IconButton size='small' onClick={handleEdit} color='inherit' style={{ padding: 0, color: colors.edit }}>
+      <IconButton size='small' onClick={handleEdit} color='inherit' style={{ padding: 0, color: colors.colorDetail }}>
         <EditIcon style={{ fontSize: '1.25rem' }} />
       </IconButton>
       <IconButton
         size='small'
         onClick={handleClickDeleteOpen}
         color='inherit'
-        style={{ padding: 0, color: colors.edit }}
+        style={{ padding: 0, color: colors.colorDetail }}
       >
         <DeleteIcon style={{ fontSize: '1.25rem' }} />
       </IconButton>
