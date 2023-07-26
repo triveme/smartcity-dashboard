@@ -14,7 +14,7 @@ import {
   processMultiCurrentData,
   processMapData,
   processListData,
-  processUtilizationData,
+  // processUtilizationData,
   processParkingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
@@ -140,31 +140,47 @@ function runSchedule() {
             }
           );
         } else if (queryItem.queryConfig.componentType == "list") {
-          var itemData = await loadData(
-            queryItem.queryConfig.componentDataType
-          ).catch((err) => console.error(err));
-
-          processListData(queryItem, itemData);
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
         } else if (queryItem.queryConfig.componentType == "pois") {
-          var itemData = await loadData(
-            queryItem.queryConfig.componentDataType
-          ).catch((err) => console.error(err));
-
-          processListData(queryItem, itemData);
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
         } else if (queryItem.queryConfig.componentType == "utilization") {
-          var itemData1 = await loadData("zooutilization1").catch((err) =>
-            console.error(err)
-          );
-          var itemData2 = await loadData("zooutilization2").catch((err) =>
-            console.error(err)
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
           );
 
-          processUtilizationData(queryItem, itemData1, itemData2);
+          // processUtilizationData(queryItem, itemData1, itemData2);
         } else if (queryItem.queryConfig.componentType == "parking") {
-          var parkingData = await loadData("parking").catch((err) =>
-            console.error(err)
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processParkingData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
           );
-          processParkingData(queryItem, parkingData);
         } else {
           console.log(
             "Unknown tab type encountered in schedule.controller.js: " +
