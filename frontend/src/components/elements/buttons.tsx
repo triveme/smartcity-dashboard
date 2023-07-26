@@ -39,7 +39,7 @@ export function SaveButton(props: GenericButtonProps) {
           ? customStyle
           : {
               border: 0,
-              backgroundColor: colors.primary,
+              backgroundColor: colors.colorDetail,
               color: colors.white,
               fontWeight: 'bold',
             }
@@ -59,7 +59,7 @@ export function DeleteButton(props: GenericButtonProps) {
       onClick={onClick}
       style={{
         border: 0,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.colorDetail,
         color: colors.white,
         fontWeight: 'bold',
       }}
@@ -78,7 +78,7 @@ export function CancelButton(props: GenericButtonProps) {
       onClick={onClick}
       style={{
         border: 0,
-        backgroundColor: colors.edit,
+        backgroundColor: colors.colorDetail,
         color: colors.white,
         fontWeight: 'bold',
       }}
@@ -98,7 +98,7 @@ export function AddButton(props: GenericButtonProps) {
       onClick={onClick}
       style={{
         border: 0,
-        backgroundColor: colors.edit,
+        backgroundColor: colors.colorDetail,
         color: colors.white,
         fontWeight: 'bold',
       }}
@@ -118,7 +118,7 @@ export function LoginButton(props: GenericButtonProps) {
       onClick={onClick}
       style={{
         border: 0,
-        backgroundColor: colors.primary,
+        backgroundColor: colors.colorDetail,
         color: colors.white,
         fontWeight: 'bold',
       }}
@@ -132,7 +132,7 @@ export function UpButton(props: SwapButtonProps) {
   const { swapFunction } = props
 
   return (
-    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.edit }}>
+    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.colorDetail }}>
       <KeyboardArrowUpIcon style={{ fontSize: '1.25rem' }} />
     </IconButton>
   )
@@ -142,7 +142,7 @@ export function DownButton(props: SwapButtonProps) {
   const { swapFunction } = props
 
   return (
-    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.edit }}>
+    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.colorDetail }}>
       <KeyboardArrowDownIcon style={{ fontSize: '1.25rem' }} />
     </IconButton>
   )
@@ -152,7 +152,7 @@ export function LeftButton(props: SwapButtonProps) {
   const { swapFunction } = props
 
   return (
-    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.edit }}>
+    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.colorDetail }}>
       <KeyboardArrowLeftIcon style={{ fontSize: '1.25rem' }} />
     </IconButton>
   )
@@ -162,7 +162,7 @@ export function RightButton(props: SwapButtonProps) {
   const { swapFunction } = props
 
   return (
-    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.edit }}>
+    <IconButton size='small' onClick={swapFunction} style={{ padding: 0, color: colors.colorDetail }}>
       <KeyboardArrowRightIcon style={{ fontSize: '1.25rem' }} />
     </IconButton>
   )
