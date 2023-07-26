@@ -6,13 +6,13 @@ import './smileySwitch.css'
 
 const CustomSwitch = styled(Switch)(({ theme }) => ({
   '& .MuiSwitch-switchBase.Mui-checked': {
-    color: colors.edit,
+    color: colors.colorDetail,
     '&:hover': {
-      backgroundColor: alpha(colors.edit, theme.palette.action.hoverOpacity),
+      backgroundColor: alpha(colors.colorDetail, theme.palette.action.hoverOpacity),
     },
   },
   '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-    backgroundColor: colors.edit,
+    backgroundColor: colors.colorDetail,
   },
 }))
 
