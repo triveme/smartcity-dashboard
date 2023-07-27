@@ -88,7 +88,7 @@ const ProgressKnob = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  color: ${colors.colorDetail};
+  color: ${colors.white};
   font-size: smaller;
   box-shadow: var(--scms-box-shadow-small);
   font-weight: var(--scms-semi-bold);

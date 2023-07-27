@@ -24,8 +24,9 @@ import { ArchitectureEditButtons } from 'components/architectureConfig/architect
 import { DashboardIcon } from 'components/architectureConfig/dashboard-icons'
 import colors from 'theme/colors'
 import borderRadius from 'theme/border-radius'
-import logoSmall from 'assets/smartCityLogoSmall.svg'
-import logoTextOnly from 'assets/smartCityTextOnly.svg'
+// import logoSmall from 'assets/smartCityLogoSmall.svg'
+// import logoTextOnly from 'assets/smartCityTextOnly.svg'
+import logo from 'assets/logos/logo_smartcity-eichenzell.png'
 import { BUTTON_TEXTS, DRAWER_TITLE } from 'constants/text'
 import { InformationMenuBox } from './elements/information-menu-box'
 
@@ -222,7 +223,8 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   const displayLogo = () => {
     return (
       <Box display='flex' justifyContent={open ? 'start' : 'center'} margin={3} marginTop='auto' marginBottom={2}>
-        <img src={open ? logoTextOnly : logoSmall} alt='Smart City Logo' width={'100%'} />
+        <img src={logo} alt='Smart City Logo der Gemeinde Eichenzell' width={'100%'} />
+        {/* <img src={open ? logoTextOnly : logoSmall} alt='Smart City Logo' width={'100%'} /> */}
       </Box>
     )
   }

@@ -3,9 +3,9 @@ import { MapContainer, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import './map-control.css'
 import { MapComponentOptions, MapData } from 'models/data-types'
-import iconPoi from '../../assets/images/marker/pin-poi.png'
 import { MapMoveToMarker } from './map-move-to-marker'
 import { useEffect, useState } from 'react'
+import pinMarker from 'assets/icons/pin.svg'
 
 type MapComponentProps = {
   iconType: string
@@ -27,12 +27,13 @@ export function MapComponent(props: MapComponentProps) {
   }, [mapData])
 
   let DefaultIcon = L.icon({
-    iconSize: [74, 80],
-    iconAnchor: [35, 60],
+    iconSize: [55, 60],
+    iconAnchor: [26, 45],
     shadowSize: [41, 41],
     shadowAnchor: [35, 60],
     popupAnchor: [2, -40],
-    iconUrl: iconPoi,
+    iconUrl: pinMarker,
+    iconRetinaUrl: pinMarker,
   })
 
   return (

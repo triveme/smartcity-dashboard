@@ -7,7 +7,8 @@ import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 
 import colors from 'theme/colors'
-import smartCityLogo from 'assets/smartCityLogo.svg'
+import smartCityLogo from 'assets/logos/logo_smartcity-eichenzell.png'
+// import smartCityLogo from 'assets/smartCityLogo.svg'
 
 const drawerWidth = 240
 
