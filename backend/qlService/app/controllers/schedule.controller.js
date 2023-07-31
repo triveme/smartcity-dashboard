@@ -150,10 +150,10 @@ function runSchedule() {
             }
           );
         } else if (queryItem.queryConfig.componentType == "pois") {
-          getCurrentDataFromContextBroker(
+          getCurrentMapDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
-              processListData(queryItem, queriedData);
+              processMapData(queryItem, queriedData);
             },
             (errString) => {
               handleError(queryItem._id, errString);
