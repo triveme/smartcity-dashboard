@@ -32,7 +32,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         }),
   },
   typography: {
-    fontFamily: ['Lato', 'Helvetica', 'Arial', 'sans-serif'].join(','),
+    fontFamily: ['Helvetica', 'sans-serif'].join(','),
   },
   shape: {
     borderRadius: borderRadius.fragmentRadius,
