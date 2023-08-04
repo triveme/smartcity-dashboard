@@ -26,7 +26,7 @@ import colors from 'theme/colors'
 import borderRadius from 'theme/border-radius'
 // import logoSmall from 'assets/smartCityLogoSmall.svg'
 // import logoTextOnly from 'assets/smartCityTextOnly.svg'
-import logo from 'assets/logos/logo_smartcity-eichenzell.png'
+import logo from 'assets/logo_eichenzell.svg'
 import { BUTTON_TEXTS, DRAWER_TITLE } from 'constants/text'
 import { InformationMenuBox } from './elements/information-menu-box'
 
