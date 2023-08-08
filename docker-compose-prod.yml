@@ -1,0 +1,92 @@
+version: "3"
+
+services:
+  mongodb:
+    build:
+      context: .
+      dockerfile: Dockerfile-DB
+    container_name: mongodb
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongodb-data:/data/db
+    ports:
+      - "27021:27021"
+    networks:
+      - app-network
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=smartcity-dashboard
+    command: mongod --port 27021
+
+  frontendservice:
+    build:
+      context: ./backend/frontendService
+      dockerfile: Dockerfile.frontendService_PROD
+    container_name: frontendservice
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  qlservice:
+    build:
+      context: ./backend/qlService
+      dockerfile: Dockerfile.qlService_PROD
+    container_name: qlservice
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8081
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  dashboard:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend_PROD
+    container_name: dashboard
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - REACT_APP_BASE_URL=http://dashboard.smartcity-eichenzell.de/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - frontendservice
+      - qlservice
+    networks:
+      - app-network
+    env_file:
+      - .env
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    depends_on:
+      - frontendservice
+      - dashboard
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
