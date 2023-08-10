@@ -10,7 +10,8 @@ envVarsUtil.checkEnvVars();
 const app = express();
 
 var corsOptions = {
-  origin: process.env.FRONTEND_HOST,
+  // origin: process.env.FRONTEND_HOST,
+  origin: ["http://dashboard:3000", "http://dashboard.smartcity-eichenzell.de"],
 };
 
 app.use(cors(corsOptions));
