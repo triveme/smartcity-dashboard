@@ -84,7 +84,10 @@ function SingleTab(props: SingleTabProps) {
 
   if (tab.type === 'chart') {
     return (
-      <Box height='100%' sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Box
+        height='100%'
+        sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'stretch' }}
+      >
         <Chart key={'chart-' + (tab._id !== '' ? tab._id : tab.uid)} height={height - 50} tab={tab} />
         {!tab.apexSeries || (tab.apexSeries && tab.apexSeries?.length < 1) ? (
           alertText === '' ? (
