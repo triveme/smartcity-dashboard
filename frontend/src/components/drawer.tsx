@@ -76,7 +76,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const MiniVariantDrawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
-  width: drawerWidth,
+  width: '100%',
   flexShrink: 0,
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
@@ -115,7 +115,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   const displayEditButtonsInMenu = () => {
     if (stateContext.authToken && editMode) {
       return (
-        <>
+        <Box>
           <ListItem
             button
             onClick={handleDashboardCreatorClickOpen}
@@ -145,7 +145,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             editMode={false}
             dashboard={initialDashboard}
           />
-        </>
+        </Box>
       )
     }
     return null
