@@ -13,6 +13,9 @@ import {
   processCurrentValueData,
   processMultiCurrentData,
   processMapData,
+  processListData,
+  // processUtilizationData,
+  processParkingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
@@ -126,11 +129,53 @@ function runSchedule() {
               }
             );
           }
-        } else if (queryItem.queryConfig.type == "component") {
+        } else if (queryItem.queryConfig.componentType == "map") {
           getCurrentMapDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               processMapData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
+        } else if (queryItem.queryConfig.componentType == "list") {
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
+        } else if (queryItem.queryConfig.componentType == "pois") {
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
+        } else if (queryItem.queryConfig.componentType == "utilization") {
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processListData(queryItem, queriedData);
+            },
+            (errString) => {
+              handleError(queryItem._id, errString);
+            }
+          );
+
+          // processUtilizationData(queryItem, itemData1, itemData2);
+        } else if (queryItem.queryConfig.componentType == "parking") {
+          getCurrentDataFromContextBroker(
+            queryItem.queryConfig,
+            (queriedData) => {
+              processParkingData(queryItem, queriedData);
             },
             (errString) => {
               handleError(queryItem._id, errString);

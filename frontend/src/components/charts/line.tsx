@@ -36,7 +36,7 @@ export function LineChart(props: LineChartProps) {
   /** adds annotationLineToApexOptions (apexMaxValue) */
   function getApexOptionsWithMaxLine() {
     const maxAlias = tab.apexMaxAlias ? tab.apexMaxAlias : 'Maximum'
-    const maxColor = tab.apexMaxColor ? tab.apexMaxColor : colors.primary
+    const maxColor = tab.apexMaxColor ? tab.apexMaxColor : colors.colorDetail
     let newApexOptions: ApexOptions = {}
     if (tab.apexOptions && tab.apexMaxValue) {
       newApexOptions = cloneDeep(tab.apexOptions)
@@ -148,11 +148,9 @@ export function LineChart(props: LineChartProps) {
   }
 
   if (!tab.apexOptions) {
-    console.log('apexOptions no')
     tab.apexOptions = {}
   }
   if (tab.apexOptions) {
-    console.log('apexOptions yes')
     tab.apexOptions = set(tab.apexOptions, 'xaxis.tickAmount', windowWidth ? Math.round(windowWidth / 150) : 3)
     tab.apexOptions = set(tab.apexOptions, 'stroke.curve', stepline ? ' stepline' : 'straight')
   }

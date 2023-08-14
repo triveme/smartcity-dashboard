@@ -359,6 +359,7 @@ export function Widget(props: WidgetProps) {
                     rel='noopener'
                   >
                     {infoLink.infoLinkTitle}
+                    <br />
                   </Link>
                 ))}
               </Box>

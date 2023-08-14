@@ -11,8 +11,8 @@ export type RadialComponent = {
 
 export type SliderComponent = {
   name: string
-  maxValue: number
-  currentlyUsed: number
+  capacityMax: number
+  capacityCurrent: number
   parkingInfo?: ParkingInfo
 }
 

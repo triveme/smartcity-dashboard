@@ -175,7 +175,7 @@ export function PanelDialog(props: PanelDialogProps) {
               <SaveButton
                 onClick={editMode ? editPanel : addPanel}
                 customStyle={{
-                  backgroundColor: colors.primary,
+                  backgroundColor: colors.colorDetail,
                   color: colors.white,
                   fontWeight: 'bold',
                   marginRight: 15,

@@ -121,7 +121,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
             onClick={handleDashboardCreatorClickOpen}
             key={'listItem-editbuttons'}
             style={{
-              backgroundColor: colors.edit,
+              backgroundColor: colors.colorDetail,
               marginBottom: 2,
               margin: 3,
               marginTop: 5,
