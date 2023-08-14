@@ -76,7 +76,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const MiniVariantDrawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
-  width: drawerWidth,
+  width: '100%',
   flexShrink: 0,
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
@@ -277,7 +277,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
         >
           <Box
             sx={{
-              width: '100%',
+              width: drawerWidth,
               display: { xs: 'block', sm: 'none' },
             }}
             role='presentation'
