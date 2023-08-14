@@ -153,7 +153,7 @@ export function BarChart(props: BarChartProps) {
   }
 
   return (
-    <Box height='100%' display='flex' alignItems='center' justifyContent='center'>
+    <Box height='100%' width='100%' display='flex' alignItems='center' justifyContent='center'>
       <Box key={'box-' + (tab._id !== '' ? tab._id : tab.uid)} style={{ padding: 5, marginBottom: -15, width: '100%' }}>
         <ApexChart
           key={'apexchart-' + (tab._id !== '' ? tab._id : tab.uid) + tickAmountKey + trigger}
