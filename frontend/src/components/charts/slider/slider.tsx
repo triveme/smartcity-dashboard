@@ -153,11 +153,15 @@ export function SliderWithKnobs(props: SliderProps) {
             {/* <ProgressStart>{(info.maxValue - info.currentlyUsed)}</ProgressStart> */}
             {/* This is the circular knob at the end */}
             <ProgressEnd>
-              <span>{totalSpots}</span>
+              <span>
+                <Typography color={colors.white}>{totalSpots}</Typography>
+              </span>
             </ProgressEnd>
             {/* This is the circular knob sliding in the progress bar */}
             <ProgressStatus value={(occupiedSpots / totalSpots) * 100}>
-              <span>{totalSpots - availableSpots}</span>
+              <span>
+                <Typography color={colors.white}>{totalSpots - availableSpots}</Typography>
+              </span>
             </ProgressStatus>
           </Suspense>
         </ProgressKnobs>

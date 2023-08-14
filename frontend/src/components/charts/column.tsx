@@ -31,6 +31,7 @@ export function ColumnChart(props: ColumnChartProps) {
       toolbar: {
         show: false,
       },
+      background: colors.chartBackground,
     },
     plotOptions: {
       bar: {

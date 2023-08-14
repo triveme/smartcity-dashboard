@@ -12,9 +12,10 @@ const colors = {
   chartGrid: '#444444',
   chartBar: '#f0407e',
   chartFont: '#7A7A7A',
+  chartBackground: '#152437',
 
   // LISTVIEW
-  poiBackground: '#1B1B1B',
+  poiBackground: '#2f3a4e82',
   poiImageCopyrightBackground: 'rgba(0, 0, 0, 0.5)',
 
   // SCROLLBAR
@@ -46,10 +47,10 @@ const colors = {
   pink: '#C066A1',
   orange: '#CF953F',
   attributeColors: [
-    '#DBE027',
-    '#9EA226',
     '#003552',
     '#006871',
+    '#DBE027',
+    '#9EA226',
     '#C066A1',
     '#CF953F',
     '#04beaf',
