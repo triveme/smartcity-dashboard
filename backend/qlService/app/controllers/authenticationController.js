@@ -24,7 +24,7 @@ function checkIfTokenNeedsToUpdate() {
 function updateToken() {
   authClient
     .post(
-      "/password",
+      "/",
       new URLSearchParams({
         grant_type: "refresh_token",
         client_id: process.env.CLIENT_ID,
@@ -51,6 +51,9 @@ function updateToken() {
           response.data.refresh_token,
           response.data.expires_in
         );
+      } else {
+        console.log("Something went wrong authenticating");
+        console.log(response);
       }
     })
     .catch((err) => {
@@ -61,13 +64,14 @@ function updateToken() {
 function getInitialToken() {
   authClient
     .post(
-      "/password",
+      "/",
       new URLSearchParams({
         grant_type: "password",
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
         username: process.env.APPUSER,
         password: process.env.APPUSERPW,
+        scope: "api:read api:write api:delete",
       }).toString(),
       {
         headers: {
@@ -76,22 +80,28 @@ function getInitialToken() {
       }
     )
     .then((response) => {
-      console.log("Token erfolgreich aktualisiert");
+      console.log("Token wird initialisiert");
       if (
         response.data &&
         response.data.access_token &&
         response.data.expires_in &&
         response.data.refresh_token
       ) {
+        console.log("Token erfolgreich initialisiert");
         updateTokenAndExpirationTime(
           response.data.access_token,
           response.data.refresh_token,
           response.data.expires_in
         );
+      } else {
+        console.log("Something went wrong for initial authentication");
+        console.log(response);
       }
     })
     .catch((err) => {
-      console.error("authentication request failed: " + err);
+      console.error("initial authentication request failed: ");
+      console.error(err.response);
+      console.error(err);
     });
 }
 

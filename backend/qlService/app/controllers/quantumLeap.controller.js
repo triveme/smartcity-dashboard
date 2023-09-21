@@ -11,46 +11,35 @@ const cbClient = axios.create({
 });
 
 function getCurrentDataFromContextBroker(queryConfig, callback, errCallback) {
-  cbClient
-    .get(`v2/entities/${queryConfig.entityId}`, {
-      params: {
-        attrs: queryConfig.attrs,
-      },
-      headers: {
-        "Fiware-Service": queryConfig.fiwareService,
-        "Fiware-ServicePath": process.env.FIWARE_SERVICE_PATH,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-    .then(function (response) {
-      callback(response.data);
-    })
-    .catch(function (error) {
-      let errString = handleErrorMessage(error);
-      errCallback(errString);
-    });
-}
+  // Define the base Axios configuration
+  const axiosConfig = {
+    headers: {
+      "Fiware-Service": queryConfig.fiwareService,
+      "Fiware-ServicePath": "/",
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
 
-function getCurrentMapDataFromContextBroker(
-  queryConfig,
-  callback,
-  errCallback
-) {
+  // Check if queryConfig.attrs has a length greater than 0
+  if (queryConfig.attrs && queryConfig.attrs.length > 0) {
+    axiosConfig.params = {
+      attrs: queryConfig.attrs,
+      type: queryConfig.fiwareType,
+      limit: 1,
+    };
+  } else {
+    axiosConfig.params = {
+      type: queryConfig.fiwareType,
+    };
+  }
+
   cbClient
-    .get(`v2/entities?id=${queryConfig.entityId}`, {
-      params: {
-        attrs: queryConfig.attrs,
-      },
-      headers: {
-        "Fiware-Service": queryConfig.fiwareService,
-        "Fiware-ServicePath": process.env.FIWARE_SERVICE_PATH,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
+    .get(`v2/entities/${queryConfig.entityId}`, axiosConfig)
     .then(function (response) {
       callback(response.data);
     })
     .catch(function (error) {
+      console.error("Error while processing getCurrentDataFromContextBroker");
       let errString = handleErrorMessage(error);
       errCallback(errString);
     });
@@ -66,10 +55,11 @@ function getMultiCurrentDataFromContextBroker(
       params: {
         id: queryConfig.id,
         attrs: queryConfig.attrs,
+        type: queryConfig.fiwareType,
       },
       headers: {
         "Fiware-Service": queryConfig.fiwareService,
-        "Fiware-ServicePath": process.env.FIWARE_SERVICE_PATH,
+        "Fiware-ServicePath": "/",
         Authorization: `Bearer ${accessToken}`,
       },
     })
@@ -88,6 +78,7 @@ function getHistoricalDataFromQuantumLeap(queryConfig, callback, errCallback) {
   qlClient
     .get(`v2/entities/${queryConfig.entityId}`, {
       params: {
+        type: queryConfig.fiwareType,
         fromDate: queryConfig.fromDate,
         toDate: queryConfig.toDate,
         attrs: queryConfig.attrs,
@@ -97,7 +88,7 @@ function getHistoricalDataFromQuantumLeap(queryConfig, callback, errCallback) {
       headers: {
         "Content-Type": "application/json",
         "Fiware-Service": queryConfig.fiwareService,
-        "Fiware-ServicePath": process.env.FIWARE_SERVICE_PATH,
+        "Fiware-ServicePath": "/",
         Authorization: `Bearer ${accessToken}`,
       },
     })
@@ -119,6 +110,7 @@ function handleErrorMessage(error) {
       console.log(
         `${error.response.status} ${error.response.statusText} -----------------------------------------------------------------------------------`
       );
+      console.log(error.response.data);
     }
     if (error.request && error.request.path) {
       console.log(`${error.request.path}`);
@@ -140,7 +132,6 @@ function handleErrorMessage(error) {
 
 export {
   getCurrentDataFromContextBroker,
-  getCurrentMapDataFromContextBroker,
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
 };

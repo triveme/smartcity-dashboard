@@ -135,7 +135,8 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
       let newDataLabels = [];
       if (
         queryItem.queryConfig.apexType === "line" ||
-        queryItem.queryConfig.apexType === "bar"
+        queryItem.queryConfig.apexType === "bar" ||
+        queryItem.queryConfig.apexType === "measurement"
       ) {
         queriedData.attributes.forEach((attribute) => {
           queryItem.queryConfig.attribute.keys.forEach((key, index) => {
@@ -160,7 +161,6 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
       }
       queryItem.dataLabels = newDataLabels;
     }
-    console.log(newData);
     queryItem.data = newData;
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
@@ -178,16 +178,44 @@ function processMapData(queryItem, queryData) {
     if (queryData.length > 1) {
       queryData.forEach((dataItem) => {
         // dataEntries.push(dataItem);
-        dataEntries.push(buildParkingSpot(dataItem));
+        let item = buildFloodSpot(dataItem);
+        if (item) {
+          dataEntries.push(item);
+        }
       });
     } else {
       // dataEntries.push(queryData);
-      dataEntries.push(buildParkingSpot(queryData));
+      dataEntries.push(buildFloodSpot(queryData));
     }
   }
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
+}
+
+function buildFloodSpot(floodSpot) {
+  try {
+    let sensor = {
+      id: floodSpot["id"],
+      type: floodSpot["type"],
+      alertLevel: floodSpot["alertLevel"].value,
+      currentLevel: floodSpot["currentLevel"].value,
+      dangerLevel: floodSpot["dangerLevel"].value,
+      name: floodSpot["name"].value,
+      location: {
+        type: floodSpot["location"].value["type"],
+        coordinates: floodSpot["location"].value["coordinates"],
+      },
+      description: floodSpot["description"].value,
+      measuredDistance: floodSpot["measuredDistance"].value,
+      observationDateTime: floodSpot["observationDateTime"].value,
+      referenceLevel: floodSpot["referenceLevel"].value,
+    };
+    return sensor;
+  } catch (error) {
+    console.error("ERROR buildFloodSpot Data: " + error);
+    console.error(floodSpot);
+  }
 }
 
 function buildParkingSpot(queryParkingSpot) {
@@ -270,11 +298,9 @@ function processListData(queryItem, queryData) {
           dataEntry.electricity = properties.STROM;
         }
       }
-
       dataEntries.push(dataEntry);
     });
   }
-
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
@@ -340,7 +366,6 @@ function processParkingData(queryItem, queryData) {
       }
     });
   }
-
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
