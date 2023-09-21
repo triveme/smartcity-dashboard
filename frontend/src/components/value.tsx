@@ -4,7 +4,7 @@ import Box from '@mui/material/Box'
 import type { TabComponent } from 'components/tab'
 
 import { roundDecimalPlaces } from 'utils/math-helper'
-import { HeadlineColorable, HeadlineYellow } from './elements/font-types'
+import { HeadlineColorable } from './elements/font-types'
 // import { IconButton } from "@mui/material";
 // import { DashboardIcon } from "./architectureConfig/dashboard-icons";
 import colors from 'theme/colors'
