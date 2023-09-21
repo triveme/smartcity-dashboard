@@ -187,7 +187,9 @@ async function fillApexDataWithQd(dashboards) {
                                       );
                                     } else if (
                                       result.queryConfig.apexType === "line" ||
-                                      result.queryConfig.apexType === "bar"
+                                      result.queryConfig.apexType === "bar" ||
+                                      result.queryConfig.apexType ===
+                                        "measurement"
                                     ) {
                                       _.set(
                                         tab,
@@ -403,6 +405,7 @@ function getQdToAddAndUpdate(dashboard) {
             panel.tabs.forEach((tab, tabIndex) => {
               if (
                 tab.fiwareService &&
+                tab.fiwareType &&
                 tab.entityId &&
                 tab.attribute &&
                 tab.attribute.keys &&
@@ -415,6 +418,7 @@ function getQdToAddAndUpdate(dashboard) {
                   queryConfig: {
                     type: tab.type,
                     fiwareService: tab.fiwareService,
+                    fiwareType: tab.fiwareType,
                     entityId: tab.entityId,
                     filterProperty: tab.filterProperty
                       ? tab.filterProperty
