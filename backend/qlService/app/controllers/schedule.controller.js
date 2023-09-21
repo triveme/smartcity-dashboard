@@ -5,7 +5,6 @@ import {
   getCurrentDataFromContextBroker,
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
-  getCurrentMapDataFromContextBroker,
 } from "./quantumLeap.controller.js";
 import {
   processHistoricalData,
@@ -14,7 +13,6 @@ import {
   processMultiCurrentData,
   processMapData,
   processListData,
-  // processUtilizationData,
   processParkingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
@@ -31,15 +29,17 @@ function updateTokenIfNecessary() {
 
 // runs every 15 seconds
 function runSchedule() {
-  cron.schedule("*/15 * * * * *", () => {
+  cron.schedule("*/60 * * * * *", () => {
     updateTokenIfNecessary();
 
     getQuerydata((querydata) => {
       const now = new Date();
       querydata.map(async (queryItem) => {
         // current values, update them always
-        // TO DO: get current values from context broker
-        if (queryItem.queryConfig.type === "value") {
+        if (
+          queryItem.queryConfig.type === "value" ||
+          queryItem.queryConfig.apexType === "radial180"
+        ) {
           queryItem.queryConfig.attrs =
             queryItem.queryConfig.attribute.keys.join(",");
           // value(s) of one entity
@@ -74,12 +74,34 @@ function runSchedule() {
           queryItem.queryConfig.attrs =
             queryItem.queryConfig.attribute.keys.join(",");
           // donut charts display the current values, update them always
-          // TO DO: get current values from context broker
           if (queryItem.queryConfig.apexType === "donut") {
             getCurrentDataFromContextBroker(
               queryItem.queryConfig,
               (queriedData) => {
                 processCurrentDonutData(queryItem, queriedData, null);
+              },
+              (errString) => {
+                handleError(queryItem._id, errString);
+              }
+            );
+          } else if (queryItem.queryConfig.apexType == "measurement") {
+            queryItem.queryConfig.entityId = queryItem.queryConfig.entityId[0];
+            queryItem.queryConfig.attrs =
+              queryItem.queryConfig.attribute.keys.join(",");
+            queryItem.queryConfig.fromDate = moment(now)
+              .subtract(30, "days")
+              .toDate();
+            queryItem.queryConfig.aggrPeriod = "day";
+            queryItem.queryConfig.aggrMethod = "avg";
+            queryItem.queryConfig.toDate = now;
+            getHistoricalDataFromQuantumLeap(
+              queryItem.queryConfig,
+              (queriedData) => {
+                processHistoricalData(
+                  queryItem,
+                  queriedData,
+                  queryItem.queryConfig.aggrPeriod
+                );
               },
               (errString) => {
                 handleError(queryItem._id, errString);
@@ -111,8 +133,6 @@ function runSchedule() {
                 .toDate();
               queryItem.queryConfig.aggrPeriod = "day";
             }
-            queryItem.queryConfig.attrs =
-              queryItem.queryConfig.attribute.keys.join(",");
             queryItem.queryConfig.aggrMethod = "avg";
             queryItem.queryConfig.toDate = now;
             getHistoricalDataFromQuantumLeap(
@@ -130,7 +150,7 @@ function runSchedule() {
             );
           }
         } else if (queryItem.queryConfig.componentType == "map") {
-          getCurrentMapDataFromContextBroker(
+          getCurrentDataFromContextBroker(
             queryItem.queryConfig,
             (queriedData) => {
               processMapData(queryItem, queriedData);
@@ -150,7 +170,7 @@ function runSchedule() {
             }
           );
         } else if (queryItem.queryConfig.componentType == "pois") {
-          getCurrentMapDataFromContextBroker(
+          processListData(
             queryItem.queryConfig,
             (queriedData) => {
               processMapData(queryItem, queriedData);
@@ -169,8 +189,6 @@ function runSchedule() {
               handleError(queryItem._id, errString);
             }
           );
-
-          // processUtilizationData(queryItem, itemData1, itemData2);
         } else if (queryItem.queryConfig.componentType == "parking") {
           getCurrentDataFromContextBroker(
             queryItem.queryConfig,
@@ -186,7 +204,6 @@ function runSchedule() {
             "Unknown tab type encountered in schedule.controller.js: " +
               queryItem.queryConfig.type
           );
-          console.log(queryItem);
         }
       });
     });

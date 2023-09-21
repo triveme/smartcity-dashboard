@@ -7,6 +7,7 @@ const Querydata = mongoose.model(
       queryConfig: {
         intervalInMinutes: Number,
         fiwareService: String,
+        fiwareType: String,
         entityId: [String],
         type: {
           type: String,
