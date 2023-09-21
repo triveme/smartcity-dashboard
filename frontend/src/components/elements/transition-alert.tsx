@@ -28,6 +28,7 @@ export function TransitionAlert(props: TransitionAlertProps) {
         top: '50%',
         left: '50%',
         transform: `translate(-50%, -50%)`,
+        color: colors.text,
       }}
     >
       <Alert
@@ -49,6 +50,7 @@ export function TransitionAlert(props: TransitionAlertProps) {
         sx={{
           mb: 2,
           backgroundColor: colors.panelBackground,
+          color: colors.text,
         }}
       >
         {info ? infoText : stateContext.authToken ? alertText : 'Es konnten keine Daten geladen werden'}

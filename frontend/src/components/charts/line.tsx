@@ -7,7 +7,7 @@ import set from 'lodash/set'
 
 import type { TabComponent } from 'components/tab'
 
-import { roundDecimalPlaces } from 'utils/decimal-helper'
+import { roundDecimalPlaces } from 'utils/math-helper'
 
 import colors from 'theme/colors'
 import { WarningChartProps } from './column'
@@ -227,7 +227,7 @@ export function AlarmLineChart(props: WarningChartProps) {
     yaxis: {
       min: 0,
       max: maxValue,
-      tickAmount: 5,
+      tickAmount: 2,
       axisTicks: {
         color: colors.chartGrid,
       },

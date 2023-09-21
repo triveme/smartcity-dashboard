@@ -7,7 +7,7 @@ import { DataConfigurator } from 'components/architectureConfig/data-configurato
 
 import colors from 'theme/colors'
 import { SmallField } from 'components/elements/text-fields'
-import { FormControlLabel, FormGroup, Switch } from '@mui/material'
+import { FormControl, FormControlLabel, FormGroup, InputLabel, Switch } from '@mui/material'
 
 type ComponentConfiguratorProps = {
   currentTabIndex: number
@@ -20,44 +20,41 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
 
   return (
     <Box width='inherit' height='inherit' key='box-component-configurator'>
-      <Select
-        size='small'
-        autoWidth
-        margin='dense'
-        label='Komponententyp'
-        labelId='componenttype-component-select-filled-label'
-        id='componenttype-select-filled'
-        value={tempPanel.tabs[currentTabIndex].componentType}
-        onChange={(e) => setNewTabValue([{ key: 'componentType', tabValue: e.target.value }])}
-        style={{ backgroundColor: colors.backgroundColor }}
-      >
-        <MenuItem value='map'>Karte</MenuItem>
-        {/* <MenuItem value='measurement'>Messung</MenuItem> */}
-        <MenuItem value='pois'>Liste mit Karte</MenuItem>
-        <MenuItem value='parking'>Auslastung Parkplätze</MenuItem>
-        {/* <MenuItem value='swimming'>Auslastung Schwimmbad</MenuItem> */}
-        {/* <MenuItem value='utilization'>Auslastung Zoo</MenuItem> */}
-      </Select>
+      <FormControl variant='outlined' sx={{ minWidth: 150 }} style={{ marginTop: 9 }}>
+        <InputLabel id='demo-simple-select-filled-label'>Komponententyp</InputLabel>
+        <Select
+          size='small'
+          margin='dense'
+          label='Komponententyp'
+          labelId='componenttype-component-select-filled-label'
+          id='componenttype-select-filled'
+          value={tempPanel.tabs[currentTabIndex].componentType}
+          onChange={(e) => setNewTabValue([{ key: 'componentType', tabValue: e.target.value }])}
+        >
+          <MenuItem value='map'>Karte</MenuItem>
+          <MenuItem value='pois'>Liste mit Karte</MenuItem>
+        </Select>
+      </FormControl>
       {/* Map and List with Map */}
       {tempPanel.tabs[currentTabIndex].componentType === 'pois' ||
       tempPanel.tabs[currentTabIndex].componentType === 'map' ? (
         <Box>
-          <Select
-            size='small'
-            autoWidth
-            margin='dense'
-            label='Komponenten Datentyp'
-            labelId='datatype-component-select-filled-label'
-            id='datatype-select-filled'
-            value={tempPanel.tabs[currentTabIndex].componentDataType}
-            onChange={(e) => setNewTabValue([{ key: 'componentDataType', tabValue: e.target.value }])}
-            style={{ backgroundColor: colors.backgroundColor }}
-          >
-            {/* <MenuItem value='cars'>E-Auto-Ladestationen</MenuItem>
-            <MenuItem value='bikes'>E-Bike-Ladestationen</MenuItem> */}
-            <MenuItem value='parking'>Parkplätze</MenuItem>
-            <MenuItem value='pois'>Pin</MenuItem>
-          </Select>
+          <FormControl variant='outlined' sx={{ minWidth: 150 }} style={{ marginTop: 9 }}>
+            <InputLabel id='demo-simple-select-filled-label'>Kartentyp (Icon)</InputLabel>
+            <Select
+              // size='small'
+              margin='dense'
+              label='Komponenten Datentyp'
+              labelId='datatype-component-select-filled-label'
+              id='datatype-select-filled'
+              value={tempPanel.tabs[currentTabIndex].componentDataType}
+              onChange={(e) => setNewTabValue([{ key: 'componentDataType', tabValue: e.target.value }])}
+              style={{ backgroundColor: colors.backgroundColor }}
+            >
+              <MenuItem value='parking'>Parkplätze</MenuItem>
+              <MenuItem value='pois'>Pin</MenuItem>
+            </Select>
+          </FormControl>
           <Box display={'flex'} flexDirection={'row'}>
             <FormGroup>
               <FormControlLabel

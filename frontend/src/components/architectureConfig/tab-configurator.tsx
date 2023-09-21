@@ -105,6 +105,11 @@ export function TabConfigurator(props: TabConfiguratorProps) {
             newTempTabs[currentTabIndex].fiwareService = newTabValue.tabValue
           }
           break
+        case 'fiwareType':
+          if (isValidDataConfigString(newTabValue.tabValue)) {
+            newTempTabs[currentTabIndex].fiwareType = newTabValue.tabValue
+          }
+          break
         case 'entityId':
           if (isValidDataConfigString(newTabValue.tabValue)) {
             newTempTabs[currentTabIndex].entityId = [newTabValue.tabValue]

@@ -7,7 +7,7 @@ import set from 'lodash/set'
 
 import type { TabComponent } from 'components/tab'
 
-import { roundDecimalPlaces } from 'utils/decimal-helper'
+import { roundDecimalPlaces } from 'utils/math-helper'
 
 import colors from 'theme/colors'
 

@@ -1,17 +1,17 @@
 const colors = {
-  selectedDashboard: '#59647d', // angewähltes Dashboard
-  selectedDashboardTransparent: '#59647d82', // angewähltes Dashboard Edit Buttons Hintergrund
-  invisibleDashboardColor: '#6c7687',
-  backgroundColor: '#000000',
-  menuBarBackground: '#2f2f2f',
-  panelBackground: '#2f2f2f',
-  drawerBackground: '#2f2f2f',
-  drawerBackgroundTransparent: '#2f2f2f92',
+  selectedDashboard: '#51459E', // angewähltes Dashboard
+  selectedDashboardTransparent: '#51459E82', // angewähltes Dashboard Edit Buttons Hintergrund
+  invisibleDashboardColor: '#6c768725',
+  backgroundColor: '#FAFAFA',
+  menuBarBackground: '#FFFFFF',
+  panelBackground: '#FEF3F0',
+  drawerBackground: '#FFFFFF',
+  drawerBackgroundTransparent: '#6c768700',
 
   // CHARTS
-  chartGrid: '#444444',
+  chartGrid: '#51459E',
   chartBar: '#F9896B',
-  chartFont: '#7A7A7A',
+  chartFont: '#51459E',
 
   // LISTVIEW
   poiBackground: '#1B1B1B',
@@ -22,23 +22,23 @@ const colors = {
   scrollbarBg: '#323232',
 
   // WIDGET
-  widgetTop: '#000000',
-  widgetContent: '#000000',
-  widgetBackground: '#000000', // only visibile bottom part when editing, inside preview
+  widgetTop: '#FEF3F0',
+  widgetContent: '#FEF3F0',
+  widgetBackground: '#FEF3F0', // only visibile bottom part when editing, inside preview
 
   // BUTTONS
   activeButtonBackground: '#323232',
 
   // TEXT ELEMENTS
-  subheadline: '#737373',
-  text: '#FFFFFF',
-  textDark: '#FFFFFF',
-  inputFieldOutline: '#5c6678',
+  subheadline: '#51459E',
+  text: '#51459E',
+  textDark: '#51459E',
+  inputFieldOutline: '#51459E',
 
   // COLORS
   colorDetail: '#F9896B', // detail color
   iconColor: '#F9896B',
-  white: '#FFFFFF', // Schrift Dashboard + dashboards (in drawer)
+  white: '#51459E', // Schrift Dashboard + dashboards (in drawer)
   grey: '#666666',
   grayed: '#D5D7D9', // Icons -> Header Leiste: Dashboard, widget, panel bearbeiten/ Hinzufügen / Löschen
   navy: '#003552',
@@ -46,8 +46,8 @@ const colors = {
   pink: '#C066A1',
   orange: '#CF953F',
   attributeColors: [
-    '#CF953F',
     '#F9896B',
+    '#CF953F',
     '#DBE027',
     '#9EA226',
     '#003552',

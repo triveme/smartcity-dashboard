@@ -30,6 +30,7 @@ export type TabComponent = {
   componentOptions: MapComponentOptions
   timeframe?: number
   fiwareService?: string
+  fiwareType?: string
   entityId?: string[]
   filterProperty: string
   filterAttribute: string

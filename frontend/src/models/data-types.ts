@@ -54,6 +54,13 @@ export type MapData = {
   available?: boolean
   status?: string
   occupancy?: number
+  alertLevel?: number
+  currentLevel?: number
+  dangerLevel?: number
+  description?: string
+  measuredDistance?: number
+  observationDateTime?: string
+  referenceLevel?: number
 }
 
 export type ParkingSpot = {

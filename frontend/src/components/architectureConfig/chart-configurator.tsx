@@ -130,8 +130,7 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
           <MenuItem value='line'>Linien</MenuItem>
           <MenuItem value='radial180'>Radial 180°</MenuItem>
           <MenuItem value='radial360'>Radial 360°</MenuItem>
-          <MenuItem value='slider'>Slider</MenuItem>
-          <MenuItem value='sliderKnobs'>Slider mit Label</MenuItem>
+          <MenuItem value='measurement'>Messung</MenuItem>
         </Select>
         {tempPanel.tabs[currentTabIndex].apexType === 'line' && (
           <FormControlLabel
@@ -440,27 +439,63 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
               />
             </Box>
           ) : null}
-          <SmallField
-            label='Nachkommastellen'
-            type='number'
-            value={!tempPanel.tabs[currentTabIndex].decimals ? 0 : tempPanel.tabs[currentTabIndex].decimals}
-            onChange={(e) =>
-              setNewTabValue([
-                {
-                  key: 'attributeDecimals',
-                  tabValue: parseInt(e.target.value) ? parseInt(e.target.value) : 0,
-                },
-              ])
-            }
-            onBlur={() => {
-              if (
-                tempPanel.tabs[currentTabIndex].decimals &&
-                (tempPanel.tabs[currentTabIndex].decimals! < 0 || tempPanel.tabs[currentTabIndex].decimals! > 5)
-              ) {
-                setNewTabValue([{ key: 'attributeDecimals', tabValue: 0 }])
+          {/* Measurement charts */}
+          {tempPanel.tabs[currentTabIndex].apexType === 'measurement' ? (
+            <Box display='flex' flexDirection='row' gap='5px'>
+              <SmallField
+                key={'measurement-warning-text-field'}
+                label='Warnungslimit'
+                type='number'
+                value={tempPanel.tabs[currentTabIndex].componentWarning}
+                onChange={(e) => setNewTabValue([{ key: 'componentWarning', tabValue: e.target.value }])}
+              />
+              <SmallField
+                key={'measurement-alarm-text-field'}
+                label='Alarmlimit'
+                type='number'
+                value={tempPanel.tabs[currentTabIndex].componentAlarm}
+                onChange={(e) => setNewTabValue([{ key: 'componentAlarm', tabValue: e.target.value }])}
+              />
+              <SmallField
+                key={'measurement-maximum-text-field'}
+                label='Maximaler Wert'
+                type='text'
+                value={tempPanel.tabs[currentTabIndex].componentMaximum}
+                onChange={(e) => setNewTabValue([{ key: 'componentMaximum', tabValue: e.target.value }])}
+              />
+            </Box>
+          ) : null}
+
+          <Box display='flex' flexDirection='row' gap='5px'>
+            <SmallField
+              label='Nachkommastellen'
+              type='number'
+              value={!tempPanel.tabs[currentTabIndex].decimals ? 0 : tempPanel.tabs[currentTabIndex].decimals}
+              onChange={(e) =>
+                setNewTabValue([
+                  {
+                    key: 'attributeDecimals',
+                    tabValue: parseInt(e.target.value) ? parseInt(e.target.value) : 0,
+                  },
+                ])
               }
-            }}
-          />
+              onBlur={() => {
+                if (
+                  tempPanel.tabs[currentTabIndex].decimals &&
+                  (tempPanel.tabs[currentTabIndex].decimals! < 0 || tempPanel.tabs[currentTabIndex].decimals! > 5)
+                ) {
+                  setNewTabValue([{ key: 'attributeDecimals', tabValue: 0 }])
+                }
+              }}
+            />
+            <SmallField
+              key={'radial-unit-text-field'}
+              label='Einheit'
+              type='text'
+              value={tempPanel.tabs[currentTabIndex].componentUnit}
+              onChange={(e) => setNewTabValue([{ key: 'componentUnit', tabValue: e.target.value }])}
+            />
+          </Box>
           <DataConfigurator currentTabIndex={currentTabIndex} tempPanel={tempPanel} setNewTabValue={setNewTabValue} />
         </>
       ) : null}

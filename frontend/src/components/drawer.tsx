@@ -168,7 +168,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
                 ? {
                     backgroundColor: colors.selectedDashboard,
                   }
-                : {}
+                : { backgroundColor: colors.invisibleDashboardColor }
             }
           >
             <ListItemIcon style={{ minWidth: 50 }}>
@@ -186,7 +186,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
               <ListItemText
                 primary={dashboard.name}
                 sx={{
-                  color: !dashboard.visible && stateContext.authToken ? colors.invisibleDashboardColor : colors.white,
+                  color: colors.iconColor,
                   marginTop: 0,
                   marginBottom: 0,
                   whiteSpace: 'break-spaces',
@@ -233,9 +233,9 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
     <>
       {matchesDesktop ? (
         // <Drawer variant={variant} open={open}>
-        <MiniVariantDrawer variant={variant} open={open}>
+        <MiniVariantDrawer variant={variant} open={open} sx={{ elevation: 4 }}>
           <DrawerHeader>
-            <Typography noWrap variant='h2'>
+            <Typography noWrap variant='h2' color={colors.white}>
               {DRAWER_TITLE}
             </Typography>
             <IconButton
@@ -250,7 +250,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
               )}
             </IconButton>
           </DrawerHeader>
-          <Divider />
+          <Divider style={{ color: colors.iconColor }} />
           <List
             sx={styleList}
             style={{

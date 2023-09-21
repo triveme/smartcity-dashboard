@@ -255,7 +255,7 @@ export function DashboardDialog(props: DashboardDialogProps) {
                   <DashboardIcon
                     key={'dashboardicon-' + icon}
                     icon={icon}
-                    color={newDashboardIcon === icon ? colors.colorDetail : colors.grayed}
+                    color={newDashboardIcon === icon ? colors.colorDetail : colors.text}
                   />
                 </IconButton>
               ))}

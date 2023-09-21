@@ -110,7 +110,7 @@ export function Settings(props: SettingsProps) {
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
-                <PowerSettingsNewOutlinedIcon fontSize='small' />
+                <PowerSettingsNewOutlinedIcon sx={{ color: colors.iconColor }} fontSize='small' />
               </ListItemIcon>
               <ListItemText>Abmelden</ListItemText>
             </MenuItem>

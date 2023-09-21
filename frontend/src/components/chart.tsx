@@ -6,7 +6,7 @@ import { BarChart } from 'components/charts/bar'
 import { LineChart } from 'components/charts/line'
 import { RadialChart180 } from './charts/radial/radial180/radial180'
 import { RadialChart360 } from './charts/radial/radial360/radial360'
-import { SliderWithKnobs, SliderWithoutKnobs } from './charts/slider/slider'
+import { MeasurementComponent } from './measurement'
 
 type TabProps = {
   tab: TabComponent
@@ -62,7 +62,7 @@ export function Chart(props: TabProps) {
         chartName={tab.componentName}
         minValue={tab.componentMinimum}
         maxValue={tab.componentMaximum}
-        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0].currentValue : undefined}
+        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : undefined}
         unit={tab.componentUnit}
         icon={tab.componentIcon}
       />
@@ -74,25 +74,15 @@ export function Chart(props: TabProps) {
         currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}
       />
     )
-  } else if (tab.apexType === 'slider') {
+  } else if (tab.apexType === 'measurement') {
     return (
-      <SliderWithoutKnobs
-        name={tab.componentName}
-        currentValue={tab.apexSeries && tab.apexSeries[0] ? tab.apexSeries[0] : 0}
+      <MeasurementComponent
+        dataValues={tab.apexSeries && tab.apexSeries.length > 0 ? tab.apexSeries[0].data : []}
+        timeValues={tab.apexOptions?.xaxis?.categories ? tab.apexOptions?.xaxis?.categories : []}
+        valueWarning={tab.componentWarning}
+        valueAlarm={tab.componentAlarm}
+        valueMax={tab.componentMaximum}
         unit={tab.componentUnit}
-      />
-    )
-  } else if (tab.apexType === 'sliderKnobs') {
-    return (
-      <SliderWithKnobs
-        name={tab.componentData[0].name ? tab.componentData[0].name : 'Parkplatz'}
-        occupiedSpots={
-          tab.componentData[0].occupiedSpotNumber !== undefined ? tab.componentData[0].occupiedSpotNumber : 0
-        }
-        availableSpots={
-          tab.componentData[0].availableSpotNumber !== undefined ? tab.componentData[0].availableSpotNumber : 0
-        }
-        totalSpots={tab.componentData[0].totalSpotNumber !== undefined ? tab.componentData[0].totalSpotNumber : 1}
       />
     )
   } else {

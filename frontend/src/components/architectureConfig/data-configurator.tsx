@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { cloneDeep } from 'lodash'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -14,6 +13,7 @@ import { PanelComponent } from 'components/panel'
 import { SmallField } from 'components/elements/text-fields'
 import colors from 'theme/colors'
 import { DIALOG_TITLES } from 'constants/text'
+import { cloneDeep } from 'lodash'
 
 type DataConfiguratorProps = {
   currentValueIndex?: number
@@ -28,6 +28,9 @@ export function DataConfigurator(props: DataConfiguratorProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false)
   const [colorIndex, setColorIndex] = useState(0)
   const aggrMode = currentTab && currentTab.aggrMode ? currentTab.aggrMode : 'single'
+
+  const [fiwareServiceSelectionOptions] = useState(['', 'eichenzell'])
+  const [fiwareTypeSelectionOptions] = useState(['', 'AirQualityObserved', 'WeatherObserved', 'FloodMonitoring'])
 
   const handleColorPickerClickOpen = (index: number) => {
     setColorIndex(index)
@@ -59,7 +62,7 @@ export function DataConfigurator(props: DataConfiguratorProps) {
         currentTab={currentTab}
         attrColorIndex={colorIndex}
       />
-      <Divider style={{ marginTop: '8px' }} />
+      <Divider style={{ marginTop: '8px', color: colors.iconColor }} />
       <Typography
         marginTop={1}
         marginLeft={1}
@@ -70,11 +73,41 @@ export function DataConfigurator(props: DataConfiguratorProps) {
       >
         {DIALOG_TITLES.DATA_CONFIG}
       </Typography>
-      <SmallField
-        label='Fiware-Service'
-        type='text'
-        value={currentTab.fiwareService ? currentTab.fiwareService : ''}
-        onChange={(e) => setNewTabValue([{ key: 'fiwareService', tabValue: e.target.value }])}
+      <Autocomplete
+        id='fiwareServiceSelection'
+        options={fiwareServiceSelectionOptions}
+        value={currentTab.fiwareService ? currentTab.fiwareService : fiwareServiceSelectionOptions[0]}
+        onChange={(e, v) => setNewTabValue([{ key: 'fiwareService', tabValue: v ? v : '' }])}
+        freeSolo
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            key={params.id + '-fiwareService-text-field'}
+            size='small'
+            margin='dense'
+            variant='outlined'
+            style={{ backgroundColor: colors.backgroundColor }}
+            label='Fiware-Service'
+          />
+        )}
+      />
+      <Autocomplete
+        id='fiwareTypeSelection'
+        options={fiwareTypeSelectionOptions}
+        value={currentTab.fiwareType ? currentTab.fiwareType : fiwareTypeSelectionOptions[0]}
+        onChange={(e, v) => setNewTabValue([{ key: 'fiwareType', tabValue: v ? v : '' }])}
+        freeSolo
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            key={params.id + '-fiwareType-text-field'}
+            size='small'
+            margin='dense'
+            variant='outlined'
+            style={{ backgroundColor: colors.backgroundColor }}
+            label='Fiware-Type'
+          />
+        )}
       />
       {aggrMode !== 'single' || currentTab.type === 'component' ? (
         <Autocomplete
@@ -195,13 +228,6 @@ export function DataConfigurator(props: DataConfiguratorProps) {
                   </>
                 )
               })}
-              {/* <ColorDialog
-                open={colorPickerOpen}
-                onClose={handleColorPickerClose}
-                setNewTabValue={setNewTabValue}
-                currentTab={currentTab}
-                attrColorIndex={colorIndex}
-              /> */}
             </Box>
           ) : null}
         </Box>

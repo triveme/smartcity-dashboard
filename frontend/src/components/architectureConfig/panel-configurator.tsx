@@ -84,6 +84,9 @@ export function PanelConfigurator(props: PanelConfiguratorProps) {
         padding: 10,
         backgroundColor: colors.backgroundColor,
         borderRadius: borderRadius.componentRadius,
+        borderColor: colors.inputFieldOutline,
+        border: '1px',
+        borderStyle: 'solid',
       }}
       elevation={0}
     >
