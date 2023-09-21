@@ -54,6 +54,7 @@ const Dashboard = mongoose.model(
                 donutToTotalLabel: Boolean,
                 timeframe: Number,
                 fiwareService: String,
+                fiwareType: String,
                 entityId: [String],
                 queryUpdateMsg: String,
                 attribute: {
