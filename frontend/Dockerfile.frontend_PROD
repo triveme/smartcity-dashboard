@@ -3,7 +3,9 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
-COPY . /app
+COPY ./frontend /app
+# Make env variables available during build
+COPY .env.prod /app/.env
 
 RUN npm install -g npm@latest
 RUN apk update && apk upgrade && \
