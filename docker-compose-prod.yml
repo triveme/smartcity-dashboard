@@ -33,7 +33,7 @@ services:
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.prod
 
   qlservice:
     build:
@@ -50,17 +50,16 @@ services:
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.prod
 
   dashboard:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.frontend_PROD
+      context: .
+      dockerfile: ./frontend/Dockerfile.frontend_PROD
     container_name: dashboard
     environment:
       - PORT=3000
       - NODE_ENV=production
-      - REACT_APP_BASE_URL=http://dashboard.smartcity-eichenzell.de/api
     ports:
       - "3000:3000"
     depends_on:
@@ -69,7 +68,7 @@ services:
     networks:
       - app-network
     env_file:
-      - .env
+      - .env.prod
 
   nginx:
     build:
@@ -78,11 +77,14 @@ services:
     container_name: nginx
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - app-network
     depends_on:
       - frontendservice
       - dashboard
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
 
 networks:
   app-network:
