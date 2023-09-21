@@ -116,9 +116,6 @@ export function Widget(props: WidgetProps) {
         break
       default:
         setDisplayStatus(DisplayStatus.LIST)
-        if (icon !== '') {
-          console.warn('Unknown WidgetTab Icon')
-        }
         break
     }
   }

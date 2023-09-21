@@ -3,6 +3,7 @@ import colors from 'theme/colors'
 
 type TypographyProps = {
   text: string
+  color?: string
 }
 
 export function HeadlineYellow(props: TypographyProps) {
@@ -20,6 +21,16 @@ export function HeadlineGray(props: TypographyProps) {
 
   return (
     <Typography variant='subtitle2' color={colors.subheadline} paddingTop={'5px'}>
+      {text}
+    </Typography>
+  )
+}
+
+export function HeadlineColorable(props: TypographyProps) {
+  const { text, color } = props
+
+  return (
+    <Typography variant='subtitle2' color={color} paddingTop={'5px'}>
       {text}
     </Typography>
   )

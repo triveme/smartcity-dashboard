@@ -6,6 +6,7 @@ import { Card, CardMedia, CardContent } from '@mui/material'
 import { CopyrightElement } from 'components/elements/copyright-element'
 import { HeadlineYellow } from 'components/elements/font-types'
 import colors from 'theme/colors'
+import { roundDecimalPlaces } from 'utils/math-helper'
 
 type MapMoveToMarkerProps = {
   defaultIcon: any
@@ -28,7 +29,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
       //Center on single element
       if (markerData.length === 1) {
         map.flyTo(
-          { lat: markerData[0].location.coordinates[1], lng: markerData[0].location.coordinates[0] },
+          { lat: markerData[0].location.coordinates[0], lng: markerData[0].location.coordinates[1] },
           zoomLevel,
           {
             duration: 1,
@@ -37,7 +38,7 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
         //Position and zoom map to display all markers
       } else {
         markerData.forEach((marker) => {
-          markerBounds.extend([marker.location.coordinates[1], marker.location.coordinates[0]])
+          markerBounds.extend([marker.location.coordinates[0], marker.location.coordinates[1]])
         })
         map.fitBounds(markerBounds)
       }
@@ -55,8 +56,8 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                 ref={(ref) => (markerRefs.current[index] = ref!)}
                 key={markerId}
                 position={{
-                  lat: info.location.coordinates[1],
-                  lng: info.location.coordinates[0],
+                  lat: info.location.coordinates[0],
+                  lng: info.location.coordinates[1],
                 }}
                 icon={
                   iconType === 'parking'
@@ -71,7 +72,10 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                             : 'occupied-marker',
                         iconAnchor: [30, 10],
                       })
-                    : defaultIcon
+                    : L.divIcon({
+                        className: 'flood-marker',
+                        iconAnchor: [0, 0],
+                      })
                 }
               >
                 {allowPopup ? (
@@ -101,9 +105,16 @@ export function MapMoveToMarker(props: MapMoveToMarkerProps) {
                         }}
                       >
                         <HeadlineYellow text={info.name} />
-                        <p>
-                          {info.address?.streetAddress} {info.address?.postalCode} {info.address?.addressLocality}
-                        </p>
+                        {info.description ? <p>Beschreibung: {info.description}</p> : null}
+                        {info.location ? <p>Longitude: {info.location.coordinates[1]}</p> : null}
+                        {info.location ? <p>Latitude: {info.location.coordinates[0]}</p> : null}
+                        {info.currentLevel && info.referenceLevel ? (
+                          <p>
+                            Wasserstand Relativ:{' '}
+                            {roundDecimalPlaces((info.currentLevel / info.referenceLevel) * 100, 2)}%
+                          </p>
+                        ) : null}
+                        {info.currentLevel ? <p>Wasserstand Absolut: {info.currentLevel}</p> : null}
                       </CardContent>
                     </Card>
                   </Popup>

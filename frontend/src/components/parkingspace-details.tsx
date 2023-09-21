@@ -1,12 +1,12 @@
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import { ParkingSpot } from 'models/data-types'
+import { ParkingCapacity, ParkingInfo } from 'models/data-types'
 import { BackButton, DisplayOnMapButton } from './elements/buttons'
-// import parkingImage from '../assets/images/parking_image.png'
+import parkingImage from '../assets/images/parking_image.png'
 import { HeadlineGray, HeadlineYellow } from './elements/font-types'
 
 type ParkingspaceDetailsProps = {
-  info: ParkingSpot
+  info: ParkingInfo
   handleBackClick: () => void
   handleShowOnMapClick: () => void
 }
@@ -26,34 +26,34 @@ export function ParkingspaceDetails(props: ParkingspaceDetailsProps) {
       <Box display={'flex'} flexDirection={'row'}>
         {/* Imagebox */}
         <Box display={'flex'} flexDirection={'column'} flexGrow={'1 1 0'} padding={'10px'}>
-          {/* <img 
-            width={"100%"}
-            src={}
-            alt="Bild eines Parkhauses"></img> */}
+          <img width={'100%'} src={parkingImage} alt='Bild eines Parkhauses'></img>
         </Box>
         {/* Infobox */}
         <Box display={'flex'} flexDirection={'column'}>
           {/* Textinfo */}
           <Box display={'flex'} flexDirection={'column'} alignContent={'start'} alignItems={'start'}>
             <Box>
-              <HeadlineYellow text={info?.name + ' - ' + info?.type} />
+              <HeadlineYellow text={info.name + ' - ' + info.type} />
               <Typography>
-                {info?.address?.streetAddress} {info?.address?.postalCode} {info?.address?.addressLocality}
+                {info.address?.street} {info.address?.streetnumber}
+              </Typography>
+              <Typography>
+                {info.address?.zipcode} {info.address?.city}
               </Typography>
             </Box>
             <Box>
               <HeadlineGray text='Zulässige Einfahrtshöhe'></HeadlineGray>
-              {/* <Typography>{info?.maxHeight} m</Typography> */}
+              <Typography>{info.maxHeight} m</Typography>
             </Box>
             <Box>
               <HeadlineGray text='Kapazität'></HeadlineGray>
-              {/* {info?.capacity.map((cap: ParkingCapacity) => {
+              {info.capacity.map((cap: ParkingCapacity) => {
                 return (
-                  <Typography key={'parkingspace-details-typography-capacity-' + info?.name + '-' + cap.capacityType}>
+                  <Typography key={'parkingspace-details-typography-capacity-' + info.name + '-' + cap.capacityType}>
                     {cap.capacityType}: {cap.capacitySpace}
                   </Typography>
                 )
-              })} */}
+              })}
             </Box>
           </Box>
         </Box>

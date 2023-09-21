@@ -117,7 +117,7 @@ export function LoginPage(props: LoginPageProps) {
           justifyContent: 'center',
           alignItems: 'center',
           borderRadius: borderRadius.componentRadius,
-          backgroundColor: colors.backgroundColor,
+          backgroundColor: colors.widgetBackground,
         }}
         elevation={0}
       >
@@ -180,14 +180,19 @@ export function LoginPage(props: LoginPageProps) {
             />
           </Box>
           <Box paddingTop={2} width='100%' fontSize='10px' display='flex' justifyContent='space-evenly'>
-            <Link to='/impressum' style={{ color: colors.text, textDecoration: 'none' }}>
+            <Link
+              to='//www.eichenzell.de/de/impressum/'
+              target={'_blank'}
+              style={{ color: colors.text, textDecoration: 'none' }}
+            >
               Impressum
             </Link>
-            <Link to='/datenschutzerklaerung' style={{ color: colors.text, textDecoration: 'none' }}>
+            <Link
+              to='//www.eichenzell.de/de/datenschutz/'
+              target={'_blank'}
+              style={{ color: colors.text, textDecoration: 'none' }}
+            >
               Datenschutzerklärung
-            </Link>
-            <Link to='/nutzungsbedingungen' style={{ color: colors.text, textDecoration: 'none' }}>
-              Nutzungsbedingungen
             </Link>
           </Box>
         </Box>

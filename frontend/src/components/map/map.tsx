@@ -22,7 +22,7 @@ export function MapComponent(props: MapComponentProps) {
 
   useEffect(() => {
     if (mapData && mapData.length > 0) {
-      setMapCenter({ lat: mapData[0].location.coordinates[1], lng: mapData[0].location.coordinates[0] })
+      setMapCenter({ lat: mapData[0].location.coordinates[0], lng: mapData[0].location.coordinates[1] })
     }
   }, [mapData])
 

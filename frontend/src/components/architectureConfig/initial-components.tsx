@@ -16,13 +16,16 @@ export const initialTab: TabComponent = {
   apexSeries: [],
   apexOptions: {
     grid: {
-      borderColor: colors.widgetBackground,
+      borderColor: colors.chartGrid,
     },
     yaxis: {
       forceNiceScale: true,
     },
     dataLabels: {
       enabled: false,
+      style: {
+        colors: [colors.chartGrid],
+      },
     },
     fill: {
       opacity: 1,
@@ -34,7 +37,7 @@ export const initialTab: TabComponent = {
       background: colors.panelBackground,
     },
     theme: {
-      mode: 'dark',
+      mode: 'light',
     },
     colors: [colors.attributeColors[0]],
   },

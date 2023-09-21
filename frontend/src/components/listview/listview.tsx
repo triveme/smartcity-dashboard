@@ -5,7 +5,7 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import theme from 'theme/theme'
 import colors from 'theme/colors'
 import { MapComponent } from '../map/map'
-import { InterestingPlace, MapData } from 'models/data-types'
+import { InterestingPlace, MapComponentOptions, MapData } from 'models/data-types'
 import { EMPTY_POI } from 'constants/dummy-data'
 import { ListViewDetails } from 'components/listview/listview-details'
 import { ListViewImage } from './listview-image'
@@ -15,10 +15,11 @@ import { ListViewFilter } from './listview-filter'
 
 type ListViewProps = {
   infos: InterestingPlace[]
+  mapOptions: MapComponentOptions
 }
 
 export function ListView(props: ListViewProps) {
-  const { infos } = props
+  const { infos, mapOptions } = props
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
   const [mapKey, setMapKey] = useState(Math.random())
   const [poiData] = useState(infos && infos.length > 0 ? infos : [EMPTY_POI])
@@ -155,7 +156,12 @@ export function ListView(props: ListViewProps) {
           }}
           onResize={handleResize}
         >
-          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos as MapData[]} />
+          <MapComponent
+            key={'map-' + mapKey}
+            iconType={'pois'}
+            mapData={filteredInfos as MapData[]}
+            mapOptions={mapOptions}
+          />
         </div>
       </Box>
     </Box>

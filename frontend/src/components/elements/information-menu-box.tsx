@@ -10,18 +10,8 @@ export function InformationMenuBox(props: DrawerProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pb: 4 }}>
       <Link
-        to='/information'
-        style={{
-          color: colors.inputFieldOutline,
-          fontSize: 12,
-        }}
-      >
-        <Box display='flex' justifyContent={'center'}>
-          {open ? 'Informationen' : 'Info'}
-        </Box>
-      </Link>
-      <Link
-        to='/impressum'
+        to='//www.eichenzell.de/de/impressum/'
+        target={'_blank'}
         style={{
           color: colors.inputFieldOutline,
           fontSize: 12,
@@ -32,7 +22,8 @@ export function InformationMenuBox(props: DrawerProps) {
         </Box>
       </Link>
       <Link
-        to='/datenschutzerklaerung'
+        to='//www.eichenzell.de/de/datenschutz/'
+        target={'_blank'}
         style={{
           color: colors.inputFieldOutline,
           fontSize: 12,

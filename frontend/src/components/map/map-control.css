@@ -1,18 +1,18 @@
 .leaflet-touch .leaflet-bar a:first-child {
-  background-color: #2f3a4e;
-  color: #f0407e;
+  background-color: #fef3f0;
+  color: #f9896b;
 }
 .leaflet-touch .leaflet-bar a:last-child {
-  background-color: #2f3a4e;
-  color: #f0407e;
+  background-color: #fef3f0;
+  color: #f9896b;
 }
 .leaflet-touch .leaflet-control-attribution {
-  background-color: #2f3a4e;
-  color: #f0407e;
+  background-color: #fef3f0;
+  color: #f9896b;
 }
-.leaflet-layer {
-  filter: grayscale(0.9) brightness(0.9) invert(1);
-}
+/* .leaflet-layer {
+  filter: grayscale(0.9) brightness(0.9) invert(0);
+} */
 .map-marker-popup .leaflet-popup-tip,
 .map-marker-popup .leaflet-popup-content-wrapper {
   background: transparent;
@@ -46,4 +46,10 @@
   border-radius: 0%;
   width: 20px !important;
   height: 60px !important;
+}
+.flood-marker {
+  background-color: #51459e;
+  border-radius: 50%;
+  width: 20px !important;
+  height: 20px !important;
 }

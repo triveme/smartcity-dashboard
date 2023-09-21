@@ -211,8 +211,8 @@ export function IntervalButton(props: IntervalButtonProps) {
       onClick={onClick}
       style={{
         fontWeight: 'bold',
-        color: active ? colors.white : colors.grey,
-        backgroundColor: active ? colors.activeButtonBackground : colors.widgetBackground,
+        color: colors.iconColor,
+        backgroundColor: active ? colors.white : colors.invisibleDashboardColor,
       }}
     >
       {text ? text : 'ZURÜCK'}

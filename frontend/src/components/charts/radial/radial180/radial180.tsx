@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import { default as ApexChart } from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
@@ -19,19 +19,29 @@ type RadialChartProps = {
 
 export function RadialChart180(props: RadialChartProps) {
   const { chartName, minValue, maxValue, currentValue, unit, icon } = props
+  const [absoluteValue, setAbsoluteValue] = useState(0)
+  const [percentValue, setPercentValue] = useState(0)
+  const [radialOption, setRadialOption] = useState<ApexOptions>(GetRadial180ApexOptions(0, 0, 0, 0))
 
-  const getRandomValueBetweenMinAndMax = () => {
-    if (!isNaN(maxValue) && !isNaN(minValue)) {
-      return Math.random() * (maxValue - minValue) + minValue
+  const getPercentValue = () => {
+    let range = maxValue - minValue
+
+    if (range !== 0) {
+      let calc = ((absoluteValue - minValue) / range) * 100
+      return calc
     }
     return 0
   }
 
-  const [seriesData] = useState(
-    currentValue ? (currentValue * 100) / maxValue : (getRandomValueBetweenMinAndMax() * 100) / maxValue,
-  )
-
-  let radialOption: ApexOptions = GetRadial180ApexOptions(seriesData, maxValue)
+  useEffect(() => {
+    // getRandomValueBetweenMinAndMax()
+    if (currentValue !== undefined && currentValue !== null) {
+      setAbsoluteValue(currentValue)
+      setPercentValue(getPercentValue())
+      setRadialOption(GetRadial180ApexOptions(absoluteValue, percentValue, minValue, maxValue))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [absoluteValue, currentValue, maxValue, minValue, percentValue])
 
   return (
     <Box height='100%' display='flex' flexDirection={'column'} alignItems={'center'} justifyContent={'center'}>
@@ -50,11 +60,11 @@ export function RadialChart180(props: RadialChartProps) {
         width='190px'
         flexBasis='15%'
       >
-        <Typography>{minValue}</Typography>
+        <Typography flexBasis={'15%'}>{minValue}</Typography>
         <Typography color={colors.iconColor} variant='h2'>
           {unit}
         </Typography>
-        <Typography>{maxValue}</Typography>
+        <Typography flexBasis={'15%'}>{maxValue}</Typography>
       </Box>
     </Box>
   )

@@ -4,9 +4,8 @@ import Box from '@mui/material/Box'
 import { Chart } from 'components/chart'
 import { SingleValue, Value } from 'components/value'
 import { TransitionAlert } from './elements/transition-alert'
-import { MeasurementComponent } from './measurement'
 import { MapComponent } from './map/map'
-import { PARKING_DATA_SLIDER, POI_DATA, SWIMMING_DATA, ZOO_UTILIZATION_DATA } from 'constants/dummy-data'
+import { PARKING_DATA_SLIDER, SWIMMING_DATA, ZOO_UTILIZATION_DATA } from 'constants/dummy-data'
 import { ParkingComponent } from './charts/slider/parking-component'
 import { SwimmingDetails } from './swimming-details'
 import { Utilization } from './utilization'
@@ -76,6 +75,7 @@ export function TabContent(props: TabProps) {
               key={'map-component-tab-' + tab.componentDataType}
               mapData={tab.componentData}
               iconType={tab.componentDataType}
+              mapOptions={tab.componentOptions}
             />
           ) : null}
 
@@ -86,14 +86,13 @@ export function TabContent(props: TabProps) {
             />
           ) : null}
 
-          {tab.componentType === 'measurement' ? <MeasurementComponent tab={tab}></MeasurementComponent> : null}
-
           {tab.componentType === 'swimming' ? <SwimmingDetails infos={SWIMMING_DATA}></SwimmingDetails> : null}
 
           {tab.componentType === 'pois' ? (
             <ListView
-              key={'interesting-poi-tab-' + tab.componentDataType}
-              infos={tab.componentData ? tab.componentData : POI_DATA}
+              key={'list-view-tab-' + tab.componentDataType}
+              infos={tab.componentData && tab.componentData.length > 0 && tab.componentData[0] ? tab.componentData : []}
+              mapOptions={tab.componentOptions}
             />
           ) : null}
 

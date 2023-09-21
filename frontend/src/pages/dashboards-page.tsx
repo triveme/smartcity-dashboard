@@ -26,6 +26,7 @@ import { Impressum } from './legal/impressum'
 import { PrivacyPolicy } from './legal/privacy-policy'
 import { TermsOfUse } from './legal/terms-of-use'
 import { AppBar, DrawerHeader } from './app-bar'
+import colors from 'theme/colors'
 
 interface DashboardsPageProps {
   loggedIn: boolean
@@ -67,23 +68,31 @@ export function DashboardsPage(props: DashboardsPageProps) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position='fixed' open={open && matchesDesktop} theme={theme}>
+      <AppBar position='fixed' open={open && matchesDesktop} theme={theme} style={{ boxShadow: 'none' }}>
         <Toolbar>
+          {/* IconButton */}
           <IconButton
             color='inherit'
             aria-label='open drawer'
             onClick={toggleDrawer}
             edge='start'
             sx={{
+              color: colors.iconColor,
               marginRight: '36px',
               ...(open && matchesDesktop && { display: 'none' }),
             }}
           >
             <MenuIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1, marginTop: '0px', marginBottom: '2px' }}>
+
+          {/* Logo Box */}
+          <Box
+            sx={{ display: 'flex', flexGrow: 1, marginTop: '0px', marginBottom: '2px', justifyContent: ' flex-end' }}
+          >
             <img height='42px' src={smartCityLogo} alt='logo smart city' />
           </Box>
+
+          {/* Conditional Components */}
           {stateContext.authToken ? (
             <>
               {matchesDesktop ? <ArchitectureActionButtons onSavedDashboard={handleDashboardSaved} /> : null}
