@@ -9,7 +9,7 @@ import colors from 'theme/colors'
 import { roundDecimalPlaces } from 'utils/math-helper'
 
 type MapMoveToMarkerProps = {
-  defaultIcon: any
+  defaultIcon?: any
   iconType: string
   markerData: MapData[]
   allowPopup: boolean
@@ -18,7 +18,7 @@ type MapMoveToMarkerProps = {
 }
 
 export function MapMoveToMarker(props: MapMoveToMarkerProps) {
-  const { defaultIcon, iconType, markerData, allowPopup, zoomLevel, rotate } = props
+  const { iconType, markerData, allowPopup, zoomLevel, rotate } = props
   const map = useMap()
   const markerRefs = useRef<ElementRef<typeof Marker>[]>([])
 
