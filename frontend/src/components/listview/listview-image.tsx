@@ -1,6 +1,7 @@
 import { Box } from '@mui/material'
 import { CopyrightElement } from 'components/elements/copyright-element'
 import { InterestingPlace } from 'models/data-types'
+import { useState } from 'react'
 
 type ListViewImageProps = {
   info: InterestingPlace
@@ -8,6 +9,16 @@ type ListViewImageProps = {
 
 export function ListViewImage(props: ListViewImageProps) {
   const { info } = props
+  const [imageError, setImageError] = useState(false)
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    if (!imageError) {
+      setImageError(true)
+    }
+  }
+
+  // use imagePreview if available, otherwise use image if available, otherwise use empty string
+  const src = info.imagePreview ? info.imagePreview : info.image && info.image !== 'none' ? info.image : ''
 
   return (
     <Box
@@ -16,13 +27,16 @@ export function ListViewImage(props: ListViewImageProps) {
       flexGrow={'1 1 0'}
       paddingRight={'5px'}
       flexBasis='35%'
-      width={'120px'}
+      minWidth={'120px'}
     >
-      <img
-        style={{ height: '100%' }}
-        src={info.image && info.image !== 'none' ? info.image : ''}
-        alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
-      />
+      {!imageError ? (
+        <img
+          style={{ height: '100%' }}
+          src={src}
+          alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
+          onError={handleImageError}
+        />
+      ) : null}
       {info.creator && <CopyrightElement creator={info.creator} />}
     </Box>
   )

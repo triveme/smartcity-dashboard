@@ -1,0 +1,19 @@
+FROM node:18-alpine
+
+ENV WATCHPACK_POLLING=true
+ENV NODE_ENV=development
+
+RUN npm install -g npm@latest
+RUN apk update && apk upgrade && \
+    apk add --no-cache xdg-utils git
+
+WORKDIR /home/node/app
+
+COPY ./frontend /home/node/app
+COPY .env.dev /home/node/app/.env
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD [ "npm", "run", "start" ]

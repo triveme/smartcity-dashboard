@@ -19,8 +19,8 @@ export function ListViewDetails(props: ListViewDetailsProps) {
   const { info, handleBackClick, handleDisplayOnMapClick, index } = props
 
   const markerId = `Marker-${info.location.coordinates[0]}-${info.location.coordinates[1]}-${index}`
-  const lat = info.location.coordinates[0]
-  const lng = info.location.coordinates[1]
+  const lat = info.location.coordinates[1]
+  const lng = info.location.coordinates[0]
 
   return (
     <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
@@ -35,22 +35,24 @@ export function ListViewDetails(props: ListViewDetailsProps) {
         {/* POI-Details */}
         <Box display={'flex'} flexDirection={'row'} padding='10px'>
           {/* Imagebox */}
-          <Box
-            display={'flex'}
-            flexDirection={'column'}
-            flexGrow={'1 1 0'}
-            paddingRight={'5px'}
-            flexBasis='35%'
-            position={'relative'}
-            maxWidth={'130px'}
-          >
-            <img
-              src={info.image && info.image !== 'none' ? info.image : ''}
-              alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
-              style={{ borderRadius: '5px', width: '100%', minWidth: '110px' }}
-            />
-            {info.creator && <CopyrightElement creator={info.creator} />}
-          </Box>
+          {info.image && info.image !== 'none' ? (
+            <Box
+              display={'flex'}
+              flexDirection={'column'}
+              flexGrow={'1 1 0'}
+              paddingRight={'5px'}
+              flexBasis='35%'
+              position={'relative'}
+              maxWidth={'130px'}
+            >
+              <img
+                src={info.image}
+                alt={info.creator !== null ? `${info.name} - ${info.creator}` : `POI Bild: ${info.name}`}
+                style={{ borderRadius: '5px', width: '100%', minWidth: '110px' }}
+              />
+              {info.creator && <CopyrightElement creator={info.creator} />}
+            </Box>
+          ) : null}
           {/* Infobox */}
           <Box
             height='100%'
@@ -80,7 +82,7 @@ export function ListViewDetails(props: ListViewDetailsProps) {
                 </Typography>
               </Box>
               <Box display={'flex'} flexDirection={'row'} alignContent={'center'} alignItems={'center'}>
-                <HeadlineGray text={info.address.streetAddress}></HeadlineGray>
+                <HeadlineGray text={info.address}></HeadlineGray>
               </Box>
             </Box>
           </Box>

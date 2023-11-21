@@ -4,23 +4,24 @@ import { DashboardComponent } from 'components/dashboard'
 import { client } from 'clients/client'
 
 export type ArchitectureRequestData = {
+  token?: string
   dashboardUrl: string
-  isAdmin: boolean
   queryEnabled: boolean
 }
 
 export async function getDashboardArchitecture(args: ArchitectureRequestData) {
+  const headers: HeadersInit = {}
+  if (args.token) {
+    headers.Authorization = `Bearer ${args.token}`
+  }
+
   return client
-    .get('/dashboards' + (args.dashboardUrl.length > 0 ? '/' + args.dashboardUrl : ''), {
-      headers: {
-        'Is-Admin': args.isAdmin,
-      },
-    })
+    .get('/dashboards' + (args.dashboardUrl.length > 0 ? '/' + args.dashboardUrl : ''), { headers })
     .then((response) => {
       return response.data
     })
     .catch((err) => {
-      console.log(err)
+      console.error(err)
       return []
     })
 }
@@ -40,16 +41,17 @@ export function useDashboardArchitecture(args: ArchitectureRequestData) {
 }
 
 export type ArchitecturePostData = {
-  token: string
+  token?: string
   dashboards: (DashboardComponent | { _id: string })[]
 }
 
 export async function postArchitecture(args: ArchitecturePostData) {
-  console.log('postArchitecture')
-  console.log(args.dashboards)
+  const headers: HeadersInit = {}
+  if (args.token) {
+    headers.Authorization = `Bearer ${args.token}`
+  }
+
   return client.post('/dashboards', args.dashboards, {
-    headers: {
-      'x-access-token': args.token,
-    },
+    headers,
   })
 }

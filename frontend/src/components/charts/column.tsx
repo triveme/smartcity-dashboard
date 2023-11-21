@@ -91,12 +91,13 @@ export function ColumnChart(props: ColumnChartProps) {
 export function SingleColumnChart(props: WarningChartProps) {
   const { data, timeValue, warningValue, alarmValue, maxValue } = props
 
+  let dataSeries: ApexAxisChartSeries = [
+    {
+      data: data,
+      name: 'Pegelstand',
+    },
+  ]
   let lineOptions: ApexOptions = {
-    series: [
-      {
-        data: data,
-      },
-    ],
     chart: {
       type: 'bar',
       toolbar: {
@@ -111,7 +112,7 @@ export function SingleColumnChart(props: WarningChartProps) {
         horizontal: false,
         borderRadius: 4,
         borderRadiusApplication: 'end',
-        columnWidth: '10%',
+        columnWidth: '60%',
       },
     },
     dataLabels: {
@@ -166,13 +167,13 @@ export function SingleColumnChart(props: WarningChartProps) {
         {
           y: warningValue,
           strokeDashArray: 0,
-          borderColor: colors.petrol,
+          borderColor: colors.orange,
           fillColor: 'white',
           label: {
-            borderColor: colors.petrol,
+            borderColor: colors.orange,
             style: {
               color: 'white',
-              background: colors.petrol,
+              background: colors.orange,
             },
             text: 'Warnung',
           },
@@ -181,17 +182,13 @@ export function SingleColumnChart(props: WarningChartProps) {
     },
     grid: {
       borderColor: colors.chartGrid,
-      // padding: {
-      //   top: 0,
-      //   bottom: 0,
-      // }
     },
     colors: [colors.chartBar],
   }
 
   return (
     <Box height='100%' width='100%'>
-      <ApexChart series={lineOptions.series} options={lineOptions} type='bar' width={'100%'} height={'80%'} />
+      <ApexChart series={dataSeries} options={lineOptions} type='bar' width={'100%'} height={'100%'} />
     </Box>
   )
 }

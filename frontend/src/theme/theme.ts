@@ -32,7 +32,7 @@ export const getDesignTokens = (mode: PaletteMode) => ({
         }),
   },
   typography: {
-    fontFamily: ['Lato', 'Helvetica', 'Arial', 'sans-serif'].join(','),
+    fontFamily: ['URWGrotesk', 'Helvetica', 'Arial', 'sans-serif'].join(','),
   },
   shape: {
     borderRadius: borderRadius.fragmentRadius,
@@ -94,6 +94,15 @@ export const getDesignTokens = (mode: PaletteMode) => ({
           color: colors.textDark,
         },
       },
+    },
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1375,
+      xl: 1920,
     },
   },
 })

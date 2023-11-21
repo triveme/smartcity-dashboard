@@ -55,8 +55,6 @@ export function PanelDialog(props: PanelDialogProps) {
         newCurrentArchitectureContext[dashboardIndex].widgets[widgetIndex].panels.push(cloneDeep(tPanel))
         newArchitectureContext.currentArchitectureContext = newCurrentArchitectureContext
         newArchitectureContext.queryEnabled = false
-        console.log('Setting new architecture context')
-        console.log(newArchitectureContext)
         setArchitectureContext(newArchitectureContext)
       }
     }

@@ -7,6 +7,7 @@ const Querydata = mongoose.model(
       queryConfig: {
         intervalInMinutes: Number,
         fiwareService: String,
+        fiwareType: String,
         entityId: [String],
         type: {
           type: String,
@@ -15,7 +16,6 @@ const Querydata = mongoose.model(
         apexType: String,
         apexMaxValue: Number,
         apexMaxAlias: String,
-        apexStepline: Boolean,
         componentType: String,
         componentDataType: String,
         componentName: String,
@@ -24,11 +24,6 @@ const Querydata = mongoose.model(
         componentMinimum: Number,
         componentMaximum: Number,
         componentUnit: String,
-        aggrMethod: String,
-        aggrPeriod: String,
-        attrs: String,
-        toDate: Date,
-        fromDate: Date,
         attribute: {
           keys: [String],
           aliases: [String],

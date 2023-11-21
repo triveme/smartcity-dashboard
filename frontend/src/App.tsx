@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { SnackbarProvider } from 'notistack'
 
 import { SnackbarUtilsConfigurator } from './utils/snackbar-utils'
-import { StateProvider } from './providers/state-provider'
+import { KeycloakProvider } from './providers/keycloak-provider'
 import { ArchitectureContextProvider } from 'context/architecture-provider'
 
 import { Spinner } from 'components/elements/spinner'
@@ -16,7 +16,6 @@ const LoginPage = React.lazy(() =>
     default: module.LoginPage,
   })),
 )
-
 const DashboardsPage = React.lazy(() =>
   import(/* webpackPrefetch: true */ 'pages/dashboards-page').then((module) => ({
     default: module.DashboardsPage,
@@ -24,7 +23,6 @@ const DashboardsPage = React.lazy(() =>
 )
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false)
   const [editMode, setEditMode] = useState(false)
 
   const handleSetEditMode = useCallback(
@@ -38,40 +36,18 @@ function App() {
     <React.Suspense fallback={<Spinner />}>
       <SnackbarProvider maxSnack={3} anchorOrigin={{ horizontal: 'right', vertical: 'top' }}>
         <SnackbarUtilsConfigurator />
-        <StateProvider>
+        <KeycloakProvider>
           <QueryClientProvider client={queryClient}>
             <ArchitectureContextProvider>
               <BrowserRouter basename={process.env.PUBLIC_URL}>
                 <Routes>
-                  <Route
-                    path='/login'
-                    element={
-                      <LoginPage
-                        handleLogin={() => {
-                          setLoggedIn(true)
-                        }}
-                        enableEditMode={() => {
-                          setEditMode(true)
-                        }}
-                      />
-                    }
-                  />
-                  <Route
-                    path='*'
-                    element={
-                      <DashboardsPage
-                        setLoggedIn={setLoggedIn}
-                        loggedIn={loggedIn}
-                        editMode={editMode}
-                        setEditMode={handleSetEditMode}
-                      />
-                    }
-                  />
+                  <Route path='/login' element={<LoginPage />} />
+                  <Route path='*' element={<DashboardsPage editMode={editMode} setEditMode={handleSetEditMode} />} />
                 </Routes>
               </BrowserRouter>
             </ArchitectureContextProvider>
           </QueryClientProvider>
-        </StateProvider>
+        </KeycloakProvider>
       </SnackbarProvider>
     </React.Suspense>
   )

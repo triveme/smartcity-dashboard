@@ -3,10 +3,8 @@ import Box from '@mui/material/Box'
 
 import type { TabComponent } from 'components/tab'
 
-import { roundDecimalPlaces } from 'utils/decimal-helper'
+import { roundDecimalPlaces } from 'utils/math-helper'
 import { HeadlineYellow } from './elements/font-types'
-// import { IconButton } from "@mui/material";
-// import { DashboardIcon } from "./architectureConfig/dashboard-icons";
 import colors from 'theme/colors'
 
 type TabProps = {
@@ -59,7 +57,7 @@ export function SingleValue(props: TabProps) {
         <HeadlineYellow text={tab.componentName}></HeadlineYellow>
         <Box display={'flex'} flexDirection={'row'} justifyContent='flex-start'>
           <Typography fontSize={'42px'} color={colors.text}>
-            {tab.componentValue}
+            {tab.values ? tab.values[0] : 0}
           </Typography>
           <Typography fontSize={'32px'} color={colors.grey}>
             {tab.componentUnit}

@@ -14,7 +14,6 @@ export type TabComponent = {
   apexMaxValue?: number
   apexMaxAlias?: string
   apexMaxColor?: string
-  apexStepline?: boolean
   componentType: string
   componentData: Array<any>
   componentDataType: string
@@ -30,6 +29,7 @@ export type TabComponent = {
   componentOptions: MapComponentOptions
   timeframe?: number
   fiwareService?: string
+  fiwareType?: string
   entityId?: string[]
   filterProperty: string
   filterAttribute: string
@@ -43,7 +43,7 @@ export type TabComponent = {
   attributeType?: string
   aggrMode?: string
   queryData?: {
-    id?: string
+    _id?: string
   }
   queryUpdateMsg?: String
 }

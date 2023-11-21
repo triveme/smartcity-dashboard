@@ -12,14 +12,14 @@ export function SliderHeader() {
       paddingBottom={'5px'}
     >
       <Box>
-        <Typography>Parkhaus</Typography>
+        <Typography>Parkaus</Typography>
       </Box>
       <Box display={'flex'} flexDirection={'row'}>
-        <DashboardIcon icon='IconPoint' color={colors.attributeColors[0]}></DashboardIcon>
+        <DashboardIcon icon='PointFilled' color={colors.attributeColors[0]}></DashboardIcon>
         <Typography>Parkplätze Frei</Typography>
       </Box>
       <Box display={'flex'} flexDirection={'row'}>
-        <DashboardIcon icon='IconPoint' color={colors.attributeColors[1]}></DashboardIcon>
+        <DashboardIcon icon='PointFilled' color={colors.colorDetailDark}></DashboardIcon>
         <Typography>Parkplätze Gesamt</Typography>
       </Box>
     </Box>

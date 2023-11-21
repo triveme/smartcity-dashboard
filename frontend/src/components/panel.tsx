@@ -41,10 +41,10 @@ export function Panel(props: PanelProps) {
   }
 
   //Set grid size and limit to max of 12 to reduce errors
-  let mdGrid = (Number(panel.width) * 2) as GridSize
-  mdGrid = (mdGrid > 12 ? 12 : mdGrid) as GridSize
-  let smGrid = (Number(panel.width) * 2.5) as GridSize
-  smGrid = (smGrid > 12 ? 12 : smGrid) as GridSize
+  let mdGrid: Number | GridSize = Number(panel.width) * 2
+  mdGrid = ((mdGrid as number) > 12 ? 12 : mdGrid) as GridSize
+  let smGrid: Number | GridSize = Number(panel.width) * 2.5
+  smGrid = ((smGrid as number) > 12 ? 12 : smGrid) as GridSize
 
   return (
     <Grid
@@ -52,8 +52,8 @@ export function Panel(props: PanelProps) {
       container
       direction='column'
       lg={Number(panel.width) as GridSize}
-      md={mdGrid}
-      sm={smGrid}
+      md={mdGrid as GridSize}
+      sm={smGrid as GridSize}
       height={panel.height}
       display='block'
     >

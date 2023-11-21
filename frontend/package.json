@@ -7,6 +7,7 @@
     "@mui/icons-material": "^5.0.3",
     "@mui/lab": "^5.0.0-alpha.77",
     "@mui/material": "^5.10.16",
+    "@tabler/icons-react": "^2.35.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -31,13 +32,12 @@
     "react-router-dom": "^6.4.0",
     "react-scripts": "^5.0.1",
     "styled-components": "^5.3.6",
-    "tabler-icons-react": "^1.56.0",
     "typescript": "^4.8.4",
     "uuid": "^9.0.0",
     "web-vitals": "^3.0.4"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "react-scripts start --no-open",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
@@ -70,7 +70,7 @@
     ]
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.0",
+    "@types/leaflet": "^1.9.3",
     "@types/lodash": "^4.14.176",
     "@types/react-router-dom": "^5.3.1",
     "@types/uuid": "^8.3.4",

@@ -1,0 +1,9 @@
+FROM mongo:latest
+
+ENV MONGO_INITDB_DATABASE=smartcity-dashboard
+
+COPY mongodb-init.js /docker-entrypoint-initdb.d/
+
+EXPOSE 27021
+
+CMD ["mongod", "--port=27021"]

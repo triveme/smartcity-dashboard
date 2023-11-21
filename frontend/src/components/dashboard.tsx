@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from 'react-oidc-context'
 import cloneDeep from 'lodash/cloneDeep'
 import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -13,7 +14,7 @@ import { initialWidget } from './architectureConfig/initial-components'
 import { Spinner } from 'components/elements/spinner'
 import { getDashboardArchitecture } from 'clients/architecture-client'
 import { useArchitectureContext } from 'context/architecture-provider'
-import { useStateContext } from '../providers/state-provider'
+import { canWriteCurrentDashboard } from 'utils/auth-helper'
 import { BUTTON_TEXTS, EMPTY_DASHBOARD } from 'constants/text'
 import { DashboardWrapper } from './elements/dashboard-wrapper'
 
@@ -26,31 +27,34 @@ export type DashboardComponent = {
   widgets: WidgetComponent[]
   index?: number
   visible?: boolean
+  roles?: {
+    read: string[]
+    write: string[]
+  }
 }
 
 type DashboardProps = {
   dashboard: DashboardComponent
   editMode: boolean
-  loggedIn: boolean
   dashboardSaved: boolean
 }
 
 export function Dashboard(props: DashboardProps) {
-  const { dashboard, editMode, loggedIn, dashboardSaved } = props
-  const { architectureContext, setArchitectureContext } = useArchitectureContext()
-  const { stateContext } = useStateContext()
+  const { dashboard, editMode, dashboardSaved } = props
+
   const theme = useTheme()
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 
-  const [widgetCreationOpen, setWidgetCreationOpen] = useState(false)
+  const { architectureContext, setArchitectureContext } = useArchitectureContext()
+  const auth = useAuth()
 
   useEffect(() => {
     if (dashboard && dashboard._id) {
       // edit mode, load data once
       if (dashboard.widgets === undefined && architectureContext.queryEnabled === false) {
         getDashboardArchitecture({
+          token: auth.isAuthenticated ? auth.user?.access_token : undefined,
           dashboardUrl: dashboard.url,
-          isAdmin: stateContext.authToken ? true : false,
           queryEnabled: false,
         }).then((architectureData) => {
           const dIndex = architectureData.findIndex((d: DashboardComponent) => {
@@ -84,7 +88,9 @@ export function Dashboard(props: DashboardProps) {
       }
     }
     // eslint-disable-next-line
-  }, [dashboard.url, dashboardSaved, stateContext.authToken, loggedIn])
+  }, [dashboard.url, dashboardSaved, auth.isAuthenticated])
+
+  const [widgetCreationOpen, setWidgetCreationOpen] = useState(false)
 
   const handleWidgetCreationClickOpen = () => {
     setWidgetCreationOpen(true)
@@ -135,7 +141,7 @@ export function Dashboard(props: DashboardProps) {
   return (
     <DashboardWrapper>
       {displayDashboardContent()}
-      {stateContext.authToken && editMode && matchesDesktop ? (
+      {canWriteCurrentDashboard(auth, architectureContext) && editMode && matchesDesktop ? (
         <>
           <AddButton onClick={handleWidgetCreationClickOpen} text={BUTTON_TEXTS.ADD_WIDGET} />
           <WidgetDialog

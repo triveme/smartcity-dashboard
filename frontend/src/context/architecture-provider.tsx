@@ -2,7 +2,7 @@ import React, { useState, createContext, useContext } from 'react'
 import { cloneDeep, isEqual, omit } from 'lodash'
 
 import { useDashboardArchitecture } from 'clients/architecture-client'
-import { useStateContext } from '../providers/state-provider'
+import { useAuth } from 'react-oidc-context'
 
 type ArchitectureValue = any
 
@@ -21,13 +21,13 @@ export const useArchitectureContext = () => useContext(ArchitectureContext)
 export function ArchitectureContextProvider(props: React.PropsWithChildren<{}>) {
   const { children } = props
 
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
 
   const [architectureContext, setArchitectureContext] = useState(initialCombinedArchitectureContext)
 
   const queriedArchitectureData = useDashboardArchitecture({
+    token: auth.isAuthenticated ? auth.user?.access_token : undefined,
     dashboardUrl: architectureContext.dashboardUrl,
-    isAdmin: stateContext.authToken ? true : false,
     queryEnabled: architectureContext.queryEnabled,
   })
 

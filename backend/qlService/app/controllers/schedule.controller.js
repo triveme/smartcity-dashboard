@@ -5,7 +5,6 @@ import {
   getCurrentDataFromContextBroker,
   getMultiCurrentDataFromContextBroker,
   getHistoricalDataFromQuantumLeap,
-  getCurrentMapDataFromContextBroker,
 } from "./quantumLeap.controller.js";
 import {
   processHistoricalData,
@@ -14,14 +13,16 @@ import {
   processMultiCurrentData,
   processMapData,
   processListData,
-  // processUtilizationData,
+  processUtilizationData,
   processParkingData,
+  processSwimmingData,
 } from "./queryDataSaver.controller.js";
 import { handleError } from "./errorHandling.js";
 import {
   checkIfTokenNeedsToUpdate,
   updateToken,
 } from "./authenticationController.js";
+import { loadData } from "./apiData.controller.js";
 
 function updateTokenIfNecessary() {
   if (checkIfTokenNeedsToUpdate()) {
@@ -31,7 +32,7 @@ function updateTokenIfNecessary() {
 
 // runs every 15 seconds
 function runSchedule() {
-  cron.schedule("*/15 * * * * *", () => {
+  cron.schedule("*/90 * * * * *", () => {
     updateTokenIfNecessary();
 
     getQuerydata((querydata) => {
@@ -39,7 +40,10 @@ function runSchedule() {
       querydata.map(async (queryItem) => {
         // current values, update them always
         // TO DO: get current values from context broker
-        if (queryItem.queryConfig.type === "value") {
+        if (
+          queryItem.queryConfig.type === "value" ||
+          queryItem.queryConfig.apexType === "radial180"
+        ) {
           queryItem.queryConfig.attrs =
             queryItem.queryConfig.attribute.keys.join(",");
           // value(s) of one entity
@@ -111,8 +115,6 @@ function runSchedule() {
                 .toDate();
               queryItem.queryConfig.aggrPeriod = "day";
             }
-            queryItem.queryConfig.attrs =
-              queryItem.queryConfig.attribute.keys.join(",");
             queryItem.queryConfig.aggrMethod = "avg";
             queryItem.queryConfig.toDate = now;
             getHistoricalDataFromQuantumLeap(
@@ -129,64 +131,89 @@ function runSchedule() {
               }
             );
           }
-        } else if (queryItem.queryConfig.componentType == "map") {
-          getCurrentMapDataFromContextBroker(
-            queryItem.queryConfig,
-            (queriedData) => {
-              processMapData(queryItem, queriedData);
-            },
-            (errString) => {
-              handleError(queryItem._id, errString);
-            }
-          );
-        } else if (queryItem.queryConfig.componentType == "list") {
-          getCurrentDataFromContextBroker(
-            queryItem.queryConfig,
-            (queriedData) => {
-              processListData(queryItem, queriedData);
-            },
-            (errString) => {
-              handleError(queryItem._id, errString);
-            }
-          );
-        } else if (queryItem.queryConfig.componentType == "pois") {
-          getCurrentDataFromContextBroker(
-            queryItem.queryConfig,
-            (queriedData) => {
-              processListData(queryItem, queriedData);
-            },
-            (errString) => {
-              handleError(queryItem._id, errString);
-            }
-          );
-        } else if (queryItem.queryConfig.componentType == "utilization") {
-          getCurrentDataFromContextBroker(
-            queryItem.queryConfig,
-            (queriedData) => {
-              processListData(queryItem, queriedData);
-            },
-            (errString) => {
-              handleError(queryItem._id, errString);
-            }
-          );
+        } else if (queryItem.queryConfig.type == "component") {
+          if (queryItem.queryConfig.componentType == "map") {
+            var itemData = await loadData(
+              queryItem.queryConfig.componentDataType
+            ).catch((err) => console.error(err));
 
-          // processUtilizationData(queryItem, itemData1, itemData2);
-        } else if (queryItem.queryConfig.componentType == "parking") {
-          getCurrentDataFromContextBroker(
-            queryItem.queryConfig,
-            (queriedData) => {
-              processParkingData(queryItem, queriedData);
-            },
-            (errString) => {
-              handleError(queryItem._id, errString);
-            }
-          );
+            processListData(queryItem, itemData);
+            // processMapData(queryItem, itemData);
+          } else if (queryItem.queryConfig.componentType == "list") {
+            var itemData = await loadData(
+              queryItem.queryConfig.componentDataType
+            ).catch((err) => console.error(err));
+
+            processListData(queryItem, itemData);
+          } else if (queryItem.queryConfig.componentType == "pois") {
+            var itemData = await loadData(
+              queryItem.queryConfig.componentDataType
+            ).catch((err) => console.error(err));
+
+            processListData(queryItem, itemData);
+          } else if (queryItem.queryConfig.componentType == "utilization") {
+            var itemData1 = await loadData("zooutilization1").catch((err) =>
+              console.error(err)
+            );
+            var itemData2 = await loadData("zooutilization2").catch((err) =>
+              console.error(err)
+            );
+
+            processUtilizationData(queryItem, itemData1, itemData2);
+          } else if (queryItem.queryConfig.componentType == "parking") {
+            getCurrentDataFromContextBroker(
+              queryItem.queryConfig,
+              (queriedData) => {
+                processParkingData(queryItem, queriedData);
+              },
+              (errString) => {
+                handleError(queryItem._id, errString);
+              }
+            );
+          } else if (queryItem.queryConfig.componentType == "measurement") {
+            queryItem.queryConfig.entityId = queryItem.queryConfig.entityId[0];
+            queryItem.queryConfig.attrs =
+              queryItem.queryConfig.attribute.keys.join(",");
+            queryItem.queryConfig.fromDate = moment(now)
+              .subtract(30, "days")
+              .toDate();
+            queryItem.queryConfig.aggrPeriod = "day";
+            queryItem.queryConfig.aggrMethod = "avg";
+            queryItem.queryConfig.toDate = now;
+            getHistoricalDataFromQuantumLeap(
+              queryItem.queryConfig,
+              (queriedData) => {
+                processHistoricalData(
+                  queryItem,
+                  queriedData,
+                  queryItem.queryConfig.aggrPeriod
+                );
+              },
+              (errString) => {
+                handleError(queryItem._id, errString);
+              }
+            );
+          } else if (queryItem.queryConfig.componentType == "swimming") {
+            getMultiCurrentDataFromContextBroker(
+              queryItem.queryConfig,
+              (queriedData) => {
+                processSwimmingData(queriedData, queryItem);
+              },
+              (errString) => {
+                handleError(queryItem._id, errString);
+              }
+            );
+          } else {
+            console.log(
+              "Unknown componentType encountered in schedule.controller.js: " +
+                queryItem.queryConfig.componentType
+            );
+          }
         } else {
           console.log(
             "Unknown tab type encountered in schedule.controller.js: " +
               queryItem.queryConfig.type
           );
-          console.log(queryItem);
         }
       });
     });

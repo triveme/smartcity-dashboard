@@ -7,7 +7,7 @@ export async function getCollections() {
       return response.data
     })
     .catch((err) => {
-      console.log(err)
+      console.error(err)
     })
 }
 
@@ -22,7 +22,7 @@ export async function getSourcesForCollection(args: string) {
       return response.data
     })
     .catch((err) => {
-      console.log(err)
+      console.error(err)
     })
 }
 
@@ -33,7 +33,6 @@ export type DateConfigRequestType = {
 }
 
 export async function getAttributeForSource(args: DateConfigRequestType) {
-  // console.log("getAttributeForSource");
   return client
     .get('/wizard/attributes?', {
       params: {
@@ -45,12 +44,11 @@ export async function getAttributeForSource(args: DateConfigRequestType) {
       return response.data
     })
     .catch((err) => {
-      console.log(err)
+      console.error(err)
     })
 }
 
 export async function getSensorsForSource(args: DateConfigRequestType) {
-  // console.log("getSensorsForSource");
   return client
     .get('/wizard/sensors?', {
       params: {
@@ -63,6 +61,6 @@ export async function getSensorsForSource(args: DateConfigRequestType) {
       return response.data
     })
     .catch((err) => {
-      console.log(err)
+      console.error(err)
     })
 }

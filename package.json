@@ -1,0 +1,7 @@
+{
+  "name": "smartcity-dashboard-wuppertal",
+  "version": "1.0.0",
+  "scripts": {
+    "install": "cd ./frontend && npm install &&  cd ../backend/apiService && npm install &&  cd ../qlService && npm install &&  cd ../frontendService && npm install"
+  }
+}

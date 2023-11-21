@@ -4,16 +4,17 @@ import { DashboardIcon } from 'components/architectureConfig/dashboard-icons'
 import { BackButton } from 'components/elements/buttons'
 import colors from 'theme/colors'
 import { InterestingPlace } from 'models/data-types'
-import { EMPTY_POI } from 'constants/dummy-data'
+import { getAllHauptthemaValues, getFilteredPois } from 'clients/poi-data-client'
 
 type ListViewFilterProps = {
   listData: InterestingPlace[]
   setFilteredData: (data: InterestingPlace[]) => void
   handleFilterClick: () => void
+  queryDataId: string | undefined
 }
 
 export function ListViewFilter(props: ListViewFilterProps) {
-  const { listData, setFilteredData, handleFilterClick } = props
+  const { listData, setFilteredData, handleFilterClick, queryDataId } = props
   const [filteredInfosCheckbox, setFilteredInfosCheckbox] = useState<string[]>([])
   const [isChecked, setIsChecked] = useState<boolean[]>([])
   const [uniqueInfoTypes, setUniqueInfoTypes] = useState<string[]>([])
@@ -21,6 +22,7 @@ export function ListViewFilter(props: ListViewFilterProps) {
   const handleFilterReset = () => {
     setIsChecked(new Array(uniqueInfoTypes.length).fill(false))
     setFilteredInfosCheckbox([])
+    handleFilterClick()
   }
 
   const handleFilterCheckboxClick = (index: number, checked: boolean, type: string) => {
@@ -33,55 +35,65 @@ export function ListViewFilter(props: ListViewFilterProps) {
     } else {
       typesToFilter.splice(filteredInfosCheckbox.indexOf(type), 1)
     }
+
     setFilteredInfosCheckbox(typesToFilter)
   }
 
   useEffect(() => {
-    // remove duplicates from the info-types
-    let uniqueTypes: string[] = []
-    if (listData && listData.length > 0 && listData[0]) {
-      listData.forEach((info) => {
-        if (info.types && info.types.length > 0) {
-          info.types.forEach((type) => {
-            if (uniqueTypes.indexOf(type) === -1 && type !== '') uniqueTypes.push(type)
-          })
+    // Define an asynchronous function to fetch uniqueTypes
+    const fetchUniqueTypes = async () => {
+      try {
+        if (queryDataId !== undefined) {
+          const uniqueTypes = await getAllHauptthemaValues(queryDataId)
+
+          setUniqueInfoTypes(uniqueTypes)
+          setIsChecked(new Array(uniqueTypes.length).fill(false))
+        } else {
+          console.error('Error queryData._id is undefined')
         }
-      })
-      setUniqueInfoTypes(uniqueTypes)
-      // set all checkboxes to unchecked
-      setIsChecked(new Array(uniqueTypes.length).fill(false))
-      //Set Schwebebahn Haltestelle to default selection
-      for (let i = 0; i < uniqueTypes.length; i++) {
-        if (uniqueTypes[i] === 'Schwebebahn-Haltestellen') {
-          handleFilterCheckboxClick(i, true, uniqueTypes[i])
-        }
+      } catch (error) {
+        console.error('Error fetching uniqueTypes:', error)
       }
-    } else {
-      listData[0] = EMPTY_POI
     }
+
+    fetchUniqueTypes() // Call the asynchronous function
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     // set the infos to be displayed according to the selected filters
     if (filteredInfosCheckbox.length > 0) {
-      let filterList = listData.filter((info) => filteredInfosCheckbox.some((type) => info.types.includes(type)))
-      //Avoid duplicates
-      let uniqueInfos: InterestingPlace[] = []
-      for (let info of filterList) {
-        if (!uniqueInfos.some((uniqueInfo) => uniqueInfo.name === info.name)) {
-          uniqueInfos.push(info)
-        }
+      if (queryDataId !== undefined) {
+        getFilteredPois(queryDataId, filteredInfosCheckbox) // Pass the selected filters as an array
+          .then((filteredData) => {
+            setFilteredData(filteredData)
+          })
+          .catch((error) => {
+            console.error('Error fetching filtered data:', error)
+          })
+      } else {
+        console.error('Error queryData._id is undefined')
       }
-      setFilteredData(uniqueInfos)
     } else {
       setFilteredData(listData)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredInfosCheckbox, listData])
+  }, [filteredInfosCheckbox, listData, queryDataId])
 
   return (
-    <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
+    <Box
+      height='100%'
+      width='100%'
+      flexBasis='33%'
+      display='flex'
+      flexDirection='column'
+      padding='20px'
+      borderRadius='20px'
+      sx={{
+        backgroundColor: colors.poiBackground,
+      }}
+    >
       <Typography
         sx={{
           py: 2,
@@ -117,7 +129,6 @@ export function ListViewFilter(props: ListViewFilterProps) {
       <Box
         sx={{
           overflowY: 'auto',
-          backgroundColor: colors.poiBackground,
         }}
       >
         {uniqueInfoTypes.length > 0 ? (
@@ -152,7 +163,9 @@ export function ListViewFilter(props: ListViewFilterProps) {
       >
         <Stack direction={{ md: 'column', lg: 'row' }} spacing={2}>
           <BackButton onClick={handleFilterClick} text={'Filter anwenden'}></BackButton>
-          <Button onClick={handleFilterReset}>Filter Zurücksetzten</Button>
+          <Button onClick={handleFilterReset} sx={{ borderRadius: '20px' }}>
+            Filter Zurücksetzten
+          </Button>
         </Stack>
       </Box>
     </Box>

@@ -1,0 +1,30 @@
+# Use the official Keycloak image as the base image
+FROM quay.io/keycloak/keycloak:21.1
+
+# Set environment variables
+ENV KC_HTTP_RELATIVE_PATH=/auth
+ENV KC_HTTPS_RELATIVE_PATH=/auth
+# Set HTTP and HTTPS ports to disable HTTPS
+ENV KC_HTTP_PORT=8080
+ENV KC_HTTPS_PORT=8443
+ENV KC_HOSTNAME_STRICT=false
+ENV KC_HTTP_ENABLED=true
+ENV KC_HOSTNAME_STRICT_HTTPS=false
+ENV KC_TRANSACTION_XA_ENABLED=false
+
+# Needed vor reverse proxy
+ENV KC_PROXY=edge
+
+COPY ./keycloak/server.crt.pem /opt/keycloak/conf/
+COPY ./keycloak/server.key.pem /opt/keycloak/conf/
+
+ENV KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/conf/server.crt.pem
+ENV KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/conf/server.key.pem
+
+# Expose port 8080 (HTTP) and 8443 (HTTPS, if needed)
+EXPOSE 8080
+EXPOSE 8443
+
+# Set the default command to run Keycloak with a minimal profile for production
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start"]
+# ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start --http-enabled=true --https-key-store-password=secret --proxy edge"]

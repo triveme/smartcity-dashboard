@@ -50,8 +50,8 @@ export function InfoWidget(props: InfoWidgetProps) {
         {contact ? (
           <div>
             <Grid container spacing={7}>
-              <Grid item xs={12} md={6} lg={4} xl={3}>
-                <Contact name='Alexander Süssemilch' />
+              <Grid item xs={12} md={12} lg={12} xl={12}>
+                <Contact name='Stadt Wuppertal' />
               </Grid>
             </Grid>
           </div>

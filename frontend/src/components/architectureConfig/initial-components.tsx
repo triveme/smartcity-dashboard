@@ -12,7 +12,7 @@ export const initialTab: TabComponent = {
   uid: NIL_UUID,
   type: 'description',
   text: '',
-  apexType: 'donut',
+  apexType: '',
   apexSeries: [],
   apexOptions: {
     grid: {
@@ -41,7 +41,6 @@ export const initialTab: TabComponent = {
   apexMaxValue: 100,
   apexMaxAlias: '',
   apexMaxColor: colors.attributeColors[0],
-  apexStepline: false,
   timeframe: 0,
   fiwareService: '',
   entityId: [],

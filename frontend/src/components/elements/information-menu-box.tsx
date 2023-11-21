@@ -21,7 +21,8 @@ export function InformationMenuBox(props: DrawerProps) {
         </Box>
       </Link>
       <Link
-        to='/impressum'
+        to='//www.wuppertal.de/service/impressum.php'
+        target={'_blank'}
         style={{
           color: colors.inputFieldOutline,
           fontSize: 12,
@@ -32,7 +33,8 @@ export function InformationMenuBox(props: DrawerProps) {
         </Box>
       </Link>
       <Link
-        to='/datenschutzerklaerung'
+        to='//www.wuppertal.de/service/datenschutz_dsgvo.php'
+        target={'_blank'}
         style={{
           color: colors.inputFieldOutline,
           fontSize: 12,

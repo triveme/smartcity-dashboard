@@ -1,0 +1,110 @@
+version: "3"
+services:
+  keycloak:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.keycloak_PROD
+    container_name: keycloak
+    hostname: keycloak
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import/
+      - ./keycloak/server.crt.pem:/opt/keycloak/conf/server.crt.pem
+      - ./keycloak/server.key.pem:/opt/keycloak/conf/server.key.pem
+      - keycloak-data:/opt/keycloak/data/
+    env_file:
+      - .env.prod
+    networks:
+      - app-network
+
+  mongodb:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.mongodb_PROD
+    container_name: mongodb
+    volumes:
+      - ./mongodb-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - mongodb-data:/data/db
+      - /home/edag/backup:/backup
+    ports:
+      - "27021:27021"
+    networks:
+      - app-network
+    restart: always
+    command: mongod --port 27021
+
+  frontendservice:
+    build:
+      context: ./backend/frontendService
+      dockerfile: Dockerfile.frontendService_PROD
+    container_name: frontendservice
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8081
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env.prod
+
+  qlservice:
+    build:
+      context: ./backend/qlService
+      dockerfile: Dockerfile.qlService_PROD
+    container_name: qlservice
+    ports:
+      - "8082:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8082
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env.prod
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile.frontend_PROD
+    container_name: dashboard
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - frontendservice
+      - qlservice
+    networks:
+      - app-network
+    env_file:
+      - .env.prod
+
+  nginx:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+    depends_on:
+      - frontendservice
+      - dashboard
+
+networks:
+  app-network:
+    driver: bridge
+
+# Define volumes for persistent data
+volumes:
+  mongodb-data:
+  keycloak-data:

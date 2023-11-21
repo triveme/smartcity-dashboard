@@ -3,12 +3,13 @@ import { SliderComponent } from './chart-types'
 export type ParkingInfo = {
   name: string
   maxHeight: number
-  capacity: ParkingCapacity[]
+  capacity: number
   location: LocationType
   currentlyUsed: number
   maxValue: number
   type: string
   address?: ParkingAdress
+  openingHours: [string]
 }
 
 type ParkingAdress = {
@@ -38,19 +39,22 @@ export type SwimmingInfo = {
 export type InterestingPlace = {
   name: string
   types: string[]
-  address: AddressModel
+  address: string
   image: string
+  imagePreview: string
   creator: string
   location: LocationType
   info: string
+  zoomprio: string
 }
 
 export type MapData = {
   name: string
   location: LocationType
   image?: string
+  imagePreview?: string
   creator?: string
-  address?: AddressModel
+  address?: string
   available?: boolean
   status?: string
   occupancy?: number

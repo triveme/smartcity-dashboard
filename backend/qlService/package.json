@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js -L --watch"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "axios": "^0.24.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "jimp": "^0.22.10",
     "moment": "^2.29.1",
     "mongoose": "^6.0.12",
     "node-cron": "^3.0.0",

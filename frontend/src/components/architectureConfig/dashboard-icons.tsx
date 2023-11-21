@@ -34,32 +34,34 @@ import WaterIcon from '@mui/icons-material/Water'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CloseIcon from '@mui/icons-material/Close'
 import {
-  BatteryCharging2,
-  DropletFilled2,
-  Haze,
-  Parking,
-  Paw,
-  Pin,
-  Ripple,
-  Swimming,
-  Temperature,
-  Wind,
-  Droplet,
-  Dashboard,
-  Sun,
-  Point,
-  ArrowNarrowRight,
-  ArrowNarrowLeft,
-  Map,
-  List,
-  InfoCircle,
-  Filter,
-  MapSearch,
-  Car,
-  Bike,
-  ArrowWaveRightDown,
-  DotsVertical,
-} from 'tabler-icons-react'
+  IconBatteryCharging2,
+  IconDropletFilled,
+  IconHaze,
+  IconParking,
+  IconPaw,
+  IconPin,
+  IconRipple,
+  IconSwimming,
+  IconTemperature,
+  IconWind,
+  IconDroplet,
+  IconDashboard,
+  IconSun,
+  IconPoint,
+  IconPointFilled,
+  IconArrowNarrowRight,
+  IconArrowNarrowLeft,
+  IconMap,
+  IconList,
+  IconInfoCircle,
+  IconFilter,
+  IconMapSearch,
+  IconCar,
+  IconBike,
+  IconArrowWaveRightDown,
+  IconDotsVertical,
+  IconMapPin,
+} from '@tabler/icons-react'
 
 export const iconList = [
   'money',
@@ -96,31 +98,32 @@ export const iconList = [
   'air',
   'swim',
   'right',
-  'IconBatteryCharging2',
-  'IconDropletFilled2',
-  'IconHaze',
-  'IconParking',
-  'IconPaw',
-  'IconPin',
-  'IconRipple',
-  'IconSwimming',
-  'IconTemperature',
-  'IconWind',
-  'IconDroplet',
-  'IconDashboard',
-  'IconSun',
-  'IconPoint',
-  'IconArrowNarrowRight',
-  'IconArrowNarrowLeft',
-  'IconMap',
-  'IconList',
-  'IconInfoCircle',
-  'IconFilter',
-  'IconMapSearch',
-  'IconCar',
-  'IconBike',
-  'IconArrowWaveRightDown',
-  'IconDotsVertical',
+  'BatteryCharging2',
+  'DropletFilled2',
+  'Haze',
+  'Parking',
+  'Paw',
+  'Pin',
+  'Ripple',
+  'Swimming',
+  'Temperature',
+  'Wind',
+  'Droplet',
+  'Dashboard',
+  'Sun',
+  'Point',
+  'ArrowNarrowRight',
+  'ArrowNarrowLeft',
+  'Map',
+  'MapPin',
+  'List',
+  'InfoCircle',
+  'Filter',
+  'MapSearch',
+  'Car',
+  'Bike',
+  'ArrowWaveRightDown',
+  'DotsVertical',
 ]
 
 type DashboardIconProps = {
@@ -206,57 +209,61 @@ export function DashboardIcon(props: DashboardIconProps) {
       return <PoolIcon style={iconStyle} />
     case 'right':
       return <ChevronRightIcon style={iconStyle} />
-    case 'IconBatteryCharging2':
-      return <BatteryCharging2 style={iconStyle} />
-    case 'IconDropletFilled2':
-      return <DropletFilled2 style={iconStyle} />
-    case 'IconHaze':
-      return <Haze style={iconStyle} />
-    case 'IconParking':
-      return <Parking style={iconStyle} />
-    case 'IconPaw':
-      return <Paw style={iconStyle} />
-    case 'IconPin':
-      return <Pin style={iconStyle} />
-    case 'IconRipple':
-      return <Ripple style={iconStyle} />
-    case 'IconSwimming':
-      return <Swimming style={iconStyle} />
-    case 'IconTemperature':
-      return <Temperature style={iconStyle} />
-    case 'IconWind':
-      return <Wind style={iconStyle} />
-    case 'IconDroplet':
-      return <Droplet style={iconStyle} />
-    case 'IconDashboard':
-      return <Dashboard style={iconStyle} />
-    case 'IconSun':
-      return <Sun style={iconStyle} />
-    case 'IconPoint':
-      return <Point style={iconStyle} />
-    case 'IconArrowNarrowRight':
-      return <ArrowNarrowRight style={iconStyle} />
-    case 'IconArrowNarrowLeft':
-      return <ArrowNarrowLeft style={iconStyle} />
-    case 'IconMap':
-      return <Map style={iconStyle} />
-    case 'IconList':
-      return <List style={iconStyle} />
-    case 'IconInfoCircle':
-      return <InfoCircle style={iconStyle} />
-    case 'IconFilter':
-      return <Filter style={iconStyle} />
-    case 'IconMapSearch':
-      return <MapSearch style={iconStyle} />
-    case 'IconCar':
-      return <Car style={iconStyle} />
-    case 'IconBike':
-      return <Bike style={iconStyle} />
-    case 'IconArrowWaveRightDown':
-      return <ArrowWaveRightDown style={iconStyle} />
-    case 'IconDotsVertical':
-      return <DotsVertical style={iconStyle} />
-    case 'IconClose':
+    case 'BatteryCharging2':
+      return <IconBatteryCharging2 style={iconStyle} />
+    case 'DropletFilled2':
+      return <IconDropletFilled style={iconStyle} />
+    case 'Haze':
+      return <IconHaze style={iconStyle} />
+    case 'Parking':
+      return <IconParking style={iconStyle} />
+    case 'Paw':
+      return <IconPaw style={iconStyle} />
+    case 'Pin':
+      return <IconPin style={iconStyle} />
+    case 'Ripple':
+      return <IconRipple style={iconStyle} />
+    case 'Swimming':
+      return <IconSwimming style={iconStyle} />
+    case 'Temperature':
+      return <IconTemperature style={iconStyle} />
+    case 'Wind':
+      return <IconWind style={iconStyle} />
+    case 'Droplet':
+      return <IconDroplet style={iconStyle} />
+    case 'Dashboard':
+      return <IconDashboard style={iconStyle} />
+    case 'Sun':
+      return <IconSun style={iconStyle} />
+    case 'Point':
+      return <IconPoint style={iconStyle} />
+    case 'PointFilled':
+      return <IconPointFilled style={iconStyle} />
+    case 'ArrowNarrowRight':
+      return <IconArrowNarrowRight style={iconStyle} />
+    case 'ArrowNarrowLeft':
+      return <IconArrowNarrowLeft style={iconStyle} />
+    case 'Map':
+      return <IconMap style={iconStyle} />
+    case 'MapPin':
+      return <IconMapPin style={iconStyle} />
+    case 'List':
+      return <IconList style={iconStyle} />
+    case 'InfoCircle':
+      return <IconInfoCircle style={iconStyle} />
+    case 'Filter':
+      return <IconFilter style={iconStyle} />
+    case 'MapSearch':
+      return <IconMapSearch style={iconStyle} />
+    case 'Car':
+      return <IconCar style={iconStyle} />
+    case 'Bike':
+      return <IconBike style={iconStyle} />
+    case 'ArrowWaveRightDown':
+      return <IconArrowWaveRightDown style={iconStyle} />
+    case 'DotsVertical':
+      return <IconDotsVertical style={iconStyle} />
+    case 'Close':
       return <CloseIcon style={iconStyle} />
     default:
       return <ChevronRightIcon style={iconStyle} />
@@ -275,17 +282,17 @@ export function WidgetTabIcons(props: DashboardIconProps) {
 
   switch (icon) {
     case 'mapView':
-      return <Map style={iconStyle} />
+      return <IconMap style={iconStyle} />
     case 'listView':
-      return <List style={iconStyle} />
+      return <IconList style={iconStyle} />
     case 'infoView':
-      return <InfoCircle style={iconStyle} />
+      return <IconInfoCircle style={iconStyle} />
     case 'mapCar':
-      return <Car style={iconStyle} />
+      return <IconCar style={iconStyle} />
     case 'mapBike':
-      return <Bike style={iconStyle} />
+      return <IconBike style={iconStyle} />
     case 'verticalThreeDotsMenu':
-      return <DotsVertical style={iconStyle} />
+      return <IconDotsVertical style={iconStyle} />
     default:
       return <></>
   }
@@ -303,19 +310,19 @@ export function WidgetMapPinIcon(props: DashboardIconProps) {
 
   switch (icon) {
     case 'bikes':
-      return <Bike style={iconStyle} />
+      return <IconBike style={iconStyle} />
     case 'cars':
-      return <Car style={iconStyle} />
+      return <IconCar style={iconStyle} />
     case 'parking':
-      return <Parking style={iconStyle} />
+      return <IconParking style={iconStyle} />
     case 'pois':
-      return <Pin style={iconStyle} />
+      return <IconPin style={iconStyle} />
     case 'swimming':
-      return <Swimming style={iconStyle} />
+      return <IconSwimming style={iconStyle} />
     case 'water':
-      return <Haze style={iconStyle} />
+      return <IconHaze style={iconStyle} />
     case 'zoo':
-      return <Paw style={iconStyle} />
+      return <IconPaw style={iconStyle} />
     default:
       return <></>
   }

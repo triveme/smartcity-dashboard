@@ -1,0 +1,111 @@
+version: "3"
+services:
+  keycloak:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.keycloak_DEV
+    container_name: keycloak-dev
+    ports:
+      - "28080:8080"
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import/
+    entrypoint: ["/opt/keycloak/bin/kc.sh", "start-dev --import-realm"]
+    env_file:
+      - .env.dev
+    networks:
+      - app-network
+
+  mongodb:
+    container_name: mongodb-dev
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.mongodb_DEV
+    ports:
+      - "27021:27021"
+    volumes:
+      - ./mongodb-init.js:/docker-entrypoint-initdb.d/mongodb-init.js:ro
+      - mongodb-data:/data/db
+    networks:
+      - app-network
+    command: mongod --port 27021
+
+  frontendservice:
+    container_name: frontendservice-dev
+    build:
+      context: ./backend/frontendService
+      dockerfile: Dockerfile.frontendService_DEV
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+      - CPU_REQUEST=50m
+      - CPU_LIMIT=100m
+      - MEMORY_REQUEST=256Mi
+      - MEMORY_LIMIT=512Mi
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env.dev
+    volumes:
+      - ./backend/frontendService:/home/node/app
+
+  qlservice:
+    container_name: qlservice-dev
+    build:
+      context: ./backend/qlService/
+      dockerfile: Dockerfile.qlService_DEV
+    ports:
+      - "8081:8080"
+    environment:
+      - PORT=8081
+      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+      - CPU_REQUEST=25m
+      - CPU_LIMIT=50m
+      - MEMORY_REQUEST=128Mi
+      - MEMORY_LIMIT=256Mi
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+    env_file:
+      - .env.dev
+    volumes:
+      - ./backend/qlService:/home/node/app
+
+  dashboard:
+    container_name: dashboard-dev
+    build:
+      context: .
+      dockerfile: ./frontend/Dockerfile.frontend_DEV
+    environment:
+      - PORT=3000
+      - WATCHPACK_POLLING=true
+      - NODE_ENV=development
+      - CPU_REQUEST=25m
+      - CPU_LIMIT=50m
+      - MEMORY_REQUEST=128Mi
+      - MEMORY_LIMIT=256Mi
+    ports:
+      - "3000:3000"
+    depends_on:
+      - frontendservice
+      - qlservice
+    networks:
+      - app-network
+    env_file:
+      - .env.dev
+    volumes:
+      - ./frontend:/home/node/app
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+  keycloak-data:

@@ -7,7 +7,7 @@ import set from 'lodash/set'
 
 import type { TabComponent } from 'components/tab'
 
-import { roundDecimalPlaces } from 'utils/decimal-helper'
+import { roundDecimalPlaces } from 'utils/math-helper'
 
 import colors from 'theme/colors'
 import { WarningChartProps } from './column'
@@ -17,11 +17,10 @@ type LineChartProps = {
   height: number
   tickAmountKey: number
   windowWidth?: number
-  stepline?: boolean
 }
 
 export function LineChart(props: LineChartProps) {
-  const { tab, height, tickAmountKey, windowWidth, stepline } = props
+  const { tab, height, tickAmountKey, windowWidth } = props
 
   let trigger = 'a'
 
@@ -152,7 +151,11 @@ export function LineChart(props: LineChartProps) {
   }
   if (tab.apexOptions) {
     tab.apexOptions = set(tab.apexOptions, 'xaxis.tickAmount', windowWidth ? Math.round(windowWidth / 150) : 3)
-    tab.apexOptions = set(tab.apexOptions, 'stroke.curve', stepline ? ' stepline' : 'straight')
+
+    // overwrite colors from theme/colors.ts
+    tab.apexOptions = set(tab.apexOptions, 'colors', [colors.chartBar])
+    tab.apexOptions = set(tab.apexOptions, 'chart.background', colors.panelBackground)
+    tab.apexOptions = set(tab.apexOptions, 'chart.foreColor', colors.text)
   }
 
   return (
@@ -269,13 +272,13 @@ export function AlarmLineChart(props: WarningChartProps) {
         {
           y: warningValue,
           strokeDashArray: 0,
-          borderColor: colors.petrol,
+          borderColor: colors.orange,
           fillColor: 'white',
           label: {
-            borderColor: colors.petrol,
+            borderColor: colors.orange,
             style: {
               color: 'white',
-              background: colors.petrol,
+              background: colors.orange,
             },
             text: 'Warnung',
           },

@@ -17,7 +17,7 @@ import { SmallField } from 'components/elements/text-fields'
 import { MaxColorDialog } from 'components/architectureConfig/color-dialog'
 
 import colors from 'theme/colors'
-import { Dialog, DialogContent, IconButton, DialogActions, Switch, FormControlLabel } from '@mui/material'
+import { Dialog, DialogContent, IconButton, DialogActions } from '@mui/material'
 import { SaveButton } from 'components/elements/buttons'
 import { iconList, DashboardIcon } from './dashboard-icons'
 import borderRadius from 'theme/border-radius'
@@ -132,19 +132,8 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
           <MenuItem value='radial360'>Radial 360°</MenuItem>
           <MenuItem value='slider'>Slider</MenuItem>
           <MenuItem value='sliderKnobs'>Slider mit Label</MenuItem>
+          <MenuItem value='measurement'>Messung</MenuItem>
         </Select>
-        {tempPanel.tabs[currentTabIndex].apexType === 'line' && (
-          <FormControlLabel
-            control={
-              <Switch
-                value={tempPanel.tabs[currentTabIndex].apexStepline}
-                checked={tempPanel.tabs[currentTabIndex].apexStepline}
-                onChange={(e) => setNewTabValue([{ key: 'apexStepline', tabValue: e.target.checked }])}
-              />
-            }
-            label='Stepline'
-          />
-        )}
       </FormControl>
       {tempPanel.tabs[currentTabIndex] &&
         tempPanel.tabs[currentTabIndex].type === 'chart' &&
@@ -164,9 +153,9 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
                     onChange={(e) => setNewTabValue([{ key: 'timeframe', tabValue: e.target.value }])}
                     style={{ backgroundColor: colors.backgroundColor }}
                   >
-                    <MenuItem value={0}>Letzte 24h</MenuItem>
-                    <MenuItem value={1}>Letzte 7 Tage</MenuItem>
-                    <MenuItem value={2}>Letzte 30 Tage</MenuItem>
+                    <MenuItem value={5}>Letzte 24h</MenuItem>
+                    <MenuItem value={30}>Letzte 7 Tage</MenuItem>
+                    <MenuItem value={90}>Letzte 30 Tage</MenuItem>
                   </Select>
                 </FormControl>
                 <SmallField
@@ -440,27 +429,63 @@ export function ChartConfigurator(props: ChartConfiguratorProps) {
               />
             </Box>
           ) : null}
-          <SmallField
-            label='Nachkommastellen'
-            type='number'
-            value={!tempPanel.tabs[currentTabIndex].decimals ? 0 : tempPanel.tabs[currentTabIndex].decimals}
-            onChange={(e) =>
-              setNewTabValue([
-                {
-                  key: 'attributeDecimals',
-                  tabValue: parseInt(e.target.value) ? parseInt(e.target.value) : 0,
-                },
-              ])
-            }
-            onBlur={() => {
-              if (
-                tempPanel.tabs[currentTabIndex].decimals &&
-                (tempPanel.tabs[currentTabIndex].decimals! < 0 || tempPanel.tabs[currentTabIndex].decimals! > 5)
-              ) {
-                setNewTabValue([{ key: 'attributeDecimals', tabValue: 0 }])
+          {/* Measurement charts */}
+          {tempPanel.tabs[currentTabIndex].apexType === 'measurement' ? (
+            <Box display='flex' flexDirection='row' gap='5px'>
+              <SmallField
+                key={'measurement-warning-text-field'}
+                label='Warnungslimit'
+                type='number'
+                value={tempPanel.tabs[currentTabIndex].componentWarning}
+                onChange={(e) => setNewTabValue([{ key: 'componentWarning', tabValue: e.target.value }])}
+              />
+              <SmallField
+                key={'measurement-alarm-text-field'}
+                label='Alarmlimit'
+                type='number'
+                value={tempPanel.tabs[currentTabIndex].componentAlarm}
+                onChange={(e) => setNewTabValue([{ key: 'componentAlarm', tabValue: e.target.value }])}
+              />
+              <SmallField
+                key={'measurement-maximum-text-field'}
+                label='Maximaler Wert'
+                type='text'
+                value={tempPanel.tabs[currentTabIndex].componentMaximum}
+                onChange={(e) => setNewTabValue([{ key: 'componentMaximum', tabValue: e.target.value }])}
+              />
+            </Box>
+          ) : null}
+
+          <Box display='flex' flexDirection='row' gap='5px'>
+            <SmallField
+              label='Nachkommastellen'
+              type='number'
+              value={!tempPanel.tabs[currentTabIndex].decimals ? 0 : tempPanel.tabs[currentTabIndex].decimals}
+              onChange={(e) =>
+                setNewTabValue([
+                  {
+                    key: 'attributeDecimals',
+                    tabValue: parseInt(e.target.value) ? parseInt(e.target.value) : 0,
+                  },
+                ])
               }
-            }}
-          />
+              onBlur={() => {
+                if (
+                  tempPanel.tabs[currentTabIndex].decimals &&
+                  (tempPanel.tabs[currentTabIndex].decimals! < 0 || tempPanel.tabs[currentTabIndex].decimals! > 5)
+                ) {
+                  setNewTabValue([{ key: 'attributeDecimals', tabValue: 0 }])
+                }
+              }}
+            />
+            <SmallField
+              key={'radial-unit-text-field'}
+              label='Einheit'
+              type='text'
+              value={tempPanel.tabs[currentTabIndex].componentUnit}
+              onChange={(e) => setNewTabValue([{ key: 'componentUnit', tabValue: e.target.value }])}
+            />
+          </Box>
           <DataConfigurator currentTabIndex={currentTabIndex} tempPanel={tempPanel} setNewTabValue={setNewTabValue} />
         </>
       ) : null}
