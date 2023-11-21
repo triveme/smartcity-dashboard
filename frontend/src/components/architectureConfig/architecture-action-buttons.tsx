@@ -1,14 +1,14 @@
-import * as React from 'react'
+import { useAuth } from 'react-oidc-context'
 import Box from '@mui/material/Box'
 import isEqual from 'lodash/isEqual'
 import { cloneDeep, omit } from 'lodash'
 
 import { SaveButton, CancelButton } from 'components/elements/buttons'
-import { useStateContext } from 'providers/state-provider'
 import { useArchitectureContext } from 'context/architecture-provider'
 import { postArchitecture } from 'clients/architecture-client'
 import { DashboardComponent } from 'components/dashboard'
 import { snackActions } from '../../utils/snackbar-utils'
+import { canWriteCurrentDashboard } from 'utils/auth-helper'
 
 type ArchitectureActionButtonsProps = {
   onSavedDashboard: VoidFunction
@@ -16,7 +16,8 @@ type ArchitectureActionButtonsProps = {
 
 export function ArchitectureActionButtons(props: ArchitectureActionButtonsProps) {
   const { onSavedDashboard } = props
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
+
   const { architectureContext, setArchitectureContext } = useArchitectureContext()
   const { initialArchitectureContext, currentArchitectureContext } = architectureContext
 
@@ -48,8 +49,6 @@ export function ArchitectureActionButtons(props: ArchitectureActionButtonsProps)
         }
       }
     })
-    console.log('Saving')
-    console.log(contextToSend)
     initialArchitectureContext.forEach((d: DashboardComponent) => {
       // deleted dashboard
       if (d._id !== '') {
@@ -62,9 +61,13 @@ export function ArchitectureActionButtons(props: ArchitectureActionButtonsProps)
         }
       }
     })
-    console.log(contextToSend)
+    if (!canWriteCurrentDashboard(auth, architectureContext)) {
+      snackActions.error('Nur Nutzer mit Schreibberechtigung speichern.')
+      console.error('Insufficient permissions to save architecture.')
+      return
+    }
     postArchitecture({
-      token: stateContext.authToken,
+      token: canWriteCurrentDashboard(auth, architectureContext) ? auth.user?.access_token : undefined,
       dashboards: contextToSend,
     })
       .then((architectureData: any) => {

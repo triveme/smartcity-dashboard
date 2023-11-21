@@ -2,7 +2,7 @@ import { Box, Typography } from '@mui/material'
 import { default as ApexChart } from 'react-apexcharts'
 import { ApexOptions } from 'apexcharts'
 
-import { GetRadial360ApexOptions } from './radial3600ApexOptions'
+import { GetRadial360ApexOptions } from './radial360ApexOptions'
 
 type RadialChartProps = {
   description: string

@@ -1,6 +1,7 @@
 import { Button, Grid, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { Box } from '@mui/system'
 import smartCityImage from 'assets/edag_smart_city.jpg'
+import fundingImage from 'assets/logos/wup_foerder_logo.svg'
 import smartCityImageFullWidth from 'assets/edagSmartCityFullWidth.jpg'
 import borderRadius from 'theme/border-radius'
 import colors from 'theme/colors'
@@ -12,6 +13,26 @@ function Row() {
   return (
     <Grid container direction='row' spacing={1.5}>
       <Grid item xs={12}>
+        <Typography variant='h3' marginTop={2} marginBottom={0.75}>
+          GEFÖRDERT DURCH
+        </Typography>
+        <Box
+          style={{
+            borderRadius: borderRadius.fragmentRadius,
+            backgroundColor: '#fff',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: matchesDesktop ? 120 : 60,
+          }}
+        >
+          <img src={fundingImage} width={'90%'} height={'90%'} alt='Gefördert durch KFW' />
+        </Box>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant='h3' marginTop={2} marginBottom={0.75}>
+          IN ZUSAMMENARBEIT MIT
+        </Typography>
         <Button
           onClick={() => {}}
           style={{
@@ -27,7 +48,7 @@ function Row() {
           }}
           href=' https://smartcity.edag.com/referenzen/smart-city-dashboard'
         >
-          Zur Webseite EDAG Smart City Dashboard
+          EDAG Smart City Dashboard
         </Button>
       </Grid>
       <Grid item xs={12}>
@@ -59,37 +80,46 @@ export function About() {
           />
         </Grid>
         <Grid item md={12} lg={9} xl={6}>
+          <p>
+            Wuppertal ist eine von 73 Modellprojekten für „Smart Cities made in Germany“, ein vom Bundesministerium für
+            Wohnen, Stadtentwicklung und Bauwesen gefördertes Digitalisierungsprogramm. Der Startschuss für das Projekt
+            fiel im März 2022. Mittlerweile wurde eine umfangreiche Smart City Strategie verfasst und erste Projekte
+            daraus umgesetzt. Eines dieser Projekte ist das Dashboard „DigiTal Daten“, welches Bürgerinnen und Bürgern
+            individuellen Zugriff auf umfangreiche Daten ihrer Stadt geben soll.
+          </p>
           <Typography marginBottom={0} variant='h3'>
-            Inhalt und Ziele des Open Source Projekts „Smart City Dashboard für FIWARE basierte urban data platformen“
+            DigiTal Daten - das Dashboard für Informationen rund um Wuppertal
           </Typography>
+
           <p>
-            Dieser Prototyp eines Smart City Dashboards dient zur Visualisierung von Daten aus einer FIWARE basierten
-            Urban Data Platform. Durch die Bereitstellung der Daten, insbesondere in Form von Charts, können
-            Bürger:innen und Interessent:innen ein Überblick über den aktuellen Sachverhalt in der Stadt gegeben werden.
+            Auf dem Dashboard können in Echtzeit* Daten und Zahlen aus der Stadt, wie zum Beispiel die aktuelle
+            Besucherauslastung der Schwimmbäder oder der Pegelstand der Wupper, übersichtlich auf einer digitalen
+            Plattform abgerufen werden. Die Daten werden von verschiedenen städtischen Ressorts und Wuppertaler
+            Unternehmen aufgenommen und an dieser Stelle zusammengetragen. Neben verschiedenen Livedaten* gibt es auch
+            Informationen zu interessanten Orten und Veranstaltungen in der Stadt sowie einen Überblick über die
+            städtischen Mobilitätsangebote wie E-Ladesäulen oder Schwebebahnhaltestellen.
+          </p>
+          <p>*Daten werden in Abständen von ca. 5 Minuten aktualisiert</p>
+          <Typography marginBottom={0} variant='h3'>
+            Competence Center Smart City Wuppertal
+          </Typography>
+
+          <p>
+            Möglichmacher, Unterstützer, Vernetzter – das Competence Center Smart City Wuppertal steuert den
+            Gesamtprozess des Modellprojekts. Es ist die Organisationseinheit für alle Themen rund um die Smart City
+            Wuppertal. Als Ansprechpartner und Kontaktpunkt koordiniert das Competence Center alle Smart City
+            Aktivitäten in der Stadt, bündelt Kompetenzen und baut Brücken zwischen Projekten, Ideen und Akteuren. Mit
+            kleinen und großen Projekten setzt es die Idee einer Smart City Wuppertal in die Realität um.
           </p>
 
           <p>
-            Welche Daten wie visualisiert werden sollen kann dabei von den Betreibern im Livebetrieb und ohne
-            zusätzlichen Programmieraufwand angepasst werden (no code Umgebung). Das ist möglich, indem Sie sich als
-            Administrator anmelden und über einen integrierten Wizard die gewünschte Konfiguration vornehmen. Folglich
-            können neu in die Open Data Plattform hinzugefügte Daten durch minimale Anpassungen direkt der
-            Öffentlichkeit zugänglich gemacht werden. Die Daten liegen also nicht nur in der Plattform ab, sondern
-            bieten allen Einwohner:innen der Stadt einen direkten Mehrwert. Zusätzlich können „unsichtbare“
-            Menüpunkte/Dashboards erzeugt werden, um Daten nur für interne Zwecke aufzubereiten.
+            Mehr zum Modellprojekt Smart City Wuppertal unter
+            <a href='www.smart.wuppertal.de'>www.smart.wuppertal.de</a>
+            <br />
+            Instagram <a href='https://www.instagram.com/smart.wuppertal/?hl=de'>smart.wuppertal</a>
+            <br />
+            Facebook <a href='https://www.facebook.com/smart.wuppertal/'>Smart City Wuppertal</a>
           </p>
-
-          <p>
-            Zudem stellt die entwickelten Lösungen höchste Ansprüche an die IT-Sicherheit (z. B. im Vergleich zu
-            Grafana) und Performance (durch die vor Verarbeitung der Daten durch zusätzliche Backend-Services).
-          </p>
-
-          <p>
-            Die technische Umsetzung wurde durch die EDAG Group realisiert und als Public-Money-Public-Code-Projekt
-            gestartet. Unser Ziel ist es, diese hier dargestellte, städteneutrale Ausgangsbasis durch weitere
-            öffentliche Projekte weiterzuentwickeln, um so allen nutzenden Städten eine günstige Weiterentwicklung und
-            Wartung zu ermöglichen.
-          </p>
-          <br />
         </Grid>
         <Grid item xs={12} md={12} lg={12} xl={3}>
           <Row />

@@ -1,39 +1,57 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { Box, Button, Typography, useMediaQuery } from '@mui/material'
 import FilterListIcon from '@mui/icons-material/FilterList'
 
 import theme from 'theme/theme'
 import colors from 'theme/colors'
 import { MapComponent } from '../map/map'
-import { InterestingPlace, MapData } from 'models/data-types'
+import { InterestingPlace, MapComponentOptions, MapData } from 'models/data-types'
 import { EMPTY_POI } from 'constants/dummy-data'
 import { ListViewDetails } from 'components/listview/listview-details'
-import { ListViewImage } from './listview-image'
 import { ListViewInfo } from './listview-info'
 import { ListViewMapArrow } from './listview-map-arrow'
 import { ListViewFilter } from './listview-filter'
+import { getPois } from 'clients/poi-data-client'
 
 type ListViewProps = {
-  infos: InterestingPlace[]
+  mapOptions: MapComponentOptions
+  queryDataId: string | undefined
 }
 
 export function ListView(props: ListViewProps) {
-  const { infos } = props
+  const { mapOptions, queryDataId } = props
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
   const [mapKey, setMapKey] = useState(Math.random())
-  const [poiData] = useState(infos && infos.length > 0 ? infos : [EMPTY_POI])
+  const [poiData, setPoiData] = useState<InterestingPlace[]>([])
   const [pointOfInterestDetailsOpen, setPointOfInterestDetailsOpen] = useState(false)
   const [selectedPointOfInterest, setSelectedPointOfInterest] = useState<InterestingPlace>(EMPTY_POI)
   const [selectedPointOfInterestIndex, setSelectedPointOfInterestIndex] = useState(-1)
-  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(infos)
+  const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(poiData)
   const [pointOfInterestFilterOpen, setPointOfInterestFilterOpen] = useState(false)
   const [isListVisible, setListVisibility] = useState(true)
+  const [selectedZoomLocation, setSelectedZoomLocation] = useState<number[]>([])
 
-  const handlePoiClick = (pointOfInterest: InterestingPlace, index: number) => {
+  useEffect(() => {
+    async function fetchData() {
+      if (queryDataId !== undefined) {
+        const pois = await getPois(queryDataId)
+        setPoiData(pois)
+        // initialize filteredInfos with all POIs
+        setFilteredInfos(pois)
+      } else {
+        console.error('Error queryData._id is undefined')
+      }
+    }
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handlePoiClick = (index: number) => {
     setPointOfInterestDetailsOpen(true)
-    setSelectedPointOfInterest(pointOfInterest)
+    setListVisibility(false)
+    setSelectedPointOfInterest(poiData[index])
     setSelectedPointOfInterestIndex(index)
-    handleResize()
+    // handleResize()
   }
 
   const handlePoiClose = () => {
@@ -41,7 +59,8 @@ export function ListView(props: ListViewProps) {
     setListVisibility(true)
     setSelectedPointOfInterest(EMPTY_POI)
     setSelectedPointOfInterestIndex(-1)
-    handleResize()
+    // handleResize()
+    setSelectedZoomLocation([])
   }
 
   const handleDisplayOnMapClick = (markerId: string, lat: number, lng: number) => {
@@ -49,6 +68,7 @@ export function ListView(props: ListViewProps) {
     if (!matchesDesktop) {
       handleResize()
     }
+    handleTargetZoomClick([lat, lng])
   }
 
   /**
@@ -69,7 +89,11 @@ export function ListView(props: ListViewProps) {
   }
 
   const handleFilterClick = () => {
-    setPointOfInterestFilterOpen(() => !pointOfInterestFilterOpen)
+    setPointOfInterestFilterOpen(!pointOfInterestFilterOpen)
+  }
+
+  const handleTargetZoomClick = (location: number[]) => {
+    setSelectedZoomLocation(location)
   }
 
   const poiList = useMemo(() => {
@@ -88,14 +112,8 @@ export function ListView(props: ListViewProps) {
               }}
               padding='10px'
             >
-              <ListViewImage key={'Poi-Image-Box-' + index} info={info} />
               <ListViewInfo key={'Listview-Info-Box-' + index} info={info} />
-              <ListViewMapArrow
-                key={'Listview-Map-Arrow-' + index}
-                index={index}
-                info={info}
-                handlePoiClick={handlePoiClick}
-              />
+              <ListViewMapArrow key={'Listview-Map-Arrow-' + index} index={index} handlePoiClick={handlePoiClick} />
             </Box>
           )
         })}
@@ -112,52 +130,74 @@ export function ListView(props: ListViewProps) {
       flexDirection={matchesDesktop ? 'row' : 'column'}
       paddingBottom='8px'
     >
-      <Box height='100%' width='100%' flexBasis={matchesDesktop ? '33%' : '5%'} display='flex' flexDirection='column'>
-        {pointOfInterestDetailsOpen ? (
-          // POI details
-          <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
-            <ListViewDetails
-              info={selectedPointOfInterest!}
-              handleBackClick={handlePoiClose}
-              handleDisplayOnMapClick={handleDisplayOnMapClick}
-              index={selectedPointOfInterestIndex}
+      {pointOfInterestDetailsOpen ? (
+        // POI details
+        <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
+          <ListViewDetails
+            info={selectedPointOfInterest!}
+            handleBackClick={handlePoiClose}
+            handleDisplayOnMapClick={handleDisplayOnMapClick}
+            index={selectedPointOfInterestIndex}
+          />
+        </Box>
+      ) : (
+        <Box height='100%' width='100%' flexBasis={matchesDesktop ? '33%' : '5%'} display='flex' flexDirection='column'>
+          {pointOfInterestFilterOpen === true ? (
+            <ListViewFilter
+              listData={poiData}
+              setFilteredData={setFilteredInfos}
+              handleFilterClick={handleFilterClick}
+              queryDataId={queryDataId}
             />
-          </Box>
-        ) : pointOfInterestFilterOpen ? (
-          <ListViewFilter listData={infos} setFilteredData={setFilteredInfos} handleFilterClick={handleFilterClick} />
-        ) : (
-          // POI List
-          <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
-            <Box display='flex' flexDirection='row' width='100%' justifyContent={'space-between'}>
-              <Typography>
-                {filteredInfos.length !== infos.length ? filteredInfos.length + ' / ' : null} {poiData.length} Orte
-                sortiert nach Beliebtheit
-              </Typography>
-              {!matchesDesktop ? (
-                <Button size='small' onClick={handleListToggleClick} variant='outlined'>
-                  {isListVisible ? 'Karte' : 'Liste'}
+          ) : (
+            // POI List
+            <Box height='100%' width='100%' flexBasis='33%' display='flex' flexDirection='column' padding='5px'>
+              <Box display='flex' flexDirection='row' width='100%' justifyContent={'space-between'}>
+                <Typography>
+                  {filteredInfos.length !== poiData.length ? filteredInfos.length + ' / ' : null} {poiData.length} Orte
+                  sortiert nach Beliebtheit
+                </Typography>
+                {!matchesDesktop ? (
+                  <Button size='small' onClick={handleListToggleClick} variant='outlined'>
+                    {isListVisible ? 'Karte' : 'Liste'}
+                  </Button>
+                ) : null}
+                <Button
+                  size='small'
+                  onClick={handleFilterClick}
+                  variant='outlined'
+                  sx={{ borderRadius: '20px' }}
+                  startIcon={<FilterListIcon />}
+                >
+                  Filter
                 </Button>
-              ) : null}
-              <Button size='small' onClick={handleFilterClick} variant='outlined' startIcon={<FilterListIcon />}>
-                Filter
-              </Button>
+              </Box>
+              {isListVisible ? <Box sx={{ overflowY: 'scroll', mt: 1 }}>{poiList}</Box> : null}
             </Box>
-            {isListVisible && <Box sx={{ overflowY: 'scroll', mt: 1 }}>{poiList}</Box>}
-          </Box>
-        )}
-      </Box>
+          )}
+        </Box>
+      )}
       {/* Map Display */}
-      <Box height='100%' width='100%' flexBasis={matchesDesktop ? '66%' : '95%'} padding='5px'>
-        <div
-          style={{
-            height: '100%',
-            width: '100%',
-          }}
-          onResize={handleResize}
-        >
-          <MapComponent key={'map-' + mapKey} iconType={'pois'} mapData={filteredInfos as MapData[]} />
-        </div>
-      </Box>
+      {(!isListVisible && !pointOfInterestDetailsOpen) || matchesDesktop ? (
+        <Box height='100%' width='100%' flexBasis={matchesDesktop ? '85%' : '95%'} padding='5px'>
+          <div
+            style={{
+              height: '100%',
+              width: '100%',
+            }}
+            onResize={handleResize}
+          >
+            <MapComponent
+              key={'map-' + mapKey}
+              iconType={'pois'}
+              mapData={filteredInfos as MapData[]}
+              mapOptions={mapOptions}
+              zoomLocation={selectedZoomLocation ? selectedZoomLocation : []}
+              handlePoiClick={handlePoiClick}
+            />
+          </div>
+        </Box>
+      ) : null}
     </Box>
   )
 }

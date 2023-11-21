@@ -14,7 +14,7 @@ export const DRAWER_TITLE = 'Dashboards'
 
 export const INFORMATION_PAGE_TITLE = 'Informationen'
 
-export const LOGIN_TITLE = 'Login'
+export const LOGIN_TITLE = 'Login mit'
 
 export const BUTTON_TEXTS = {
   ADD_WIDGET: 'WIDGET',

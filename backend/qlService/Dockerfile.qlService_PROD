@@ -1,0 +1,17 @@
+FROM node:18-alpine
+
+RUN npm install -g npm@latest
+RUN apk update && apk upgrade && \
+    apk add --no-cache git
+
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+
+WORKDIR /home/node/app
+
+COPY . .
+
+RUN npm ci
+
+EXPOSE 8082
+
+CMD [ "npm", "start" ]

@@ -3,11 +3,9 @@ import { useState } from 'react'
 import MuiLoadingButton from '@mui/lab/LoadingButton'
 import Typography from '@mui/material/Typography'
 
-import { useStateContext } from '../../providers/state-provider'
 import { snackActions } from '../../utils/snackbar-utils'
 
 export function LoadingButton(props: any) {
-  const { stateContext, setStateContext } = useStateContext()
   const [loading, setLoading] = useState(false)
   const { queryFun, queryCompleteFun, queryText, queryColor, style, type, size, fullWidth } = props
 
@@ -16,10 +14,6 @@ export function LoadingButton(props: any) {
       queryCompleteFun(res)
       return
     }
-    setStateContext({
-      ...stateContext,
-      queryTrigger: stateContext.queryTrigger + 1,
-    })
   }
 
   const handleQueryFun = (e: any) => {

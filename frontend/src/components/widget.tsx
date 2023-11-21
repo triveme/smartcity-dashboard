@@ -12,7 +12,7 @@ import { Panel, PanelComponent } from 'components/panel'
 import { PanelDialog } from 'components/architectureConfig/panel-dialog'
 import { ArchitectureEditButtons } from 'components/architectureConfig/architecture-edit-buttons'
 import { initialPanel } from './architectureConfig/initial-components'
-import { useStateContext } from '../providers/state-provider'
+import { useAuth } from 'react-oidc-context'
 import { BUTTON_TEXTS } from 'constants/text'
 import { WidgetCard } from './elements/widget-card'
 import { DashboardIcon, WidgetTabIcons } from './architectureConfig/dashboard-icons'
@@ -23,6 +23,8 @@ import { MapComponent } from './map/map'
 import Link from '@mui/material/Link'
 import { MapData } from 'models/data-types'
 import { Menu } from '@mui/material'
+import { useArchitectureContext } from 'context/architecture-provider'
+import { canWriteCurrentDashboard } from 'utils/auth-helper'
 
 export type WidgetComponent = {
   _id: string
@@ -59,7 +61,8 @@ enum DisplayStatus {
 
 export function Widget(props: WidgetProps) {
   const { widget, parentName, parentsUid, editMode } = props
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
+  const { architectureContext } = useArchitectureContext()
 
   const preventReopen = useRef(false)
   const theme = useTheme()
@@ -116,9 +119,6 @@ export function Widget(props: WidgetProps) {
         break
       default:
         setDisplayStatus(DisplayStatus.LIST)
-        if (icon !== '') {
-          console.warn('Unknown WidgetTab Icon')
-        }
         break
     }
   }
@@ -226,6 +226,7 @@ export function Widget(props: WidgetProps) {
         flexDirection={'row'}
         justifyContent={'space-between'}
         gap='20px'
+        height='60px'
         style={{
           backgroundColor: colors.widgetTop,
           paddingLeft: '20px',
@@ -234,48 +235,58 @@ export function Widget(props: WidgetProps) {
       >
         <Box display='flex' justifyContent={'flex-start'} alignItems={'center'} gap={'10px'}>
           <DashboardIcon icon={widget.widgetIcon ? widget.widgetIcon : ''} color={colors.iconColor}></DashboardIcon>
-          <Typography variant='h2' noWrap component='div'>
+          <Typography variant='h2' noWrap component='div' className='uppercase-text'>
             {widget.name}
           </Typography>
         </Box>
 
         {/* Vertical three dots menu */}
         {!matchesDesktop ? (
-          <>
-            <IconButton
-              onClick={handleThreeDotsMenuClick}
-              ref={buttonRef}
-              sx={{
-                border: `2px solid ${colors.grey}`,
-                marginRight: '1.2rem',
-                height: 38,
-                width: 38,
-                '&:hover': {
-                  borderColor: colors.iconColor,
-                },
-                '& svg': {
-                  margin: '-3px',
-                },
-                '& svg:hover': {
-                  color: `${colors.iconColor} !important`,
-                },
-              }}
-            >
-              <WidgetTabIcons color={colors.grey} icon={'verticalThreeDotsMenu'} />
-            </IconButton>
+          widget.tabIcons.length === 0 ? null : widget.tabIcons.length === 1 ? (
+            <div style={{ marginRight: '1.2rem' }}>
+              <WidgetTabIcons
+                key={'DashboardIcon-Widget-' + widget.tabIcons[0]}
+                icon={widget.tabIcons[0]}
+                color={colors.iconColor}
+              />
+            </div>
+          ) : (
+            <>
+              <IconButton
+                onClick={handleThreeDotsMenuClick}
+                ref={buttonRef}
+                sx={{
+                  border: `2px solid ${colors.grey}`,
+                  marginRight: '1.2rem',
+                  height: 38,
+                  width: 38,
+                  '&:hover': {
+                    borderColor: colors.iconColor,
+                  },
+                  '& svg': {
+                    margin: '-3px',
+                  },
+                  '& svg:hover': {
+                    color: `${colors.iconColor} !important`,
+                  },
+                }}
+              >
+                <WidgetTabIcons color={colors.grey} icon={'verticalThreeDotsMenu'} />
+              </IconButton>
 
-            <Menu
-              id='widget-three-dots-menu'
-              open={threeDotsMenuOpen}
-              onClose={handleThreeDotsMenuClose}
-              anchorEl={threeDotsMenuAnchorEl}
-              style={{
-                zIndex: 9999,
-              }}
-            >
-              {createWidgetTabIcons(widget.tabIcons)}
-            </Menu>
-          </>
+              <Menu
+                id='widget-three-dots-menu'
+                open={threeDotsMenuOpen}
+                onClose={handleThreeDotsMenuClose}
+                anchorEl={threeDotsMenuAnchorEl}
+                style={{
+                  zIndex: 9999,
+                }}
+              >
+                {createWidgetTabIcons(widget.tabIcons)}
+              </Menu>
+            </>
+          )
         ) : (
           <Box display='flex' justifyContent={'flex-end'} alignItems={'center'}>
             {createWidgetTabIcons(widget.tabIcons)}
@@ -359,7 +370,6 @@ export function Widget(props: WidgetProps) {
                     rel='noopener'
                   >
                     {infoLink.infoLinkTitle}
-                    <br />
                   </Link>
                 ))}
               </Box>
@@ -368,7 +378,7 @@ export function Widget(props: WidgetProps) {
         ) : null}
       </Box>
 
-      {stateContext.authToken && editMode && matchesDesktop ? (
+      {canWriteCurrentDashboard(auth, architectureContext) && editMode && matchesDesktop ? (
         <>
           <Box style={{ marginTop: 16 }}>
             <AddButton onClick={handlePanelCreationClickOpen} text={BUTTON_TEXTS.ADD_PANEL} />

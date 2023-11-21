@@ -7,8 +7,8 @@ import colors from 'theme/colors'
 export function Information() {
   return (
     <DashboardWrapper>
-      <InfoWidget title='Informationen' panelTitle='Über das Projekt' />
-      <InfoWidget contact title='Kontakte' panelTitle='Ihr direkter Smart City Kontakt' />
+      <InfoWidget title='Smart City Wuppertal' panelTitle='vernetzt.digital.lebenswert.' />
+      <InfoWidget contact title='Kontakt' panelTitle='Ihr direkter Smart City Kontakt' />
 
       <Grid container spacing={1} justifyContent='center'>
         <Grid item xs={12} md={3} margin={0}>

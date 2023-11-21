@@ -1,7 +1,12 @@
 import { ApexOptions } from 'apexcharts'
 import colors from 'theme/colors'
 
-export function GetRadial180ApexOptions(seriesData: number, maxValue: number) {
+export function GetRadial180ApexOptions(
+  absoluteValue: number,
+  percentValue: number,
+  minValue: number,
+  maxValue: number,
+) {
   let radialOption: ApexOptions = {
     chart: {
       height: 150,
@@ -11,7 +16,7 @@ export function GetRadial180ApexOptions(seriesData: number, maxValue: number) {
         enabled: true,
       },
     },
-    series: [seriesData],
+    series: [percentValue],
     colors: [colors.chartBar],
     plotOptions: {
       radialBar: {
@@ -37,7 +42,8 @@ export function GetRadial180ApexOptions(seriesData: number, maxValue: number) {
             offsetY: -3,
             formatter: function (val) {
               try {
-                return ((val * maxValue) / 100).toFixed(0) + ' '
+                return absoluteValue.toFixed(1) + ' '
+                // return ((val * maxValue) / 100).toFixed(0) + ' '
               } catch (error) {
                 console.warn('PROBLEM: Processing value: ' + val)
                 return val + ''

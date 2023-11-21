@@ -1,8 +1,11 @@
-import { Typography } from '@mui/material'
+import { Typography, useMediaQuery } from '@mui/material'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 import { SwimmingUtilizationModel, SwimmingZone } from 'models/data-types'
 import { SliderWithoutKnobs } from './charts/slider/slider'
+import { roundDecimalPlaces } from 'utils/math-helper'
+import theme from 'theme/theme'
+import colors from 'theme/colors'
 
 type SwimmingDetailsProps = {
   infos: SwimmingUtilizationModel[]
@@ -10,13 +13,14 @@ type SwimmingDetailsProps = {
 
 export function SwimmingDetails(props: SwimmingDetailsProps) {
   const { infos } = props
+  const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 
   return (
     <Box sx={{ overflowY: 'scroll' }} height={'100%'} width='100%' padding={'10px'}>
       <Grid container spacing={5} width='100%'>
         {infos.map((info: SwimmingUtilizationModel, index: number) => (
-          <Grid key={'SwimmingGrid-' + info.name} item xs={6}>
-            <Typography>{info.name}</Typography>
+          <Grid key={'SwimmingGrid-' + info.name} item xs={matchesDesktop ? 6 : 12}>
+            <Typography color={colors.white}>{info.name}</Typography>
             {info.zones.map((zone: SwimmingZone, index: number) => (
               <Box
                 key={'SwimmingBox-' + info.name + '-' + zone.name + '-' + index}
@@ -24,7 +28,11 @@ export function SwimmingDetails(props: SwimmingDetailsProps) {
                 display={'flex'}
                 flexDirection={'row'}
               >
-                <SliderWithoutKnobs name={zone.name} currentValue={zone.occupancyRate * 100} unit={'%'} />
+                <SliderWithoutKnobs
+                  name={zone.name}
+                  currentValue={roundDecimalPlaces(zone.occupancyRate * 100, 1)}
+                  unit={'%'}
+                />
               </Box>
             ))}
           </Grid>

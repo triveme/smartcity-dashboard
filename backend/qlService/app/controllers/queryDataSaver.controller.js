@@ -1,6 +1,7 @@
 import { query, response } from "express";
 import moment from "moment";
 import { updateQuerydata } from "./mongoDB.controller.js";
+import { getCurrentDataFromContextBroker } from "./quantumLeap.controller.js";
 
 // converts utc to local time and returns date strings in a more
 // human friendly way (depending on the chosen granularity)
@@ -55,14 +56,15 @@ function processCurrentValueData(queryItem, queriedData) {
   let newData = [];
   let currentValues = [];
 
-  // one Entity
-  // up to two values -> & attribute.keys
-  // necessary, as ql doesn't seem to retrieve the attributess in the order specified
   queryItem.queryConfig.attribute.keys.forEach((key) => {
     if (key in queriedData && "value" in queriedData[key]) {
       currentValues.push(queriedData[key].value);
     } else {
-      console.log("Current Value: attribute name missing in response");
+      console.log(
+        "Current Value: attribute name missing in response for: " +
+          queryItem.queryConfig.attribute.keys
+      );
+      console.log(queryItem.queryConfig.attribute);
     }
   });
 
@@ -135,7 +137,8 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
       let newDataLabels = [];
       if (
         queryItem.queryConfig.apexType === "line" ||
-        queryItem.queryConfig.apexType === "bar"
+        queryItem.queryConfig.apexType === "bar" ||
+        queryItem.queryConfig.apexType === "measurement"
       ) {
         queriedData.attributes.forEach((attribute) => {
           queryItem.queryConfig.attribute.keys.forEach((key, index) => {
@@ -160,7 +163,6 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
       }
       queryItem.dataLabels = newDataLabels;
     }
-    console.log(newData);
     queryItem.data = newData;
     queryItem.updateMsg = "";
     updateQuerydata(queryItem);
@@ -168,6 +170,15 @@ function processHistoricalData(queryItem, queriedData, dateGranularity) {
 }
 
 function processMapData(queryItem, queryData) {
+  console.log(`processing map data for queryItem ${queryItem._id}`);
+  // Liste Long/Lat
+  /**
+   * 
+    {
+        longitude: 7.1250042768,
+        latitude: 51.2501771092
+    }
+   */
   var dataEntries = [];
   if (
     queryData !== undefined &&
@@ -175,48 +186,22 @@ function processMapData(queryItem, queryData) {
     queryData !== undefined &&
     queryData !== null
   ) {
-    if (queryData.length > 1) {
-      queryData.forEach((dataItem) => {
-        // dataEntries.push(dataItem);
-        dataEntries.push(buildParkingSpot(dataItem));
-      });
-    } else {
-      // dataEntries.push(queryData);
-      dataEntries.push(buildParkingSpot(queryData));
-    }
+    queryData.forEach((dataItem) => {
+      var dataEntry = {
+        longitude: dataItem.geometry.coordinates[0],
+        latitude: dataItem.geometry.coordinates[1],
+      };
+
+      dataEntries.push(dataEntry);
+    });
   }
+
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
 }
 
-function buildParkingSpot(queryParkingSpot) {
-  try {
-    let parkingSpot = {
-      id: queryParkingSpot["id"],
-      type: queryParkingSpot["type"],
-      address: queryParkingSpot["address"].value,
-      availableSpotNumber: queryParkingSpot["availableSpotNumber"].value,
-      description: queryParkingSpot["description"].value,
-      name: queryParkingSpot["name"].value,
-      location: {
-        type: queryParkingSpot["location"].value["type"],
-        coordinates: queryParkingSpot["location"].value["coordinates"],
-      },
-      occupancy: queryParkingSpot["occupancy"].value,
-      occupiedSpotNumber: queryParkingSpot["occupiedSpotNumber"].value,
-      status: queryParkingSpot["status"].value,
-      totalSpotNumber: queryParkingSpot["totalSpotNumber"].value,
-    };
-    return parkingSpot;
-  } catch (error) {
-    console.error("ERROR building ParkingSpot Data: " + error);
-    console.error(queryParkingSpot);
-  }
-}
-
 function processListData(queryItem, queryData) {
-  console.log(`processing list data for queryItem ${queryItem._id}`);
   /**
    * {
         name: "Kaltenbachtal",
@@ -237,11 +222,14 @@ function processListData(queryItem, queryData) {
     queryData !== null &&
     Object.keys(queryData).length > 0
   ) {
-    queryData.forEach((dataItem) => {
+    queryData.forEach((dataItem, index) => {
       var dataEntry = {
         location: {
-          longitude: dataItem.geometry.coordinates[0],
-          latitude: dataItem.geometry.coordinates[1],
+          type: "point",
+          coordinates: [
+            dataItem.geometry.coordinates[1],
+            dataItem.geometry.coordinates[0],
+          ],
         },
       };
 
@@ -252,8 +240,10 @@ function processListData(queryItem, queryData) {
         dataEntry.types = [properties.HAUPTTHEMA];
         dataEntry.address = buildAddressForPoi(properties);
         dataEntry.image = properties.URL_BILD;
+        dataEntry.imagePreview = properties.PREVIEW_BILD;
         dataEntry.creator = properties.URHEBER;
         dataEntry.info = properties.INFO;
+        dataEntry.zoomprio = properties.ZOOMPRIO;
       } else if (dataType === "bikes" || dataType === "cars") {
         dataEntry.name = properties.STANDORT;
         dataEntry.address = properties.ADRESSE;
@@ -270,7 +260,6 @@ function processListData(queryItem, queryData) {
           dataEntry.electricity = properties.STROM;
         }
       }
-
       dataEntries.push(dataEntry);
     });
   }
@@ -323,17 +312,20 @@ function processParkingData(queryItem, queryData) {
     queryData.forEach((dataItem) => {
       try {
         var dataEntry = {};
-        dataEntry.name = dataItem.name;
+        dataEntry.name = dataItem.name.value;
         dataEntry.address = dataItem.adresse;
         dataEntry.maxHeight = dataItem.zulaessigeEinfahrtshoeheInMeterDisplay;
-        dataEntry.maxValue = dataItem.kapazitaet;
-        dataEntry.currentlyUsed = dataItem.kapazitaetFrei;
+        dataEntry.maxValue = dataItem.totalSpotNumber.value;
+        dataEntry.currentlyUsed =
+          dataItem.totalSpotNumber.value - dataItem.availableSpotNumber.value;
+        dataEntry.availableSpotNumber = dataItem.availableSpotNumber.value;
         dataEntry.location = {
-          longitude: dataItem.adresse.laengengrad,
-          latitude: dataItem.adresse.breitengrad,
+          type: "point",
+          coordinates: [dataItem.location.value.coordinates],
         };
-        dataEntry.capacity = dataItem.nutzer;
-        dataEntry.type = dataItem.typDisplay;
+        dataEntry.capacity = dataItem.totalSpotNumber.value;
+        dataEntry.type = dataItem.category.value;
+        dataEntry.openingHours = dataItem.openingHours.value;
         dataEntries.push(dataEntry);
       } catch (error) {
         console.error(`Error handling parking item ${dataItem}: ${error}`);
@@ -344,6 +336,66 @@ function processParkingData(queryItem, queryData) {
   queryItem.data = dataEntries;
   queryItem.updateMsg = "";
   updateQuerydata(queryItem);
+}
+
+function processSwimmingData(refZonesData, queryItem) {
+  const data = [];
+
+  function fetchData(id) {
+    const queryConfig = {
+      entityId: [id],
+      attrs: {
+        keys: ["currentCapacity", "maxCapacity", "loadFactor", "name"],
+        aliases: ["currentCapacity", "maxCapacity", "loadFactor", "name"],
+      },
+      fiwareType: "OpenAirPoolZone",
+      fiwareService: "wuppertal",
+    };
+
+    return new Promise((resolve, reject) => {
+      getCurrentDataFromContextBroker(
+        queryConfig,
+        (queriedData) => {
+          const zoneData = {
+            id: queriedData.id,
+            name: queriedData.name.value,
+            capacityCurrent: queriedData.currentCapacity.value,
+            capacityMaximum: queriedData.maxCapacity.value,
+            occupancyRate: queriedData.loadFactor.value,
+          };
+
+          resolve(zoneData);
+        },
+        (errString) => {
+          handleError(queryItem._id, errString);
+          reject(errString);
+        }
+      );
+    });
+  }
+
+  refZonesData.forEach((zone) => {
+    const swimmingUtilization = {
+      id: zone.id,
+      name: zone.name.value,
+      zones: [],
+    };
+
+    const fetchPromises = zone.refZones.value.map((id) => fetchData(id));
+
+    Promise.all(fetchPromises)
+      .then((zoneDataArray) => {
+        swimmingUtilization.zones = zoneDataArray;
+        data.push(swimmingUtilization);
+
+        queryItem.data = data
+        queryItem.updateMsg = "swimming pool data updated successfully!";
+        updateQuerydata(queryItem)
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
 }
 
 function generateHistoricData() {
@@ -472,4 +524,5 @@ export {
   processListData,
   processUtilizationData,
   processParkingData,
+  processSwimmingData
 };

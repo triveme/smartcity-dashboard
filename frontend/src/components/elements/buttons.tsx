@@ -178,6 +178,7 @@ export function BackButton(props: GenericButtonProps) {
       style={{
         fontWeight: 'bold',
         color: colors.grey,
+        borderRadius: '20px',
       }}
     >
       {text ? text : 'ZURÜCK'}
@@ -195,6 +196,7 @@ export function DisplayOnMapButton(props: GenericButtonProps) {
       style={{
         fontWeight: 'bold',
         color: colors.iconColor,
+        borderRadius: '20px',
       }}
     >
       {text ? text : 'AUF KARTE ANZEIGEN'}
@@ -213,6 +215,7 @@ export function IntervalButton(props: IntervalButtonProps) {
         fontWeight: 'bold',
         color: active ? colors.white : colors.grey,
         backgroundColor: active ? colors.activeButtonBackground : colors.widgetBackground,
+        borderRadius: '20px',
       }}
     >
       {text ? text : 'ZURÜCK'}

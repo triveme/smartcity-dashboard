@@ -1,0 +1,25 @@
+# Stage 1: Build the React app
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+COPY ./frontend /app
+# Make env variables available during build
+COPY .env.prod /app/.env
+
+RUN npm install -g npm@latest
+RUN apk update && apk upgrade && \
+    apk add --no-cache xdg-utils git
+
+RUN npm install
+
+RUN npm run build
+
+# Install 'serve' globally
+RUN npm install -g serve
+
+# Expose port 3000
+EXPOSE 3000
+
+# Start the application using 'serve'
+CMD ["serve", "-s", "build", "-l", "3000"]

@@ -5,7 +5,7 @@ import Collapse from '@mui/material/Collapse'
 import CloseIcon from '@mui/icons-material/Close'
 
 import colors from 'theme/colors'
-import { useStateContext } from 'providers/state-provider'
+import { useAuth } from 'react-oidc-context'
 
 type TransitionAlertProps = {
   alertText: String
@@ -15,7 +15,7 @@ type TransitionAlertProps = {
 export function TransitionAlert(props: TransitionAlertProps) {
   const { alertText, info } = props
   const [open, setOpen] = React.useState(true)
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
 
   const infoText: String = 'Daten werden geladen.'
 
@@ -23,6 +23,7 @@ export function TransitionAlert(props: TransitionAlertProps) {
     <Collapse
       in={open}
       sx={{
+        zIndex: 1,
         width: '80%',
         position: 'absolute',
         top: '50%',
@@ -51,7 +52,7 @@ export function TransitionAlert(props: TransitionAlertProps) {
           backgroundColor: colors.panelBackground,
         }}
       >
-        {info ? infoText : stateContext.authToken ? alertText : 'Es konnten keine Daten geladen werden'}
+        {info ? infoText : auth.isAuthenticated ? alertText : 'Es konnten keine Daten geladen werden'}
       </Alert>
     </Collapse>
   )

@@ -18,16 +18,19 @@ import AddIcon from '@mui/icons-material/Add'
 
 import { DashboardComponent } from './dashboard'
 import { initialDashboard } from './architectureConfig/initial-components'
-import { useStateContext } from '../providers/state-provider'
+import { useAuth } from 'react-oidc-context'
 import { DashboardDialog } from 'components/architectureConfig/dashboard-dialog'
 import { ArchitectureEditButtons } from 'components/architectureConfig/architecture-edit-buttons'
 import { DashboardIcon } from 'components/architectureConfig/dashboard-icons'
 import colors from 'theme/colors'
 import borderRadius from 'theme/border-radius'
-import logoSmall from 'assets/smartCityLogoSmall.svg'
-import logoTextOnly from 'assets/smartCityTextOnly.svg'
+// import logoSmall from "assets/smartCityLogoSmall.svg";
+// import logoTextOnly from "assets/smartCityTextOnly.svg";
+import logoSmall from 'assets/logos/wup_pure_logo.svg'
+import logoTextOnly from 'assets/logos/logo_untereinander.svg'
 import { BUTTON_TEXTS, DRAWER_TITLE } from 'constants/text'
 import { InformationMenuBox } from './elements/information-menu-box'
+import { userIsAdmin } from 'utils/auth-helper'
 
 const drawerWidth = 240
 
@@ -76,7 +79,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 const MiniVariantDrawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== 'open',
 })(({ theme, open }) => ({
-  width: '100%',
+  width: drawerWidth,
   flexShrink: 0,
   whiteSpace: 'nowrap',
   boxSizing: 'border-box',
@@ -103,7 +106,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
 
   const [dashboardCreatorOpen, setDashboardCreatorOpen] = React.useState(false)
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
 
   const handleDashboardCreatorClickOpen = () => {
     setDashboardCreatorOpen(true)
@@ -113,7 +116,7 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
   }
 
   const displayEditButtonsInMenu = () => {
-    if (stateContext.authToken && editMode) {
+    if (userIsAdmin(auth) && editMode) {
       return (
         <Box>
           <ListItem
@@ -153,69 +156,61 @@ export function SideMenue(props: DrawerProps & SideMenueProps) {
 
   const displayDashboardItems = () => {
     return dashboards.map((dashboard) => {
-      if (!editMode && !dashboard.visible && stateContext.authToken) {
-        return null
-      } else {
-        return (
-          <ListItem
-            button
-            key={'listItem-' + dashboard.url}
-            component={Link}
-            to={dashboard.url}
-            style={
-              '/' + dashboard.url === location.pathname
-                ? {
-                    backgroundColor: colors.selectedDashboard,
-                  }
-                : {}
-            }
-          >
-            <ListItemIcon style={{ minWidth: 50 }}>
-              {dashboard.icon ? (
-                <DashboardIcon icon={dashboard.icon} color={colors.iconColor} />
-              ) : (
-                <ChevronRightIcon
-                  sx={{
-                    color: colors.iconColor,
-                  }}
-                />
-              )}
-            </ListItemIcon>
-            {open ? (
-              <ListItemText
-                primary={dashboard.name}
+      return (
+        <ListItem
+          button
+          key={'listItem-' + dashboard.url}
+          component={Link}
+          to={dashboard.url}
+          style={
+            '/' + dashboard.url === location.pathname
+              ? {
+                  backgroundColor: colors.selectedDashboard,
+                }
+              : {}
+          }
+        >
+          <ListItemIcon style={{ minWidth: 50 }}>
+            {dashboard.icon ? (
+              <DashboardIcon icon={dashboard.icon} color={colors.iconColor} />
+            ) : (
+              <ChevronRightIcon
                 sx={{
-                  color: !dashboard.visible && stateContext.authToken ? colors.invisibleDashboardColor : colors.white,
-                  marginTop: 0,
-                  marginBottom: 0,
-                  whiteSpace: 'break-spaces',
+                  color: colors.iconColor,
                 }}
               />
-            ) : null}
-            <Box
-              bgcolor={() => {
-                if ('/' + dashboard.url === location.pathname) {
-                  return colors.selectedDashboardTransparent
-                }
-                if (!dashboard.visible && stateContext.authToken) {
-                  return colors.drawerBackgroundTransparent
-                } else {
-                  return colors.drawerBackgroundTransparent
-                }
+            )}
+          </ListItemIcon>
+          {open ? (
+            <ListItemText
+              primary={dashboard.name}
+              sx={{
+                color: !dashboard.visible ? colors.invisibleDashboardColor : colors.white,
+                marginTop: 0,
+                marginBottom: 0,
+                whiteSpace: 'break-spaces',
               }}
-              borderRadius={3}
-            >
-              <ArchitectureEditButtons
-                type='Dashboard'
-                component={dashboard}
-                parents={[]}
-                parentsUids={[]}
-                editMode={editMode}
-              />
-            </Box>
-          </ListItem>
-        )
-      }
+            />
+          ) : null}
+          <Box
+            bgcolor={() => {
+              if ('/' + dashboard.url === location.pathname) {
+                return colors.selectedDashboardTransparent
+              }
+              return colors.drawerBackgroundTransparent
+            }}
+            borderRadius={3}
+          >
+            <ArchitectureEditButtons
+              type='Dashboard'
+              component={dashboard}
+              parents={[]}
+              parentsUids={[]}
+              editMode={editMode}
+            />
+          </Box>
+        </ListItem>
+      )
     })
   }
 

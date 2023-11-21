@@ -15,8 +15,9 @@ import { useArchitectureContext } from 'context/architecture-provider'
 import { DashboardComponent } from 'components/dashboard'
 import { WidgetComponent } from 'components/widget'
 import { PanelComponent } from 'components/panel'
-import { useStateContext } from 'providers/state-provider'
+import { useAuth } from 'react-oidc-context'
 import { UpButton, DownButton, LeftButton, RightButton } from 'components/elements/buttons'
+import { userIsAdmin, canWriteCurrentDashboard } from 'utils/auth-helper'
 
 type ArchitectureEditDeleteButtonsProps = {
   type: string
@@ -32,7 +33,7 @@ export function ArchitectureEditButtons(props: ArchitectureEditDeleteButtonsProp
   const theme = useTheme()
   const matchesDesktop = useMediaQuery(theme.breakpoints.up('sm'))
   const { architectureContext, setArchitectureContext } = useArchitectureContext()
-  const { stateContext } = useStateContext()
+  const auth = useAuth()
 
   // Delete
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -218,7 +219,9 @@ export function ArchitectureEditButtons(props: ArchitectureEditDeleteButtonsProp
     return <></>
   }
 
-  return stateContext.authToken && editMode && matchesDesktop ? (
+  return ((type !== 'Dashboard' && canWriteCurrentDashboard(auth, architectureContext)) || userIsAdmin(auth)) &&
+    editMode &&
+    matchesDesktop ? (
     <>
       <IconButton size='small' onClick={handleEdit} color='inherit' style={{ padding: 0, color: colors.colorDetail }}>
         <EditIcon style={{ fontSize: '1.25rem' }} />

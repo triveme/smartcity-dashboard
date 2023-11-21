@@ -7,7 +7,7 @@ import set from 'lodash/set'
 
 import type { TabComponent } from 'components/tab'
 
-import { roundDecimalPlaces } from 'utils/decimal-helper'
+import { roundDecimalPlaces } from 'utils/math-helper'
 
 import colors from 'theme/colors'
 
@@ -150,6 +150,11 @@ export function BarChart(props: BarChartProps) {
   }
   if (tab.apexOptions) {
     tab.apexOptions = set(tab.apexOptions, 'xaxis.tickAmount', windowWidth ? Math.round(windowWidth / 150) : 3)
+
+    // overwrite colors from theme/colors.ts
+    tab.apexOptions = set(tab.apexOptions, 'colors', [colors.chartBar])
+    tab.apexOptions = set(tab.apexOptions, 'chart.background', colors.panelBackground)
+    tab.apexOptions = set(tab.apexOptions, 'chart.foreColor', colors.text)
   }
 
   return (

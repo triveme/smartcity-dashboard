@@ -15,7 +15,7 @@ import { SmallField } from 'components/elements/text-fields'
 import colors from 'theme/colors'
 import { ComponentConfigurator } from './component-configurator'
 
-const re = new RegExp('^[A-Za-z0-9:_,-]+$')
+const re = new RegExp('^[A-Za-z0-9:_-]+$')
 function isValidDataConfigString(str: string) {
   return re.test(str)
 }
@@ -46,7 +46,7 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           iconType: '',
           maxZoom: 20,
           minZoom: 10,
-          zoom: 20,
+          zoom: 16,
           occupancyRotate: false,
         }
       }
@@ -94,15 +94,17 @@ export function TabConfigurator(props: TabConfiguratorProps) {
         case 'apexMaxColor':
           newTempTabs[currentTabIndex].apexMaxColor = newTabValue.tabValue
           break
-        case 'apexStepline':
-          newTempTabs[currentTabIndex].apexStepline = newTabValue.tabValue
-          break
         case 'timeframe':
           newTempTabs[currentTabIndex].timeframe = newTabValue.tabValue
           break
         case 'fiwareService':
           if (isValidDataConfigString(newTabValue.tabValue)) {
             newTempTabs[currentTabIndex].fiwareService = newTabValue.tabValue
+          }
+          break
+        case 'fiwareType':
+          if (isValidDataConfigString(newTabValue.tabValue)) {
+            newTempTabs[currentTabIndex].fiwareType = newTabValue.tabValue
           }
           break
         case 'entityId':
@@ -169,8 +171,6 @@ export function TabConfigurator(props: TabConfiguratorProps) {
             ? cloneDeep(newTempTabs[currentTabIndex].attribute)
             : { keys: [], aliases: [] }
           const keyIndexForAlias = newAttributeForAliases!.keys.indexOf(newTabValue.tabValue.key)
-          console.log('Setting attributeAlias: ' + keyIndexForAlias + ' / ' + newAttributeForAliases)
-          console.log(newAttributeForAliases)
           if (keyIndexForAlias !== -1) {
             newAttributeForAliases!.aliases[keyIndexForAlias] = newTabValue.tabValue.alias
             newTempTabs[currentTabIndex].attribute = newAttributeForAliases
@@ -183,22 +183,15 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           newTempTabs[currentTabIndex].attributeType = newTabValue.tabValue
           break
         case 'apexSeries':
-          console.log('Setting ApexSeries')
-          console.log(newTabValue.tabValue)
           newTempTabs[currentTabIndex].apexSeries = newTabValue.tabValue
           break
         case 'filterProperty':
-          console.log('filterProperty: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].filterProperty = newTabValue.tabValue
           break
         case 'filterValues':
-          console.log('filterValues: ')
           newTempTabs[currentTabIndex].filterValues = cloneDeep(newTabValue.tabValue)
-          console.log(newTempTabs[currentTabIndex].filterValues)
-          console.log(newTempTabs)
           break
         case 'filterAttribute':
-          console.log('filterAttribute: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].filterAttribute = newTabValue.tabValue
           break
         case 'componentType':
@@ -236,31 +229,24 @@ export function TabConfigurator(props: TabConfiguratorProps) {
           break
         // Map Component Options
         case 'allowPopup':
-          console.log('allowPopup: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.allowPopups = newTabValue.tabValue
           break
         case 'allowScroll':
-          console.log('allowScroll: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.allowScroll = newTabValue.tabValue
           break
         case 'allowZoom':
-          console.log('allowZoom: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.allowZoom = newTabValue.tabValue
           break
         case 'mapMinZoom':
-          console.log('mapMinZoom: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.minZoom = newTabValue.tabValue
           break
         case 'mapMaxZoom':
-          console.log('mapMaxZoom: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.maxZoom = newTabValue.tabValue
           break
         case 'mapCurZoom':
-          console.log('mapCurZoom: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.zoom = newTabValue.tabValue
           break
         case 'occupancyRotate':
-          console.log('occupancyRotate: ' + newTabValue.tabValue)
           newTempTabs[currentTabIndex].componentOptions.occupancyRotate = newTabValue.tabValue
           break
       }

@@ -32,10 +32,9 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
         style={{ backgroundColor: colors.backgroundColor }}
       >
         <MenuItem value='map'>Karte</MenuItem>
-        {/* <MenuItem value='measurement'>Messung</MenuItem> */}
         <MenuItem value='pois'>Liste mit Karte</MenuItem>
         <MenuItem value='parking'>Auslastung Parkplätze</MenuItem>
-        {/* <MenuItem value='swimming'>Auslastung Schwimmbad</MenuItem> */}
+        <MenuItem value='swimming'>Auslastung Schwimmbad</MenuItem>
         {/* <MenuItem value='utilization'>Auslastung Zoo</MenuItem> */}
       </Select>
       {/* Map and List with Map */}
@@ -53,8 +52,8 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
             onChange={(e) => setNewTabValue([{ key: 'componentDataType', tabValue: e.target.value }])}
             style={{ backgroundColor: colors.backgroundColor }}
           >
-            {/* <MenuItem value='cars'>E-Auto-Ladestationen</MenuItem>
-            <MenuItem value='bikes'>E-Bike-Ladestationen</MenuItem> */}
+            <MenuItem value='cars'>E-Auto-Ladestationen</MenuItem>
+            <MenuItem value='bikes'>E-Bike-Ladestationen</MenuItem>
             <MenuItem value='parking'>Parkplätze</MenuItem>
             <MenuItem value='pois'>Pin</MenuItem>
           </Select>
@@ -171,32 +170,6 @@ export function ComponentConfigurator(props: ComponentConfiguratorProps) {
               />
             </Box>
           </Box>
-        </Box>
-      ) : null}
-      {/* Measurement charts */}
-      {tempPanel.tabs[currentTabIndex].componentType === 'measurement' ? (
-        <Box display='flex' flexDirection='row' gap='5px'>
-          <SmallField
-            key={'measurement-warning-text-field'}
-            label='Warnungslimit'
-            type='number'
-            value={tempPanel.tabs[currentTabIndex].componentWarning}
-            onChange={(e) => setNewTabValue([{ key: 'componentWarning', tabValue: e.target.value }])}
-          />
-          <SmallField
-            key={'measurement-alarm-text-field'}
-            label='Alarmlimit'
-            type='number'
-            value={tempPanel.tabs[currentTabIndex].componentAlarm}
-            onChange={(e) => setNewTabValue([{ key: 'componentAlarm', tabValue: e.target.value }])}
-          />
-          <SmallField
-            key={'measurement-maximum-text-field'}
-            label='Maximaler Wert'
-            type='text'
-            value={tempPanel.tabs[currentTabIndex].componentMaximum}
-            onChange={(e) => setNewTabValue([{ key: 'componentMaximum', tabValue: e.target.value }])}
-          />
         </Box>
       ) : null}
       <DataConfigurator currentTabIndex={currentTabIndex} tempPanel={tempPanel} setNewTabValue={setNewTabValue} />
