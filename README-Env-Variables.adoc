@@ -1,0 +1,68 @@
+= Dashboard Project Environment Variables Documentation
+
+The dashboard project integrates several technologies including Next.js, NestJS, Keycloak, and PostgreSQL. This documentation provides details on the required environment variables to configure and run the project successfully.
+
+== General Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NODE_ENV` | Node environment setting (development, production, etc.). | `development`
+| `NEXT_PUBLIC_VERSION` | The version of the frontend application. | `0.2.1`
+| `NEXT_PUBLIC_BASEPATH` | The base path for the Next.js application. Must start with a slash ("/"). Default is an empty string. | `""`
+| `NEXT_PUBLIC_ASSET_PREFIX` | The prefix for the Next.js application. Must start and end with a slash ("/"). Default is an empty string. | `""`
+| `NEXT_PUBLIC_FRONTEND_URL` | The URL for the frontend application. | `http://localhost:3000`
+|===
+
+== Single Sign-On (SSO) Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
+| `NEXT_PUBLIC_OIDC_AUTHORITY` | The OIDC authority URL. | `http://localhost:8080/realms/testrealm`
+| `NEXT_PUBLIC_OIDC_CLIENT_ID` | The OIDC client ID for the frontend that is being used as a standard. | `scs-frontend`
+| `NEXT_PUBLIC_OIDC_REDIRECT_URI` | The redirect URI for OIDC authentication. | `http://localhost:3000/admin`
+| `NEXT_PUBLIC_BACKEND_URL` | The URL for the backend application. | `http://localhost:8081`
+| `ADMIN_ROLE` | The name of the "superadmin" role in Keycloak. | `scs-admin`
+| `TRUSTED_CA` | Populated during helm installation with the trusted CA config map. |
+| `NEST_JWKS_URI` | URI to JSON Web Key Set for NestJS. | `http://localhost:8080/realms/testrealm/protocol/openid-connect/certs`
+|===
+
+== PostgreSQL Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===
+
+== API Service Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_API_SERVICE_URL` | Base URL for an external api. | `http://external-api.com/api/v1/`
+|===
+
+== Mail Service Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `MAIL_HOST` | URL for an SMTP server. | `smtp.gmail.com`
+| `MAIL_PORT` | port for an SMTP server. | `465`
+| `MAIL_USER` | email address for host user. | `example-email@gmail.com`
+| `MAIL_PASS` | App Password secret generated from the host user's account | `1234 5678 9123 4567`
+| `DEFECT_REPORT_EMAIL` | target email to receive defect reports | `example-email2@gmail.com`
+
+|===
+
+== Note
+
+- Make sure to replace placeholder values (like URLs and passwords) with your actual configuration values before deployment.
+- For security reasons, never commit sensitive information like passwords or secret keys to your version control system. Consider using secrets management tools or environment variable management practices.

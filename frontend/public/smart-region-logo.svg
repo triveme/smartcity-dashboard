@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="37.999821"
+   height="34.275021"
+   viewBox="0 0 37.999821 34.275021"
+   fill="none"
+   version="1.1"
+   id="svg5"
+   sodipodi:docname="smart-region-logo.svg"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs5" />
+  <sodipodi:namedview
+     id="namedview5"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="24.604167"
+     inkscape:cx="20.524979"
+     inkscape:cy="20.179509"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="1192"
+     inkscape:window-y="479"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg5" />
+  <line
+     x1="19.0583"
+     y1="5.7080798"
+     x2="31.725098"
+     y2="27.3162"
+     stroke="#ffffff"
+     id="line1" />
+  <line
+     x1="5.9609394"
+     y1="27.069"
+     x2="31.008099"
+     y2="27.069"
+     stroke="#ffffff"
+     id="line2" />
+  <line
+     x1="7.7622995"
+     y1="25.167"
+     x2="20.2859"
+     y2="3.4755201"
+     stroke="#ffffff"
+     id="line3" />
+  <circle
+     cx="6.3334198"
+     cy="27.941601"
+     r="6.3334198"
+     fill="#de507d"
+     id="circle3" />
+  <circle
+     cx="19.000401"
+     cy="6.3334198"
+     r="6.3334198"
+     fill="#91d9ff"
+     id="circle4" />
+  <circle
+     cx="31.666401"
+     cy="27.941601"
+     r="6.3334198"
+     fill="#f4a310"
+     id="circle5" />
+</svg>

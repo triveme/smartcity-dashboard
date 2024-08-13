@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo ""
+echo "Running formatter and linter..."
+echo ""
+npx lint-staged
+echo ""
+
+# echo ""
+# echo "Running unit tests..."
+# echo ""
+# npm run test:units
+# echo ""
+#  echo "Running E2E-tests..."
+#  echo ""
+#  npm run test:e2e
+#  echo ""

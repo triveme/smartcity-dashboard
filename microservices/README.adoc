@@ -1,0 +1,64 @@
+== Description
+
+https://github.com/nestjs/nest[Nest] framework TypeScript starter repository.
+
+== Installation
+
+[source,bash]
+----
+$ npm install
+----
+
+== Running the app
+
+[source,bash]
+----
+# development with debugging
+$ npm run start:debug
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+----
+
+== Test
+
+[source,bash]
+----
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+----
+
+For the tests to work, it's required that the database, mentioned in the `.env.testing`, is existing and properly migrated.
+Also the Client-Secret for the test-client in keycloak needs to be regenerated and maintained in .env.testing.
+
+== License
+
+Nest is https://github.com/nestjs/nest/blob/master/LICENSE[MIT licensed].
+
+
+== Backend Environment Variables Documentation
+
+The dashboard project integrates several technologies including Next.js, NestJS, Keycloak, and PostgreSQL. This documentation provides details on the required environment variables to configure and run the project successfully.
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NODE_ENV` | Node environment setting (development, production, etc.). | `development`
+| `NEXT_PUBLIC_VERSION` | The version of the application used in the pipeline to tag the images. | `0.2.1`
+| `NEXT_PUBLIC_FRONTEND_URL` | Variable required for CORS settings to accept communication from the frontend. | `http://localhost:3000`
+| `API_SERVICE_URL` | Connection information to the external api required for API calls. | `http://external-api.com/api/v1`
+| `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
+| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
+| `NEST_JWKS_URI` | Url information for the keycloak connection and authentication. | `http://localhost:8080/realms/testrealm`
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===

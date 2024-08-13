@@ -1,9 +1,0 @@
-FROM mongo:latest
-
-ENV MONGO_INITDB_DATABASE=smartcity
-ENV MONGO_INITDB_ROOT_USERNAME=smartcity
-ENV MONGO_INITDB_ROOT_PASSWORD=xbox-anger-amiable2
-
-COPY mongodb-init.js /docker-entrypoint-initdb.d/
-
-EXPOSE 27017
