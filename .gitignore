@@ -64,7 +64,7 @@ k8s/helm/*.lock
 !database/migrations/generated/0006_short_peter_quill_0.9.1.sql
 !database/migrations/generated/0007_sour_mephisto_0.10.0.sql
 !database/migrations/generated/0008_wonderful_omega_red_0.10.1.sql
-# database/migrations/generated/*
+database/migrations/generated/*
 
 
 # Ignore everything in the hcloud folder
