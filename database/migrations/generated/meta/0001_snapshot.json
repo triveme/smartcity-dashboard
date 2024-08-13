@@ -1,0 +1,2117 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "2e866d8e-6275-44ea-8ecd-1e3ac686280a",
+  "prevId": "9cd32158-f6ea-44cb-b60f-f3d4e84e5500",
+  "tables": {
+    "auth_data": {
+      "name": "auth_data",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "auth_data_type",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'api'"
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_secret": {
+          "name": "client_secret",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "app_user": {
+          "name": "app_user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "app_user_password": {
+          "name": "app_user_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_token": {
+          "name": "api_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auth_url": {
+          "name": "auth_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "live_url": {
+          "name": "live_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_series_url": {
+          "name": "time_series_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_url": {
+          "name": "api_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "climate_project": {
+      "name": "climate_project",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "costs_in_cents": {
+          "name": "costs_in_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "img_path": {
+          "name": "img_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "locationText": {
+          "name": "locationText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timeHorizon": {
+          "name": "timeHorizon",
+          "type": "time_horizon_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "corporate_info": {
+      "name": "corporate_info",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_font_color": {
+          "name": "dashboard_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_primary_color": {
+          "name": "dashboard_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_secondary_color": {
+          "name": "dashboard_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "font_color": {
+          "name": "font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_font_color": {
+          "name": "header_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_logo_id": {
+          "name": "header_logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_primary_color": {
+          "name": "header_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_secondary_color": {
+          "name": "header_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_title_admin": {
+          "name": "header_title_admin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_title_dashboards": {
+          "name": "header_title_dashboards",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_active_color": {
+          "name": "menu_active_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_font_color": {
+          "name": "menu_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_hover_color": {
+          "name": "menu_hover_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_logo_id": {
+          "name": "menu_logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_primary_color": {
+          "name": "menu_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_secondary_color": {
+          "name": "menu_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_color": {
+          "name": "panel_border_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_radius": {
+          "name": "panel_border_radius",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_size": {
+          "name": "panel_border_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_font_color": {
+          "name": "panel_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_primary_color": {
+          "name": "panel_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_secondary_color": {
+          "name": "panel_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrollbar_background": {
+          "name": "scrollbar_background",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrollbar_color": {
+          "name": "scrollbar_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_header_logo": {
+          "name": "show_header_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_menu_logo": {
+          "name": "show_menu_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_bar": {
+          "name": "title_bar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_color": {
+          "name": "widget_border_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_radius": {
+          "name": "widget_border_radius",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_size": {
+          "name": "widget_border_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_font_color": {
+          "name": "widget_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_primary_color": {
+          "name": "widget_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_secondary_color": {
+          "name": "widget_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "corporate_info_tenant_id_tenant_abbreviation_fk": {
+          "name": "corporate_info_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "corporate_info_header_logo_id_logo_id_fk": {
+          "name": "corporate_info_header_logo_id_logo_id_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "logo",
+          "columnsFrom": [
+            "header_logo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "corporate_info_menu_logo_id_logo_id_fk": {
+          "name": "corporate_info_menu_logo_id_logo_id_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "logo",
+          "columnsFrom": [
+            "menu_logo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "corporate_info_tenant_id_unique": {
+          "name": "corporate_info_tenant_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_id"
+          ]
+        }
+      }
+    },
+    "dashboard_to_tenant": {
+      "name": "dashboard_to_tenant",
+      "schema": "",
+      "columns": {
+        "dashboard_id": {
+          "name": "dashboard_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dashboard_to_tenant_dashboard_id_dashboard_id_fk": {
+          "name": "dashboard_to_tenant_dashboard_id_dashboard_id_fk",
+          "tableFrom": "dashboard_to_tenant",
+          "tableTo": "dashboard",
+          "columnsFrom": [
+            "dashboard_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dashboard_to_tenant_tenant_id_tenant_id_fk": {
+          "name": "dashboard_to_tenant_tenant_id_tenant_id_fk",
+          "tableFrom": "dashboard_to_tenant",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "dashboard_to_tenant_dashboard_id_tenant_id": {
+          "name": "dashboard_to_tenant_dashboard_id_tenant_id",
+          "columns": [
+            "dashboard_id",
+            "tenant_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "grouping_element": {
+      "name": "grouping_element",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "parent_grouping_element_id": {
+          "name": "parent_grouping_element_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gradient": {
+          "name": "gradient",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_dashboard": {
+          "name": "is_dashboard",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_abbreviation": {
+          "name": "tenant_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "grouping_element_parent_grouping_element_id_grouping_element_id_fk": {
+          "name": "grouping_element_parent_grouping_element_id_grouping_element_id_fk",
+          "tableFrom": "grouping_element",
+          "tableTo": "grouping_element",
+          "columnsFrom": [
+            "parent_grouping_element_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "grouping_element_tenant_abbreviation_tenant_abbreviation_fk": {
+          "name": "grouping_element_tenant_abbreviation_tenant_abbreviation_fk",
+          "tableFrom": "grouping_element",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "panel": {
+      "name": "panel",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "dashboard_id": {
+          "name": "dashboard_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "panel_dashboard_id_dashboard_id_fk": {
+          "name": "panel_dashboard_id_dashboard_id_fk",
+          "tableFrom": "panel",
+          "tableTo": "dashboard",
+          "columnsFrom": [
+            "dashboard_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "dashboard": {
+      "name": "dashboard",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tab": {
+      "name": "tab",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "chart_labels": {
+          "name": "chart_labels",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_maximum": {
+          "name": "chart_maximum",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_minimum": {
+          "name": "chart_minimum",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values": {
+          "name": "chart_static_values",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values_colors": {
+          "name": "chart_static_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_unit": {
+          "name": "chart_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_values": {
+          "name": "chart_values",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_x_axis_label": {
+          "name": "chart_x_axis_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_y_axis_label": {
+          "name": "chart_y_axis_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "component_sub_type": {
+          "name": "component_sub_type",
+          "type": "tab_component_sub_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "component_type": {
+          "name": "component_type",
+          "type": "tab_component_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_model_id": {
+          "name": "data_model_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decimal_places": {
+          "name": "decimal_places",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_color": {
+          "name": "icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_text": {
+          "name": "icon_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_url": {
+          "name": "icon_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "iframe_url": {
+          "name": "iframe_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_src": {
+          "name": "image_src",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_update_interval": {
+          "name": "image_update_interval",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_stepline": {
+          "name": "is_stepline",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_active_marker_color": {
+          "name": "map_active_marker_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_popups": {
+          "name": "map_allow_popups",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_scroll": {
+          "name": "map_allow_scroll",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_zoom": {
+          "name": "map_allow_zoom",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_display_mode": {
+          "name": "map_display_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_latitude": {
+          "name": "map_latitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_longtitude": {
+          "name": "map_longtitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_color": {
+          "name": "map_marker_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_icon": {
+          "name": "map_marker_icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_icon_color": {
+          "name": "map_marker_icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_max_zoom": {
+          "name": "map_max_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_min_zoom": {
+          "name": "map_min_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_shape_color": {
+          "name": "map_shape_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_shape_option": {
+          "name": "map_shape_option",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_standard_zoom": {
+          "name": "map_standard_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query_id": {
+          "name": "query_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_legend": {
+          "name": "show_legend",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text_value": {
+          "name": "text_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tab_data_model_id_data_model_id_fk": {
+          "name": "tab_data_model_id_data_model_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "data_model",
+          "columnsFrom": [
+            "data_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tab_query_id_query_id_fk": {
+          "name": "tab_query_id_query_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "query",
+          "columnsFrom": [
+            "query_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tab_widget_id_widget_id_fk": {
+          "name": "tab_widget_id_widget_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "widget_to_panel": {
+      "name": "widget_to_panel",
+      "schema": "",
+      "columns": {
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_id": {
+          "name": "panel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "widget_to_panel_widget_id_widget_id_fk": {
+          "name": "widget_to_panel_widget_id_widget_id_fk",
+          "tableFrom": "widget_to_panel",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "widget_to_panel_panel_id_panel_id_fk": {
+          "name": "widget_to_panel_panel_id_panel_id_fk",
+          "tableFrom": "widget_to_panel",
+          "tableTo": "panel",
+          "columnsFrom": [
+            "panel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "widget_to_panel_widget_id_panel_id": {
+          "name": "widget_to_panel_widget_id_panel_id",
+          "columns": [
+            "widget_id",
+            "panel_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "widget": {
+      "name": "widget",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "data_model": {
+      "name": "data_model",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "model": {
+          "name": "model",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "data_source": {
+      "name": "data_source",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "auth_data_id": {
+          "name": "auth_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "data_source_auth_data_id_auth_data_id_fk": {
+          "name": "data_source_auth_data_id_auth_data_id_fk",
+          "tableFrom": "data_source",
+          "tableTo": "auth_data",
+          "columnsFrom": [
+            "auth_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "defect": {
+      "name": "defect",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "imgPath": {
+          "name": "imgPath",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mail": {
+          "name": "mail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "logo": {
+      "name": "logo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_height": {
+          "name": "logo_height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_width": {
+          "name": "logo_width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_name": {
+          "name": "logo_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "format": {
+          "name": "format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size": {
+          "name": "size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "logo_tenant_id_tenant_abbreviation_fk": {
+          "name": "logo_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "logo",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "query_config": {
+      "name": "query_config",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "data_source_id": {
+          "name": "data_source_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interval": {
+          "name": "interval",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_service": {
+          "name": "fiware_service",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_service_path": {
+          "name": "fiware_service_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_type": {
+          "name": "fiware_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_ids": {
+          "name": "entity_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attributes": {
+          "name": "attributes",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aggr_mode": {
+          "name": "aggr_mode",
+          "type": "aggregation",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timeframe": {
+          "name": "timeframe",
+          "type": "timeframe",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aggr_period": {
+          "name": "aggr_period",
+          "type": "aggregation_period",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_reporting": {
+          "name": "is_reporting",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "query_config_data_source_id_data_source_id_fk": {
+          "name": "query_config_data_source_id_data_source_id_fk",
+          "tableFrom": "query_config",
+          "tableTo": "data_source",
+          "columnsFrom": [
+            "data_source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "query_config_tenant_id_tenant_abbreviation_fk": {
+          "name": "query_config_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "query_config",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "query": {
+      "name": "query",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "query_config_id": {
+          "name": "query_config_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query_data": {
+          "name": "query_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "report_data": {
+          "name": "report_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "update_message": {
+          "name": "update_message",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "query_query_config_id_query_config_id_fk": {
+          "name": "query_query_config_id_query_config_id_fk",
+          "tableFrom": "query",
+          "tableTo": "query_config",
+          "columnsFrom": [
+            "query_config_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "report": {
+      "name": "report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "costs_in_cents": {
+          "name": "costs_in_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "img_path": {
+          "name": "img_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "contactPerson": {
+          "name": "contactPerson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "adminComment": {
+          "name": "adminComment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lastModifiedBy": {
+          "name": "lastModifiedBy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redirection": {
+          "name": "redirection",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "referenceNumber": {
+          "name": "referenceNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "sensor_report": {
+      "name": "sensor_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "query_id": {
+          "name": "query_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_name": {
+          "name": "property_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threshold": {
+          "name": "threshold",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "threshold_trigger_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mail_text": {
+          "name": "mail_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sensor_report_query_id_query_id_fk": {
+          "name": "sensor_report_query_id_query_id_fk",
+          "tableFrom": "sensor_report",
+          "tableTo": "query",
+          "columnsFrom": [
+            "query_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant": {
+      "name": "tenant",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tenant_abbreviation_unique": {
+          "name": "tenant_abbreviation_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "abbreviation"
+          ]
+        }
+      }
+    },
+    "system_user": {
+      "name": "system_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_abbreviation": {
+          "name": "tenant_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "system_user_tenant_abbreviation_unique": {
+          "name": "system_user_tenant_abbreviation_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_abbreviation"
+          ]
+        }
+      }
+    },
+    "widget_to_tenant": {
+      "name": "widget_to_tenant",
+      "schema": "",
+      "columns": {
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "widget_to_tenant_widget_id_widget_id_fk": {
+          "name": "widget_to_tenant_widget_id_widget_id_fk",
+          "tableFrom": "widget_to_tenant",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "widget_to_tenant_tenant_id_tenant_id_fk": {
+          "name": "widget_to_tenant_tenant_id_tenant_id_fk",
+          "tableFrom": "widget_to_tenant",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "widget_to_tenant_widget_id_tenant_id": {
+          "name": "widget_to_tenant_widget_id_tenant_id",
+          "columns": [
+            "widget_id",
+            "tenant_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "visibility": {
+      "name": "visibility",
+      "values": {
+        "public": "public",
+        "protected": "protected",
+        "invisible": "invisible"
+      }
+    },
+    "aggregation": {
+      "name": "aggregation",
+      "values": {
+        "avg": "avg",
+        "min": "min",
+        "max": "max",
+        "sum": "sum",
+        "none": "none"
+      }
+    },
+    "aggregation_period": {
+      "name": "aggregation_period",
+      "values": {
+        "second": "second",
+        "minute": "minute",
+        "hour": "hour",
+        "day": "day",
+        "week": "week",
+        "month": "month",
+        "year": "year"
+      }
+    },
+    "auth_data_type": {
+      "name": "auth_data_type",
+      "values": {
+        "ngsi": "ngsi",
+        "ngsi-v2": "ngsi-v2",
+        "ngsi-ld": "ngsi-ld",
+        "api": "api"
+      }
+    },
+    "threshold_trigger_type": {
+      "name": "threshold_trigger_type",
+      "values": {
+        "exceeding": "exceeding",
+        "falls below": "falls below",
+        "equals": "equals"
+      }
+    },
+    "tab_component_sub_type": {
+      "name": "tab_component_sub_type",
+      "values": {
+        "Text": "Text",
+        "Icon mit Link": "Icon mit Link",
+        "180° Chart": "180° Chart",
+        "360° Chart": "360° Chart",
+        "Stageable Chart": "Stageable Chart",
+        "Pie Chart": "Pie Chart",
+        "Linien Chart": "Linien Chart",
+        "Balken Chart": "Balken Chart",
+        "Measurement": "Measurement",
+        "Pin": "Pin",
+        "Parking": "Parking"
+      }
+    },
+    "tab_component_type": {
+      "name": "tab_component_type",
+      "values": {
+        "Informationen": "Informationen",
+        "Diagramm": "Diagramm",
+        "Karte": "Karte",
+        "Wert": "Wert",
+        "iFrame": "iFrame",
+        "Bild": "Bild"
+      }
+    },
+    "time_horizon_type": {
+      "name": "time_horizon_type",
+      "values": {
+        "shortterm": "shortterm",
+        "midterm": "midterm",
+        "longterm": "longterm",
+        "archive": "archive"
+      }
+    },
+    "timeframe": {
+      "name": "timeframe",
+      "values": {
+        "live": "live",
+        "hour": "hour",
+        "day": "day",
+        "week": "week",
+        "month": "month"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
