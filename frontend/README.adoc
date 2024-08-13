@@ -1,0 +1,38 @@
+= NextJs Setup
+
+This is a https://nextjs.org/[Next.js] project bootstrapped with https://github.com/vercel/next.js/tree/canary/packages/create-next-app[`create-next-app`].
+
+== Getting Started
+
+Run the development server:
+
+[source,bash]
+----
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+----
+
+Open http://localhost:3000[http://localhost:3000] with your browser to see the result.
+
+== Frontend Environment Variables Documentation
+
+The dashboard project integrates several technologies including Next.js, NestJS, Keycloak, and PostgreSQL. This documentation provides details on the required environment variables to configure and run the project successfully.
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_MULTI_TENANCY` | Variable to activate/deactivate multi tenancy. Must be a string. If "true" a systemUser and a tenant must exist for the dashboard to work. | `"true" or "false"`
+| `NEXT_PUBLIC_FRONTEND_URL` | Variable required to build certain urls within the frontend. | `http://localhost:3000`
+| `NEXT_PUBLIC_BACKEND_URL` | Connection information to the frontend-service required for API calls. | `http://localhost:8081`
+| `NEXT_PUBLIC_VERSION` | The version of the frontend application. | `0.2.1`
+| `NEXT_PUBLIC_BASEPATH` | The base path for the Next.js application. Must start with a slash ("/"). Default is an empty string. | `""`
+| `NEXT_PUBLIC_ASSET_PREFIX` | The prefix for the Next.js application. Must start and end with a slash ("/") and be the same as NEXT_PUBLIC_BASEPATH. Default is an empty string. | `""`
+| `NEXT_PUBLIC_OIDC_AUTHORITY` | Address information for the keycloak connection and authentication. | `http://localhost:8080/realms/testrealm`
+| `NEXT_PUBLIC_OIDC_CLIENT_ID` | Client information for the keycloak connection and authentication. | `scs-frontend`
+| `NEXT_PUBLIC_OIDC_REDIRECT_URI` | Redirect url for the keycloak connection and authentication. | `http://localhost:3000/admin`
+|===

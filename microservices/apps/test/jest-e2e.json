@@ -1,0 +1,16 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testMatch": ["<rootDir>/index.e2e-spec.ts"],
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "@app/postgres-db/(.*)": "<rootDir>/../../libs/postgres-db/src/$1",
+    "@app/postgres-db": "<rootDir>/../../libs/postgres-db/src",
+    "@app/auth-helper/(.*)": "<rootDir>/../../libs/auth-helper/src/$1",
+    "@app/auth-helper": "<rootDir>/../../libs/auth-helper/src",
+    "apps/ngsi-service/src/(.*)": "<rootDir>/../../../apps/ngsi-service/src/$1"
+  }
+}

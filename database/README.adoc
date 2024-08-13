@@ -1,0 +1,55 @@
+= Database
+We use https://www.postgresql.org/[PostgreSQL] via https://orm.drizzle.team/docs/overview[Drizzle ORM] for type safe, SQL-like query building. For migrations, we use https://orm.drizzle.team/kit-docs/overview[Drizzle Kit].
+
+== Local Setup
+
+To start the database, follow the infrastructure setup for kubernetes/rancher link:../k8s/README.md[here].
+
+== Migrations
+
+Migrations are generated for all schema files which are included in the following glob pattern:
+`./microservices/libs/postgres-db/src/schemas/*.schema.ts`
+
+To generate them, run the following command from the project root (this will automatically create `.sql` files for all changes that occurred since the last migration):
+
+[source,bash]
+----
+npm run db:gen
+----
+
+To add a custom migration file, in which you can write your own SQL, run the following command:
+
+[source,bash]
+----
+npm run db:custom
+----
+
+You can also degenerate (drop) a migration file by running the following command:
+
+[source,bash]
+----
+npm run db:degen
+----
+
+To apply the migrations, run the following command (use WSL if working on Windows):
+
+[source,bash]
+----
+npm run db:migrate:dev
+----
+
+This will apply all migrations that have not been applied yet to the database.
+
+== Database Environment Variables Documentation
+
+The dashboard project integrates several technologies including Next.js, NestJS, Keycloak, and PostgreSQL. This documentation provides details on the required environment variables to configure and run the project successfully.
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===

@@ -1,0 +1,11 @@
+{{- if index .Values "ngsi-service" "enabled" }}
+# Env vars specific for the ngsi-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ngsi-service-configmap
+data:
+  NODE_ENV: "development"
+  ADMIN_ROLE: "scs-admin"
+  PASSWORD_ENCRYPT_KEY: {{ index .Values "ngsi-service" "passwordEncryptKey" }}
+{{- end }}
