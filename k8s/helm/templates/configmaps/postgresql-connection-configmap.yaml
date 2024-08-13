@@ -1,0 +1,12 @@
+{{- if or (index .Values "dashboard-service" "enabled") (index .Values "ngsi-service" "enabled") (index .Values "migrations" "enabled")}}
+# Env vars specific for establishing connection between microservice and postgresql db
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-connection-configmap
+data:
+  POSTGRES_USER: "postgres"
+  POSTGRES_DB: "scs"
+  POSTGRES_HOST: {{ .Release.Name }}-postgresql
+  POSTGRES_PORT: "5432"
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if index .Values.frontend.enabled }}
+# Env vars specific for the ngsi-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-configmap
+data:
+  FRONTEND_PORT: "3000"
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "frontend" "url" }}
+  NEXT_PUBLIC_BASEPATH: {{ index .Values "frontend" "basepath" }}
+  NEXT_PUBLIC_ASSET_PREFIX: {{ index .Values "frontend" "prefix" }}
+  NEXT_PUBLIC_OIDC_AUTHORITY: {{ index .Values "frontend" "oidc" "auth" }}
+  NEXT_PUBLIC_OIDC_CLIENT_ID: {{ index .Values "frontend" "oidc" "clientId" }}
+  NEXT_PUBLIC_OIDC_REDIRECT_URI: {{ index .Values "frontend" "oidc" "redirectUri" }}
+  NEXT_PUBLIC_BACKEND_URL: {{ index .Values "frontend" "backendUrl" }}
+  NODE_TLS_REJECT_UNAUTHORIZED: "{{ .Values.frontend.tlsRejectUnauthorized }}"
+  NEXT_PUBLIC_API_SERVICE_URL: {{ index .Values "frontend" "apiServiceUrl" }}
+  NEXT_PUBLIC_MULTI_TENANCY: "true"
+  NEXT_PUBLIC_MAIL_TO: {{ index .Values "frontend" "mailTo" }}
+  NEXT_PUBLIC_MAPBOX_TOKEN: {{ index .Values "frontend" "mapBoxToken" }}
+{{- end }}

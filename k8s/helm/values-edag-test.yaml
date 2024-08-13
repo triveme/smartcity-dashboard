@@ -1,0 +1,89 @@
+keycloak:
+  production: false
+  ingress:
+    hostname: mit-smartcity-suite-test-keycloak.container.edag
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-keycloak.container.edag
+        secretName: keycloak-tls-secret ## auto-generated unique tls
+dashboard-service:
+  jwks: "https://mit-smartcity-suite-test-keycloak.container.edag/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "https://mit-smartcity-suite-test-frontend.container.edag"
+  adminRole: "scs-admin"
+  editRoles: |
+    [ "editor", "tester", "scs-admin" ]
+  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-dashboard-service.container.edag
+        secretName: dashboard-service-test-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-test-dashboard-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+ngsi-service:
+  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-ngsi-service.container.edag
+        secretName: ngsi-service-test-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-test-ngsi-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+mail-service:
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-mail-service.container.edag
+        secretName: mail-service-test-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-test-mail-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+infopin-service:
+  jwks: "https://mit-smartcity-suite-test-keycloak.container.edag/realms/testrealm/protocol/openid-connect/certs"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-infopin-service.container.edag
+        secretName: infopin-service-test-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-test-infopin-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+frontend:
+  url: "https://mit-smartcity-suite-test-frontend.container.edag"
+  basepath:
+    ""
+  prefix:
+    ""
+  oidc:
+    auth: "https://mit-smartcity-suite-test-keycloak.container.edag/realms/testrealm"
+    redirectUri: "https://mit-smartcity-suite-test-frontend.container.edag/dashboard/admin"
+    clientId: scs-frontend
+  backendUrl: "https://mit-smartcity-suite-test-dashboard-service.container.edag"
+  tlsRejectUnauthorized: "0"
+  mailTo: "smart.city@edag.com"
+  mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-test-frontend.container.edag
+        secretName: frontend-test-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-test-frontend.container.edag
+        paths:
+          - path: /
+            pathType: Prefix

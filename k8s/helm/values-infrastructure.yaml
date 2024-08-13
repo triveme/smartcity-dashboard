@@ -1,0 +1,15 @@
+## for only installing postgres & keycloak
+dashboard-service:
+  enabled: false
+
+ngsi-service:
+  enabled: false
+
+mail-service:
+  enabled: false
+
+infopin-service:
+  enabled: false
+
+frontend:
+  enabled: false

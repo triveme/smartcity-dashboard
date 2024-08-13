@@ -1,0 +1,33 @@
+export type WizardErrors = {
+  nameError?: string;
+  urlError?: string;
+  colorError?: string;
+  typeError?: string;
+  clientError?: string;
+  appUserError?: string;
+  authUrlError?: string;
+  liveUrlError?: string;
+  timeSeriesUrlError?: string;
+  apiUrlError?: string;
+  apiToken?: string;
+  attributeError?: string;
+  updateIntervalError?: string;
+  fiwareServiceError?: string;
+  fiwareTypeError?: string;
+  aggregationsError?: string;
+  timeValueError?: string;
+  titleError?: string;
+  sensorError?: string;
+  queryConfigError?: string;
+  mapTypeError?: string;
+  descriptionError?: string;
+  widgetHeightError?: string;
+  stageableColorValueError?: string;
+  aggregationPeriodError?: string;
+  readRolesError?: string;
+  writeRolesError?: string;
+  mapModalWidgetError?: string;
+  mapModalWidgetIndexError?: number[];
+  mapFilterAttributeError?: string;
+  [key: string]: string | number[] | undefined; // Index signature allowing any string key to have either a string, number[] or undefined type
+};

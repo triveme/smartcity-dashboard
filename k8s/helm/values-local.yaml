@@ -1,0 +1,29 @@
+## Maybe create local ingresses too as these localhost URLs wont be valid in the local k8s cluster
+dashboard-service:
+  ingress:
+    enabled: false
+  jwks: "http://localhost:28080/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "http://localhost:3000"
+
+ngsi-service:
+  ingress:
+    enabled: false
+
+mail-service:
+  ingress:
+    enabled: false
+
+infopin-service:
+  ingress:
+    enabled: false
+
+frontend:
+  ingress:
+    enabled: false
+  oidc:
+    auth: http://localhost:28080/realms/testrealm
+    redirectUri: http://localhost:3000/admin
+    clientId: scs-frontend
+  backendUrl: http://host.docker.internal:3001
+  tlsRejectUnauthorized: "1"
+
