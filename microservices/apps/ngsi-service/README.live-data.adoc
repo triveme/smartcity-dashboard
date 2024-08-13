@@ -1,0 +1,86 @@
+= Research on Real-Time Data Streaming from NGSI Context Broker to Frontend
+
+This README summarises the steps involved in setting up a system that streams live data from the Fiware Context Broker, processes the resulting updated data in a NestJS backend, and emmits it to a NextJS frontend.
+
+* Fiware Swagger: https://swagger.lab.fiware.org/*
+* Fiware Subscriptions Tutorial: https://fiware-tutorials.readthedocs.io/en/latest/subscriptions.html#using-subscriptions
+
+== Overview
+The goal is to create a robust system where:
+
+  1. The NestJS backend subscribes to entity changes in the Fiware Context Broker.
+  2. The NestJS backend receives notifications of these changes.
+  3. The NestJS backend streams the updated data to the Next.js frontend in real-time using WebSockets.
+
+== Subscriptions Endpoint  (ngsi-v1/subscriptions/)
+
+* To receive notifications about an entity change, for example waterTemperature, a POST request to the v1/subscriptions/ endpoint in the Fiware Context Broker must be made.
+* The payload of the subscription will define what entity type will be subscribed to for live data, e.g. waterTemperatureSensor1.*, and what entity attribute to monitor, e.g. waterTemperature.
+* The payload should also include the URL of which the updated entity data will be returned to, e.g. localhost:8082/notifications.
+* Example POST ngsi-v1/subscriptions payload:
+
+[source,json]
+----
+{
+  "description": "Notify me of changes in water temperature",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": "waterTemperatureSensor1.*"
+      }
+    ],
+    "condition": {
+      "attrs": ["waterTemperature"]
+    }
+  },
+  "notification": {
+    "http": {
+      "url": "http://localhost:8082/notifications"
+    },
+    "attrs": ["waterTemperature"],
+    "metadata": ["dateCreated", "dateModified"]
+  },
+  "throttling": 5
+}
+----
+
+== Notification Controller - Consuming Real-Time Data
+
+* Once a subscription is made, we need to process the incoming notifications sent by the Fiware Context Broker.
+* These notifications will be sent as post requests to the URL which was defined in the subscriptions payload.
+* A Notification controller and service class will be defined to handle these incoming notifications and extract the updated 'query_data' from the response body.
+* The data processed from the notifications response can then be saved to the query_data column and/or directly emitted through a websocket to the frontend.
+* Example POST localhost:8082/notifications response body:
+
+[source,json]
+----
+{
+  "subscriptionId": "5f7d8b1f1d2f4c00173d9e5d",
+  "data": [
+    {
+      "id": "waterTemperatureSensor1",
+      "type": "Sensor",
+      "waterTemperature": {
+        "type": "Number",
+        "value": 22.5,
+        "metadata": {
+          "dateCreated": {
+            "type": "DateTime",
+            "value": "2024-07-09T10:00:00.000Z"
+          },
+          "dateModified": {
+            "type": "DateTime",
+            "value": "2024-07-09T12:00:00.000Z"
+          }
+        }
+      }
+    }
+  ]
+}
+----
+
+== Integrate Frontend with Real-Time Data Stream
+
+* As we can now consume live updates from the Context Broker with subscriptions and notifications, the data can be streamed to the frontend using a Websocket.
+* This can be achieved with a NestJS @WebsocketGateway class which initializes on ngsi-service bootup.  The NextJS frontend can then use socket.io to subscribe to the websocket event which will be defined in the backend.
+* The Notifications Service / Controller class will consume the live-updates from the Context Broker, process the 'query_data' from the notification and emmit the data to websocket event for frontend consumption.

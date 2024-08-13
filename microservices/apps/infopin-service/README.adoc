@@ -1,0 +1,22 @@
+= Readme for the infopin-service microservice
+
+== Description
+
+This service manages the data for the infopin module.
+It receives new infopin data and saves it into the database.
+Also it provides the frontend with respective data.
+
+== Environment Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_FRONTEND_URL` | Adress to the frontend. Required to set appropriate CORS settings | `http:localhost:3000`
+| `IMAGE_DIR` | Location where images shall be saved | `images`
+| `ADMIN_ROLE` | Default admin role | `scs-admin`
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===

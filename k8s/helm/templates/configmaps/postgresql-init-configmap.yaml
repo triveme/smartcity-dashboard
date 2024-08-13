@@ -1,0 +1,9 @@
+{{- if not (lookup "v1" "ConfigMap" .Release.Namespace "postgresql-init-configmap") }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-init-configmap
+data:
+  init.sql: |-
+    {{ (.Files.Get "postgresql/initDb/init.sql") | nindent 4 }}
+{{- end }}

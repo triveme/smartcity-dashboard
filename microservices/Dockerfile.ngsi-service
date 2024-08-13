@@ -1,0 +1,34 @@
+# Base image for building the application
+FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine AS builder
+
+# Create app directory in a more standard location
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci ngsi-service
+
+# Copy the rest of the application code
+COPY . .
+
+# Build the application
+RUN npm run build ngsi-service
+
+# Base image for the final stage
+FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine
+
+# Create app directory
+WORKDIR /usr/microservices/apps
+
+# Copy built files from the builder stage
+COPY --from=builder /app/dist /usr/microservices/apps/dist
+COPY --from=builder /app/node_modules /usr/microservices/apps/node_modules
+
+EXPOSE 8082
+
+# Set Docker as non-root user
+USER node
+
+CMD ["node", "/usr/microservices/apps/dist/apps/ngsi-service/main.js"]

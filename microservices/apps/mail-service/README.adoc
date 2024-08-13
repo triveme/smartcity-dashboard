@@ -1,0 +1,28 @@
+## Mail Service
+The Mail Service is designed to facilitate the sending of automated emails and defect reports from other microservices or frontend applications. It utilizes NodeMailer to handle email communication with SMTP servers.
+
+### Features
+* Automated Email Endpoint: Provides an endpoint to send automated emails triggered by certain events. It accepts a payload represented by the SendMailDto, which includes the recipient's email address, subject, and body of the email.
+* Defect Report Endpoint: Offers an endpoint to submit defect reports from other microservices or frontend applications. The payload for this endpoint is represented by the DefectReportDto, containing information about the reporter's email address and the details of the defect.
+* SMTP Server Integration: Utilizes NodeMailer to create a transporter, establishing a connection with an SMTP server. This transporter is then used within the service methods to send emails using the provided payload variables.
+
+### Endpoints
+* Send Automated Email: Make a POST request to /mail/send with the payload represented by the SendMailDto.
+* Submit Defect Report: Make a POST request to /mail/defect-report with the payload represented by the DefectReportDto.
+
+### Environment Variables
+The following environment variables are used to configure the Mail Service:
+
+* MAIL_HOST: The hostname of the SMTP server.
+* MAIL_PORT: The port number of the SMTP server.
+* MAIL_USER: The username or email address used for authentication with the SMTP server.
+* MAIL_PASS: The password or authentication token used for authentication with the SMTP server.
+* DEFECT_REPORT_EMAIL: The email address where defect reports will be sent.
+Ensure that these variables are correctly configured in the .env file before running the service.
+
+## Running the mail-service
+
+```bash
+# development
+$ npm run start mail-service
+```

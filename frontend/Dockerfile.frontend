@@ -1,0 +1,34 @@
+# Base image for building the application
+FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine AS builder
+
+# Create app directory in a more standard location
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json /app/
+RUN npm ci
+
+# Copy the rest of the application code
+COPY . /app
+
+# Build the application
+RUN npm run build
+
+# Base image for the final stage
+FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine
+
+# Set working directory
+WORKDIR /usr/frontend/apps
+
+# Copy built files from the builder stage
+COPY --from=builder /app/next.config.js /usr/frontend/apps
+COPY --from=builder /app/public /usr/frontend/apps/public
+COPY --from=builder /app/.next /usr/frontend/apps/.next
+COPY --from=builder /app/node_modules /usr/frontend/apps/node_modules
+COPY --from=builder /app/package.json /usr/frontend/apps/package.json
+
+# Expose the port Next.js runs on
+EXPOSE 3000
+
+# Command to run the application
+CMD [ "npm", "run", "start" ]

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-configmap
+data:
+  TRUSTED_CA:  |-
+    {{ (.Files.Get .Values.trustedCAFile) | nindent 4 }}

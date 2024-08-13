@@ -1,0 +1,82 @@
+trustedCAFile: "certificates/trusted_ca.pem"
+## postgres config
+postgresql:
+  enabled: true
+  auth:
+    existingSecret: "postgresql-secrets"
+    database: "scs"
+    username: "postgres"
+  primary:
+    initdb:
+      scriptsConfigMap: "postgresql-init-configmap"
+## db migrations config
+migrations:
+  enabled: true
+  configMap:
+    name: "postgresql-connection-configmap"
+  secretRef:
+    name: "postgresql-connection-secrets"
+## keycloak config
+keycloak:
+  enabled: true
+  postgresql:
+    enabled: false
+  auth:
+    adminUser: "admin"
+    existingSecret: "keycloak-secrets"
+  externalDatabase:
+    user: "keycloak"
+    database: "keycloak"
+    existingSecret: "keycloak-secrets"
+    existingSecretHostKey: "db-host"
+  keycloakConfigCli:
+    enabled: true
+    existingConfigmap: "keycloak-config"
+
+## dashboard-service config
+dashboard-service:
+  enabled: true
+  envFrom:
+    - configMapRef:
+        name: "dashboard-service-configmap"
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - configMapRef:
+        name: "trusted-ca-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
+## ngsi-service config
+ngsi-service:
+  enabled: true
+  envFrom:
+    - configMapRef:
+        name: "ngsi-service-configmap"
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
+## mail-service config
+mail-service:
+  enabled: true
+  envFrom:
+  - configMapRef:
+      name: "mail-service-configmap"
+## infopin-service config
+infopin-service:
+  enabled: true
+  envFrom:
+  - configMapRef:
+      name: "infopin-service-configmap"
+  - configMapRef:
+      name: "postgresql-connection-configmap"
+  - configMapRef:
+      name: "trusted-ca-configmap"
+  - secretRef:
+      name: "postgresql-connection-secrets"
+
+## frontend config
+frontend:
+  enabled: true
+  envFrom:
+    - configMapRef:
+        name: "frontend-configmap"

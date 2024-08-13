@@ -1,0 +1,22 @@
+version: '3.1'
+services:
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:22.0
+    env_file:
+      - .env
+    ports:
+      - "${KEYCLOAK_PORT}:8080"
+    # only for development: Import realm on startup
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import/
+    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start-dev --import-realm" ]
+  postgres-dev:
+    container_name: postgres-dev
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '${POSTGRES_PORT}:5432'

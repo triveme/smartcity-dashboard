@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/dashboard-service/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/dashboard-service/tsconfig.app.json"
+  },
+  "projects": {
+    "postgres-db": {
+      "type": "library",
+      "root": "libs/postgres-db",
+      "entryFile": "index",
+      "sourceRoot": "libs/postgres-db/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/postgres-db/tsconfig.lib.json"
+      }
+    },
+    "ngsi-service": {
+      "type": "application",
+      "root": "apps/ngsi-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/ngsi-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ngsi-service/tsconfig.app.json"
+      }
+    },
+    "dashboard-service": {
+      "type": "application",
+      "root": "apps/dashboard-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/dashboard-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/dashboard-service/tsconfig.app.json"
+      }
+    },
+    "infopin-service": {
+      "type": "application",
+      "root": "apps/infopin-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/infopin-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/infopin-service/tsconfig.app.json"
+      }
+    },
+    "mail-service": {
+      "type": "application",
+      "root": "apps/mail-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/mail-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/mail-service/tsconfig.app.json"
+      }
+    },
+    "report-service": {
+      "type": "application",
+      "root": "apps/report-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/report-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/report-service/tsconfig.app.json"
+      }
+    },
+    "auth-helper": {
+      "type": "library",
+      "root": "libs/auth-helper",
+      "entryFile": "index",
+      "sourceRoot": "libs/auth-helper/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/auth-helper/tsconfig.lib.json"
+      }
+    }
+
+  },
+  "monorepo": true,
+  "root": "apps/dashboard-service"
+}
