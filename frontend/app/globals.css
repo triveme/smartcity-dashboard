@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* global scrollbar */
+::-webkit-scrollbar {
+  width: 0.4em;
+}
+::-webkit-scrollbar-track {
+  background: #FFFFFF00;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #59647D;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #59647D;
+}
+.child-node::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left:-9.1%;
+  height: 2px; 
+  background-color: #C7D2EE; 
+  width: var(--child-node-before-width, 45px); /* Fallback to 45px if the variable is not defined */
+  transform: translateY(-50%);
+ 
+}

@@ -1,0 +1,11 @@
+{{- if index .Values "infopin-service" "enabled" }}
+# Env vars specific for the infopin-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infopin-service-configmap
+data:
+  NODE_ENV: "development"
+  NEST_JWKS_URI: {{ index .Values "infopin-service" "jwks" }}
+  IMAGE_DIR: "../../../../apps/infopin-service/images" # for local development, stepping out of the 'dist' folder is required
+{{- end }}

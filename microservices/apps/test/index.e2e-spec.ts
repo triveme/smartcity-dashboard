@@ -1,0 +1,17 @@
+import './database-operations/database.e2e-spec';
+import '../dashboard-service/test/data-source/datasource.e2e-spec';
+import '../dashboard-service/test/data-model/datamodel.e2e-spec';
+import '../dashboard-service/test/query-config/queryconfig.e2e-spec';
+import '../dashboard-service/test/query/query.e2e-spec';
+import '../dashboard-service/test/dashboard/dashboard.e2e-spec';
+import '../dashboard-service/test/corporate-info/corporate-info.e2e-spec';
+import '../dashboard-service/test/tenant/tenant.e2e-spec';
+import '../dashboard-service/test/panel/panel.e2e-spec';
+import '../dashboard-service/test/logo/logo.e2e-spec';
+import '../dashboard-service/test/widget/widget.e2e-spec';
+import '../dashboard-service/test/tab/tab.e2e-spec';
+import '../dashboard-service/test/grouping-element/groupingElement.e2e-spec';
+import '../dashboard-service/test/widget-to-panel/widgetToPanel.e2e-spec';
+import '../dashboard-service/test/dashboard-with-content/contentDashboard.e2e-spec';
+import '../ngsi-service/src/auth/test/app.e2e-spec';
+import '../ngsi-service/test/app.e2e-spec';

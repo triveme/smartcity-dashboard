@@ -1,0 +1,15 @@
+{{- if index .Values "mail-service" "enabled" }}
+# Env vars specific for the mail-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mail-service-configmap
+data:
+  # Mailer Variables
+  DEFECT_REPORT_EMAIL: "smart.city@edag.com"
+  # SMTP server configuration
+  MAIL_HOST: "smtp.gmail.com" # e.g. Gmail smtp server
+  MAIL_PORT: "465"
+  MAIL_USER: "example-email@gmail.com"
+  MAIL_PASS: "Example Gmail App Password" # e.g. secret can be generated under App Passwords in a gmail account
+{{- end }}

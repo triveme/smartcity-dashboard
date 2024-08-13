@@ -1,0 +1,14 @@
+{{- if index .Values "dashboard-service" "enabled" }}
+# Env vars specific for the dashboard-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-service-configmap
+data:
+  NODE_ENV: "development"
+  ADMIN_ROLE: {{ index .Values "dashboard-service" "adminRole" }}
+  EDIT_ROLES: {{ index .Values "dashboard-service" "editRoles" | toJson }}
+  NEST_JWKS_URI: {{ index .Values "dashboard-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "dashboard-service" "frontendUrl" }}
+  PASSWORD_ENCRYPT_KEY: {{ index .Values "dashboard-service" "passwordEncryptKey" }}
+{{- end }}

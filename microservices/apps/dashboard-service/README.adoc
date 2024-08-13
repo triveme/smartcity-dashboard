@@ -1,0 +1,18 @@
+= Readme for the dashboard-service microservice
+
+== Description
+
+Short description about the dashboard service which provides the dashboard page structure and data
+
+== Environment Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_FRONTEND_URL` | Adress to the frontend. Required to set appropriate CORS settings | `http:localhost:3000`
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===
