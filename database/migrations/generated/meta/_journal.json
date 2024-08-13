@@ -1,0 +1,69 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1718568588149,
+      "tag": "0000_chief_payback_0.7.2",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1719463686968,
+      "tag": "0001_nifty_rictor_0.7.2_to_0.8.0",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1720086457473,
+      "tag": "0002_powerful_tarantula_0.8.0_to_0.8.3",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1720684730470,
+      "tag": "0003_light_saracen_0.8.3_to_0.8.8",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1720758637582,
+      "tag": "0004_lively_tenebrous_0.8.8_to_0.8.10",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1721654218879,
+      "tag": "0005_moaning_betty_ross_0.9.0",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1722579604526,
+      "tag": "0006_short_peter_quill_0.9.1",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1723454497625,
+      "tag": "0007_sour_mephisto_0.10.0",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1723476101679,
+      "tag": "0008_wonderful_omega_red_0.10.1",
+      "breakpoints": true
+    }
+  ]
+}
