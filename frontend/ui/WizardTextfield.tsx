@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement, useState, useEffect } from 'react';
+import { ReactElement, useState, useEffect, CSSProperties } from 'react';
 import dynamic from 'next/dynamic';
 import '@/components/dependencies/quill.snow.css';
 
@@ -94,7 +94,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
       valueAsString = convertToLocaleNumber(valueAsString, decimalSeparator);
 
       // Allow patterns with digits and one optional locale-specific separator
-      const validPattern = new RegExp(`^-?\\d*\\${decimalSeparator}?\\d*$`);
+      const validPattern = new RegExp(`^-?\\d+(\\${decimalSeparator}\\d*)?$`);
 
       // Prevent updates if the pattern isn't valid
       if (!validPattern.test(valueAsString)) return;
@@ -120,13 +120,18 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     onChange(newContent);
   };
 
+  const errorStyle: CSSProperties = {
+    border: '4px solid #FFEB3B',
+    borderRadius: '0.5rem',
+  };
+
   return (
-    <div>
+    <>
       {componentType === tabComponentTypeEnum.information ? (
         // TODO check the quill version 2.0 when it is released
         isBrowser &&
         subComponentType === tabComponentSubTypeEnum.text && (
-          <div className="block">
+          <div className="block" style={error ? errorStyle : {}}>
             <ReactQuill
               theme="snow"
               value={content}
@@ -149,7 +154,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
         />
       ) : (
         <div
-          className={`h-14 block border-4 rounded-lg`}
+          className={`h-14 w-full block border-4 rounded-lg`}
           style={{
             borderColor: error ? '#FFEB3B' : borderColor,
             background: backgroundColor,
@@ -164,6 +169,6 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
           />
         </div>
       )}
-    </div>
+    </>
   );
 }

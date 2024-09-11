@@ -2,7 +2,6 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import Header from '@/components/Header';
 import { CorporateInfo } from '@/types';
-import { env } from 'next-runtime-env';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
@@ -14,7 +13,7 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: { tenant: string };
 }): Promise<JSX.Element> {
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
+  const NEXT_PUBLIC_MULTI_TENANCY = process.env.NEXT_PUBLIC_MULTI_TENANCY;
   const tenant =
     NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
 
@@ -31,6 +30,9 @@ export default async function RootLayout({
           ::-webkit-scrollbar-thumb,
           ::-webkit-scrollbar-thumb:hover {
             background: ${ciColors.scrollbarColor};
+          }
+          body {
+            font-family: ${ciColors.fontFamily}, sans-serif;
           }
         `}
       </style>

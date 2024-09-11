@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DashboardServiceModule } from '../../dashboard-service.module';
-import axios from 'axios';
 import {
   runLocalDatabasePreparation,
   truncateTables,
@@ -12,13 +11,19 @@ import { Client } from 'pg';
 import { createDashboardByObject, getDashboard } from './test-data';
 import { createPanelByObject, getPanel } from '../../panel/test/test-data';
 import { createWidgetByObject, getWidget } from '../../widget/test/test-data';
-import { createTab } from '../../tab/test/test-data';
-import { createQuery } from '../../query/test/test-data';
+import { createTab, getTab } from '../../tab/test/test-data';
+import {
+  createQuery,
+  getAPIQuery,
+  getNGSIHistoricMultipleEntityQuery,
+  getNGSILiveQuery,
+} from '../../query/test/test-data';
 import {
   createDashboardToTenant,
   createTenantByObject,
   getTenant,
 } from '../../tenant/test/test-data';
+import { generateJWTToken } from '../../../../test/jwt-token-util';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
@@ -40,21 +45,10 @@ describe('DashboardServiceControllers (e2e)', () => {
   let JWTToken = null;
 
   beforeEach(async () => {
-    // Get JWT token
-    const authUrl = process.env.KEYCLOAK_CLIENT_URI;
-
-    const data = new URLSearchParams();
-    data.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-    data.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-    data.append('grant_type', 'client_credentials');
-
-    try {
-      await process.nextTick(() => {});
-      const res = await axios.post(authUrl, data);
-      JWTToken = res.data.access_token;
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
+    JWTToken = await generateJWTToken(
+      process.env.KEYCLOAK_CLIENT_ID,
+      process.env.KEYCLOAK_CLIENT_SECRET,
+    );
 
     await truncateTables(client);
   });
@@ -64,8 +58,8 @@ describe('DashboardServiceControllers (e2e)', () => {
   });
 
   describe('Dashboards with content', () => {
-    it('/dashboards/:id?includeContent=true (GET)', async () => {
-      const query = await createQuery(db, 'ngsi-v2');
+    it('/dashboards/:id?includeContent=true (GET) bar chart', async () => {
+      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
       const dashboard = await createDashboardByObject(db, getDashboard());
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
@@ -73,7 +67,11 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
-      await createTab(db, widget.id, null, query.id);
+
+      await createTab(
+        db,
+        await getTab(db, widget.id, null, null, null, query.id),
+      );
 
       const response = await request(app.getHttpServer())
         .get('/dashboards/' + dashboard.id + '?includeContent=true')
@@ -82,10 +80,13 @@ describe('DashboardServiceControllers (e2e)', () => {
       const result = response.body;
 
       validateDashboardContent(result);
+      expect(
+        result.panels[0].widgets[0].tabs[0].chartData.length,
+      ).toBeGreaterThan(0);
     });
 
-    it('/dashboards/:id?includeContent=true (GET) without authorization', async () => {
-      const query = await createQuery(db, 'api');
+    it('/dashboards/:id?includeContent=true (GET) without authorization bar chart', async () => {
+      const query = await createQuery(db, getAPIQuery());
       const dashboard = await createDashboardByObject(db, getDashboard());
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
@@ -93,7 +94,10 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
-      await createTab(db, widget.id, null, query.id);
+      await createTab(
+        db,
+        await getTab(db, widget.id, null, null, null, query.id),
+      );
 
       await request(app.getHttpServer())
         .get('/dashboards/' + dashboard.id + '?includeContent=true')
@@ -101,7 +105,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     });
 
     it('/dashboards?includeContent=true (GET)', async () => {
-      const query1 = await createQuery(db, 'api');
+      const query1 = await createQuery(db, getAPIQuery());
       const dashboard1 = await createDashboardByObject(db, getDashboard());
       const panel1 = await createPanelByObject(db, getPanel(dashboard1.id));
       const widget1 = await createWidgetByObject(
@@ -109,9 +113,12 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel1.id,
       );
-      await createTab(db, widget1.id, null, query1.id);
+      await createTab(
+        db,
+        await getTab(db, widget1.id, null, null, null, query1.id),
+      );
 
-      const query2 = await createQuery(db, 'api');
+      const query2 = await createQuery(db, getAPIQuery());
       const dashboard2 = await createDashboardByObject(db, getDashboard());
       const panel2 = await createPanelByObject(db, getPanel(dashboard2.id));
       const widget2 = await createWidgetByObject(
@@ -119,7 +126,10 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel2.id,
       );
-      await createTab(db, widget2.id, null, query2.id);
+      await createTab(
+        db,
+        await getTab(db, widget2.id, null, null, null, query2.id),
+      );
 
       const response = await request(app.getHttpServer())
         .get('/dashboards?includeContent=true')
@@ -132,7 +142,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     });
 
     it('/dashboards?includeContent=true (GET) without authorization', async () => {
-      const query1 = await createQuery(db, 'api');
+      const query1 = await createQuery(db, getAPIQuery());
       const dashboard1 = await createDashboardByObject(db, getDashboard());
       const panel1 = await createPanelByObject(db, getPanel(dashboard1.id));
       const widget1 = await createWidgetByObject(
@@ -140,9 +150,12 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel1.id,
       );
-      await createTab(db, widget1.id, null, query1.id);
+      await createTab(
+        db,
+        await getTab(db, widget1.id, null, null, null, query1.id),
+      );
 
-      const query2 = await createQuery(db, 'api');
+      const query2 = await createQuery(db, getAPIQuery());
       const dashboard2 = await createDashboardByObject(db, getDashboard());
       const panel2 = await createPanelByObject(db, getPanel(dashboard2.id));
       const widget2 = await createWidgetByObject(
@@ -150,7 +163,10 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel2.id,
       );
-      await createTab(db, widget2.id, null, query2.id);
+      await createTab(
+        db,
+        await getTab(db, widget2.id, null, null, null, query2.id),
+      );
 
       const response = await request(app.getHttpServer()).get(
         '/dashboards?includeContent=true',
@@ -164,7 +180,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     it('/dashboard/tenant/:abbreviation?includeContent=true (GET)', async () => {
       const tenant = await createTenantByObject(db, getTenant());
-      const query = await createQuery(db, 'api');
+      const query = await createQuery(db, getAPIQuery());
       const dashboard = await createDashboardByObject(db, getDashboard());
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
@@ -172,7 +188,10 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
-      await createTab(db, widget.id, null, query.id);
+      await createTab(
+        db,
+        await getTab(db, widget.id, null, null, null, query.id),
+      );
       await createDashboardToTenant(db, dashboard.id, tenant.id);
 
       const response = await request(app.getHttpServer())
@@ -182,6 +201,244 @@ describe('DashboardServiceControllers (e2e)', () => {
       const result = response.body;
 
       validateDashboardContent(result[0]);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) line chart', async () => {
+      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Diagramm', 'Linien Chart', null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(
+        result.panels[0].widgets[0].tabs[0].chartData.length,
+      ).toBeGreaterThan(0);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) measurement', async () => {
+      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Diagramm', 'Measurement', null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(
+        result.panels[0].widgets[0].tabs[0].chartData.length,
+      ).toBeGreaterThan(0);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) colored slider', async () => {
+      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(
+          db,
+          widget.id,
+          'Diagramm',
+          'Farbiger Slider',
+          null,
+          query.id,
+        ),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(
+        result.panels[0].widgets[0].tabs[0].chartData.length,
+      ).toBeGreaterThan(0);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) pie chart', async () => {
+      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Diagramm', 'Pie Chart', null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(
+        result.panels[0].widgets[0].tabs[0].chartData.length,
+      ).toBeGreaterThan(0);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) stageable chart', async () => {
+      const query = await createQuery(db, getNGSILiveQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(
+          db,
+          widget.id,
+          'Diagramm',
+          'Stageable Chart',
+          null,
+          query.id,
+        ),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartValues).toHaveLength(1);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) 360 chart', async () => {
+      const query = await createQuery(db, getNGSILiveQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Diagramm', '360° Chart', null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartValues).toHaveLength(1);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) 180 chart', async () => {
+      const query = await createQuery(db, getNGSILiveQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Diagramm', '180° Chart', null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartValues).toHaveLength(1);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) Slider Overview', async () => {
+      const query = await createQuery(db, getNGSILiveQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Slider', null, null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartData).toHaveLength(1);
+    });
+
+    it('/dashboards/:id?includeContent=true (GET) Value', async () => {
+      const query = await createQuery(db, getNGSILiveQuery());
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+      const widget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      await createTab(
+        db,
+        await getTab(db, widget.id, 'Wert', null, null, query.id),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartValues).toHaveLength(1);
     });
 
     function validateDashboardContent(result): void {
@@ -230,5 +487,71 @@ describe('DashboardServiceControllers (e2e)', () => {
         throw new Error('No panels found in the dashboard content');
       }
     }
+  });
+
+  describe('combined widget with content', () => {
+    it('should return combined widgets with data', async () => {
+      const tenant = await createTenantByObject(db, getTenant());
+      const query1 = await createQuery(db, getNGSILiveQuery());
+      const query2 = await createQuery(
+        db,
+        getNGSIHistoricMultipleEntityQuery(),
+      );
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const panel = await createPanelByObject(db, getPanel(dashboard.id));
+
+      const childWidget1 = await createWidgetByObject(db, getWidget([], []));
+      const childTab1Value = await getTab(
+        db,
+        childWidget1.id,
+        'Wert',
+        null,
+        null,
+        query1.id,
+      );
+      await createTab(db, childTab1Value);
+
+      const childWidget2 = await createWidgetByObject(db, getWidget([], []));
+      const childTab2Value = await getTab(
+        db,
+        childWidget2.id,
+        'Diagramm',
+        'Balken Chart',
+        null,
+        query2.id,
+      );
+      await createTab(db, childTab2Value);
+
+      const primaryWidget = await createWidgetByObject(
+        db,
+        getWidget([], []),
+        panel.id,
+      );
+      const primaryTab = await getTab(db, primaryWidget.id);
+      primaryTab.componentType = 'Kombinierte Komponente';
+      primaryTab.childWidgets = [childWidget1.id, childWidget2.id];
+      await createTab(db, primaryTab);
+
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
+      const response = await request(app.getHttpServer())
+        .get(`/dashboards/${dashboard.id}?includeContent=true`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+
+      const body = response.body;
+      expect(body).not.toBeNull();
+      expect(body.panels).toHaveLength(1);
+      expect(body.panels[0].widgets).toHaveLength(1);
+      expect(body.panels[0].widgets[0].tabs).toHaveLength(1);
+
+      const combinedWidgets = body.panels[0].widgets[0].tabs[0].combinedWidgets;
+      expect(combinedWidgets).toHaveLength(2);
+      expect(combinedWidgets[0].tabs).toHaveLength(1);
+      expect(combinedWidgets[1].tabs).toHaveLength(1);
+      expect(combinedWidgets[0].tabs[0].chartValues).toHaveLength(1);
+      expect(combinedWidgets[1].tabs[0].chartData.length).toBe(2);
+      expect(combinedWidgets[1].tabs[0].chartData[0].values.length).not.toBe(0);
+      expect(combinedWidgets[1].tabs[0].chartData[1].values.length).not.toBe(0);
+    });
   });
 });

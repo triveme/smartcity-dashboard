@@ -4,6 +4,7 @@ import {
   tabComponentSubTypeEnum,
   timeframeEnum,
   visibilityEnum,
+  widthTypeEnum,
 } from '@/types';
 
 export const aggregationOptions = [
@@ -71,6 +72,7 @@ export const chartComponentSubTypes = [
 export const sliderComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Farbiger Slider', value: tabComponentSubTypeEnum.coloredSlider },
+  { label: 'Slider Übersicht', value: tabComponentSubTypeEnum.overviewSlider },
 ];
 
 export const informationComponentSubTypes = [
@@ -81,7 +83,6 @@ export const informationComponentSubTypes = [
 
 export const visibilityOptions = [
   { label: 'sichtbar', value: visibilityEnum.public },
-  { label: 'versteckt', value: visibilityEnum.invisible },
   { label: 'geschützt', value: visibilityEnum.protected },
 ];
 
@@ -94,4 +95,10 @@ export const aggregationPeriods = [
   { label: 'Woche', value: aggregationPeriodEnum.week },
   { label: 'Monat', value: aggregationPeriodEnum.month },
   { label: 'Jahr', value: aggregationPeriodEnum.year },
+];
+
+export const widthTypes = [
+  { label: 'Klein 1/3', value: widthTypeEnum.small },
+  { label: 'Mittel 2/3', value: widthTypeEnum.middle },
+  { label: 'Groß 3/3', value: widthTypeEnum.large },
 ];

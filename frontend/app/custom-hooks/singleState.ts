@@ -6,6 +6,7 @@ const initialWizardState: CorporateInfo = {
   dashboardPrimaryColor: '#2B3244',
   dashboardSecondaryColor: '#2B3244',
   fontColor: '#fff',
+  fontFamily: 'Arial',
   headerFontColor: '#fff',
   headerPrimaryColor: '#3D4760',
   headerSecondaryColor: '#3D4760',

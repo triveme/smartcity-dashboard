@@ -8,7 +8,11 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type DataSourceDropdownSelectionProps = {
   selectedDataSource?: string;
-  onSelectDataSource: (value: string, origin: string) => void;
+  onSelectDataSource: (
+    value: string,
+    origin: string,
+    datasourceCollections: string[],
+  ) => void;
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
@@ -44,13 +48,21 @@ export default function DataSourceDropdownSelection(
     if (dataSourcesData) {
       setSelectableDataSources(dataSourcesData);
       if (!selectedDataSource && dataSourcesData.length > 0) {
-        onSelectDataSource(dataSourcesData[0].id!, dataSourcesData[0].origin);
+        onSelectDataSource(
+          dataSourcesData[0].id!,
+          dataSourcesData[0].origin,
+          dataSourcesData[0].collections,
+        );
       } else if (selectedDataSource) {
         const preSelect = dataSourcesData.find(
           (ds) => ds.id === selectedDataSource,
         );
         if (preSelect) {
-          onSelectDataSource(preSelect.id!, preSelect.origin);
+          onSelectDataSource(
+            preSelect.id!,
+            preSelect.origin,
+            preSelect.collections,
+          );
         }
       }
     }
@@ -77,6 +89,7 @@ export default function DataSourceDropdownSelection(
           onSelectDataSource(
             selectedDataSource.id ?? '',
             selectedDataSource.origin ?? '',
+            selectedDataSource.collections ?? [],
           );
         }
       }}

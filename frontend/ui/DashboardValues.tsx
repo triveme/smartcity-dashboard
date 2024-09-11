@@ -29,7 +29,7 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
       style={{ color: fontColor }}
     >
       <div className="text-5xl">{formattedValue}</div>
-      <div className="text-sm">{unit || ''}</div>
+      <div className="text-sm ml-2">{unit || ''}</div>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import {
 } from './test-data';
 import { Client } from 'pg';
 import { edagTemplate } from '../../corporate-info/corporate-info.template';
+import { getCorporateInfosByTenantAbbreviation } from '../../corporate-info/test/test-data';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
@@ -68,10 +69,14 @@ describe('DashboardServiceControllers (e2e)', () => {
       const ciResponse = await request(app.getHttpServer())
         .get(`/corporate-infos/tenant/${response.body.abbreviation}`)
         .expect(200);
-      expect(ciResponse.body).toMatchObject({
+      expect(ciResponse.body[0]).toMatchObject({
         ...edagTemplate,
         tenantId: response.body.abbreviation,
       });
+
+      const corporateInfosByTenant =
+        await getCorporateInfosByTenantAbbreviation(db, tenant.abbreviation);
+      expect(corporateInfosByTenant).toHaveLength(2);
     });
 
     // getAll
@@ -153,21 +158,6 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(response.body.dashboards[0].id).toEqual(dashboard.id);
     });
 
-    // update
-    it('/tenants/:id (PATCH)', async () => {
-      const tenant = await createTenantByObject(db, getTenant());
-      const updateTenants = {
-        abbreviation: 'edag',
-      };
-
-      const response = await request(app.getHttpServer())
-        .patch('/tenants/' + tenant.id)
-        .send(updateTenants)
-        .expect(200);
-
-      expect(response.body).toMatchObject(updateTenants);
-    });
-
     // delete
     it('/tenants/:id (DELETE)', async () => {
       const tenant = await createTenantByObject(db, getTenant());
@@ -180,5 +170,38 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/tenants' + tenant.id)
         .expect(404);
     });
+
+    // delete
+    // it('/tenants/:id (DELETE) with corporate infos and logos', async () => {
+    //   const tenant = await createTenantByObject(db, getTenant());
+
+    //   const corporateInfo1 = getCorporateInfoWithLogos();
+    //   corporateInfo1.tenantId = tenant.abbreviation;
+    //   const corporateInfo2 = getCorporateInfoWithLogos();
+    //   corporateInfo2.tenantId = tenant.abbreviation;
+
+    //   await createCorporateInfoByObject(db, corporateInfo1);
+    //   await createCorporateInfoByObject(db, corporateInfo2);
+
+    //   const logoObject = getLogo();
+    //   logoObject.tenantId = tenant.abbreviation;
+
+    //   await createLogoByObject(db, logoObject);
+
+    //   await request(app.getHttpServer())
+    //     .delete('/tenants/' + tenant.id)
+    //     .expect(200);
+
+    //   await request(app.getHttpServer())
+    //     .get('/tenants' + tenant.id)
+    //     .expect(404);
+
+    //   const corporateInfosByTenant =
+    //     await getCorporateInfosByTenantAbbreviation(db, tenant.abbreviation);
+    //   expect(corporateInfosByTenant).toHaveLength(0);
+
+    //   const logoByTenant = await getLogosByTenant(db, tenant.abbreviation);
+    //   expect(logoByTenant).toHaveLength(0);
+    // });
   });
 });

@@ -1,0 +1,53 @@
+=== POST /systemUsers Expected Responses
+
+* No password in header - error, no system user created:
+
+  {
+      "statusCode": 400,
+      "message": "Password cannot be null or empty."
+  }
+
+  ERROR [SystemUserService] Recieved no password
+
+* No username param - error, no system user created:
+
+  {
+      "statusCode": 400,
+      "message": "Username cannot be null or empty."
+  }
+
+  ERROR [SystemUserService] Recieved no username
+
+* No tenantAbbreviation  - error, no system user created:
+
+  {
+      "statusCode": 400,
+      "message": "Tenant abbreviation cannot be null or empty."
+  }
+
+  ERROR [SystemUserService] Recieved no tenant abbreviation
+
+* Duplicate username used for any tenantAbbreviation - error, no system user created:
+
+  {
+      "statusCode": 409,
+      "message": "Username must be unique"
+  }
+
+  WARN [SystemUserService] Username Already Exists
+
+* Unique username & duplicate tenantAbbreviation - warning, no system user created:
+
+  {
+      "statusCode": 409,
+      "message": A Tenant can only have one System User.
+  }
+
+  WARN [SystemUserService] A System User Already Exists For Tenant Abbreviation: X
+
+* Unique username & tenantAbbreviation - success, system user created:
+
+  {
+      "statusCode": 201,
+      "message": [object]
+  }

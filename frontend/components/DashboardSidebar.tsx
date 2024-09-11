@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactElement, useState, CSSProperties } from 'react';
+import Cookies from 'js-cookie';
 
 import SidebarFooter from './SidebarFooter';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
@@ -9,7 +10,6 @@ import DashboardSidebarGroup from './DashboardSidebarGroup';
 import { useQuery } from '@tanstack/react-query';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import { getMenuGroupingElements } from '@/api/menu-service';
-import { useAuth } from 'react-oidc-context';
 
 type BackgroundColorStyle =
   | { backgroundImage: string }
@@ -31,8 +31,10 @@ export default function DashboardSidebar(
     menuSecondaryColor,
     menuFontColor,
   } = props;
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const auth = useAuth();
+  const cookie = Cookies.get('access_token');
+  const accessToken = cookie || '';
 
   // Multi Tenancy
   const tenant = getTenantOfPage();
@@ -49,10 +51,7 @@ export default function DashboardSidebar(
   // Query Menu Structure
   const { data: groupingElements } = useQuery({
     queryKey: ['menu'],
-    queryFn: () =>
-      tenant
-        ? getMenuGroupingElements(tenant, auth.user?.access_token)
-        : getMenuGroupingElements(auth.user?.access_token),
+    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
   });
 
   //Dynamic Styling
@@ -120,6 +119,7 @@ export default function DashboardSidebar(
                   url={element.url!}
                   elementUrl={element.url!}
                   icon={element.icon!}
+                  menuColor={element.fontColor}
                   onDashboardClick={toggleSidebar}
                 />
               ) : (

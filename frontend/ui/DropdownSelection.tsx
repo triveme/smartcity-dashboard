@@ -3,6 +3,7 @@ import { ReactElement, useState } from 'react';
 import DashboardIcons from './Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type DropdownSelectionProps = {
   currentValue: string | number;
@@ -24,9 +25,10 @@ export default function DropdownSelection(
     backgroundColor,
   } = props;
 
+  const tenant = getTenantOfPage();
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 
@@ -63,7 +65,7 @@ export default function DropdownSelection(
 
       {isOpen && (
         <div
-          className="absolute top-0 right-0 bottom-0 left-0 z-20 border rounded shadow"
+          className="absolute top-0 right-0 bottom-0 left-0 z-30 border rounded shadow"
           style={{ background: backgroundColor }}
         >
           {selectableValues.map((value, index) => {

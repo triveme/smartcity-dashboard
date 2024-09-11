@@ -60,18 +60,10 @@ export class TenantRepo {
     return result.length > 0 ? result[0] : null;
   }
 
-  async update(id: string, values: Partial<Tenant>): Promise<Tenant> {
-    const result = await this.db
-      .update(tenants)
-      .set(values)
-      .where(eq(tenants.id, id))
-      .returning();
+  async delete(id: string, transaction?: DbType): Promise<Tenant> {
+    const dbActor = transaction ? transaction : this.db;
 
-    return result.length > 0 ? result[0] : null;
-  }
-
-  async delete(id: string): Promise<Tenant> {
-    const result = await this.db
+    const result = await dbActor
       .delete(tenants)
       .where(eq(tenants.id, id))
       .returning();
@@ -79,10 +71,12 @@ export class TenantRepo {
     return result.length > 0 ? result[0] : null;
   }
 
-  async getTenantsByAbbreviation(abbreviation: string): Promise<Tenant[]> {
-    return this.db
+  async getTenantByAbbreviation(abbreviation: string): Promise<Tenant> {
+    const result = await this.db
       .select()
       .from(tenants)
       .where(eq(tenants.abbreviation, abbreviation));
+
+    return result.length > 0 ? result[0] : null;
   }
 }

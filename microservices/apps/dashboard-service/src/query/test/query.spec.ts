@@ -7,7 +7,7 @@ import {
   runLocalDatabasePreparation,
   truncateTables,
 } from '../../../../test/database-operations/prepare-database';
-import { createQuery, getNGSIQuery } from './test-data';
+import { createQuery, getNGSILiveQuery } from './test-data';
 import { Client } from 'pg';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { createQueryConfig } from '../../query-config/test/test-data';
@@ -40,8 +40,8 @@ describe('DashboardServiceControllers (e2e)', () => {
   describe('Queries', () => {
     // create
     it('/queries (POST)', async () => {
-      const queryConfig = await createQueryConfig(db);
-      const query = getNGSIQuery(queryConfig.id);
+      await createQueryConfig(db);
+      const query = getNGSILiveQuery();
 
       const response = await request(app.getHttpServer())
         .post('/queries')
@@ -57,7 +57,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // getAll
     it('/queries (GET)', async () => {
-      const query = await createQuery(db);
+      const query = await createQuery(db, getNGSILiveQuery());
 
       const response = await request(app.getHttpServer()).get('/queries');
       expect(response.body).toBeInstanceOf(Array);
@@ -81,7 +81,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // getById
     it('/queries/:id (GET)', async () => {
-      const query = await createQuery(db);
+      const query = await createQuery(db, getNGSILiveQuery());
 
       const response = await request(app.getHttpServer()).get(
         '/queries/' + query.id,
@@ -101,7 +101,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // update
     it('/queries/:id (PATCH)', async () => {
-      const query = await createQuery(db);
+      const query = await createQuery(db, getNGSILiveQuery());
 
       const updatedQuery = {
         queryData: {
@@ -121,7 +121,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // delete
     it('/queries/:id (DELETE)', async () => {
-      const query = await createQuery(db);
+      const query = await createQuery(db, getNGSILiveQuery());
 
       await request(app.getHttpServer())
         .delete('/queries/' + query.id)

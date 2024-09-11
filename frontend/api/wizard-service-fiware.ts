@@ -40,7 +40,7 @@ export async function getEntityIds(
       {
         headers,
         params: {
-          fiwareType: args,
+          type: args,
         },
       },
     );
@@ -66,7 +66,7 @@ export async function getAttributes(
       {
         headers,
         params: {
-          sensorId: args,
+          entityIds: args,
         },
       },
     );

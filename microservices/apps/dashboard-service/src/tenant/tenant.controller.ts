@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -52,15 +51,6 @@ export class TenantController {
   @Post('/')
   async create(@Body() row: NewTenant): Promise<Tenant> {
     return this.service.create(row);
-  }
-
-  @Public()
-  @Patch('/:id')
-  async update(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-    @Body() values: Partial<Tenant>,
-  ): Promise<Tenant> {
-    return this.service.update(id, values);
   }
 
   @Public()

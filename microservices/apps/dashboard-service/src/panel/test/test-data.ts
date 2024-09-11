@@ -10,9 +10,14 @@ export function getPanel(dashboardId?: string): Panel {
     height: 140,
     width: 140,
     position: 1,
+    headlineColor: '#000',
     info: 'Sample Message',
     generalInfo: 'Sample General Info',
     showGeneralInfo: false,
+    showJumpoffButton: false,
+    jumpoffLabel: 'Sample Label',
+    jumpoffIcon: 'ChevronLeft',
+    jumpoffUrl: 'defaultUrl',
   };
 }
 

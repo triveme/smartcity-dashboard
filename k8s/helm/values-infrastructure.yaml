@@ -5,10 +5,16 @@ dashboard-service:
 ngsi-service:
   enabled: false
 
+api-service:
+  enabled: false
+
 mail-service:
   enabled: false
 
 infopin-service:
+  enabled: false
+
+report-service:
   enabled: false
 
 frontend:

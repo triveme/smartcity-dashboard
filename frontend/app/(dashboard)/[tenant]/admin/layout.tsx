@@ -4,13 +4,13 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 
 import Header from '@/components/Header';
 import ManagementSidebar from '@/components/ManagementSidebar';
-import LoginProvider from '@/providers/LoginProvider';
-import { SnackbarProvider } from '@/providers/SnackBarFeedbackProvider';
 import { CorporateInfo } from '@/types';
 import { env } from 'next-runtime-env';
 import { SidebarItemStyle } from '@/components/SidebarItem';
 import CorporateIdentityProvider from '@/providers/CorporateIdentityProvider';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import LoginProvider from '@/providers/LoginProvider';
+// import { useAuth } from 'react-oidc-context';
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
@@ -53,34 +53,35 @@ export default async function RootLayout({
           ::-webkit-scrollbar-thumb:hover {
             background: ${ciColors.scrollbarColor};
           }
+                      body {
+            font-family: ${ciColors.fontFamily}, sans-serif;
+          }
         `}
       </style>
-      <CorporateIdentityProvider tenant={tenant}>
-        <LoginProvider>
-          <SnackbarProvider>
-            <div className="flex h-screen">
-              <ManagementSidebar
-                backgroundColor={ciColors.menuPrimaryColor}
-                backgroundSecondaryColor={ciColors.menuSecondaryColor}
-                useColorTransitionMenu={ciColors.useColorTransitionMenu}
-                sidebarItemStyle={sidebarItemStyle}
-              />
-              <div className="flex flex-col flex-grow">
-                <div className="fixed top-0 left-0 z-5 w-full">
-                  <Header
-                    headerColor={ciColors.headerPrimaryColor}
-                    headerSecondaryColor={ciColors.headerSecondaryColor}
-                    useColorTransitionHeader={ciColors.useColorTransitionHeader}
-                    fontColor={ciColors.headerFontColor}
-                    showLogo={ciColors.showHeaderLogo}
-                  />
-                </div>
-                <div className="flex-grow relative mt-16">{children}</div>
+      <LoginProvider>
+        <CorporateIdentityProvider tenant={tenant}>
+          <div className="flex h-screen">
+            <ManagementSidebar
+              backgroundColor={ciColors.menuPrimaryColor}
+              backgroundSecondaryColor={ciColors.menuSecondaryColor}
+              useColorTransitionMenu={ciColors.useColorTransitionMenu}
+              sidebarItemStyle={sidebarItemStyle}
+            />
+            <div className="flex flex-col flex-grow">
+              <div className="fixed top-0 left-0 z-5 w-full">
+                <Header
+                  headerColor={ciColors.headerPrimaryColor}
+                  headerSecondaryColor={ciColors.headerSecondaryColor}
+                  useColorTransitionHeader={ciColors.useColorTransitionHeader}
+                  fontColor={ciColors.headerFontColor}
+                  showLogo={ciColors.showHeaderLogo}
+                />
               </div>
+              <div className="flex-grow relative mt-16">{children}</div>
             </div>
-          </SnackbarProvider>
-        </LoginProvider>
-      </CorporateIdentityProvider>
+          </div>
+        </CorporateIdentityProvider>
+      </LoginProvider>
     </>
   );
 }

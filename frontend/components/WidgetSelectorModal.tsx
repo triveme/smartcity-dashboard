@@ -14,6 +14,7 @@ type WidgetSelectorModalProps = {
   refetch: () => void;
   tenant: string | undefined;
   backgroundColor: string;
+  borderColor: string;
   fontColor: string;
   hoverColor: string;
 };
@@ -27,6 +28,7 @@ export default function WidgetSelectorModal(
     refetch,
     tenant,
     backgroundColor,
+    borderColor,
     fontColor,
     hoverColor,
   } = props;
@@ -83,17 +85,31 @@ export default function WidgetSelectorModal(
         <div className="h-15 flex justify-center items-start mt-8">
           <SearchableDropdown
             value={selectedWidgetInDropdown}
-            options={(
-              allWidgets?.filter(
-                (widget) =>
-                  !selectedWidgets?.some(
-                    (selectedWidget) => selectedWidget.id === widget.id,
-                  ),
-              ) || []
-            ).map((widget) => widget.name)}
+            options={
+              allWidgets?.length
+                ? [
+                    ...(allWidgets || [])
+                      .filter(
+                        (widget) =>
+                          !selectedWidgets?.some(
+                            (selectedWidget) => selectedWidget.id === widget.id,
+                          ),
+                      )
+                      .map((widget) => widget.name),
+                    'Kein Widget verfügbar',
+                  ]
+                : ['Kein Widget verfügbar']
+            }
             onSelect={async (selectedOption: string): Promise<void> => {
+              if (selectedOption === 'Kein Widget verfügbar') {
+                // Handle the 'No Widget' selection logic if needed
+                onCloseModal();
+                refetch();
+                return;
+              }
+
               setSelectedWidgetInDropdown(selectedOption);
-              const match = allWidgets?.find(
+              const match = (allWidgets || []).find(
                 (widget) => widget.name === selectedOption,
               );
               if (match) {
@@ -109,6 +125,7 @@ export default function WidgetSelectorModal(
               }
             }}
             backgroundColor={backgroundColor}
+            borderColor={borderColor}
             hoverColor={hoverColor}
           />
         </div>

@@ -2,15 +2,24 @@
 
 import { CorporateInfo } from '@/types';
 import { DEFAULT_CI } from '@/utils/objectHelper';
+import { cookies } from 'next/headers';
 
 export async function getCorporateInfosWithLogos(
-  tenant?: string | undefined,
+  tenant: string | undefined,
 ): Promise<CorporateInfo> {
   try {
     let ciColors = DEFAULT_CI;
+    const cookieStore = cookies();
+
+    // Check the theme preference from the cookie, default to using light
+    const isLightThemeCookie = cookieStore.get('isLightTheme');
+    let isLight = true;
+    if (isLightThemeCookie?.value === 'false') {
+      isLight = false;
+    }
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/corporate-infos/tenant/${tenant}?includeLogos=true`,
-      { next: { revalidate: 0 } },
     );
     if (!response.ok) {
       throw new Error(
@@ -38,10 +47,10 @@ export async function getCorporateInfosWithLogos(
 
     const data = JSON.parse(result);
 
-    if (Array.isArray(data) && data.length > 0) {
+    if (Array.isArray(data) && data.length > 0 && isLight) {
       ciColors = data[0];
     } else {
-      ciColors = data;
+      ciColors = data[1];
     }
     return ciColors;
   } catch (error) {

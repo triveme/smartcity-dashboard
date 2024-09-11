@@ -14,10 +14,14 @@ export function getWidget(readRoles: string[], writeRoles: string[]): Widget {
   return {
     id: uuid(),
     name: 'Sample Widget',
-    height: 400,
+    showName: true,
+    height: 200,
     width: 140,
     visibility: 'public',
+    headlineColor: '#000000',
     icon: 'test.png',
+    allowShare: false,
+    allowDataExport: false,
     readRoles: readRoles,
     writeRoles: writeRoles,
   };

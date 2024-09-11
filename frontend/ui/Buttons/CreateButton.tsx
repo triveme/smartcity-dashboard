@@ -4,11 +4,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import DashboardIcons from '../Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 export default function CreateButton(): ReactElement {
   const pathname = usePathname();
   const { push } = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const tenant = getTenantOfPage();
 
   const handleCreateButtonClick = (): void => {
     push(`${pathname}/edit`);
@@ -16,7 +18,7 @@ export default function CreateButton(): ReactElement {
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 

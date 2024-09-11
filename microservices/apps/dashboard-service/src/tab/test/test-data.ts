@@ -1,18 +1,53 @@
-import { createQuery } from '../../query/test/test-data';
+import { createQuery, getNGSILiveQuery } from '../../query/test/test-data';
 import { createDataModel } from '../../data-model/test/test-data';
 import { Tab, tabs } from '@app/postgres-db/schemas';
 import { DbType } from '@app/postgres-db';
 import { v4 as uuid } from 'uuid';
 
-export function getTab(
+export async function getTab(
+  db: DbType,
   widgetId: string,
+  componentType?:
+    | 'Informationen'
+    | 'Diagramm'
+    | 'Slider'
+    | 'Karte'
+    | 'Wert'
+    | 'iFrame'
+    | 'Bild',
+  componentSubType?:
+    | 'Text'
+    | 'Icon mit Link'
+    | '180° Chart'
+    | '360° Chart'
+    | 'Stageable Chart'
+    | 'Pie Chart'
+    | 'Linien Chart'
+    | 'Balken Chart'
+    | 'Measurement'
+    | 'Pin'
+    | 'Parking'
+    | 'Farbiger Slider'
+    | 'Slider Übersicht',
   dataModelId?: string,
   queryId?: string,
-): Tab {
+): Promise<Tab> {
+  componentType = componentType ? componentType : 'Diagramm';
+  componentSubType = componentSubType ? componentSubType : 'Balken Chart';
+
+  if (!dataModelId) {
+    const dataModel = await createDataModel(db);
+    dataModelId = dataModel.id;
+  }
+  if (!queryId) {
+    const query = await createQuery(db, getNGSILiveQuery());
+    queryId = query.id;
+  }
+
   return {
     id: uuid(),
-    componentType: 'Wert',
-    componentSubType: 'Balken Chart',
+    componentType: componentType,
+    componentSubType: componentSubType,
     chartMinimum: 0,
     chartMaximum: 100,
     chartUnit: '%',
@@ -25,6 +60,7 @@ export function getTab(
     chartStaticValuesTicks: [20, 60],
     chartStaticValuesLogos: ['ChevronLeft', 'ChevronLeft'],
     chartStaticValuesTexts: ['dry', 'normal', 'humid'],
+    childWidgets: [],
     isStepline: false,
     mapAllowPopups: true,
     mapAllowScroll: true,
@@ -79,28 +115,14 @@ export function getTab(
         chartStaticValuesColors: ['red', 'green'],
       },
     ],
+    tiles: 10,
+    sliderCurrentAttribute: 'Current Attribute',
+    sliderMaximumAttribute: 'Maximum Attribute',
   };
 }
 
-export async function createTab(
-  db: DbType,
-  widgetId: string,
-  dataModelId?: string,
-  queryId?: string,
-): Promise<Tab> {
-  if (!dataModelId) {
-    const dataModel = await createDataModel(db);
-    dataModelId = dataModel.id;
-  }
-  if (!queryId) {
-    const query = await createQuery(db);
-    queryId = query.id;
-  }
-
-  const createdTabs = await db
-    .insert(tabs)
-    .values(getTab(widgetId, dataModelId, queryId))
-    .returning();
+export async function createTab(db: DbType, tab: Tab): Promise<Tab> {
+  const createdTabs = await db.insert(tabs).values(tab).returning();
 
   return createdTabs.length > 0 ? createdTabs[0] : null;
 }

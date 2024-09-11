@@ -1,19 +1,43 @@
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
+import DashboardIcons from '../Icons/DashboardIcon';
 
 type RefreshButtonProps = {
   handleClick: () => void;
+  fontColor: string;
+  hoverColor: string;
+  backgroundColor: string;
 };
 
 export default function RefreshButton(props: RefreshButtonProps): ReactElement {
-  const { handleClick } = props;
+  const { handleClick, fontColor, hoverColor, backgroundColor } = props;
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = (): void => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = (): void => {
+    setIsHovered(false);
+  };
+
+  const buttonStyle = {
+    backgroundColor: backgroundColor,
+    ...(isHovered && {
+      backgroundColor: hoverColor,
+    }),
+    color: fontColor,
+  };
 
   return (
-    <div className="text-[#2B3244]">
+    <div>
       <button
-        className="p-2 bg-[#91D9FF] hover:bg-[#82C3E5] h-19 w-48 rounded-lg flex justify-evenly items-center align-middle content-center transition-colors ease-in-out duration-300"
+        className="p-2 h-16 w-16 rounded-lg flex justify-evenly items-center align-middle content-center transition-colors ease-in-out duration-300"
         onClick={handleClick}
+        style={buttonStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
-        <div>Aktualisieren</div>
+        <DashboardIcons iconName={'Update'} color={fontColor} />
       </button>
     </div>
   );

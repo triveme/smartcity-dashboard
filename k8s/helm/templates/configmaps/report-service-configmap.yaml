@@ -1,0 +1,10 @@
+{{- if index .Values "report-service" "enabled" }}
+# Env vars specific for the mail-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: report-service-configmap
+data:
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "report-service" "frontendUrl" }}
+  NEXT_PUBLIC_MAIL_SERVICE_URL: {{ index .Values "report-service" "mailServiceUrl" }}
+{{- end }}

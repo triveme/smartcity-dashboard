@@ -201,6 +201,16 @@ export default function CorporateInfoWizard({
             setPanelBorderColor={(color): void =>
               updateState('panelBorderColor', color)
             }
+            panelBorderSize={state.panelBorderSize}
+            setPanelBorderSize={(value): void =>
+              updateState('panelBorderSize', value)
+            }
+            panelBorderRadius={state.widgetBorderRadius}
+            setPanelBorderRadius={(value): void =>
+              updateState('panelBorderRadius', value)
+            }
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
           />
         )}
         {activeTab === 'Widget' && (
@@ -217,6 +227,16 @@ export default function CorporateInfoWizard({
             setWidgetBorderColor={(color): void =>
               updateState('widgetBorderColor', color)
             }
+            widgetBorderSize={state.widgetBorderSize}
+            setWidgetBorderSize={(value): void =>
+              updateState('widgetBorderSize', value)
+            }
+            widgetBorderRadius={state.widgetBorderRadius}
+            setWidgetBorderRadius={(value): void =>
+              updateState('widgetBorderRadius', value)
+            }
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
           />
         )}
         {activeTab === 'Logo' && (
@@ -260,6 +280,16 @@ export default function CorporateInfoWizard({
             }
             fontColor={state.fontColor}
             setFontColor={(color): void => updateState('fontColor', color)}
+            fontFamily={state.fontFamily}
+            setFontFamily={(fontFamily): void =>
+              updateState('fontFamily', fontFamily)
+            }
+            dashboardPrimaryColor={
+              corporateInfo?.dashboardPrimaryColor || '#2B3244'
+            }
+            dashboardSecondaryColor={
+              corporateInfo?.dashboardSecondaryColor || '#3D4760'
+            }
           />
         )}
       </div>

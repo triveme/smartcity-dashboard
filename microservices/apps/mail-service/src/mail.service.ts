@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { SendMailDto, DefectReportDto } from './dto/mail.dto';
+import axios from 'axios';
+
+type mailAttachment = {
+  filename: string;
+  content: string | Buffer;
+};
 
 @Injectable()
 export class MailService {
@@ -21,11 +27,22 @@ export class MailService {
 
   async sendAutomatedMail(sendMailDto: SendMailDto): Promise<void> {
     try {
+      const attachments: mailAttachment[] = [];
+      const dashboardLog = await axios.get(
+        process.env.DASHBOARD_SERVICE_URL + '/logs',
+      );
+      if (dashboardLog.status === 200) {
+        attachments.push({
+          filename: 'dashboard-service.log',
+          content: dashboardLog.data,
+        });
+      }
       await this.transporter.sendMail({
         from: process.env.MAIL_USER,
         to: sendMailDto.to,
         subject: sendMailDto.subject,
         text: sendMailDto.body,
+        attachments: attachments,
       });
       this.logger.log(`Automated email sent to ${sendMailDto.to}`);
     } catch (error) {

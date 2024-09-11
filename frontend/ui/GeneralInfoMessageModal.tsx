@@ -1,4 +1,5 @@
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useQuery } from '@tanstack/react-query';
@@ -18,10 +19,11 @@ export default function GeneralInfoMessageModal({
   onClose,
 }: GeneralInfoMessageModalProps): ReactElement | null {
   const modalRef = useRef<HTMLDivElement>(null);
+  const tenant = getTenantOfPage();
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 

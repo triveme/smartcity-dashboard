@@ -4,12 +4,16 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { NewTenant, Tenant } from '@app/postgres-db/schemas/tenant.schema';
 import { Dashboard } from '@app/postgres-db/schemas';
 import { TenantRepo } from './tenant.repo';
 import { CorporateInfoService } from '../corporate-info/corporate-info.service';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
+import { LogoService } from '../logo/logo.service';
+import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
+import { v4 as uuid } from 'uuid';
 
 export type TenantWithDashboards = Tenant & {
   dashboards: Dashboard[];
@@ -21,6 +25,8 @@ export class TenantService {
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly tenantRepo: TenantRepo,
     private readonly corporateInfoService: CorporateInfoService,
+    private readonly logoService: LogoService,
+    private readonly generalSettingsRepo: GeneralSettingsRepo,
   ) {}
 
   private readonly logger = new Logger(TenantService.name);
@@ -48,44 +54,64 @@ export class TenantService {
         );
       }
 
-      const corporateInfo = await this.corporateInfoService.create(
-        {
-          tenantId: result.abbreviation,
-        },
-        tx,
-      );
-
-      if (!corporateInfo) {
-        throw new HttpException(
-          `Could not create corporate identity for tenant ${row.abbreviation}`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
+      await this.createCorporateInfo(result, tx, row, 'Light');
+      await this.createCorporateInfo(result, tx, row, 'Dark');
+      await this.createGeneralSettings(tx, row);
 
       return result;
     });
   }
 
-  async update(id: string, values: Partial<Tenant>): Promise<Tenant> {
-    return this.tenantRepo.update(id, values);
+  private async createCorporateInfo(
+    result: Tenant,
+    tx: DbType,
+    row: NewTenant,
+    theme: 'Dark' | 'Light',
+  ): Promise<void> {
+    const corporateInfo = await this.corporateInfoService.create(
+      {
+        tenantId: result.abbreviation,
+        titleBar: theme,
+        fontFamily: 'Helvetica',
+        fontColor: '#FFF',
+      },
+      tx,
+    );
+
+    if (!corporateInfo) {
+      throw new HttpException(
+        `Could not create corporate identity for tenant ${row.abbreviation} with theme ${theme}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async delete(id: string): Promise<Tenant> {
-    return this.tenantRepo.delete(id);
+    return this.db.transaction(async (tx) => {
+      const dbTenant = await this.tenantRepo.getById(id);
+
+      if (!dbTenant)
+        throw new NotFoundException(`Tenant not found by id ${id}`);
+
+      await this.corporateInfoService.deleteByTenant(dbTenant.abbreviation, tx);
+      await this.logoService.deleteByTenant(dbTenant.abbreviation, tx);
+
+      return await this.tenantRepo.delete(id);
+    });
   }
 
-  async getTenantsByAbbreviation(abbreviation: string): Promise<Tenant[]> {
-    const tenantsWithAbbreviation =
-      await this.tenantRepo.getTenantsByAbbreviation(abbreviation);
+  async getTenantByAbbreviation(abbreviation: string): Promise<Tenant> {
+    const tenantByAbbreviation =
+      await this.tenantRepo.getTenantByAbbreviation(abbreviation);
 
-    if (tenantsWithAbbreviation.length === 0) {
+    if (!tenantByAbbreviation) {
       throw new HttpException(
         'No tenant found with given abbreviation.',
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return tenantsWithAbbreviation;
+    return tenantByAbbreviation;
   }
 
   async getTenantsWithDashboards(): Promise<TenantWithDashboards[]> {
@@ -139,5 +165,21 @@ export class TenantService {
     });
 
     return Object.values(tenantsWithDashboards);
+  }
+
+  private async createGeneralSettings(
+    tx: DbType,
+    tenant: NewTenant,
+  ): Promise<void> {
+    await this.generalSettingsRepo.create(
+      {
+        id: uuid(),
+        tenant: tenant.abbreviation,
+        information: null,
+        imprint: null,
+        privacy: null,
+      },
+      tx,
+    );
   }
 }

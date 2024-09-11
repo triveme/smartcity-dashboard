@@ -198,7 +198,7 @@ export class FiwareWizardService {
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
-    entityId?: string,
+    entityIds?: string[],
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequest(
       fiwareService,
@@ -212,8 +212,10 @@ export class FiwareWizardService {
       );
 
       // // Filter entities by the optional entityId
-      const filteredEntities = entityId
-        ? entitiesResponse.data.filter((entity) => entity.id === entityId)
+      const filteredEntities = entityIds
+        ? entitiesResponse.data.filter((entity) =>
+            entityIds.includes(entity.id),
+          )
         : entitiesResponse.data;
 
       // Set to collect unique attribute names

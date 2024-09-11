@@ -90,4 +90,16 @@ export class LogoRepo {
       .returning();
     return result.length > 0 ? result[0] : null;
   }
+
+  async deleteByTenantAbbreviation(
+    tenantAbbreviation: string,
+    transaction?: DbType,
+  ): Promise<Logo[]> {
+    const dbActor = transaction ? transaction : this.db;
+
+    return dbActor
+      .delete(logos)
+      .where(eq(logos.tenantId, tenantAbbreviation))
+      .returning();
+  }
 }

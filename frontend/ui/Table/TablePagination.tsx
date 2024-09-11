@@ -3,6 +3,7 @@ import { ReactElement, useState } from 'react';
 import DropdownSelection from '../DropdownSelection';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type TablePaginationProps = {
   currentPage: number;
@@ -30,13 +31,14 @@ export default function TablePagination(
     backgroundColor,
     hoverColor,
   } = props;
+  const tenant = getTenantOfPage();
 
   const [isPrevHovered, setIsPrevHovered] = useState(false);
   const [isNextHovered, setIsNextHovered] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 

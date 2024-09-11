@@ -1,5 +1,8 @@
 import { ReactElement } from 'react';
 import DashboardIcons from './Icons/DashboardIcon';
+import { useQuery } from '@tanstack/react-query';
+import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type InfoDisplayComponentProps = {
   headline: string;
@@ -13,8 +16,25 @@ export default function InfoDisplayComponent(
 ): ReactElement {
   const { headline, value, icon, iconColor } = props;
 
+  const tenant = getTenantOfPage();
+  const { data } = useQuery({
+    queryKey: ['corporate-info'],
+    queryFn: () => getCorporateInfosWithLogos(tenant),
+    enabled: false,
+  });
+
+  const boxStyle = {
+    borderRadius: data?.widgetBorderRadius || '8px',
+    backgroundColor: data?.widgetPrimaryColor,
+    color: data?.widgetFontColor,
+    borderColor: data?.widgetBorderColor || '#59647D',
+  };
+
   return (
-    <div className="flex flex-col items-center p-4 bg-[#2B3244] text-rose-800 rounded-lg">
+    <div
+      className="flex flex-col items-center p-4 pl-2 border-2"
+      style={boxStyle}
+    >
       <div className="text-sm font-bold">{headline}</div>
       <div className="text-lg flex items-center">
         {icon && iconColor && (

@@ -16,14 +16,15 @@ export function getGroupingElement(
   return {
     id: uuid(),
     name: '',
-    color: '#000000',
+    backgroundColor: '#000000',
+    fontColor: '#FFFFFF',
     gradient: false,
     icon: null,
-    url: url ?? 'http://localhost',
     isDashboard: isDashboard ?? false,
     parentGroupingElementId: parentGroupingElementId ?? null,
     position: position ?? null,
     tenantAbbreviation: tenantAbbreviation ?? null,
+    url: url ?? 'http://localhost',
   };
 }
 

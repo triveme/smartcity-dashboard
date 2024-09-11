@@ -55,12 +55,10 @@ export class WidgetToTenantService {
     tenantAbbreviation: string,
     dbActor: DbType,
   ): Promise<void> {
-    const tenants =
-      await this.tenantService.getTenantsByAbbreviation(tenantAbbreviation);
+    const tenant =
+      await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
 
-    if (tenants.length > 0) {
-      const tenant = tenants[0];
-
+    if (tenant) {
       const widgetToTenant: WidgetToTenant = {
         widgetId: widgetId,
         tenantId: tenant.id,
@@ -78,16 +76,14 @@ export class WidgetToTenantService {
       await this.getWidgetToTenantRelationshipByWidgetId(widgetId);
 
     if (tenantAbbreviation) {
-      const tenants =
-        await this.tenantService.getTenantsByAbbreviation(tenantAbbreviation);
-      if (tenants.length === 0) {
+      const tenant =
+        await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
+      if (!tenant) {
         throw new HttpException(
           'manageUpdate: Tenant not existing',
           HttpStatus.BAD_REQUEST,
         );
       }
-
-      const tenant = tenants[0];
 
       if (widgetToTenant && widgetToTenant.tenantId !== tenant.id) {
         await this.updateWidgetToTenantRelationship(

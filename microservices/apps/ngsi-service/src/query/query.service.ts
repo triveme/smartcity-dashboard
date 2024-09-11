@@ -18,10 +18,8 @@ export class QueryService {
 
   async getQueriesToUpdate(): Promise<Map<string, QueryBatch>> {
     const queriesWithAllInfos = await this.getAllQueriesWithAllInfos();
-
     // Only keep the queries that need to be updated (depending on their interval)
     const queriesToUpdate = this.filterQueriesToUpdate(queriesWithAllInfos);
-
     // Create a dictionary with the query_config hashes as keys so that we can
     // only fetch the data once for all queries with the same query_config hash
     return this.buildQueryHashMap(queriesToUpdate);

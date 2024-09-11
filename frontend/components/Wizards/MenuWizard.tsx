@@ -2,6 +2,7 @@
 
 import { ReactElement, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Cookies from 'js-cookie';
 
 import { Dashboard, GroupingElement } from '@/types';
 import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
@@ -15,7 +16,6 @@ import GroupingElementAddDashboardWizard from './GroupingElementAddDashboardWiza
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { getDashboards } from '@/api/dashboard-service';
-import { useAuth } from 'react-oidc-context';
 import { useParams } from 'next/navigation';
 import { env } from 'next-runtime-env';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
@@ -25,10 +25,11 @@ type MenuWizardProps = {
   borderColor: string;
   backgroundColor: string;
   fontColor: string;
+  geColor: string;
 };
 
 export default function MenuWizard(props: MenuWizardProps): ReactElement {
-  const { iconColor, borderColor, backgroundColor, fontColor } = props;
+  const { iconColor, borderColor, backgroundColor, fontColor, geColor } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<GroupingElement>();
@@ -37,7 +38,8 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
   const [allDashboards, setAllDashboards] = useState<Dashboard[]>();
   const [menuElements, setMenuElements] = useState<GroupingElement[]>();
   const { openSnackbar } = useSnackbar();
-  const auth = useAuth();
+  const cookie = Cookies.get('access_token');
+  const accessToken = cookie || '';
   const params = useParams();
 
   const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
@@ -56,16 +58,13 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
     isError: MenuGroupingElementsError,
   } = useQuery({
     queryKey: ['menu'],
-    queryFn: () =>
-      tenant
-        ? getMenuGroupingElements(tenant, auth.user?.access_token)
-        : getMenuGroupingElements(auth.user?.access_token),
+    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
   });
 
   // Query Dashboards to fill dropdown
   const { data: dashboards } = useQuery({
     queryKey: ['dashboards'],
-    queryFn: () => getDashboards(auth?.user?.access_token, false, tenant),
+    queryFn: () => getDashboards(accessToken, false, tenant),
   });
 
   useEffect(() => {
@@ -136,7 +135,7 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
   ): Promise<void> => {
     try {
       if (element.id) {
-        await deleteMenuGroupingElement(auth?.user?.access_token, element.id);
+        await deleteMenuGroupingElement(accessToken, element.id);
         const successMessage = element.isDashboard
           ? 'Dashboard erfolgreich gelöscht!'
           : 'Gruppierungselement erfolgreich gelöscht!';
@@ -160,7 +159,7 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
 
         await Promise.all(
           updatedElements.map((el) =>
-            updateMenuGroupingElement(auth?.user?.access_token, {
+            updateMenuGroupingElement(accessToken, {
               id: el.id,
               position: el.position,
             }),
@@ -230,7 +229,7 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
     try {
       await Promise.all(
         updates.map((el) =>
-          updateMenuGroupingElement(auth?.user?.access_token, {
+          updateMenuGroupingElement(accessToken, {
             id: el.id,
             position: el.position,
           }),
@@ -324,6 +323,7 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
           borderColor={borderColor}
           backgroundColor={backgroundColor}
           fontColor={fontColor}
+          geColor={geColor}
         />
       )}
 

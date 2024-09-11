@@ -14,12 +14,14 @@ import {
   faArrowRightFromBracket,
   faExclamationCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import HeaderLogo from '@/ui/HeaderLogo';
 import { usePathname, useRouter } from 'next/navigation';
+import { env } from 'next-runtime-env';
+import { jwtDecode } from 'jwt-decode';
+
+import InfoMessageModal from '@/ui/InfoMessageModal';
+import HeaderLogo from '@/ui/HeaderLogo';
 import GenericButton from '@/ui/Buttons/GenericButton';
 import { getTenantOfPage } from '@/utils/tenantHelper';
-import { env } from 'next-runtime-env';
-import InfoMessageModal from '@/ui/InfoMessageModal';
 
 type HeaderProps = {
   isLoginHeader?: boolean;
@@ -45,7 +47,7 @@ export default function Header(props: HeaderProps): ReactElement {
     fontColor,
     showLogo,
   } = props;
-  const { isAuthenticated, signoutRedirect } = useAuth();
+  const { isAuthenticated, signoutRedirect, signinRedirect } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
   const { push } = useRouter();
@@ -53,6 +55,20 @@ export default function Header(props: HeaderProps): ReactElement {
   const basepath = env('NEXT_PUBLIC_BASEPATH');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const loginRef = useRef<HTMLDivElement>(null);
+
+  // Admin role logic
+  const auth = useAuth();
+  const [roleOptions, setRoleOptions] = useState<string[]>([]);
+  const adminRole = env('NEXT_PUBLIC_ADMIN_ROLE');
+
+  useEffect(() => {
+    if (auth && auth.user && auth.user?.access_token) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const decoded: any = jwtDecode(auth?.user?.access_token);
+      const roles = decoded.roles || decoded.realm_access?.roles;
+      setRoleOptions(roles);
+    }
+  }, [auth]);
 
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
@@ -102,7 +118,7 @@ export default function Header(props: HeaderProps): ReactElement {
 
   const handleUserIconClick = (): void => {
     if (!isAuthenticated) {
-      push(`/${tenant}/admin`);
+      signinRedirect();
     }
   };
 
@@ -167,13 +183,15 @@ export default function Header(props: HeaderProps): ReactElement {
                       }
                       onClose={(): void => setIsModalVisible(false)}
                     />
-                    <GenericButton
-                      label="Admin"
-                      handleClick={(): void => {
-                        push(tenant ? `/${tenant}/admin` : '/admin');
-                      }}
-                      fontColor={headerstyle.color || '#FFFFFF'}
-                    />
+                    {adminRole && roleOptions.includes(adminRole) ? (
+                      <GenericButton
+                        label="Admin"
+                        handleClick={(): void => {
+                          push(tenant ? `/${tenant}/admin` : '/admin');
+                        }}
+                        fontColor={headerstyle.color || '#FFFFFF'}
+                      />
+                    ) : null}
                   </>
                 ) : null}
                 <button onClick={handleExitButtonClicked}>

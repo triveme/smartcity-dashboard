@@ -1,60 +1,60 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { DbType } from '@app/postgres-db';
 import {
   GroupingElement,
   NewGroupingElement,
 } from '@app/postgres-db/schemas/dashboard.grouping-element.schema';
-import { TenantService } from '../tenant/tenant.service';
 import {
   GroupingElementRepo,
   GroupingElementWithChildren,
 } from './grouping-element.repo';
 import { DashboardRepo } from '../dashboard/dashboard.repo';
+import { Dashboard } from '@app/postgres-db/schemas';
+import { TenantRepo } from '../tenant/tenant.repo';
 
 @Injectable()
 export class GroupingElementService {
   constructor(
     private readonly dashboardRepo: DashboardRepo,
     private readonly groupingElementRepo: GroupingElementRepo,
-    private readonly tenantService: TenantService,
+    private readonly tenantRepo: TenantRepo,
   ) {}
 
   private readonly logger = new Logger(GroupingElementService.name);
 
-  async getAll(roles: string[]): Promise<GroupingElementWithChildren[]> {
+  async getAll(
+    roles: string[],
+    tenantFromRequest: string,
+  ): Promise<GroupingElementWithChildren[]> {
     const dbResult: GroupingElement[] = await this.groupingElementRepo.getAll();
-    const result: GroupingElementWithChildren[] = [];
+    const dashboardsFromDb = await this.getDashboardsForGroupingElements(
+      dbResult,
+      tenantFromRequest,
+      roles,
+    );
 
-    for (const element of dbResult) {
-      const userIsAuthorizedToViewGroupingElement =
-        await this.checkDashboardRoles(element, roles);
-
-      if (
-        element.parentGroupingElementId == null &&
-        userIsAuthorizedToViewGroupingElement
-      ) {
-        const groupingElement: GroupingElementWithChildren = element;
-
-        groupingElement.children = await this.buildHierarchy(
-          element,
-          dbResult,
-          roles,
-        );
-
-        result.push(groupingElement);
-      }
-    }
-
-    return result;
+    return await this.buildResponse(dbResult, dashboardsFromDb, roles);
   }
 
   async getByTenantAbbreviation(
     abbreviation: string,
     roles: string[],
+    tenantFromRequest: string,
   ): Promise<GroupingElementWithChildren[]> {
     const dbResult: GroupingElement[] =
       await this.groupingElementRepo.getByTenantAbbreviation(abbreviation);
+    const dashboardsFromDb = await this.getDashboardsForGroupingElements(
+      dbResult,
+      tenantFromRequest,
+      roles,
+    );
 
     if (dbResult.length === 0) {
       this.logger.error(
@@ -62,68 +62,60 @@ export class GroupingElementService {
       );
     }
 
-    const result: GroupingElementWithChildren[] = [];
-
-    for (const element of dbResult) {
-      const userIsAuthorizedToViewGroupingElement =
-        await this.checkDashboardRoles(element, roles);
-
-      if (
-        element.parentGroupingElementId == null &&
-        userIsAuthorizedToViewGroupingElement
-      ) {
-        const groupingElement: GroupingElementWithChildren = element;
-
-        groupingElement.children = await this.buildHierarchy(
-          element,
-          dbResult,
-          roles,
-        );
-
-        result.push(groupingElement);
-      }
-    }
-
-    return result;
+    return await this.buildResponse(dbResult, dashboardsFromDb, roles);
   }
 
   private async buildHierarchy(
     element: GroupingElement,
     dbResult: GroupingElement[],
     roles: string[],
+    dashboardsFromDb: Dashboard[],
   ): Promise<GroupingElementWithChildren[]> {
     const children: GroupingElementWithChildren[] = [];
 
     for (const dbElement of dbResult) {
-      const userIsAuthorizedToViewElement = await this.checkDashboardRoles(
+      const userIsAuthorizedToViewElement = this.checkDashboardRoles(
         dbElement,
-        roles,
+        dashboardsFromDb,
       );
 
       if (
         dbElement.parentGroupingElementId == element.id &&
         userIsAuthorizedToViewElement
       ) {
-        const dbElementWithChildren: GroupingElementWithChildren = dbElement;
+        const dbElementWithChildren: GroupingElementWithChildren = {
+          ...dbElement,
+          children: [],
+        };
 
         dbElementWithChildren.children = await this.buildHierarchy(
           dbElement,
           dbResult,
           roles,
+          dashboardsFromDb,
         );
 
-        children.push(dbElement);
+        children.push(dbElementWithChildren);
       }
     }
 
     return children;
   }
 
-  async getById(id: string, roles: Array<string>): Promise<GroupingElement> {
+  async getById(
+    id: string,
+    roles: Array<string>,
+    tenantFromRequest: string,
+  ): Promise<GroupingElement> {
     const groupingElementById = await this.groupingElementRepo.getById(id);
-    const userIsAuthorizedToViewElement = await this.checkDashboardRoles(
-      groupingElementById,
+    const dashboardsFromDb = await this.getDashboardsForGroupingElements(
+      [groupingElementById],
+      tenantFromRequest,
       roles,
+    );
+    const userIsAuthorizedToViewElement = this.checkDashboardRoles(
+      groupingElementById,
+      dashboardsFromDb,
     );
 
     if (userIsAuthorizedToViewElement) {
@@ -140,6 +132,30 @@ export class GroupingElementService {
   async create(row: NewGroupingElement): Promise<GroupingElement> {
     await this.validateTenantAbbreviation(row);
 
+    if (row.url) {
+      const newUrlLower = row.url.toLowerCase();
+
+      // Fetch Grouping Elements for the tenant to ensure URL uniqueness
+      const existingGroupingElements =
+        await this.groupingElementRepo.getByTenantAbbreviation(
+          row.tenantAbbreviation,
+        );
+
+      const groupingElementWithNewUrl = existingGroupingElements.find(
+        (element) => element.url.toLowerCase() === newUrlLower,
+      );
+
+      if (groupingElementWithNewUrl) {
+        this.logger.warn(
+          `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
+        );
+        throw new HttpException(
+          `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+    }
+
     return this.groupingElementRepo.create(row);
   }
 
@@ -149,10 +165,38 @@ export class GroupingElementService {
     roles: string[],
     transaction?: DbType,
   ): Promise<GroupingElement> {
-    await this.validateTenantAbbreviation(values);
+    const existingGroupingElement = await this.groupingElementRepo.getById(id);
+
+    if (!existingGroupingElement) {
+      throw new NotFoundException("Grouping Element wasn't found");
+    }
+
+    if (values.url) {
+      const newUrlLower = values.url.toLowerCase();
+
+      const existingGroupingElements =
+        await this.groupingElementRepo.getByTenantAbbreviation(
+          values.tenantAbbreviation,
+        );
+
+      const groupingElementWithNewUrl = existingGroupingElements.find(
+        (element) =>
+          element.id !== id && element.url.toLowerCase() === newUrlLower,
+      );
+
+      if (groupingElementWithNewUrl) {
+        this.logger.warn(
+          `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+        );
+        throw new HttpException(
+          `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+          HttpStatus.CONFLICT,
+        );
+      }
+    }
     await this.manageUpdateDependencies(id, values, roles);
 
-    return this.groupingElementRepo.update(id, values, transaction);
+    return await this.groupingElementRepo.update(id, values, transaction);
   }
 
   async delete(id: string): Promise<GroupingElement> {
@@ -177,7 +221,7 @@ export class GroupingElementService {
     groupingElement: NewGroupingElement | Partial<GroupingElement>,
   ): Promise<void> {
     if (groupingElement.tenantAbbreviation) {
-      const tenantExists = await this.tenantService.existsByAbbreviation(
+      const tenantExists = await this.tenantRepo.existsByAbbreviation(
         groupingElement.tenantAbbreviation,
       );
 
@@ -218,6 +262,42 @@ export class GroupingElementService {
     }
   }
 
+  private async buildResponse(
+    groupingElementsFromDb: GroupingElement[],
+    dashboardsFromDb: Dashboard[],
+    roles: Array<string>,
+  ): Promise<GroupingElementWithChildren[]> {
+    const result: GroupingElementWithChildren[] = [];
+
+    for (const element of groupingElementsFromDb) {
+      const userIsAuthorizedToViewGroupingElement = this.checkDashboardRoles(
+        element,
+        dashboardsFromDb,
+      );
+
+      if (
+        element.parentGroupingElementId == null &&
+        userIsAuthorizedToViewGroupingElement
+      ) {
+        const groupingElement: GroupingElementWithChildren = {
+          ...element,
+          children: [],
+        };
+
+        groupingElement.children = await this.buildHierarchy(
+          element,
+          groupingElementsFromDb,
+          roles,
+          dashboardsFromDb,
+        );
+
+        result.push(groupingElement);
+      }
+    }
+
+    return result;
+  }
+
   private isGroupingElementConvertingToDashboardPage(
     oldGroupingElement: GroupingElement,
     values: Partial<GroupingElement>,
@@ -230,7 +310,7 @@ export class GroupingElementService {
     values: Partial<GroupingElement>,
     roles: string[],
   ): Promise<void> {
-    const oldGroupingElement = await this.getById(id, roles);
+    const oldGroupingElement = await this.groupingElementRepo.getById(id);
 
     if (
       this.isGroupingElementConvertingToDashboardPage(
@@ -248,29 +328,36 @@ export class GroupingElementService {
     return this.groupingElementRepo.getChildrenForGroupingElementById(parentId);
   }
 
-  private async checkDashboardRoles(
+  private checkDashboardRoles(
     element: GroupingElement,
-    roles: string[],
-  ): Promise<boolean> {
+    dashboards: Dashboard[],
+  ): boolean {
     if (element.isDashboard) {
-      const dashboard = await this.dashboardRepo.getByUrl(element.url);
-
-      if (!dashboard) return false;
-
-      if (dashboard.visibility !== 'public') {
-        for (const userRole of roles) {
-          const foundMatchingRoles = dashboard.readRoles.some(
-            (dashboardRole) => dashboardRole === userRole,
-          );
-          if (foundMatchingRoles) return true;
-        }
-
-        return false;
-      }
-
-      return true;
+      return dashboards.some((dashboard) => dashboard.url === element.url);
     }
 
     return true;
+  }
+
+  private async getDashboardsForGroupingElements(
+    groupingElementsFromDb: GroupingElement[],
+    tenantFromRequest: string,
+    roles: Array<string>,
+  ): Promise<Dashboard[]> {
+    const groupingElementUrls = groupingElementsFromDb.map(
+      (groupingElement) => groupingElement.url,
+    );
+    let tenantId: string;
+
+    if (tenantFromRequest) {
+      const tenantByAbbreviation =
+        await this.tenantRepo.getTenantByAbbreviation(tenantFromRequest);
+
+      if (tenantByAbbreviation) {
+        tenantId = tenantByAbbreviation.id;
+      }
+    }
+
+    return this.dashboardRepo.getByUrls(groupingElementUrls, roles, tenantId);
   }
 }

@@ -13,18 +13,16 @@ import {
 } from '@app/postgres-db/schemas/corporate-info-sidebar-logos.schema';
 import { eq } from 'drizzle-orm';
 
-export function getCorporateInfo(
-  logoId?: string,
-  tenantId?: string,
-): CorporateInfo {
+export function getCorporateInfo(logoId?: string): CorporateInfo {
   return {
     id: uuid(),
-    tenantId: tenantId ?? 'edag',
+    tenantId: null,
     dashboardFontColor: '#333',
     dashboardPrimaryColor: '#333',
     dashboardSecondaryColor: '#333',
-    fontColor: '#333',
-    headerFontColor: '#333',
+    fontFamily: 'Helvetica',
+    fontColor: '#FFF',
+    headerFontColor: '#FFF',
     headerLogoId: logoId ?? null,
     headerPrimaryColor: '#333',
     headerSecondaryColor: '#333',
@@ -33,7 +31,7 @@ export function getCorporateInfo(
     logo: 'https://example.com/logo.png',
     menuActiveColor: 'menu_active_color',
     menuActiveFontColor: 'menu_active_font_color',
-    menuFontColor: '#333',
+    menuFontColor: '#FFF',
     menuHoverColor: '#333',
     menuLogoId: logoId ?? null,
     menuPrimaryColor: '#333',
@@ -43,7 +41,7 @@ export function getCorporateInfo(
     panelBorderColor: '#333',
     panelBorderRadius: 'panel_border_radius',
     panelBorderSize: 'panel_border_size',
-    panelFontColor: '#333',
+    panelFontColor: '#FFF',
     panelPrimaryColor: '#333',
     panelSecondaryColor: '#333',
     scrollbarBackground: '#333',
@@ -54,11 +52,11 @@ export function getCorporateInfo(
     cancelHoverButtonColor: '#333',
     showHeaderLogo: true,
     showMenuLogo: true,
-    titleBar: 'Company Name',
+    titleBar: 'Light',
     widgetBorderColor: '#333',
     widgetBorderRadius: 'widget_border_radius',
     widgetBorderSize: 'widget_border_size',
-    widgetFontColor: '#333',
+    widgetFontColor: '#FFF',
     widgetPrimaryColor: '#333',
     widgetSecondaryColor: '#333',
   };
@@ -79,11 +77,18 @@ export async function createCorporateInfoByObject(
   db: DbType,
   corporateInfo: CorporateInfo,
 ): Promise<CorporateInfo> {
+  let tenant;
+  if (!corporateInfo.tenantId) {
+    tenant = await createTenantByObject(db, getTenant());
+  } else {
+    tenant = corporateInfo.tenantId;
+  }
+
   if (!corporateInfo.menuLogoId && !corporateInfo.headerLogoId) {
-    await createTenantByObject(db, getTenant());
     const logo = await createLogoByObject(db, getLogo());
     corporateInfo.menuLogoId = logo.id;
     corporateInfo.headerLogoId = logo.id;
+    corporateInfo.tenantId = tenant.abbreviation;
   }
 
   const createdCorporateInfos = await db
@@ -116,4 +121,14 @@ export async function getCorporateInfoSidebarLogoRelationsByCorporateInfoId(
     .select()
     .from(corporateInfoSidebarLogos)
     .where(eq(corporateInfoSidebarLogos.corporateInfoId, corporateInfoId));
+}
+
+export async function getCorporateInfosByTenantAbbreviation(
+  db: DbType,
+  tenantAbbreviation: string,
+): Promise<CorporateInfo[]> {
+  return db
+    .select()
+    .from(corporateInfos)
+    .where(eq(corporateInfos.tenantId, tenantAbbreviation));
 }

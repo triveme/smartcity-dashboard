@@ -9,6 +9,8 @@ import {
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
   TabWithQuery,
+  TabWithCombinedWidgets,
+  WidgetWithContent,
 } from '@/types';
 import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
 import Radial360Chart from '@/ui/Charts/radial360/Radial360Chart';
@@ -23,10 +25,13 @@ import IconWithLink from '@/ui/IconWithLink';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
+import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
+import DashboardWidget from './DashboardWidget';
 
 type DashboardTabProps = {
   tab: Tab;
   tenant: string | undefined;
+  isCombinedWidget?: boolean;
 };
 const MapWithNoSSR = nextDynamic(() => import('@/components/Map/Map'), {
   ssr: false,
@@ -48,10 +53,13 @@ export default async function DashboardTab(
     color: ciColors.menuFontColor || '#FFF',
   };
 
-  console.log('chartValue', tab.chartValues);
-  console.log('chartLabels', tab.chartLabels);
-  console.log('chartData', tab.chartData);
-  console.log('mapObject', tab.mapObject);
+  function isTabWithCombinedWidget(tab: Tab): tab is TabWithCombinedWidgets {
+    return tab.componentType === tabComponentTypeEnum.combinedComponent;
+  }
+
+  console.log('tab.chartData', tab.chartData);
+  console.log('tab.chartValues', tab.chartValues);
+  console.log('tab.textValue', tab.textValue);
 
   return (
     <div className={`w-full h-full justify-center items-center`}>
@@ -157,6 +165,7 @@ export default async function DashboardTab(
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
             <StageableChart
               unit={tab.chartUnit || ''}
+              tiles={tab.tiles || 5}
               minValue={tab.chartMinimum || 0}
               maxValue={tab.chartMaximum || 100}
               staticValues={tab.chartStaticValues || []}
@@ -190,6 +199,10 @@ export default async function DashboardTab(
                   : 25
               }
             />
+          )}
+
+          {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (
+            <SliderOverview data={tab.chartData || []} />
           )}
         </div>
       )}
@@ -272,6 +285,21 @@ export default async function DashboardTab(
           imageBase64={tab?.imageSrc || ''}
           imageUrl={tab.imageUrl || ''}
         />
+      )}
+      {isTabWithCombinedWidget(tab) && (
+        <>
+          {tab.combinedWidgets?.length > 0 &&
+            tab.combinedWidgets.map(
+              (widget: WidgetWithContent, index: number) => (
+                <DashboardWidget
+                  key={`widget-in-panel-${widget.id}-${index}`}
+                  widget={widget}
+                  tenant={tenant}
+                  isCombinedWidget={true}
+                />
+              ),
+            )}
+        </>
       )}
     </div>
   );

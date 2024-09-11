@@ -2,6 +2,7 @@ import { ReactElement, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type CancelButtonProps = {
   closeWindow?: boolean;
@@ -12,10 +13,11 @@ export default function CancelButton(props: CancelButtonProps): ReactElement {
   const { closeWindow, onClick } = props;
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
+  const tenant = getTenantOfPage();
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 
