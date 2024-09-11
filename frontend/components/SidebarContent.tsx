@@ -57,6 +57,12 @@ export default function SidebarContent(
         )}
       >
         <SidebarItem
+          icon="Building"
+          label="Allgemein"
+          url={`${adminUrl}/general`}
+          componentStyle={sidebarItemStyle}
+        />
+        <SidebarItem
           icon="Gear"
           label="Widgets"
           url={`${adminUrl}/widgets`}
@@ -80,10 +86,17 @@ export default function SidebarContent(
           url={`${adminUrl}/corporateidentity`}
           componentStyle={sidebarItemStyle}
         />
+
         <SidebarItem
           icon="ChartSimple"
           label="Datenanbindung"
           url={`${adminUrl}/dataplatform`}
+          componentStyle={sidebarItemStyle}
+        />
+        <SidebarItem
+          icon="Building"
+          label="Mandantenverwaltung"
+          url={`${adminUrl}/tenantadministration`}
           componentStyle={sidebarItemStyle}
         />
         <SidebarItem

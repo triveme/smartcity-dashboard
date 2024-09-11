@@ -46,7 +46,7 @@ export class CorporateInfoController {
   async getByTenant(
     @Param('tenant') tenant: string,
     @Query('includeLogos') includeLogos?: boolean,
-  ): Promise<CorporateInfo | CorporateInfoWithLogos> {
+  ): Promise<CorporateInfo[] | CorporateInfoWithLogos[]> {
     return this.service.getByTenant(tenant, includeLogos);
   }
 

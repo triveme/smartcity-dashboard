@@ -28,9 +28,9 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       errorsOccured.push('Aktualisierungsintervall ist erforderlich');
     }
 
-    if (!queryConfig?.fiwareService) {
-      errorsOccured.push('Fiware-Dienst-/Sammlungsfeld ist erforderlich');
-    }
+    // if (!queryConfig?.fiwareService) {
+    //   errorsOccured.push('Fiware-Dienst-/Sammlungsfeld ist erforderlich');
+    // }
     if (!queryConfig?.fiwareType) {
       errorsOccured.push('Fiware-Typ ist erforderlich');
     }
@@ -40,6 +40,7 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
     if (
       queryConfig.componentType !== 'Karte' &&
       queryConfig.componentType !== 'Wert' &&
+      queryConfig.componentType !== 'Slider' &&
       queryConfig.componentSubType !== '180° Chart' &&
       queryConfig.componentSubType !== '360° Chart' &&
       queryConfig.componentSubType !== 'Stageable Chart' &&

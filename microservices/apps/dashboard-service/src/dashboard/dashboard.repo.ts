@@ -104,13 +104,50 @@ export class DashboardRepo {
     return dbDashboards.length > 0 ? dbDashboards[0] : null;
   }
 
-  async getByUrl(url: string): Promise<Dashboard> {
+  async getByUrl(url: string): Promise<Dashboard[]> {
     const dbDashboards = await this.db
       .select()
       .from(dashboards)
       .where(and(eq(dashboards.url, url)));
 
-    return dbDashboards.length > 0 ? dbDashboards[0] : null;
+    return dbDashboards;
+  }
+
+  async getByUrls(
+    urls: string[],
+    rolesFromRequest: string[],
+    tenantFromRequestId?: string,
+  ): Promise<Dashboard[]> {
+    if (urls.length === 0) return [];
+    const dashboardIdsOfTenant = this.db
+      .select({
+        dashboardId: dashboardsToTenants.dashboardId,
+      })
+      .from(dashboardsToTenants)
+      .where(eq(dashboardsToTenants.tenantId, tenantFromRequestId));
+
+    return this.db
+      .select()
+      .from(dashboards)
+      .where(
+        and(
+          inArray(dashboards.url, urls),
+          or(
+            eq(dashboards.visibility, 'public'),
+            and(
+              or(
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+                  : undefined,
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+                  : undefined,
+              ),
+              inArray(dashboards.id, dashboardIdsOfTenant),
+            ),
+          ),
+        ),
+      );
   }
 
   async getDashboardsWithContentByAbbreviation(

@@ -6,7 +6,9 @@ export const logos = pgTable('logo', {
   id: uuid('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  tenantId: text('tenant_id').references(() => tenants.abbreviation),
+  tenantId: text('tenant_id').references(() => tenants.abbreviation, {
+    onUpdate: 'cascade',
+  }),
   logo: text('logo'),
   logoHeight: smallint('logo_height'),
   logoWidth: smallint('logo_width'),

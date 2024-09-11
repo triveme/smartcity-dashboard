@@ -7,10 +7,10 @@ import {
 } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
 import { eq } from 'drizzle-orm';
 
-export function getTenant(): Tenant {
+export function getTenant(tenantAbbreviation?: string): Tenant {
   return {
     id: uuid(),
-    abbreviation: 'edag',
+    abbreviation: tenantAbbreviation ?? 'edag',
   };
 }
 

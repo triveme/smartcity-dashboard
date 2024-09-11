@@ -23,6 +23,8 @@ import { WidgetToTenantModule } from './widget-to-tenant/widget-to-tenant.module
 import { LogoModule } from './logo/logo.module';
 import { AuthHelperUtility } from '@app/auth-helper';
 import { CorporateInfoSidebarLogosModule } from './corporate-info-sidebar-logos/corporate-info-sidebar-logos.module';
+import { LoggerModule } from './logging/logger.module';
+import { GeneralSettingsModule } from './general-settings/general-settings.module';
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { CorporateInfoSidebarLogosModule } from './corporate-info-sidebar-logos/
     DashboardToTenantModule,
     WidgetToTenantModule,
     LogoModule,
+    LoggerModule,
+    GeneralSettingsModule,
   ],
   providers: [
     AuthDataService,

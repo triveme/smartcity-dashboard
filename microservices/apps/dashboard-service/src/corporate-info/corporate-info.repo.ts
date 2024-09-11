@@ -16,6 +16,8 @@ import {
 } from '@app/postgres-db/schemas/corporate-info-sidebar-logos.schema';
 import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
+import { Tenant } from '@app/postgres-db/schemas/tenant.schema';
+import { TenantRepo } from '../tenant/tenant.repo';
 
 export interface CorporateInfoWithLogos extends CorporateInfo {
   headerLogo: Logo;
@@ -31,6 +33,7 @@ export class CorporateInfoRepo {
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly corporateInfoSideBarLogoRepo: CorporateInfoSidebarLogosRepo,
     private readonly logoRepo: LogoRepo,
+    private readonly tenantRepo: TenantRepo,
   ) {}
 
   async getAllWithLogos(): Promise<CorporateInfoWithLogos[]> {
@@ -45,6 +48,7 @@ export class CorporateInfoRepo {
         dashboardFontColor: corporateInfos.dashboardFontColor,
         dashboardPrimaryColor: corporateInfos.dashboardPrimaryColor,
         dashboardSecondaryColor: corporateInfos.dashboardSecondaryColor,
+        fontFamily: corporateInfos.fontFamily,
         fontColor: corporateInfos.fontColor,
         headerFontColor: corporateInfos.headerFontColor,
         headerLogo: tenantHeaderLogo,
@@ -119,34 +123,46 @@ export class CorporateInfoRepo {
   }
 
   async getByTenant(
-    tenantId: string,
+    tenantAbbreviation: string,
     withLogos: boolean,
-  ): Promise<CorporateInfo | CorporateInfoWithLogos> {
+  ): Promise<CorporateInfo[] | CorporateInfoWithLogos[]> {
+    const tenant: Tenant =
+      await this.tenantRepo.getTenantByAbbreviation(tenantAbbreviation);
+
     const result = await this.db
       .select()
       .from(corporateInfos)
-      .where(eq(corporateInfos.tenantId, tenantId));
+      .where(eq(corporateInfos.tenantId, tenant.abbreviation));
 
-    if (result.length <= 0) {
-      return null;
-    }
+    const corporateInfoArray = await Promise.all(
+      result.map(async (corporateInfo) => {
+        try {
+          return await this.buildCorporateInfoArray(corporateInfo, withLogos);
+        } catch (error) {
+          console.error('Error in buildCorporateInfoArray:', error);
+          throw error;
+        }
+      }),
+    );
 
+    corporateInfoArray.sort((a, b) => {
+      if ('titleBar' in a && 'titleBar' in b) {
+        return a.titleBar === 'Light' ? -1 : 1;
+      }
+      return 0;
+    });
+
+    return corporateInfoArray;
+  }
+
+  private async buildCorporateInfoArray(
+    corporateInfo: CorporateInfo,
+    withLogos: boolean,
+  ): Promise<CorporateInfo | CorporateInfoWithLogos> {
     const sidebarLogosRelations: CorporateInfoSidebarLogo[] =
       await this.corporateInfoSideBarLogoRepo.getByCorporateInfoId(
-        result[0].id,
+        corporateInfo.id,
       );
-
-    let sidebarLogos: SidebarLogo[];
-
-    function mergeOrderWithLogos(
-      logos: Logo[],
-      relations: CorporateInfoSidebarLogo[],
-    ): SidebarLogo[] {
-      return logos.map((logo) => {
-        const relation = relations.find((r) => r.logoId === logo.id);
-        return { ...logo, order: relation?.order ?? 0 };
-      });
-    }
 
     const sidebarLogoIds = sidebarLogosRelations.map(
       (relation) => relation.logoId,
@@ -154,56 +170,86 @@ export class CorporateInfoRepo {
     const fetchedLogos = await this.logoRepo.getByMultipleIds(sidebarLogoIds);
 
     if (withLogos) {
-      try {
-        const headerLogo = await this.logoRepo.getById(result[0].headerLogoId);
-        const menuLogo = await this.logoRepo.getById(result[0].menuLogoId);
+      return this.buildWithLogos(
+        corporateInfo,
+        fetchedLogos,
+        sidebarLogosRelations,
+      );
+    }
 
-        sidebarLogos = mergeOrderWithLogos(fetchedLogos, sidebarLogosRelations);
+    const sidebarLogos: SidebarLogo[] = this.mergeOrderWithLogos(
+      fetchedLogos,
+      sidebarLogosRelations,
+    );
 
-        if (menuLogo) {
-          return {
-            ...result[0],
-            headerLogo: headerLogo || null,
-            menuLogo: menuLogo || null,
-            sidebarLogos,
-          };
-        }
+    return {
+      ...corporateInfo,
+      sidebarLogos,
+    };
+  }
 
-        if (headerLogo) {
-          return {
-            ...result[0],
-            headerLogo: headerLogo || null,
-            menuLogo: null,
-            sidebarLogos,
-          };
-        }
+  private async buildWithLogos(
+    corporateInfo: CorporateInfo,
+    fetchedLogos: Logo[],
+    sidebarLogosRelations: CorporateInfoSidebarLogo[],
+  ): Promise<CorporateInfoWithLogos> {
+    try {
+      const headerLogo = await this.logoRepo.getById(
+        corporateInfo.headerLogoId,
+      );
+      const menuLogo = await this.logoRepo.getById(corporateInfo.menuLogoId);
 
-        if (sidebarLogos.length === 0) {
-          return {
-            ...result[0],
-            headerLogo: null,
-            menuLogo: null,
-            sidebarLogos,
-          };
-        }
+      const sidebarLogos: SidebarLogo[] = this.mergeOrderWithLogos(
+        fetchedLogos,
+        sidebarLogosRelations,
+      );
 
+      if (menuLogo) {
         return {
-          ...result[0],
+          ...corporateInfo,
           headerLogo: headerLogo || null,
           menuLogo: menuLogo || null,
           sidebarLogos,
         };
-      } catch (error) {
-        throw error;
       }
+
+      if (headerLogo) {
+        return {
+          ...corporateInfo,
+          headerLogo: headerLogo || null,
+          menuLogo: null,
+          sidebarLogos,
+        };
+      }
+
+      if (sidebarLogos.length === 0) {
+        return {
+          ...corporateInfo,
+          headerLogo: null,
+          menuLogo: null,
+          sidebarLogos,
+        };
+      }
+
+      return {
+        ...corporateInfo,
+        headerLogo: headerLogo || null,
+        menuLogo: menuLogo || null,
+        sidebarLogos,
+      };
+    } catch (error) {
+      throw error;
     }
+  }
 
-    sidebarLogos = mergeOrderWithLogos(fetchedLogos, sidebarLogosRelations);
-
-    return {
-      ...result[0],
-      sidebarLogos,
-    };
+  private mergeOrderWithLogos(
+    logos: Logo[],
+    relations: CorporateInfoSidebarLogo[],
+  ): SidebarLogo[] {
+    return logos.map((logo) => {
+      const relation = relations.find((r) => r.logoId === logo.id);
+      return { ...logo, order: relation?.order ?? 0 };
+    });
   }
 
   async create(
@@ -243,5 +289,17 @@ export class CorporateInfoRepo {
       .returning();
 
     return result.length > 0 ? result[0] : null;
+  }
+
+  async deleteByTenant(
+    tenantAbbreviation: string,
+    transaction?: DbType,
+  ): Promise<CorporateInfo[]> {
+    const dbActor = transaction === undefined ? this.db : transaction;
+
+    return dbActor
+      .delete(corporateInfos)
+      .where(eq(corporateInfos.tenantId, tenantAbbreviation))
+      .returning();
   }
 }

@@ -9,7 +9,11 @@ import { QueryConfigService } from '../../query-config/query-config.service';
 import { DataSourceService } from '../../data-source/data-source.service';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
-import { FiwareAttribute, FiwareAttributeData } from './fiware.types';
+import {
+  FiwareAttribute,
+  FiwareAttributeData,
+  FiwareAttributeEntity,
+} from './fiware.types';
 import { PopulateMapService } from './populate-map.service';
 
 @Injectable()
@@ -40,6 +44,14 @@ export class PopulateChartService {
       tab.chartData = [];
       tab.chartLabels = [];
 
+      if (
+        query &&
+        query.queryData &&
+        tab.componentSubType === 'Slider Übersicht'
+      ) {
+        this.populateSliderOverview(query, tab);
+        return;
+      }
       for (const attribute of queryConfig.attributes) {
         if (query && query.queryData && tab.componentType !== 'Karte') {
           if (Array.isArray(query.queryData)) {
@@ -75,6 +87,34 @@ export class PopulateChartService {
     } else {
       if (query && query.queryData && tab.componentType === 'Karte') {
         this.populateMapService.populateTabWithMapObjectFromObject(tab, query);
+      }
+    }
+  }
+
+  private populateSliderOverview(
+    query: Query,
+    tab: Tab & { chartData: ChartData[] },
+  ): void {
+    if (Array.isArray(query.queryData)) {
+      for (let i = 0; i < query.queryData.length; i++) {
+        const queryDataElement = query.queryData[i];
+
+        const chartData: ChartData = {
+          name: queryDataElement.id,
+          values: [],
+        };
+
+        const currentValue =
+          queryDataElement[tab.sliderCurrentAttribute]?.value;
+        const maximumValue =
+          queryDataElement[tab.sliderMaximumAttribute]?.value;
+
+        if (currentValue !== undefined && maximumValue !== undefined) {
+          chartData.values.push([tab.sliderCurrentAttribute, currentValue]);
+          chartData.values.push([tab.sliderMaximumAttribute, maximumValue]);
+        }
+
+        tab.chartData.push(chartData);
       }
     }
   }
@@ -145,10 +185,6 @@ export class PopulateChartService {
         color: null,
       };
 
-      if (!chartDataMap.has(key)) {
-        chartDataMap.set(key, { values: [], timestamps: [] });
-      }
-
       value.sort((a, b) => {
         if (a['timestamp'] == null && b['timestamp'] == null) {
           return 0;
@@ -163,28 +199,13 @@ export class PopulateChartService {
           );
         }
       });
+
       value.forEach((queryDataItem) => {
         const attributeValue = queryDataItem[attribute] as FiwareAttributeData;
         const timestamp = queryDataItem['timestamp'];
 
-        if (timestamp) {
-          chartDataMap
-            .get(key)
-            .timestamps.push(this.formatDateLabel(timestamp, queryConfig));
-        }
-
-        if (datasource.origin === 'ngsi') {
-          if (attributeValue && attributeValue.type == 'Number') {
-            chartDataMap.get(key).values.push(+attributeValue.value);
-          } else if (attributeValue) {
-            tab.textValue = attributeValue.value;
-          }
-        } else {
-          chartDataMap.get(key).values.push(+attributeValue);
-        }
+        chartDataItem.values.push([timestamp, +attributeValue]);
       });
-
-      chartDataItem.values = chartDataMap.get(key).values;
       tab.chartData.push(chartDataItem);
     });
 
@@ -204,18 +225,11 @@ export class PopulateChartService {
   ): void {
     if (queryConfig.entityIds.length === 1) {
       this.populateHistoricTabWithSingleEntityId(tab, queryDataMap, attribute);
-
-      const timestamps: string[] = queryDataMap.get('index');
-
-      tab.chartLabels = timestamps.map((timestamp) =>
-        this.formatDateLabel(timestamp, queryConfig),
-      );
     } else {
       this.populateHistoricTabWithMultipleEntityIds(
         tab,
         queryDataMap,
         attribute,
-        queryConfig,
       );
     }
   }
@@ -229,10 +243,11 @@ export class PopulateChartService {
     attribute: string,
   ): void {
     const attributes = queryDataMap.get('attributes');
+    const timestamps: string[] = queryDataMap.get('index');
     const attributeObject = attributes.filter(
       (attributeListObject) => attributeListObject.attrName === attribute,
     )[0];
-
+    attributeObject.index = timestamps;
     if (attributeObject && attributeObject.values) {
       this.pushValuesToChartData(attributeObject, tab.id, tab);
     }
@@ -245,7 +260,6 @@ export class PopulateChartService {
     },
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
-    queryConfig: QueryConfig,
   ): void {
     let attributes: FiwareAttribute[] = queryDataMap.get('attrs');
     attributes = attributes.filter(
@@ -269,12 +283,6 @@ export class PopulateChartService {
             `${entity.entityId} | ${attribute}`,
             tab,
           );
-
-          if (entityIndex === entities.length - 1) {
-            tab.chartLabels = entity.index.map((timestamp) =>
-              this.formatDateLabel(timestamp, queryConfig),
-            );
-          }
         }
       }
     }
@@ -296,30 +304,11 @@ export class PopulateChartService {
         }
       }
     }
-
     return sensorDataMap;
   }
 
-  private formatDateLabel(timestamp: string, queryConfig: QueryConfig): string {
-    const date = new Date(timestamp);
-    if (queryConfig.timeframe === 'day') {
-      // Format label for every hour
-      return date.toLocaleTimeString('de-DE', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } else {
-      // Format label for the date
-      return date.toLocaleDateString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-    }
-  }
-
   private pushValuesToChartData(
-    attributeObject,
+    attributeObject: FiwareAttributeEntity,
     chartDataName: string,
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
@@ -329,10 +318,16 @@ export class PopulateChartService {
     const numberValues = attributeObject.values.map((value) =>
       isNaN(value) ? 0.0 : Number(value),
     );
+    const timeValues = attributeObject.index.map((timevalue) => timevalue);
+
+    const resultArray: [string, number][] = [];
+    for (let i = 0; i < timeValues.length; i++) {
+      resultArray.push([timeValues[i], numberValues[i]]);
+    }
 
     tab.chartData.push({
       name: chartDataName,
-      values: numberValues,
+      values: resultArray,
       color: null,
     });
   }

@@ -12,7 +12,6 @@ import WizardLabel from '@/ui/WizardLabel';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import HorizontalDivider from '@/ui/HorizontalDivider';
 import DashboardWidgetPreview from '../Previews/DashboardWidgetPreview';
-import ValueSelectionSlider from '@/ui/ValueSelectionSlider';
 import IconSelection from '@/ui/Icons/IconSelection';
 import RoleSelection from '@/components/RoleSelecton';
 import {
@@ -45,21 +44,24 @@ import {
 import { WizardErrors } from '@/types/errors';
 import { validateWidgetWithChildren } from '@/validators/widgetValidator';
 import CollapseButton from '@/ui/Buttons/CollapseButton';
-import { visibilityOptions } from '@/utils/enumMapper';
+import { visibilityOptions, widthTypes } from '@/utils/enumMapper';
 import {
   getReportConfigByQueryId,
   postReportConfig,
   updateReportConfig,
 } from '@/api/report-service';
+import CheckBox from '@/ui/CheckBox';
+import ColorPickerComponent from '@/ui/ColorPickerComponent';
 
 type WidgetWizardProps = {
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
+  hoverColor: string;
 };
 
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
-  const { iconColor, borderColor, backgroundColor } = props;
+  const { iconColor, borderColor, backgroundColor, hoverColor } = props;
   const paramsSearch = useSearchParams();
   const itemId = paramsSearch.get('id');
   const params = useParams();
@@ -73,6 +75,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
 
   // WIDGET
   const [widget, setWidget] = useState<Widget>(EMPTY_WIDGET);
+  const [datasourceOrigin, setDatasourceOrigin] = useState('');
   const [generalFormIsOpen, setGeneralFormIsOpen] = useState(
     !itemId ? true : false,
   );
@@ -165,7 +168,8 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       tab?.componentType === tabComponentTypeEnum.default ||
       tab?.componentType === tabComponentTypeEnum.information ||
       tab?.componentType === tabComponentTypeEnum.image ||
-      tab?.componentType === tabComponentTypeEnum.iframe
+      tab?.componentType === tabComponentTypeEnum.iframe ||
+      tab?.componentType === tabComponentTypeEnum.combinedComponent
     ) {
       setWidgetHasQueryConfig(false);
     } else {
@@ -190,7 +194,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       // Default settings for map
       if (tab.componentType === tabComponentTypeEnum.map) {
         queryConfig.aggrMode = aggregationEnum.none;
-        queryConfig.timeframe = timeframeEnum.day;
+        queryConfig.timeframe = timeframeEnum.live;
       }
       // Default settings for measurement component
       if (
@@ -222,8 +226,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     };
 
     const textfieldErrorMessages: string[] = [];
-    const errorsOccured: WizardErrors =
-      validateWidgetWithChildren(tWidgetWithChildren);
+    const errorsOccured: WizardErrors = validateWidgetWithChildren(
+      tWidgetWithChildren,
+      datasourceOrigin,
+    );
 
     if (Object.keys(errorsOccured).length) {
       for (const key in errorsOccured) {
@@ -265,7 +271,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       const queryId = savedWidgetWithChildren.tab.queryId;
 
       // Update the reportConfig with the queryId
-      if (queryConfig.isReporting && queryId) {
+      if (queryConfig?.isReporting && queryId) {
         if (!reportConfig.id) {
           reportConfig.queryId = queryId;
           await postReportConfig(auth?.user?.access_token, reportConfig);
@@ -306,11 +312,22 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     setWidget((prevWidget) => ({ ...prevWidget, ...update }));
   };
 
+  const handleCheckboxChange = (
+    attributeName: keyof Widget,
+    isSelected: boolean,
+  ): void => {
+    handleWidgetChange({ [attributeName]: isSelected });
+  };
+
   function getWidgetType(tab: Tab): string {
-    return tab?.componentType === tabComponentTypeEnum.diagram
-      ? tab?.componentSubType || ''
-      : tab?.componentType || '';
+    if (tab.componentSubType) {
+      return tab.componentSubType;
+    } else if (tab.componentType) {
+      return tab.componentType;
+    }
+    return '';
   }
+
   return (
     <>
       <div className="flex justify-start items-start content-center grow py-4">
@@ -330,37 +347,73 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
               <>
                 <div className="flex flex-col w-full pb-2">
                   <WizardLabel label="Name" />
-                  <WizardTextfield
-                    value={widget.name}
-                    onChange={(value: string | number): void =>
-                      handleWidgetChange({ name: value as string })
-                    }
-                    error={errors && errors.nameError}
-                    borderColor={borderColor}
-                    backgroundColor={backgroundColor}
-                  />
+                  <div className="flex flex-row items-center gap-4">
+                    <div className="flex grow">
+                      <WizardTextfield
+                        value={widget.name}
+                        onChange={(value: string | number): void =>
+                          handleWidgetChange({ name: value as string })
+                        }
+                        error={errors && errors.nameError}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <ColorPickerComponent
+                      currentColor={widget.headlineColor || '#FFFFFF'}
+                      handleColorChange={function (color: string): void {
+                        handleWidgetChange({ headlineColor: color });
+                      }}
+                      label={'Schriftfarbe des Widgetnamens'}
+                    />
+                  </div>
+                  <div className="py-2 ml-2">
+                    <CheckBox
+                      label="Widget-Name anzeigen"
+                      value={widget?.showName ?? true}
+                      handleSelectChange={(isSelected): void =>
+                        handleCheckboxChange('showName', isSelected)
+                      }
+                    />
+                  </div>
                 </div>
                 <div className="flex flex-col w-full pb-2">
                   <WizardLabel label="Höhe / Breite" />
-                  <div className="flex">
-                    <WizardTextfield
-                      value={widget.height}
-                      onChange={(value): void => {
-                        handleWidgetChange({ height: value as number });
-                      }}
-                      error={errors && errors.widgetHeightError}
-                      borderColor={borderColor}
-                      backgroundColor={backgroundColor}
-                    />
-                    <ValueSelectionSlider
-                      value={widget.width}
-                      minValue={4}
-                      maxValue={12}
-                      onChange={(value: number | string): void =>
-                        handleWidgetChange({ width: value as number })
-                      }
-                      borderColor={borderColor}
-                    />
+                  <div className="flex gap-1">
+                    <div style={{ flex: '0 1 auto' }}>
+                      <WizardTextfield
+                        value={widget.height}
+                        onChange={(value): void => {
+                          handleWidgetChange({ height: value as number });
+                        }}
+                        error={errors && errors.widgetHeightError}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 0' }}>
+                      <WizardDropdownSelection
+                        currentValue={
+                          widthTypes.find(
+                            (option) => option.value === widget.width,
+                          )?.label || ''
+                        }
+                        selectableValues={widthTypes.map(
+                          (option) => option.label,
+                        )}
+                        onSelect={(value: number | string): void => {
+                          const selectedOption = widthTypes.find(
+                            (option) => option.label === value,
+                          );
+                          if (selectedOption) {
+                            handleWidgetChange({ width: selectedOption.value });
+                          }
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
@@ -433,6 +486,24 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                         borderColor={borderColor}
                       />
                     </div>
+                    <div className="py-2 ml-2">
+                      <CheckBox
+                        label="Teilen des Widgets zulassen"
+                        value={widget?.allowShare ?? false}
+                        handleSelectChange={(isSelected): void =>
+                          handleCheckboxChange('allowShare', isSelected)
+                        }
+                      />
+                    </div>
+                    <div className="py-2 ml-2">
+                      <CheckBox
+                        label="Datenexport zulassen"
+                        value={widget?.allowDataExport ?? false}
+                        handleSelectChange={(isSelected): void =>
+                          handleCheckboxChange('allowDataExport', isSelected)
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
               </>
@@ -445,6 +516,9 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
               iconColor={iconColor}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+              hoverColor={hoverColor}
+              queryConfig={queryConfig}
+              tenant={tenant}
             />
             {widgetHasQueryConfig && (
               <>
@@ -460,6 +534,8 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                   iconColor={iconColor}
                   borderColor={borderColor}
                   backgroundColor={backgroundColor}
+                  hoverColor={hoverColor}
+                  setOrigin={setDatasourceOrigin}
                 />
               </>
             )}

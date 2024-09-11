@@ -41,6 +41,7 @@ export default function SnackBar(props: SnackBarProps): ReactElement {
       style={{
         bottom: `${bottomPosition}px`,
         transform: 'translate(-50%)',
+        zIndex: 100,
       }}
     >
       {message}

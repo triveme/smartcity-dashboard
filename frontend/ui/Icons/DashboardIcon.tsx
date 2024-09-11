@@ -57,6 +57,7 @@ import {
   faFan,
   faBatteryHalf,
   faRotateLeft,
+  faRotateRight,
   faCircle,
   faArrowTrendDown,
   faCloudArrowUp,
@@ -65,9 +66,11 @@ import {
   faFloppyDisk,
   faImage,
   faEnvelope,
+  faDownload,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const AvailableIcons = [
+  '',
   'Logout',
   'ChevronDown',
   'ChevronLeft',
@@ -119,6 +122,7 @@ export const AvailableIcons = [
   'CloudArrowUp',
   'Image',
   'Envelope',
+  'Download',
 ];
 
 type DashboardIconsProps = {
@@ -133,6 +137,17 @@ export default function DashboardIcons(
   const { iconName, color, className, size } = props;
 
   switch (iconName) {
+    case '':
+    default:
+      return (
+        <FontAwesomeIcon
+          icon={faChevronLeft}
+          color={'#FFF'}
+          size={size}
+          className={className}
+          style={{ opacity: 0 }}
+        />
+      );
     case 'Logout':
       return (
         <FontAwesomeIcon
@@ -291,6 +306,8 @@ export default function DashboardIcons(
       return <FontAwesomeIcon icon={faBatteryHalf} color={color} size={size} />;
     case 'Revert':
       return <FontAwesomeIcon icon={faRotateLeft} color={color} size={size} />;
+    case 'Update':
+      return <FontAwesomeIcon icon={faRotateRight} color={color} size={size} />;
     case 'Circle':
       return <FontAwesomeIcon icon={faCircle} color={color} size={size} />;
     case 'Envelope':
@@ -317,7 +334,7 @@ export default function DashboardIcons(
       return <FontAwesomeIcon icon={faFont} color={color} size={size} />;
     case 'SaveIcon':
       return <FontAwesomeIcon icon={faFloppyDisk} color={color} size={size} />;
-    default:
-      return <FontAwesomeIcon icon={faChevronLeft} color={color || 'white'} />;
+    case 'Download':
+      return <FontAwesomeIcon icon={faDownload} color={color} size={size} />;
   }
 }

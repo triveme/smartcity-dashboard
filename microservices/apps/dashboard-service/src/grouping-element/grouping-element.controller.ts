@@ -28,7 +28,8 @@ export class GroupingElementController {
     @Req() request: AuthenticatedRequest,
   ): Promise<GroupingElementWithChildren[]> {
     const roles = request.roles ?? [];
-    return this.service.getAll(roles);
+    const tenant = request.tenant ?? undefined;
+    return this.service.getAll(roles, tenant);
   }
 
   @Public()
@@ -38,7 +39,8 @@ export class GroupingElementController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<GroupingElement> {
     const roles = request.roles ?? [];
-    return this.service.getById(id, roles);
+    const tenant = request.tenant ?? undefined;
+    return this.service.getById(id, roles, tenant);
   }
 
   @Public()
@@ -46,9 +48,10 @@ export class GroupingElementController {
   async getByTenantAbbreviation(
     @Param('abbreviation') abbreviation: string,
     @Req() request: AuthenticatedRequest,
-  ): Promise<GroupingElement> {
+  ): Promise<GroupingElementWithChildren[]> {
     const roles = request.roles ?? [];
-    return this.service.getByTenantAbbreviation(abbreviation, roles);
+    const tenant = request.tenant ?? undefined;
+    return this.service.getByTenantAbbreviation(abbreviation, roles, tenant);
   }
 
   @Public()

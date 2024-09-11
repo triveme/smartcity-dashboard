@@ -8,17 +8,19 @@ import {
 } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
 
 export function getDashboard(url?: string): Dashboard {
-  url = url ? url : 'http://localhost:1234/dashboard';
+  url = url ? url : 'testUrl';
 
   return {
     id: '',
     name: 'Sample Dashboard',
-    url: url,
+    headlineColor: '#FFFFFF',
     icon: null,
-    type: 'example',
     readRoles: ['scs-admin'],
-    writeRoles: ['scs-admin'],
+    type: 'example',
+    url: url,
     visibility: 'public',
+    allowDataExport: false,
+    writeRoles: ['scs-admin'],
   };
 }
 

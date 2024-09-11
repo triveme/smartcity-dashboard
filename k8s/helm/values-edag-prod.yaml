@@ -9,12 +9,13 @@ keycloak:
           - mit-smartcity-suite-keycloak.container.edag
         secretName: keycloak-tls-secret ## auto-generated unique tls
     annotations:
-          nginx.ingress.kubernetes.io/affinity: "cookie"  # Enable session affinity, all replicas will route through the ingress
-          nginx.ingress.kubernetes.io/session-cookie-name: "keycloak"  # Set session cookie name
+      nginx.ingress.kubernetes.io/affinity: "cookie"  # Enable session affinity, all replicas will route through the ingress
+      nginx.ingress.kubernetes.io/session-cookie-name: "keycloak"  # Set session cookie name
 dashboard-service:
   jwks: "https://mit-smartcity-suite-keycloak.container.edag/realms/production-realm/protocol/openid-connect/certs"
   frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
   adminRole: "scs-admin"
+  logRotationCron: "5 1 * * * *"
   editRoles: |
     [ "editor", "tester", "scs-admin" ]
   passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
@@ -30,7 +31,9 @@ dashboard-service:
           - path: /
             pathType: Prefix
 ngsi-service:
+  jwks: "https://mit-smartcity-suite-keycloak.container.edag/realms/production-realm/protocol/openid-connect/certs"
   passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
+  frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
   ingress:
     enabled: true
     tls:
@@ -39,6 +42,19 @@ ngsi-service:
         secretName: ngsi-service-tls-secret ## auto-generated unique tls
     hosts:
       - host: mit-smartcity-suite-ngsi-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+api-service:
+  frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-api-service.container.edag
+        secretName: api-service-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-api-service.container.edag
         paths:
           - path: /
             pathType: Prefix
@@ -67,6 +83,20 @@ infopin-service:
         paths:
           - path: /
             pathType: Prefix
+report-service:
+  frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
+  mailServiceUrl: "https://mit-smartcity-suite-mail-service.container.edag"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-report-service.container.edag
+        secretName: report-service-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-report-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
 frontend:
   url: "https://mit-smartcity-suite-frontend.container.edag"
   basepath:
@@ -75,12 +105,15 @@ frontend:
     ""
   oidc:
     auth: "https://mit-smartcity-suite-keycloak.container.edag/realms/production-realm"
-    redirectUri: "https://mit-smartcity-suite-frontend.container.edag/admin"
+    redirectUri: "https://mit-smartcity-suite-frontend.container.edag"
     clientId: scs-frontend
   backendUrl: "https://mit-smartcity-suite-dashboard-service.container.edag"
+  apiServiceUrl: "https://mit-smartcity-suite-api-service.container.edag"
+  ngsiServiceUrl: "https://mit-smartcity-suite-ngsi-service.container.edag"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"
   mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
+  adminRole: "scs-admin"
   ingress:
     enabled: true
     tls:

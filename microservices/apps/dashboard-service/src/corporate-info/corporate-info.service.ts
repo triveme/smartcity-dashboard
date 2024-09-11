@@ -62,10 +62,13 @@ export class CorporateInfoService {
   }
 
   async getByTenant(
-    tenantId: string,
+    tenantAbbreviation: string,
     withLogos: boolean,
-  ): Promise<CorporateInfo | CorporateInfoWithLogos> {
-    return this.corporateInfoRepository.getByTenant(tenantId, withLogos);
+  ): Promise<CorporateInfo[] | CorporateInfoWithLogos[]> {
+    return this.corporateInfoRepository.getByTenant(
+      tenantAbbreviation,
+      withLogos,
+    );
   }
 
   async create(
@@ -119,6 +122,30 @@ export class CorporateInfoService {
       );
 
       return deletedCorporateInfo;
+    });
+  }
+
+  async deleteByTenant(
+    tenantAbbreviation: string,
+    transaction?: DbType,
+  ): Promise<CorporateInfo[]> {
+    const dbActor = transaction ? transaction : this.db;
+
+    return dbActor.transaction(async (tx) => {
+      const deletedCorporateInfos =
+        await this.corporateInfoRepository.deleteByTenant(
+          tenantAbbreviation,
+          transaction,
+        );
+
+      for (const deletedCorporateInfo of deletedCorporateInfos) {
+        await this.corporateInfoSidebarLogosRepo.deleteRelationsForCorporateInfo(
+          deletedCorporateInfo.id,
+          tx,
+        );
+      }
+
+      return deletedCorporateInfos;
     });
   }
 

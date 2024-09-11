@@ -9,7 +9,6 @@ export async function getReportConfigByQueryId(
   accessToken: string | undefined,
   queryId: string | undefined,
 ): Promise<ReportConfig> {
-  console.log('getReportConfigByQueryId');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

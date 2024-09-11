@@ -25,6 +25,7 @@ export class DataService {
           `Could not get access token for data source with id: ${data_source.id}`,
         );
       }
+      // LIVE DATA
       if (query_config.timeframe === 'live') {
         url = `${auth_data.liveUrl}`;
 
@@ -34,26 +35,39 @@ export class DataService {
             'Fiware-ServicePath': query_config.fiwareServicePath,
             Authorization: `Bearer ${access_token}`,
           };
+
+          if (query_config.attributes && query_config.attributes.length > 0) {
+            params = {
+              id: query_config.entityIds.join(','),
+              attrs: query_config.attributes.join(','),
+              type: query_config.fiwareType,
+            };
+          }
         } else if (auth_data.type === 'ngsi-ld') {
           headers = {
             'NGSILD-Tenant': query_config.fiwareService,
+            'Content-Type': 'application/x-www-form-urlencoded',
             Authorization: `Bearer ${access_token}`,
           };
+          // url += query_config.entityIds[0];
+          if (query_config.attributes && query_config.attributes.length > 0) {
+            params = {
+              attrs: query_config.attributes.join(','),
+              id: query_config.entityIds.join(','),
+            };
+          }
         } else {
           console.warn('Unknown auth-data type');
         }
-        if (query_config.attributes && query_config.attributes.length > 0) {
-          params = {
-            id: query_config.entityIds.join(','),
-            attrs: query_config.attributes,
-            type: query_config.fiwareType,
-          };
-        } else {
-          params = {
-            type: query_config.fiwareType,
-          };
-        }
-      } else {
+
+        // Always add the fiware type
+        // params = {
+        //   ...params,
+        //   type: query_config.fiwareType,
+        // };
+      }
+      // HISTORIC DATA
+      else {
         url =
           query_config.entityIds.length === 1
             ? `${auth_data.timeSeriesUrl}${query_config.entityIds}`
@@ -96,6 +110,9 @@ export class DataService {
         }
       }
 
+      console.log('REQUEST', url);
+      console.log('REQUEST', headers);
+      console.log('REQUEST', params);
       const response = await axios.get(url, { headers, params });
 
       return response.data;
@@ -145,16 +162,22 @@ export class DataService {
     }
   }
 
-  private getFromDate(timeframe: 'hour' | 'day' | 'week' | 'month'): string {
+  private getFromDate(
+    timeframe: 'year' | 'hour' | 'day' | 'week' | 'month',
+  ): string {
     const now = new Date();
     let fromDate: Date;
 
-    if (timeframe === 'day') {
+    if (timeframe === 'hour') {
+      fromDate = new Date(now.getTime() - 60 * 60 * 1000);
+    } else if (timeframe === 'day') {
       fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     } else if (timeframe === 'week') {
       fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     } else if (timeframe === 'month') {
       fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'year') {
+      fromDate = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
     }
 
     return this.formatToIso(fromDate);

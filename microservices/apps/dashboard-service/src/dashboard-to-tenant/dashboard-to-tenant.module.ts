@@ -7,6 +7,8 @@ import { CorporateInfoService } from '../corporate-info/corporate-info.service';
 import { CorporateInfoRepo } from '../corporate-info/corporate-info.repo';
 import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
+import { LogoService } from '../logo/logo.service';
+import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
 
 @Module({
   providers: [
@@ -18,6 +20,8 @@ import { LogoRepo } from '../logo/logo.repo';
     CorporateInfoRepo,
     CorporateInfoSidebarLogosRepo,
     LogoRepo,
+    LogoService,
+    GeneralSettingsRepo,
   ],
 })
 export class DashboardToTenantModule {}

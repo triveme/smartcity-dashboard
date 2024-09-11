@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import DashboardPanel from './DashboardPanel';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import DataExportButton from '@/ui/Buttons/DataExportButton';
 
 type DashboardProps = {
   dashboard: DashboardWithContent;
@@ -47,11 +48,17 @@ export default async function Dashboard(
     <div style={dashboardStyle} className="w-full h-full overflow-auto">
       {dashboard.type !== 'Karte' && (
         <div className="p-4 w-full">
-          <PageHeadline
-            headline={dashboard.name || 'Dashboardseite'}
-            fontColor={dashboardStyle.color}
-          />
-          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-12 gap-4">
+          <div className="flex justify-between items-center">
+            <PageHeadline
+              headline={dashboard.name || 'Dashboardseite'}
+              fontColor={dashboard.headlineColor}
+            />
+            {dashboard.allowDataExport && (
+              <DataExportButton id={dashboard.id || ''} type="dashboard" />
+            )}
+          </div>
+
+          <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-8 xl:grid-cols-12 gap-4 pt-2">
             {dashboard.panels?.length > 0 &&
               dashboard.panels.map((panel) => (
                 <DashboardPanel
@@ -145,6 +152,10 @@ export default async function Dashboard(
             mapQueryDataAttributes={
               (dashboard.panels?.[0]?.widgets?.[0].tabs?.[0] as TabWithQuery)
                 ?.query.queryData?.attrs || [{ attrName: '', types: [] }]
+            }
+            mapQueryDataAttributeValues={
+              (dashboard.panels?.[0]?.widgets?.[0].tabs?.[0] as TabWithQuery)
+                ?.query.queryData?.attributes || [{ attrName: '', values: [] }]
             }
             mapAllowLegend={
               dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapAllowLegend ||

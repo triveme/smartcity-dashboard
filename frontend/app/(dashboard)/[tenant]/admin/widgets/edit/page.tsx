@@ -74,6 +74,7 @@ export default function Pages(): ReactElement {
         iconColor={corporateInfo?.dashboardFontColor || '#fff'}
         borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
         backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+        hoverColor={corporateInfo?.menuHoverColor || '#FFFFFF50'}
       />
     </div>
   );

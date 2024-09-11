@@ -34,7 +34,11 @@ export class PopulateMapService {
         }
 
         tab.mapObject.push({
-          position: position,
+          position: {
+            type: position.type,
+            coordinates: [position.coordinates[1], position.coordinates[0]],
+          },
+          ...dataObject,
         });
       }
     }
@@ -50,12 +54,12 @@ export class PopulateMapService {
     const queryData = query.queryData as object;
 
     tab.mapObject = [];
-
     if (queryData && queryData['location']) {
       const position = queryData['location'].value;
 
       tab.mapObject.push({
         position: position,
+        ...queryData,
       });
     } else if (
       queryData &&

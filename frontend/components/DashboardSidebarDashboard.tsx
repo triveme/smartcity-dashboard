@@ -13,13 +13,14 @@ type DashboardSidebarDashboardProps = {
   url: string;
   elementUrl: string;
   icon: string;
+  menuColor: string;
   onDashboardClick: () => void;
 };
 
 export default function DashboardSidebarDashboard(
   props: DashboardSidebarDashboardProps,
 ): ReactElement {
-  const { name, icon, url, elementUrl, onDashboardClick } = props;
+  const { name, icon, url, elementUrl, menuColor, onDashboardClick } = props;
   const params = useParams();
   const [isHovered, setIsHovered] = useState(false);
   const isMobileView = determineIsMobileView();
@@ -62,6 +63,9 @@ export default function DashboardSidebarDashboard(
   };
 
   const determineFontColor = (child: string): string => {
+    if (menuColor) {
+      return menuColor;
+    }
     if (isActiveChild(child)) {
       return data?.menuActiveFontColor ?? '#FFFFFF';
     } else {

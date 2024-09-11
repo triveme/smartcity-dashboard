@@ -2,6 +2,7 @@ import { Logo, logos } from '@app/postgres-db/schemas/logo.schema';
 import { DbType } from '@app/postgres-db';
 import { v4 as uuid } from 'uuid';
 import { createTenantByObject } from '../../tenant/test/test-data';
+import { eq } from 'drizzle-orm';
 
 export function getLogo(): Logo {
   return {
@@ -27,4 +28,11 @@ export async function createLogoByObject(
   const createdLogos = await db.insert(logos).values(logo).returning();
 
   return createdLogos.length > 0 ? createdLogos[0] : null;
+}
+
+export async function getLogosByTenant(
+  db: DbType,
+  tenantAbbreviation: string,
+): Promise<Logo[]> {
+  return db.select().from(logos).where(eq(logos.tenantId, tenantAbbreviation));
 }

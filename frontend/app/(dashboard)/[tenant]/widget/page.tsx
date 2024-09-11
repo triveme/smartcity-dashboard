@@ -27,24 +27,29 @@ export default async function DashboardPage({
   params: { tenant: string };
   searchParams: { id: string };
 }): Promise<ReactElement> {
-  console.log('params', params);
-  console.log('searchParams', searchParams);
   const widgetWithChildren = await getData(searchParams.id || '');
 
   const widget: WidgetWithContent = {
+    id: widgetWithChildren.widget.id,
     name: widgetWithChildren.widget.name,
+    allowShare: widgetWithChildren.widget.allowShare,
+    allowDataExport: widgetWithChildren.widget.allowDataExport,
+    headlineColor: widgetWithChildren.widget.headlineColor,
     height: widgetWithChildren.widget.height,
-    width: widgetWithChildren.widget.width,
     icon: widgetWithChildren.widget.icon,
-    visibility: widgetWithChildren.widget.visibility,
     readRoles: widgetWithChildren.widget.readRoles,
-    writeRoles: widgetWithChildren.widget.writeRoles,
+    showName: widgetWithChildren.widget.showName,
     tabs: [widgetWithChildren.tab],
+    visibility: widgetWithChildren.widget.visibility,
+    width: widgetWithChildren.widget.width,
+    writeRoles: widgetWithChildren.widget.writeRoles,
   };
 
   const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
   const tenant =
     NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
 
-  return <DashboardWidget widget={widget} tenant={tenant} />;
+  return (
+    <DashboardWidget widget={widget} tenant={tenant} isCombinedWidget={false} />
+  );
 }

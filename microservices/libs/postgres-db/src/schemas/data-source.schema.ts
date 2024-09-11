@@ -8,6 +8,7 @@ export const dataSources = pgTable('data_source', {
     .default(sql`gen_random_uuid()`),
   authDataId: uuid('auth_data_id').references(() => authData.id),
   name: text('name').notNull(),
+  collections: text('collections').array(),
   origin: text('origin').notNull(),
 });
 

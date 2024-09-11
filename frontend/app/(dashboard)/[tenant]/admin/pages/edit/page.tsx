@@ -50,6 +50,7 @@ export default function Pages(): ReactElement {
   const { openSnackbar } = useSnackbar();
 
   const [dashboardName, setDashboardName] = useState('');
+  const [dashboardFontColor, setDashboardFontColor] = useState('');
   const [dashboardUrl, setDashboardUrl] = useState('');
   const [dashboardVisibility, setDashboardVisibility] = useState(
     visibilityEnum.public,
@@ -58,6 +59,8 @@ export default function Pages(): ReactElement {
   const [dashboardWriteRoles, setDashboardWriteRoles] = useState<string[]>([]);
   const [dashboardIcon, setDashboardIcon] = useState('');
   const [dashboardType, setDashboardType] = useState('');
+  const [dashboardAllowDataExport, setDashboardAllowDataExport] =
+    useState(false);
   const [canFetch, setCanFetch] = useState(false);
   const [panels, setPanels] = useState<Panel[]>([]);
   const [selectedTab, setSelectedTab] = useState<Tab>();
@@ -82,6 +85,7 @@ export default function Pages(): ReactElement {
     queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
+
   //Dynamic Styling
   const dashboardStyle = {
     backgroundColor: data?.dashboardPrimaryColor || '#2B3244',
@@ -89,6 +93,7 @@ export default function Pages(): ReactElement {
     maxWidth: 'auto',
     width: 'auto',
   };
+
   useEffect(() => {
     if (itemId) {
       setCanFetch(true);
@@ -125,6 +130,7 @@ export default function Pages(): ReactElement {
   useEffect(() => {
     if (dashboardData) {
       setDashboardName(dashboardData.name || '');
+      setDashboardFontColor(dashboardData.headlineColor || '');
       setDashboardUrl(dashboardData.url || '');
       setDashboardVisibility(dashboardData.visibility);
       setDashboardReadRoles(dashboardData.readRoles || []);
@@ -132,6 +138,12 @@ export default function Pages(): ReactElement {
       setDashboardIcon(dashboardData.icon || '');
       setPanels(dashboardData.panels || []);
       setDashboardType(dashboardData.type || '');
+      setDashboardAllowDataExport(dashboardData.allowDataExport || false);
+      if (dashboardData.headlineColor) {
+        setDashboardFontColor(dashboardData.headlineColor);
+      } else {
+        setDashboardFontColor(data?.dashboardFontColor || '#FFFFFF');
+      }
     }
   }, [dashboardData]);
 
@@ -148,6 +160,7 @@ export default function Pages(): ReactElement {
     let dashboardResponse: Dashboard;
     const dashboard: Dashboard = {
       name: dashboardName,
+      headlineColor: dashboardFontColor,
       url: dashboardUrl,
       icon: dashboardIcon,
       visibility: dashboardVisibility,
@@ -155,6 +168,7 @@ export default function Pages(): ReactElement {
       writeRoles: dashboardWriteRoles,
       id: itemId || undefined,
       type: dashboardType,
+      allowDataExport: dashboardAllowDataExport,
     };
 
     const textfieldErrorMessages: string[] = [];
@@ -222,13 +236,18 @@ export default function Pages(): ReactElement {
       const element: Panel = {
         id: panels[i].id || undefined,
         name: panels[i].name,
-        height: panels[i].height,
-        width: panels[i].width,
-        position: panels[i].position,
-        info: panels[i].info,
-        generalInfo: panels[i].generalInfo,
-        showGeneralInfo: panels[i].showGeneralInfo,
         dashboardId: dashboardId,
+        generalInfo: panels[i].generalInfo,
+        headlineColor: panels[i].headlineColor,
+        height: panels[i].height,
+        info: panels[i].info,
+        jumpoffIcon: panels[i].jumpoffIcon,
+        jumpoffLabel: panels[i].jumpoffLabel,
+        jumpoffUrl: panels[i].jumpoffUrl,
+        position: panels[i].position,
+        showGeneralInfo: panels[i].showGeneralInfo,
+        showJumpoffButton: panels[i].showJumpoffButton,
+        width: panels[i].width,
       };
       editedPanels.push(element);
     }
@@ -244,6 +263,7 @@ export default function Pages(): ReactElement {
       refetchPanel();
     }
   };
+
   const handleCancelClick = (): void => {
     if (!itemId) {
       if (panels.length > 0) {
@@ -256,6 +276,7 @@ export default function Pages(): ReactElement {
     }
     router.back();
   };
+
   return (
     <div
       style={dashboardStyle}
@@ -285,6 +306,7 @@ export default function Pages(): ReactElement {
             dashboardType={dashboardType}
             selectedTab={selectedTab}
             fontColor={data?.dashboardFontColor || '#fff'}
+            iconColor={data?.dashboardFontColor || '#fff'}
             backgroundColor={data?.dashboardPrimaryColor || '#2B3244'}
             borderColor={data?.widgetBorderColor || '#2B3244'}
           />
@@ -301,6 +323,8 @@ export default function Pages(): ReactElement {
           <DashboardWizard
             dashboardName={dashboardName}
             setDashboardName={setDashboardName}
+            dashboardFontColor={dashboardFontColor}
+            setDashboardFontColor={setDashboardFontColor}
             dashboardUrl={dashboardUrl}
             setDashboardIcon={setDashboardIcon}
             dashboardVisibility={dashboardVisibility}
@@ -313,6 +337,8 @@ export default function Pages(): ReactElement {
             setDashboardUrl={setDashboardUrl}
             dashboardType={dashboardType}
             setDashboardType={setDashboardType}
+            dashboardAllowDataExport={dashboardAllowDataExport}
+            setDashboardAllowDataExport={setDashboardAllowDataExport}
             selectedTab={selectedTab}
             setSelectedTab={setSelectedTab}
             panels={panels}

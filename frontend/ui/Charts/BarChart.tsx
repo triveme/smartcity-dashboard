@@ -5,17 +5,15 @@ import * as echarts from 'echarts';
 import { ECharts, EChartsOption } from 'echarts';
 import { ChartData } from '@/types';
 
-const labelsDummy = [
-  '2024-01-10',
-  '2024-01-11',
-  '2024-01-12',
-  '2024-01-13',
-  '2024-01-14',
-  '2024-01-15',
-  '2024-01-16',
+const dataDummy: [string, number][] = [
+  ['2024-01-11', 20],
+  ['2024-01-12', 50],
+  ['2024-01-13', 30],
+  ['2024-01-14', 40],
+  ['2024-01-15', 80],
+  ['2024-01-16', 60],
+  ['2024-01-17', 7],
 ];
-
-const dataDummy = [20, 50, 30, 40, 80, 60, 70];
 
 const defaultData: ChartData[] = [{ name: 'Default', values: dataDummy }];
 
@@ -49,24 +47,30 @@ export default function BarChart(props: BarChartProps): ReactElement {
   const chartRef = useRef<HTMLDivElement>(null);
   let myChart: ECharts | null = null;
   const finalData = data && data.length > 0 ? data : defaultData;
-  const finalLabels = labels && labels.length > 0 ? labels : labelsDummy;
 
   const initializeChart = (): void => {
     if (chartRef.current) {
       myChart = echarts.init(chartRef.current);
 
       // Main data series
-      const series: echarts.BarSeriesOption[] = finalData.map((ds) => ({
-        data: ds.values.map((value, index) => [finalLabels[index], value]),
-        type: 'bar',
-        name: ds.name,
-      }));
+      const series: echarts.BarSeriesOption[] = [];
+      if (finalData && finalData.length > 0) {
+        for (let i = 0; i < finalData.length; i++) {
+          const dataArray = finalData[i].values;
+          const tempSeries: echarts.BarSeriesOption = {
+            data: dataArray,
+            type: 'bar',
+            name: finalData[i].name,
+          };
+          series.push(tempSeries);
+        }
+      }
 
       // Static value series
       const staticValueSeries: echarts.LineSeriesOption[] =
         staticValues && staticValues?.length > 0
           ? staticValues.map((value, index) => ({
-              data: finalLabels.map((label) => [label, value]),
+              data: finalData[0].values.map((label) => [label[0], value]),
               type: 'line',
               symbol: 'none',
               lineStyle: {
@@ -78,9 +82,9 @@ export default function BarChart(props: BarChartProps): ReactElement {
 
       const option: EChartsOption = {
         xAxis: {
-          type: 'category',
-          data: finalLabels,
           name: xAxisLabel,
+          type: 'time',
+          splitNumber: 11,
           nameTextStyle: {
             color: fontColor,
           },

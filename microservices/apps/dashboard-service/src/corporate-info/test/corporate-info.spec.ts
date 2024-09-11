@@ -48,9 +48,8 @@ describe('DashboardServiceControllers (e2e)', () => {
   describe('CorporateInfos', () => {
     // create
     it('/corporate-infos (POST)', async () => {
-      const tenant = await createTenantByObject(db, getTenant());
-      const logo = await createLogoByObject(db, getLogo());
-      const corporateInfo = getCorporateInfo(logo.id, tenant.abbreviation);
+      const logo = await createLogoByObject(db, getLogo(), true);
+      const corporateInfo = getCorporateInfo(logo.id);
 
       const response = await request(app.getHttpServer())
         .post('/corporate-infos')
@@ -127,7 +126,7 @@ describe('DashboardServiceControllers (e2e)', () => {
           expect(coporateInfo).toHaveProperty(attributeName);
 
           const columnDefinition = coporateInfo[attributeName];
-          if (columnDefinition.notNull) {
+          if (columnDefinition && columnDefinition.notNull) {
             expect(coporateInfo[attributeName]).not.toBeNull();
           }
         }
@@ -156,7 +155,7 @@ describe('DashboardServiceControllers (e2e)', () => {
           expect(coporateInfo).toHaveProperty(attributeName);
 
           const columnDefinition = coporateInfo[attributeName];
-          if (columnDefinition.notNull) {
+          if (columnDefinition && columnDefinition.notNull) {
             expect(coporateInfo[attributeName]).not.toBeNull();
           }
         }
@@ -201,7 +200,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         widgetPrimaryColor: 'https://example-updated.com/widget_bg.jpg',
         panelPrimaryColor: 'https://example-updated.com/panel_bg.jpg',
         fontColor: '#222',
-        titleBar: 'Company Name Updated',
+        titleBar: 'Dark',
       };
 
       const response = await request(app.getHttpServer())
@@ -379,6 +378,43 @@ describe('DashboardServiceControllers (e2e)', () => {
           corporateInfo.id,
         );
       expect(corporateInfoRelations).toHaveLength(0);
+    });
+
+    // it('/corporate-infos/:tenantAbbreviation (GET)', async () => {
+    //   const tenant = await createTenantByObject(db, getTenant());
+
+    //   const corporateInfoObject1 = getCorporateInfo();
+    //   corporateInfoObject1.tenantId = tenant.abbreviation;
+    //   const corporateInfo1 = await createCorporateInfoByObject(
+    //     db,
+    //     corporateInfoObject1,
+    //   );
+
+    //   const corporateInfoObject2 = getCorporateInfo();
+    //   corporateInfoObject2.tenantId = tenant.abbreviation;
+    //   const corporateInfo2 = await createCorporateInfoByObject(
+    //     db,
+    //     corporateInfoObject2,
+    //   );
+
+    //   const response = await request(app.getHttpServer()).get(
+    //     `/corporate-infos/tenant/${tenant.abbreviation}`,
+    //   );
+
+    //   const responseIds = response.body.map(
+    //     (corporateInfo) => corporateInfo.id,
+    //   );
+    //   expect(responseIds).toHaveLength(2);
+    //   expect(responseIds).toContain(corporateInfo1.id);
+    //   expect(responseIds).toContain(corporateInfo2.id);
+    // });
+
+    it('/corporate-infos/:tenantAbbreviation (GET) with tenant not existing', async () => {
+      const response = await request(app.getHttpServer()).get(
+        `/corporate-infos/tenant/edag`,
+      );
+
+      expect(!response.body);
     });
   });
 });

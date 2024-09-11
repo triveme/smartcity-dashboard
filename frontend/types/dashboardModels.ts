@@ -8,70 +8,92 @@ import {
 export type Dashboard = {
   id?: string | null;
   name: string | null;
-  url: string | null;
+  allowDataExport?: boolean;
+  headlineColor?: string;
   icon: string | null;
-  visibility: visibilityEnum;
   readRoles: string[] | null;
-  writeRoles: string[] | null;
   type: string | null;
+  url: string | null;
+  visibility: visibilityEnum;
+  writeRoles: string[] | null;
 };
 export type DashboardWithContent = {
   id?: string | null;
   name: string | null;
-  url: string | null;
+  allowDataExport: boolean;
+  headlineColor?: string;
   icon: string | null;
-  visibility: visibilityEnum;
-  readRoles: string[] | null;
-  writeRoles: string[] | null;
   panels: PanelWithContent[];
+  readRoles: string[] | null;
   type: string | null;
+  url: string | null;
+  visibility: visibilityEnum;
+  writeRoles: string[] | null;
 };
 
 export type Panel = {
   id?: string;
   name: string;
-  height: number;
-  width: number;
   dashboardId?: string;
-  position: number;
-  info: string;
   generalInfo: string;
+  headlineColor: string;
+  height: number;
+  info: string;
+  jumpoffIcon?: string;
+  jumpoffLabel?: string;
+  jumpoffUrl?: string;
+  position: number;
   showGeneralInfo: boolean;
+  showJumpoffButton: boolean;
+  width: number;
 };
 
 export type PanelWithContent = {
   id?: string;
   name: string;
-  height: number;
-  width: number;
-  position: number;
   dashboardId?: string;
-  info: string;
   generalInfo: string;
+  headlineColor: string;
+  height: number;
+  info: string;
+  jumpoffIcon?: string;
+  jumpoffLabel?: string;
+  jumpoffUrl?: string;
+  position: number;
   showGeneralInfo: boolean;
+  showJumpoffButton: boolean;
   widgets: WidgetWithContent[];
+  width: number;
 };
 
 export type Widget = {
   id?: string;
   name: string;
+  allowDataExport: boolean;
+  allowShare: boolean;
+  headlineColor: string;
   height: number;
-  width: number;
   icon: string;
-  visibility: visibilityEnum;
   readRoles: string[];
+  showName?: boolean;
+  visibility: visibilityEnum;
+  width: number;
   writeRoles: string[];
 };
 
 export type WidgetWithContent = {
   id?: string;
   name: string;
+  allowShare: boolean;
+  headlineColor: string;
   height: number;
-  width: number;
   icon: string;
-  visibility: visibilityEnum;
   readRoles: string[];
+  showName?: boolean;
+  visibility: visibilityEnum;
+  width: number;
   writeRoles: string[];
+  allowDataExport: boolean;
   tabs: Tab[];
 };
 
@@ -90,6 +112,7 @@ export type MapModalWidget = {
   componentType: string;
   componentSubType?: string;
   attributes: string;
+  tiles: number;
   chartMinimum: number;
   chartMaximum: number;
   chartUnit: string;
@@ -105,65 +128,73 @@ export type MapModalLegend = {
 
 export type Tab = {
   id?: string;
-  componentType?: string;
-  componentSubType?: string;
-  chartMinimum?: number;
-  chartMaximum?: number;
-  chartUnit?: string;
   chartData?: ChartData[];
-  chartValues?: number[];
   chartLabels?: string[];
-  chartXAxisLabel?: string;
-  chartYAxisLabel?: string;
+  chartMaximum?: number;
+  chartMinimum?: number;
   chartStaticValues?: number[];
   chartStaticValuesColors?: string[];
-  chartStaticValuesTicks?: number[];
   chartStaticValuesLogos?: string[];
   chartStaticValuesTexts?: string[];
-  isStepline?: boolean;
-  mapAllowPopups?: boolean;
-  mapAllowScroll?: boolean;
-  mapAllowZoom?: boolean;
-  mapAllowFilter?: boolean;
-  mapFilterAttribute?: string;
-  mapAllowLegend?: boolean;
-  mapLegendValues?: MapModalLegend[];
-  mapLegendDisclaimer?: string;
-  mapMinZoom?: number;
-  mapMaxZoom?: number;
-  mapStandardZoom?: number;
-  mapMarkerColor?: string;
-  mapActiveMarkerColor?: string;
-  mapMarkerIcon?: string;
-  mapMarkerIconColor?: string;
-  mapLongitude?: number;
-  mapLatitude?: number;
-  showLegend?: boolean;
-  textValue?: string;
+  chartStaticValuesTicks?: number[];
+  chartUnit?: string;
+  chartValues?: number[];
+  chartXAxisLabel?: string;
+  chartYAxisLabel?: string;
+  childWidgets?: string[];
+  componentSubType?: string;
+  componentType?: string;
+  dataModelId?: string;
   decimalPlaces?: number;
   icon?: string;
   iconColor?: string;
   iconText?: string;
   iconUrl?: string;
-  labelColor?: string;
-  imageUrl?: string;
+  iFrameUrl?: string;
   imageSrc?: string;
   imageUpdateInterval?: number;
-  iFrameUrl?: string;
-  widgetId?: string;
-  dataModelId?: string;
-  queryId?: string;
-  mapObject?: MapObject[];
-  mapShapeOption?: string;
+  imageUrl?: string;
+  isStepline?: boolean;
+  labelColor?: string;
+  mapActiveMarkerColor?: string;
+  mapAllowFilter?: boolean;
+  mapAllowLegend?: boolean;
+  mapAllowPopups?: boolean;
+  mapAllowScroll?: boolean;
+  mapAllowZoom?: boolean;
   mapDisplayMode?: string;
+  mapFilterAttribute?: string;
+  mapLatitude?: number;
+  mapLegendDisclaimer?: string;
+  mapLegendValues?: MapModalLegend[];
+  mapLongitude?: number;
+  mapMarkerColor?: string;
+  mapMarkerIcon?: string;
+  mapMarkerIconColor?: string;
+  mapMaxZoom?: number;
+  mapMinZoom?: number;
+  mapObject?: MapObject[];
   mapShapeColor?: string;
+  mapShapeOption?: string;
+  mapStandardZoom?: number;
   mapWidgetValues?: MapModalWidget[];
+  queryId?: string;
+  showLegend?: boolean;
+  sliderCurrentAttribute?: string;
+  sliderMaximumAttribute?: string;
+  textValue?: string;
+  tiles?: number;
+  widgetId?: string;
 };
 
 export type TabWithQuery = Tab & {
   query: {
     queryData: QueryData;
   };
+};
+
+export type TabWithCombinedWidgets = Tab & {
+  combinedWidgets: WidgetWithContent[];
 };
 
 export type ColorStage = {
@@ -242,6 +273,7 @@ export type DataSource = {
   id?: string;
   name: string;
   authDataId: string;
+  collections: string[];
   origin: string;
 };
 
@@ -252,6 +284,7 @@ export type CorporateInfo = {
   dashboardPrimaryColor: string;
   dashboardSecondaryColor: string;
   fontColor: string;
+  fontFamily: string;
   headerFontColor: string;
   headerLogo?: Logo;
   headerLogoId?: string;
@@ -303,18 +336,20 @@ export type WidgetWithChildren = {
 
 export type AuthData = {
   id?: string;
-  tenantAbbreviation: string;
-  name: string;
-  type: authDataTypeEnum;
-  clientId: string;
-  clientSecret: string;
+  apiToken: string;
+  apiUrl?: string;
   appUser: string;
   appUserPassword: string;
-  apiToken: string;
   authUrl: string;
+  clientId: string;
+  clientSecret: string;
+  collections?: string[];
+  fiwareServices?: string[];
   liveUrl: string;
+  name: string;
+  tenantAbbreviation: string;
   timeSeriesUrl: string;
-  apiUrl?: string;
+  type: authDataTypeEnum;
   visibility?: visibilityEnum;
   readRoles?: string[];
   writeRoles?: string[];
@@ -322,7 +357,7 @@ export type AuthData = {
 
 export type ChartData = {
   name: string;
-  values: number[];
+  values: [string, number][];
   color?: string;
 };
 
@@ -335,4 +370,18 @@ export type Mail = {
 export type MapModalChartStyle = {
   dashboardSecondaryColor: string;
   dashboardFontColor: string;
+};
+
+export type SliderOverviewType = {
+  name: string;
+  capacityMax: number;
+  capacityCurrent: number;
+};
+
+export type GeneralSettings = {
+  id: string | undefined;
+  tenant: string | undefined;
+  information: string;
+  imprint: string;
+  privacy: string;
 };

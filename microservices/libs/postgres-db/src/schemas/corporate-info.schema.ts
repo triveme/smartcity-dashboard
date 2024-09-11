@@ -2,18 +2,21 @@ import { sql } from 'drizzle-orm';
 import { pgTable, text, uuid, boolean } from 'drizzle-orm/pg-core';
 import { logos } from './logo.schema';
 import { tenants } from './tenant.schema';
+import { corporateInfoFontFamiliesTypeEnum } from './enums.schema';
+import { titleBarThemeTypeEnum } from './enums.schema';
 
 export const corporateInfos = pgTable('corporate_info', {
   id: uuid('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  tenantId: text('tenant_id')
-    .references(() => tenants.abbreviation)
-    .unique(),
+  tenantId: text('tenant_id').references(() => tenants.abbreviation, {
+    onUpdate: 'cascade',
+  }),
   dashboardFontColor: text('dashboard_font_color'),
   dashboardPrimaryColor: text('dashboard_primary_color'),
   dashboardSecondaryColor: text('dashboard_secondary_color'),
-  fontColor: text('font_color'),
+  fontFamily: corporateInfoFontFamiliesTypeEnum('font_family').notNull(),
+  fontColor: text('font_color').notNull(),
   headerFontColor: text('header_font_color'),
   headerLogoId: uuid('header_logo_id').references(() => logos.id),
   headerPrimaryColor: text('header_primary_color'),
@@ -42,7 +45,7 @@ export const corporateInfos = pgTable('corporate_info', {
   cancelHoverButtonColor: text('cancel_hover_button_color'),
   showHeaderLogo: boolean('show_header_logo'),
   showMenuLogo: boolean('show_menu_logo'),
-  titleBar: text('title_bar'),
+  titleBar: titleBarThemeTypeEnum('title_bar').notNull(),
   useColorTransitionHeader: boolean('use_color_transition_header'),
   useColorTransitionMenu: boolean('use_color_transition_menu'),
   widgetBorderColor: text('widget_border_color'),

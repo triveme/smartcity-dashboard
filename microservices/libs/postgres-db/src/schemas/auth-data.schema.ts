@@ -11,17 +11,20 @@ export const authData = pgTable('auth_data', {
   tenantAbbreviation: text('tenant_abbreviation').references(
     () => tenants.abbreviation,
   ),
-  name: text('name').notNull(),
-  type: authDataTypeEnum('type').notNull().default('api'),
-  clientId: text('client_id').notNull(),
-  clientSecret: jsonb('client_secret').notNull(),
+  apiToken: text('api_token'),
+  apiUrl: text('api_url'),
   appUser: text('app_user'),
   appUserPassword: jsonb('app_user_password'),
-  apiToken: text('api_token'),
   authUrl: text('auth_url').notNull(),
+  clientId: text('client_id').notNull(),
+  clientSecret: jsonb('client_secret').notNull(),
+  collections: text('collections').array(),
+  fiwareServices: text('fiware_services').array(),
   liveUrl: text('live_url').notNull(),
+  name: text('name').notNull(),
   timeSeriesUrl: text('time_series_url').notNull(),
-  apiUrl: text('api_url'),
+  type: authDataTypeEnum('type').notNull().default('api'),
+  visibility: visibilityEnum('visibility'),
   createdAt: timestamp('created_at', { mode: 'date', precision: 6 })
     .notNull()
     .default(sql`now()`),
@@ -30,7 +33,6 @@ export const authData = pgTable('auth_data', {
     .default(sql`now()`),
   readRoles: text('read_roles').array(),
   writeRoles: text('write_roles').array(),
-  visibility: visibilityEnum('visibility'),
 });
 
 export type AuthData = typeof authData.$inferSelect;

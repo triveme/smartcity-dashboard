@@ -70,6 +70,12 @@ export function validateTab(tab: Tab): WizardErrors {
     tab?.componentSubType === tabComponentSubTypeEnum.iconWithLink
   ) {
     if (!tab?.iconUrl) errorsOccured.urlError = 'URL ist erforderlich!';
+  } else if (tab?.componentType === tabComponentTypeEnum.combinedComponent) {
+    if (!tab.childWidgets?.[0])
+      errorsOccured.combinedTopWidgetError = 'Oberes widget ist erforderlich!';
+    if (!tab.childWidgets?.[1])
+      errorsOccured.combinedBottomWidgetError =
+        'Unteres widget ist erforderlich!';
   }
   return errorsOccured;
 }

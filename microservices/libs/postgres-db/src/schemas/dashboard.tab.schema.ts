@@ -7,6 +7,7 @@ import {
   boolean,
   smallint,
   json,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { queries } from './query.schema';
 import { widgets } from './dashboard.widget.schema';
@@ -29,6 +30,7 @@ export const tabs = pgTable('tab', {
   chartValues: real('chart_values').array(),
   chartXAxisLabel: text('chart_x_axis_label'),
   chartYAxisLabel: text('chart_y_axis_label'),
+  childWidgets: jsonb('child_widgets'),
   componentSubType: tabComponentSubTypeEnum('component_sub_type'),
   componentType: tabComponentTypeEnum('component_type'),
   dataModelId: uuid('data_model_id').references(() => dataModels.id),
@@ -66,8 +68,11 @@ export const tabs = pgTable('tab', {
   mapWidgetValues: json('map_widget_values'),
   queryId: uuid('query_id').references(() => queries.id),
   showLegend: boolean('show_legend'),
+  sliderCurrentAttribute: text('slider_current_attribute'),
+  sliderMaximumAttribute: text('slider_maximum_attribute'),
   textValue: text('text_value'),
   widgetId: uuid('widget_id').references(() => widgets.id),
+  tiles: real('tiles'),
 });
 
 export const tabsRelations = relations(tabs, ({ one }) => ({
