@@ -26,9 +26,13 @@ WORKDIR /usr/microservices/apps
 COPY --from=builder /app/dist /usr/microservices/apps/dist
 COPY --from=builder /app/node_modules /usr/microservices/apps/node_modules
 
-EXPOSE 8085
+# Create logs directory and set appropriate permissions
+RUN mkdir -p /usr/microservices/apps/logs \
+    && chown -R node:node /usr/microservices/apps/logs
 
-# Set Docker as non-root user
+# Switch to the non-root user
 USER node
+
+EXPOSE 8085
 
 CMD ["node", "/usr/microservices/apps/dist/apps/mail-service/main.js"]

@@ -56,13 +56,18 @@ export class WidgetController {
   }
 
   @Public()
-  @Get('tab/:componentType')
-  async getByTabComponentType(
-    @Param('componentType') componentType: string,
+  @Get('/tab/:componentType')
+  async getByTenantAndTabComponentType(
+    @Query('abbreviation') abbreviation: string,
     @Req() request: AuthenticatedRequest,
+    @Param('componentType') componentType: string,
   ): Promise<WidgetWithChildren[]> {
     const roles = request.roles ?? [];
-    return this.service.getByTabComponentType(componentType, roles);
+    return this.service.getByTenantAndTabComponentType(
+      componentType,
+      roles,
+      abbreviation,
+    );
   }
 
   @Public()

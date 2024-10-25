@@ -7,7 +7,9 @@ export const widgets = pgTable('widget', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text('name'),
+  description: text('description'),
   showName: boolean('show_name'),
+  subheadline: text('subheadline'),
   height: smallint('height'),
   width: smallint('width'),
   headlineColor: text('headline_color'),

@@ -33,13 +33,27 @@ export class PopulateMapService {
           position = dataObject.position;
         }
 
-        tab.mapObject.push({
-          position: {
-            type: position.type,
-            coordinates: [position.coordinates[1], position.coordinates[0]],
-          },
-          ...dataObject,
-        });
+        if (position) {
+          let tempCoordinates: number[] = [];
+          if (position.coordinates[0] < position.coordinates[1]) {
+            tempCoordinates = [
+              position.coordinates[1],
+              position.coordinates[0],
+            ];
+          } else {
+            tempCoordinates = [
+              position.coordinates[0],
+              position.coordinates[1],
+            ];
+          }
+          tab.mapObject.push({
+            position: {
+              type: position.type ?? 'Point',
+              coordinates: tempCoordinates,
+            },
+            ...dataObject,
+          });
+        }
       }
     }
   }

@@ -1,0 +1,493 @@
+= Test Cases Overview
+
+[cols="4,4,8,2",options="header"]
+|===
+|Category         |Operation          |Condition & Scenario                     |Tested (X/ )
+
+|Auth Data        |Get All            |Auth Data existing                       |X
+|                 |                   |Auth Data existing, Missing rights       |
+|                 |                   |No Auth Data existing                    |
+|                 |Get By ID          |Auth Data existing                       |X
+|                 |                   |Auth Data existing, Missing rights       |
+|                 |                   |Auth Data not existing                   |
+|                 |Get By Tenant Abbreviation |Auth Data & Tenant existing          |
+|                 |                   |Auth Data not existing, Tenant existing  |
+|                 |                   |Auth Data existing, Tenant not existing  |
+|                 |Create             |Payload valid                            |X
+|                 |                   |Payload invalid                          |
+|                 |                   |Missing rights                           |
+|                 |Update             |Payload valid                            |X
+|                 |                   |Payload invalid                          |
+|                 |Delete             |Auth Data existing                       |X
+|                 |                   |Auth Data not existing                   |
+
+|Corporate Info   |Get All            |Corporate Info existing                  |X
+|                 |                   |Corporate Info not existing              |
+|                 |                   |Corporate Info existing, With logos      |X
+|                 |                   |Corporate Info existing, logos not existing|
+|                 |                   |Corporate Info not existing, logos existing|
+|                 |Get By ID          |Corporate Info existing                  |X
+|                 |                   |Corporate Info not existing              |
+|                 |Get By Tenant      |Corporate Info & Tenant existing         |X
+|                 |                   |Corporate Info not existing, Tenant Existing|
+|                 |                   |Corporate Info existing, Tenant not Existing|X
+|                 |                   |Corporate Info not existing, Tenant not Existing|
+|                 |                   |Include Logos, Corporate Info existing, Tenant Existing, Logos existing|
+|                 |                   |Include Logos, Corporate Info existing, Tenant not existing, Logos existing|
+|                 |                   |Include Logos, Corporate Info existing, Tenant existing, Logos not existing|
+|                 |Create             |Payload valid                            |X
+|                 |                   |Payload invalid                          |
+|                 |                   |Payload valid, With logos                |X
+|                 |Update             |Corporate Info existing                  |X
+|                 |                   |Corporate Info existing, With logos      |X
+|                 |                   |Corporate Info existing, Add logo to corporate info|X
+|                 |Delete             |Corporate Info existing                  |X
+|                 |                   |Corporate Info existing, With logos      |X
+
+|Dashboard        |Get All            |Dashboard existing, exclude content                                          |X
+|                 |                   |Dashboard existing, exclude content, missing roles                           |
+|                 |                   |Dashboard not existing, exclude content                                      |
+|                 |                   |Dashboard not existing, include content                                      |
+|                 |                   |Dashboard not existing, include content, missing roles (authorized)          |X
+|                 |                   |Dashboard existing, include content, Information/Text with text              |
+|                 |                   |Dashboard existing, include content, Information/Text without text           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link (all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without link with icon           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without icon           |
+|                 |                   |Dashboard existing, include content, Chart/180 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/360 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Stageable (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (single entity, multiple attributes, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, single attribute)|X
+|                 |                   |Dashboard existing, include content, Chart/Measurement (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Slider/Colored Slider (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, single attribute, all component attributes, existing)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Wert (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, iFrame (with url)                        |
+|                 |                   |Dashboard existing, include content, iFrame (without url)                    |
+|                 |                   |Dashboard existing, include content, Bild (with data)                        |
+|                 |                   |Dashboard existing, include content, Bild (without data)                     |
+|                 |Get by ID          |Dashboard existing, exclude content                                          |X
+|                 |                   |Dashboard existing, exclude content, missing roles                           |
+|                 |                   |Dashboard not existing, exclude content                                      |
+|                 |                   |Dashboard not existing, include content                                      |
+|                 |                   |Dashboard not existing, include content, missing roles (unauthorized)        |X
+|                 |                   |Dashboard existing, include content, Information/Text with text              |
+|                 |                   |Dashboard existing, include content, Information/Text without text           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link (all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without link with icon           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without icon           |
+|                 |                   |Dashboard existing, include content, Chart/180 (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, Chart/360 (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, Chart/Stageable (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (single entity, multiple attributes, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (multiple entities, multiple attributes)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, single attribute)|X
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, single attribute)|X
+|                 |                   |Dashboard existing, include content, Chart/Measurement (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, Slider/Colored Slider (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute, exists 2 times)
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, single attribute, all component attributes, existing)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Wert (single entity, single attribute, all component attributes existing)|(currently wrong, multiple entity, single attribute)
+|                 |                   |Dashboard existing, include content, iFrame (with url)                        |
+|                 |                   |Dashboard existing, include content, iFrame (without url)                    |
+|                 |                   |Dashboard existing, include content, Bild (with data)                        |
+|                 |                   |Dashboard existing, include content, Bild (without data)                     |
+||Get by Tenant Abbreviation|Dashboard existing, tenant existing, exclude content                |X
+|                 |                   |Dashboard existing, tenant not existing, exclude content                     |
+|                 |                   |Dashboard not existing, tenant existing, exclude content                     |
+|                 |                   |Dashboard existing, tenant existing, exclude content, missing roles          |
+|                 |                   |Dashboard not existing, tenant existing, include content                     |
+|                 |                   |Dashboard existing, tenant not existing, include content                     |
+|                 |                   |Dashboard existing, tenant existing, include content, missing roles          |
+|                 |                   |Dashboard existing, tenant existing, include content, Information/Text with text              |
+|                 |                   |Dashboard existing, tenant existing, include content, Information/Text without text           |
+|                 |                   |Dashboard existing, tenant existing, include content, Information/Icon with Link (all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Information/Icon with Link without link with icon           |
+|                 |                   |Dashboard existing, tenant existing, include content, Information/Icon with Link without icon           |
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/180 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/360 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Stageable (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Pie Chart (single entity, multiple attributes, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Pie Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Line Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Line Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Line Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Line Chart (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Bar Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Bar Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Bar Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Bar Chart (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, tenant existing, include content, Chart/Measurement (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Slider/Colored Slider (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Pin (single entity, single attribute, all component attributes, existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Pin (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Pin (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Pin (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Parking (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Parking (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Parking (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, tenant existing, include content, Karte/Parking (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, tenant existing, include content, Wert (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, tenant existing, include content, iFrame (with url)                        |
+|                 |                   |Dashboard existing, tenant existing, include content, iFrame (without url)                    |
+|                 |                   |Dashboard existing, tenant existing, include content, Bild (with data)                        |
+|                 |                   |Dashboard existing, tenant existing, include content, Bild (without data)                     |
+||Get by URL| Dashboard existing, empty content | X
+|||Dashboard not existing, include content|
+|||Dashboard not existing, include content, missing roles|
+|                 |                   |Dashboard existing, include content, Information/Text with text              |
+|                 |                   |Dashboard existing, include content, Information/Text without text           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link (all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without link with icon           |
+|                 |                   |Dashboard existing, include content, Information/Icon with Link without icon           |
+|                 |                   |Dashboard existing, include content, Chart/180 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/360 (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Stageable (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (single entity, multiple attributes, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Pie Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Line Chart (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Chart/Bar Chart (multiple entities, single attribute)|X
+|                 |                   |Dashboard existing, include content, Chart/Measurement (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Slider/Colored Slider (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, single attribute, all component attributes, existing)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Pin (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (single entity, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, multiple attributes)|
+|                 |                   |Dashboard existing, include content, Karte/Parking (multiple entities, single attribute)|
+|                 |                   |Dashboard existing, include content, Wert (single entity, single attribute, all component attributes existing)|
+|                 |                   |Dashboard existing, include content, iFrame (with url)                        |
+|                 |                   |Dashboard existing, include content, iFrame (without url)                    |
+|                 |                   |Dashboard existing, include content, Bild (with data)                        |
+|                 |                   |Dashboard existing, include content, Bild (without data)                     |
+|              |Get first URL                   |Dashboard existing, top level                                   |X
+|                       |                                |Dashboard existing, nested in grouping elements                 |X
+|                       |                                |No dashboard existing                                           |
+|                       |                                |No grouping element as dashboard existing                       |X
+|                       |                                |No grouping element existing                                    |X
+|                       |Get first URL by tenant abbreviation |Dashboard existing, top level                                  |
+|                       |                                |Dashboard existing, tenant existing, top level                  |
+|                       |                                |Dashboard existing, tenant existing, nested in grouping elements|
+|                       |                                |No dashboard existing, tenant existing                          |
+|                       |                                |Dashboard existing, no tenant existing                          |
+|                       |Create                |Payload valid, tenant existing                                  |X
+|                       |                                |Payload valid, tenant existing, URL taken                       |X
+|                       |                                |Payload valid, tenant existing, missing roles                   |
+|                       |                                |Payload valid, tenant not sent in query                         |X
+|                       |                                |Payload valid, tenant not sent in query, URL taken              |
+|                       |                                |Payload valid, tenant not sent in query, missing roles          |X
+|                       |                                |Payload valid, tenant not existing                              |X
+|                       |                                |Payload invalid, tenant existing                                |
+|                       |Update                |Payload valid, tenant existing                                  |
+|                       |                                |Payload valid, tenant existing, assign to tenant                |X
+|                       |                                |Payload valid, tenant existing, update tenant assignment        |X
+|                       |                                |Payload valid, tenant existing, dashboard not existing          |
+|                       |                                |Payload valid, tenant existing, malformed UUID in query         |
+|                       |                                |Payload valid, tenant existing, missing roles                   |
+|                       |                                |Payload valid, tenant existing, URL taken                       |
+|                       |                                |Payload invalid, tenant existing                                |
+|                       |                                |Payload valid, tenant not existing                              |X
+|                       |                                |Payload valid, tenant not sent in query                         |
+|                       |                                |Payload valid, dashboard assigned to tenant, tenant not sent in query |X
+|                       |                                |Payload valid, tenant not sent in query, dashboard not existing |X
+|                       |                                |Payload valid, tenant not sent in query, missing roles          |X
+|                       |                                |Payload valid, tenant not sent in query, URL already taken      |X
+|                       |Delete                |Delete  Dashboard                                         |X
+|                       |                                |Dashboard not existing                                          |X
+|                       |                                |Dashboard and grouping elements                                 |X
+|                       |                                |Malformed UUID in query                                         |
+|                       |                                |Missing roles                                                   |
+|                       |                                |Assigned to tenant                                              |X
+
+|Dashboard To Tenant    |                               |Testing should be covered by Dashboard E2E tests                |
+
+|Data Model             |Get All                        |Data Model existing                                             |X
+|                       |                               |Data Model not existing                                         |
+|                       |Get by ID                      |Data Model existing                                             |X
+|                       |                               |Data Model not existing                                         |
+|                       |Create                         |Payload valid                                                   |X
+|                       |                               |Payload invalid                                                 |
+|                       |Update                         |Data Model existing, payload valid                              |X
+|                       |                               |Data Model not existing, payload valid                          |
+|                       |                               |Data Model existing, payload invalid                            |
+|                       |Delete                         |Data Model existing                                             |X
+|                       |                               |Data Model not existing                                         |
+
+|Data Source            |Get All                        |Data Source existing                                            |X
+|                       |                               |Data Source not existing                                        |
+|                       |Get by ID                      |Data Source existing                                            |X
+|                       |                               |Data Source not existing                                        |
+|                       |                               |Data Source existing, malformed ID in query                     |
+|                       |Get by Tenant Abbreviation     |Tenant existing, data source existing                           |X
+|                       |                               |Tenant existing, data source not existing                       |X
+|                       |                               |Tenant not existing, data source existing                       |
+|                       |Create                         |Payload valid                                                   |X
+|                       |                               |Payload invalid (no auth data provided)                         |
+|                       |                               |Payload invalid (provided auth data missing in DB)              |X
+|                       |Update                         |Data source existing, payload valid                             |X
+|                       |                               |Data source existing, malformed ID in query                     |
+|                       |                               |Data source not existing, payload valid                         |X
+|                       |                               |Data source existing, payload invalid (no auth data provided)   |
+|                       |                               |Data source existing, payload invalid (provided auth data missing)|
+|                       |Delete                         |Data source existing                                            |X
+|                       |                               |Data source not existing                                        |
+|                       |                               |Data source existing, malformed ID in query                     |
+
+|Grouping Element       |Get All                        |Grouping Element existing                                       |X
+|                       |                               |Grouping Element not existing                                   |
+|                       |                               |Grouping Element existing without roles                         |
+|                       |                               |Grouping Element existing, get with appropriate roles           |X
+|                       |Get by ID                      |Grouping Element existing                                       |X
+|                       |                               |Grouping Element not existing                                   |
+|                       |                               |Dashboard grouping element existing, with roles                 |X
+|                       |                               |Dashboard grouping element existing, without roles              |X
+|                       |                               |Malformed ID                                                    |
+|                       |Get by Tenant Abbreviation     |Grouping element existing, tenant existing                      |
+|                       |                               |Grouping element not existing, tenant existing                  |
+|                       |                               |Grouping element not existing, tenant existing                  |
+|                       |                               |Grouping element existing, tenant not existing                  |
+|                       |                               |Dashboard grouping element existing, with roles                 |X
+|                       |                               |Dashboard grouping element existing, without roles              |X
+|                       |Create        |Payload valid, tenant not set                                                    |X
+|                       |                               |Payload valid, tenant set and existing                          |X
+|                       |                               |Payload valid, tenant set and not existing                      |X
+|                       |Update        |Grouping element existing, payload valid, tenant not set                         |X
+|                       |                               |Grouping element existing, payload valid, tenant set and existing|X
+|                       |                               |Grouping element existing, payload valid, tenant set and not existing|X
+|                       |                               |Grouping element existing, payload valid, convert to dashboard page|
+|                       |                               |Grouping element existing, payload valid, convert to dashboard page, attach children to parent|X
+|                       |                               |Grouping element not existing, payload valid, tenant not set    |
+|                       |                               |Malformed ID                                                    |
+|                       |Delete        |Grouping element existing                                       |X
+|                       |                               |Malformed ID                                                    |
+|                       |                               |Grouping element existing, has children                         |X
+|                       |                               |Grouping element existing, missing roles                        |
+
+|Logos                  |Get All                        |Logos existing (with Tenant Abbreviation)                       |X
+|                       |                               |Logos existing (with Tenant Abbreviation, Tenant not existing)  |
+|                       |                               |Logos existing (without Tenant Abbreviation)                    |
+|                       |                               |No Logos existing (with Tenant Abbreviation)                    |
+|                       |Get By Id                      |Logo existing                                                   |
+|                       |                               |Logo existing, invalid ID                                       |
+|                       |                               |Logo not existing                                               |
+|                       |Create                         |Valid payload, with tenant abbreviation                         |X
+|                       |                               |Valid payload, with tenant abbreviation, tenant not existing    |
+|                       |                               |Valid payload, without tenant abbreviation                      |
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |Valid payload                                                   |X
+|                       |                               |Invalid payload                                                 |
+|                       |                               |Invalid id                                                      |
+|                       |Delete                         |Logo existing                                                   |X
+|                       |                               |Invalid id                                                      |
+|                       |                               |Logo not existing                                               |
+|Panel                  |Get All                        |Panel existing                                                  |X
+|                       |                               |Panel not existing                                              |
+|                       |Get by ID                      |Panel existing                                                  |X
+|                       |                               |Panel existing, invalid ID                                      |
+|                       |                               |Panel not existing                                              |
+|                       |Get by dashboard ID            |Panel existing                                                  |
+|                       |                               |Panel existing, invalid ID                                      |
+|                       |                               |Panel not existing                                              |
+|                       |                               |Dashboard not existing                                          |X
+|                       |Create                         |Valid payload                                                   |
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |Valid payload, panel existing                                   |X
+|                       |                               |Valid payload, panel existing, invalid id                       |
+|                       |                               |Valid payload, panel not existing                               |
+|                       |                               |Invalid payload, panel existing                                 |
+|                       |Delete                         |Panel existing, data existing                                   |X
+|                       |                               |Panel existing, invalid ID                                      |
+|                       |                               |Panel not existing                                              |
+|                       |Download data                  |Panel existing                                                  |
+|                       |                               |Panel existing, invalid id                                      |
+|                       |                               |Panel not existing                                              |
+|                       |                               |Widget not existing                                             |
+|                       |                               |Data not existing                                               |
+|Query                  |Get all                        |Queries existing                                                |X
+|                       |                               |Queries not existing                                            |
+|                       |Get by ID                      |Query existing                                                  |X
+|                       |                               |Query not existing                                              |
+|                       |Get by tab ID                  |Queries existing                                                |
+|                       |                               |Queries not existing                                            |
+|                       |Create                         |Valid payload                                                   |X
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |Query existing                                                  |X
+|                       |                               |Query existing, invalid id                                      |
+|                       |                               |Query not existing                                              |
+|                       |Delete                         |Query existing                                                  |X
+|                       |                               |Query not existing                                              |
+|Query Config           |Get all                        |QueryConfigs existing                                           |X
+|                       |                               |QueryConfig not existing                                        |
+|                       |Get by ID                      |QueryConfig existing                                            |X
+|                       |                               |QueryConfig not existing                                        |
+|                       |Get by tab ID                  |QueryConfig existing                                            |
+|                       |                               |QueryConfig not existing                                        |
+|                       |Create                         |Valid payload                                                   |X
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |QueryConfig existing                                            |X
+|                       |                               |QueryConfig existing, invalid id                                |
+|                       |                               |QueryConfig not existing                                        |
+|                       |Delete                         |QueryConfig existing                                            |X
+|                       |                               |QueryConfig existing, query not existing                        |
+|                       |                               |QueryConfig not existing                                        |
+|Tab                    |Get all                        |Tabs existing                                                   |X
+|                       |                               |Tabs not existing                                               |
+|                       |Get by ID                      |Tab existing                                                    |X
+|                       |                               |Tab not existing                                                |
+|                       |Get by widget ID               |Tab existing                                                    |
+|                       |                               |Tab not existing                                                |
+|                       |Create                         |Valid payload                                                   |X
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |Tab existing                                                    |X
+|                       |                               |Tab existing, invalid id                                        |
+|                       |                               |Tab not existing                                                |
+|                       |Delete                         |Tab existing                                                    |X
+|                       |                               |Tab existing, query not existing                                |
+|                       |                               |Tab not existing                                                |
+|Tenant                 |Get all                        |Tenants existing                                                |X
+|                       |                               |Tenants existing, include dashboards, dashboard existing        |
+|                       |                               |Tenants existing, include dashboards, dashboards not existing   |
+|                       |                               |Tenants not existing                                            |
+|                       |Get by ID                      |Tenant existing                                                 |X
+|                       |                               |Tenant existing, include dashboard                              |X
+|                       |                               |Tenant existing, include dashboards, dashboard not existing     |
+|                       |                               |Tenant existing, invalid id                                     |
+|                       |                               |Tenant not existing                                             |
+|                       |Exists by abbreviation         |Tenant existing                                                 |
+|                       |                               |Tenant not existing                                             |
+|                       |                               |Tenant not existing                                             |
+|                       |Create                         |Valid payload, create corporate info                            |X
+|                       |                               |Invalid payload                                                 |
+|                       |Delete                         |Tenant exists                                                   |X
+|                       |                               |Tenant exists, Corporate info exists                            |X
+|                       |                               |Tenant not existing                                             |
+|Widget                 |Get All                        |Widgets existing                                                |X
+|                       |                               |Widgets existing, no roles from request                         |X
+|                       |                               |Widgets existing, read not allowed                              |
+|                       |                               |Widgets existing, write not allowed                             |
+|                       |                               |Widgets not existing                                            |X
+|                       |Get by ID                      |Widget existing                                                 |X
+|                       |                               |Widget existing, invalid ID                                     |
+|                       |                               |Widget existing, no roles from request                          |X
+|                       |                               |Widget existing, read not allowed                               |X
+|                       |                               |Widget existing, write not allowed                              |
+|                       |                               |Widget existing, invalid ID                                     |
+|                       |                               |Widget not existing                                             |X
+|                       |Get by panel ID                |Widget existing, panel existing                                 |
+|                       |                               |Widget existing, panel existing, invalid ID                     |
+|                       |                               |Widget not existing, panel existing                             |
+|                       |                               |Widget existing, panel not existing                             |
+|                       |                               |Widget existing, read not allowed                               |
+|                       |                               |Widget existing, write not allowed                              |
+|                       |Get by tenant abbreviation     |Widget existing, tenant existing                                |X
+|                       |                               |Widget existing, tenant not existing                            |X
+|                       |                               |Widget not existing, tenant existing                            |X
+|                       |                               |Widget existing, write not allowed                              |
+|                       |                               |Widget existing, read not allowed                               |
+|                       |Create                         |Valid payload, without tenant                                   |X
+|                       |                               |Valid payload, with tenant, tenant exists                       |X
+|                       |                               |Valid payload, with tenant, tenant exists, no write permission  |
+|                       |                               |Invalid payload, with tenant, tenant exists                     |
+|                       |                               |Valid payload, with tenant, tenant not existing                 |X
+|                       |                               |Valid payload, with tenant, tenant exists, with  request roles  |
+|                       |                               |Valid payload, with tenant, tenant exists, without request roles|
+|                       |Update                         |Valid payload, Widget existing, with tenant, tenant existing    |
+|                       |                               |Invalid payload, Widget existing, with tenant, tenant existing  |
+|                       |                               |Valid payload, Widget existing, with tenant, tenant existing, invalid id|
+|                       |                               |Valid payload, Widget existing, with tenant, tenant not existing|C
+|                       |                               |Valid payload, Widget not existing, with tenant, tenant existing|
+|                       |                               |Valid payload, Widget existing, without tenant                  |X
+|                       |                               |Valid payload, Widget not existing, without tenant              |X
+|                       |                               |Valid payload, Widget existing, without tenant, no write allowed|X
+|                       |                               |Valid payload, Widget existing, without tenant, create relation |X
+|                       |                               |Valid payload, Widget existing, without tenant, change relation |X
+|                       |                               |Valid payload, Widget existing, without tenant, delete relation |X
+|                       |                               |Valid payload, Widget existing, without tenant, no write permission|
+|                       |                               |Invalid payload, Widget existing, without tenant                |
+|                       |Delete                         |Widget existing, with tenant                                    |X
+|                       |                               |Widget existing, panel existing                                 |
+|                       |                               |Widget existing, invalid id                                     |
+|                       |                               |Widget existing, no permission to write                         |X
+|                       |                               |Widget existing, widget can't be delete                         |
+|                       |                               |Widget not existing                                             |X
+|                       |Get with children by ID        |Widget existing                                                 |X
+|                       |                               |Widget existing, invalid id                                     |
+|                       |                               |Widget existing, should use query config                        |
+|                       |                               |Widget existing, should not use query config                    |
+|                       |                               |Widget existing, tab existing                                   |
+|                       |                               |Widget existing, tab not existing                               |
+|                       |                               |Widget existing, no request roles                               |X
+|                       |                               |Widget not existing                                             |
+|                       |Create with children           |All payloads valid, should use query config                     |X
+|                       |                         |All payloads valid, shouldn't use query config                        |
+|                       |                         |Invalid widget payload, valid tab payload, valid query config payload |
+|                       |                         |Valid widget payload, invalid tab payload, valid query config payload |
+|                       |                         |Valid widget payload, valid tab payload, invalid query config payload |
+|                       |                         |Widget and Query Config valid, should use query config, tab payload missing|
+|                       |                         |All payloads valid, should use query config, component type Bild      |X
+|                       |Update with children           |Widget existing, tab existing, query config existing, should use query config|X
+|                       |                         |Widget missing, tab existing, query config existing, should use query config|
+|                       |                         |Widget missing, tab existing, query config existing, shouldn't use query config|
+|                       |                         |Widget existing, tab missing, query config existing, should use query config|X
+|                       |                         |Widget existing, tab component type missing, query config existing, should use query config|X
+|                       |                         |Widget existing, tab existing, query config missing, should use query config|X
+|                       |                         |Widget existing, tab existing, query config missing, shouldn't use query config|
+|                       |                         |Widget existing, tab existing, query config missing, component type Bild|X
+|                       |                         |All payloads valid, widget missing                              |
+|                       |                         |All payloads valid, invalid id                                  |
+|                       |Download data            |Widget existing, query existing                                 |
+|                       |                         |Widget existing, invalid id                                     |
+|                       |                         |Widget existing, query missing                                  |
+|                       |                         |Widgets not existing                                            |
+|Widget To Panel        |Get All                        |Relations existing                                              |X
+|                       |                               |Relations not existing                                          |
+|                       |Get by panel id                |Relation existing                                               |X
+|                       |                               |Relation existing, invalid id                                   |
+|                       |                               |Relation not existing                                           |X
+|                       |Create                         |Valid payload                                                   |X
+|                       |                               |Invalid payload                                                 |
+|                       |Update                         |Relation existing                                               |X
+|                       |                               |Relation not existing                                           |X
+|                       |                               |Relation existing, invalid id                                   |
+|                       |Bulk update                    |Relation existing                                               |X
+|                       |                               |Relation not existing                                           |X
+|                       |Delete                         |Relation existing                                               |X
+|                       |                               |Relation existing, invalid id                                   |
+|                       |                               |Relation not existing                                           |X
+|===

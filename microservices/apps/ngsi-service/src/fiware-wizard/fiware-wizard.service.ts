@@ -10,6 +10,7 @@ import {
   dataSources,
 } from '@app/postgres-db/schemas/data-source.schema';
 import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
+import axios from 'axios';
 
 type PreparedNgsiEntityRequest = {
   entitiesUrl: string;
@@ -146,10 +147,19 @@ export class FiwareWizardService {
       dataSourceId,
       rolesFromRequest,
     );
+    const url = new URL(entitiesUrl);
+
+    // Adjusting URl to call the NGSI endpoint for 'v1/types'.
+    // Check if the URL contains the word 'entities'.
+    // If so, process the URL, replacing 'entities' with 'types'.
+    const typesUrl = url.toString().includes('entities')
+      ? entitiesUrl.replace('entities', 'types')
+      : entitiesUrl;
 
     try {
+      url.searchParams.set('limit', '1000');
       const entitiesResponse = await lastValueFrom(
-        this.httpService.get(entitiesUrl, { headers }),
+        this.httpService.get(typesUrl, { headers }),
       );
 
       const types = entitiesResponse.data.map((entity) => entity.type);
@@ -173,10 +183,13 @@ export class FiwareWizardService {
       dataSourceId,
       rolesFromRequest,
     );
+    const url = new URL(entitiesUrl);
 
     try {
+      url.searchParams.set('limit', '1000');
+      url.searchParams.set('type', type);
       const entitiesResponse = await lastValueFrom(
-        this.httpService.get(entitiesUrl, { headers }),
+        this.httpService.get(url.toString(), { headers }),
       );
 
       // Filter entities by the optional fiwareType
@@ -198,35 +211,37 @@ export class FiwareWizardService {
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
-    entityIds?: string[],
+    entityType: string[],
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequest(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
     );
+    const url = new URL(entitiesUrl);
 
     try {
-      const entitiesResponse = await lastValueFrom(
-        this.httpService.get(entitiesUrl, { headers }),
+      // Adjusting URl to call the NGSI endpoint for 'v1/types'.
+      // Check if the URL contains the word 'entities'.
+      // If so, process the URL, replacing 'entities' with 'types'.
+      const typesUrl = url.toString().includes('entities')
+        ? entitiesUrl.replace('entities', 'types')
+        : entitiesUrl;
+
+      const entitiesResponse = await axios.get(
+        `${typesUrl}/${entityType}?limit=1000`,
+        {
+          headers: headers,
+        },
       );
 
-      // // Filter entities by the optional entityId
-      const filteredEntities = entityIds
-        ? entitiesResponse.data.filter((entity) =>
-            entityIds.includes(entity.id),
-          )
-        : entitiesResponse.data;
-
-      // Set to collect unique attribute names
       const attributesSet: Set<string> = new Set();
+      const filteredEntities = entitiesResponse.data;
       // Add all keys which are not an id or a type to the set
-      filteredEntities.forEach((entity) => {
-        Object.keys(entity).forEach((key) => {
-          if (key !== 'id' && key !== 'type') {
-            attributesSet.add(key);
-          }
-        });
+      Object.keys(filteredEntities.attrs).forEach((key) => {
+        if (key !== 'id' && key !== 'type') {
+          attributesSet.add(key);
+        }
       });
 
       // Return set of attribute strings as an array

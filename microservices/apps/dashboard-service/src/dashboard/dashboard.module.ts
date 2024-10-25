@@ -7,7 +7,6 @@ import {
 import { DashboardController } from './dashboard.controller';
 import { AuthHelperMiddleware, AuthHelperUtility } from '@app/auth-helper';
 import { DashboardService } from './dashboard.service';
-import { DataModelService } from '../data-model/data-model.service';
 import { QueryConfigService } from '../query-config/query-config.service';
 import { WidgetToPanelService } from '../widget-to-panel/widget-to-panel.service';
 import { QueryService } from '../query/query.service';
@@ -21,7 +20,6 @@ import { PopulateService } from './populate/populate.service';
 import { AuthDataRepo } from '../auth-data/auth-data.repo';
 import { DataSourceRepo } from '../data-source/data-source.repo';
 import { DashboardRepo } from './dashboard.repo';
-import { DataModelRepo } from '../data-model/data-model.repo';
 import { DashboardToTenantRepo } from '../dashboard-to-tenant/dashboard-to-tenant.repo';
 import { GroupingElementRepo } from '../grouping-element/grouping-element.repo';
 import { PanelRepo } from '../panel/panel.repo';
@@ -40,7 +38,7 @@ import { AuthService as NgsiAuthService } from '../../../ngsi-service/src/auth/a
 import { HttpModule } from '@nestjs/axios';
 import { DashboardDataService } from './dashboard.data.service';
 import { WidgetRepo } from '../widget/widget.repo';
-import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from '../corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
 import { LogoService } from '../logo/logo.service';
 import { PopulateCombinedWidgetService } from './populate/populate-combined-widget.service';
@@ -54,7 +52,6 @@ import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
     CorporateInfoService,
     CorporateInfoRepo,
     AuthHelperUtility,
-    DataModelService,
     DataSourceService,
     QueryConfigService,
     GroupingElementService,
@@ -70,7 +67,6 @@ import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
     AuthDataRepo,
     DataSourceRepo,
     DashboardRepo,
-    DataModelRepo,
     DashboardToTenantRepo,
     GroupingElementRepo,
     PanelRepo,

@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { GroupingElementService } from './grouping-element.service';
@@ -52,6 +53,15 @@ export class GroupingElementController {
     const roles = request.roles ?? [];
     const tenant = request.tenant ?? undefined;
     return this.service.getByTenantAbbreviation(abbreviation, roles, tenant);
+  }
+
+  @Public()
+  @Get('/url/:url')
+  async getByUrl(
+    @Param('url') url: string,
+    @Query('abbreviation') abbreviation: string,
+  ): Promise<GroupingElement> {
+    return this.service.getByUrlAndTenant(url, abbreviation);
   }
 
   @Public()

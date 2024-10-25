@@ -1,4 +1,3 @@
-import { FiwareDataModels } from '../../data-model/fiware-models/fiware-models.enum';
 import { DbType } from '@app/postgres-db';
 import {
   NewQueryConfig,
@@ -11,6 +10,7 @@ import {
 } from '../../data-source/test/test-data';
 import { v4 as uuid } from 'uuid';
 import { createHash } from 'crypto';
+import { FiwareDataModels } from '../../data-model/fiware-models/fiware-models.enum';
 
 export function getQueryConfig(dataSourceId: string): QueryConfig {
   const queryConfig: QueryConfig = {

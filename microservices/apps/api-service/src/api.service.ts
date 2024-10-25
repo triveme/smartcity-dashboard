@@ -153,6 +153,30 @@ export class ApiService {
         }
         break;
 
+      case 'quarter':
+        for (const sensorValues of sensorDataMap.values()) {
+          const aggregatedValues = this.aggregateTimeframe(
+            sensorValues,
+            90,
+            properties,
+            aggregationMode,
+          );
+          aggregatedData = [...aggregatedData, ...aggregatedValues];
+        }
+        break;
+
+      case 'year':
+        for (const sensorValues of sensorDataMap.values()) {
+          const aggregatedValues = this.aggregateTimeframe(
+            sensorValues,
+            365,
+            properties,
+            aggregationMode,
+          );
+          aggregatedData = [...aggregatedData, ...aggregatedValues];
+        }
+        break;
+
       case 'live':
         return data;
 
@@ -328,4 +352,11 @@ export class ApiService {
 }
 
 type AggregationMode = 'none' | 'min' | 'max' | 'sum' | 'avg';
-type Timeframe = 'live' | 'hour' | 'day' | 'week' | 'month';
+type Timeframe =
+  | 'live'
+  | 'hour'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'quarter'
+  | 'year';

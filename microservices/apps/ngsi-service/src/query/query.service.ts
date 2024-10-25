@@ -124,27 +124,54 @@ export class QueryService {
 
   async getQueryWithAllInfosByWidgetId(
     widgetId: string,
-  ): Promise<QueryWithAllInfos> {
-    const imageTabQueries = this.db
-      .select({ queryId: tabs.queryId })
-      .from(tabs);
-
-    const widgetTab = await this.db
+  ): Promise<QueryWithAllInfos | null> {
+    // Get the tab by widgetId
+    const tab = await this.db
       .select()
       .from(tabs)
       .where(eq(tabs.widgetId, widgetId));
 
-    const queryWithAllInfos = await this.db
+    if (tab.length === 0) return null;
+
+    // Get the query by queryId from the tab
+    const query = await this.db
       .select()
       .from(queries)
-      .where(eq(queries.id, widgetTab[0].queryId))
-      .leftJoin(queryConfigs, eq(queries.queryConfigId, queryConfigs.id))
-      .leftJoin(dataSources, eq(queryConfigs.dataSourceId, dataSources.id))
-      .leftJoin(authData, eq(dataSources.authDataId, authData.id))
-      .where(inArray(queries.id, imageTabQueries))
-      .where(or(eq(authData.type, 'ngsi-v2'), eq(authData.type, 'ngsi-ld')));
+      .where(eq(queries.id, tab[0].queryId));
 
-    return queryWithAllInfos.length > 0 ? queryWithAllInfos[0] : null;
+    if (query.length === 0) return null;
+
+    // Get the queryConfig by queryConfigId from the query
+    const queryConfig = await this.db
+      .select()
+      .from(queryConfigs)
+      .where(eq(queryConfigs.id, query[0].queryConfigId));
+
+    if (queryConfig.length === 0) return null;
+
+    // Get the dataSource by dataSourceId from the queryConfig
+    const queryDataSource = await this.db
+      .select()
+      .from(dataSources)
+      .where(eq(dataSources.id, queryConfig[0].dataSourceId));
+
+    if (queryDataSource.length === 0) return null;
+
+    // Get the authData by authDataId from the dataSource
+    const queryAuthData = await this.db
+      .select()
+      .from(authData)
+      .where(eq(authData.id, queryDataSource[0].authDataId));
+
+    if (queryAuthData.length === 0) return null;
+
+    // Return the combined QueryWithAllInfos object
+    return {
+      query: query[0],
+      query_config: queryConfig[0],
+      data_source: queryDataSource[0],
+      auth_data: queryAuthData[0],
+    };
   }
 
   async getAllImagesWithAllInfos(): Promise<TabQueryWithAllInfos[]> {

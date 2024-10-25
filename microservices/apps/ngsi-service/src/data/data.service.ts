@@ -17,6 +17,8 @@ export class DataService {
       let url: string;
       let headers;
       let params;
+      const batchSize = 50;
+      const batches = [];
       const access_token =
         await this.authService.getAccessTokenByQuery(queryBatch);
 
@@ -24,48 +26,53 @@ export class DataService {
         console.error(
           `Could not get access token for data source with id: ${data_source.id}`,
         );
+        return;
       }
+
       // LIVE DATA
       if (query_config.timeframe === 'live') {
         url = `${auth_data.liveUrl}`;
+        headers =
+          auth_data.type === 'ngsi-v2'
+            ? {
+                'Fiware-Service': query_config.fiwareService,
+                'Fiware-ServicePath': query_config.fiwareServicePath,
+                Authorization: `Bearer ${access_token}`,
+              }
+            : {
+                'NGSILD-Tenant': query_config.fiwareService,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Authorization: `Bearer ${access_token}`,
+              };
 
-        if (auth_data.type === 'ngsi-v2') {
-          headers = {
-            'Fiware-Service': query_config.fiwareService,
-            'Fiware-ServicePath': query_config.fiwareServicePath,
-            Authorization: `Bearer ${access_token}`,
-          };
-
-          if (query_config.attributes && query_config.attributes.length > 0) {
-            params = {
-              id: query_config.entityIds.join(','),
-              attrs: query_config.attributes.join(','),
-              type: query_config.fiwareType,
-            };
-          }
-        } else if (auth_data.type === 'ngsi-ld') {
-          headers = {
-            'NGSILD-Tenant': query_config.fiwareService,
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: `Bearer ${access_token}`,
-          };
-          // url += query_config.entityIds[0];
-          if (query_config.attributes && query_config.attributes.length > 0) {
-            params = {
-              attrs: query_config.attributes.join(','),
-              id: query_config.entityIds.join(','),
-            };
-          }
-        } else {
-          console.warn('Unknown auth-data type');
+        // Split entityIds into batches
+        for (let i = 0; i < query_config.entityIds.length; i += batchSize) {
+          batches.push(query_config.entityIds.slice(i, i + batchSize));
         }
 
-        // Always add the fiware type
-        // params = {
-        //   ...params,
-        //   type: query_config.fiwareType,
-        // };
+        const requests = batches.map(async (entityBatch) => {
+          params =
+            auth_data.type === 'ngsi-v2'
+              ? {
+                  id: entityBatch.join(','),
+                  attrs: query_config.attributes.join(','),
+                  type: query_config.fiwareType,
+                  limit: '1000',
+                }
+              : {
+                  id: entityBatch.join(','),
+                  attrs: query_config.attributes.join(','),
+                  limit: '1000',
+                };
+
+          const response = await axios.get(url, { headers, params });
+          return response.data;
+        });
+
+        const results = await Promise.all(requests);
+        return results.flat();
       }
+
       // HISTORIC DATA
       else {
         url =
@@ -109,10 +116,6 @@ export class DataService {
           params.id = query_config.entityIds.join(',');
         }
       }
-
-      console.log('REQUEST', url);
-      console.log('REQUEST', headers);
-      console.log('REQUEST', params);
       const response = await axios.get(url, { headers, params });
 
       return response.data;
@@ -127,7 +130,7 @@ export class DataService {
         '\nfrom auth_data:',
         auth_data.id,
         '\ndue to error:',
-        error,
+        error && error.data ? error.data : error,
       );
     }
   }
@@ -163,7 +166,7 @@ export class DataService {
   }
 
   private getFromDate(
-    timeframe: 'year' | 'hour' | 'day' | 'week' | 'month',
+    timeframe: 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year',
   ): string {
     const now = new Date();
     let fromDate: Date;
@@ -176,6 +179,8 @@ export class DataService {
       fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     } else if (timeframe === 'month') {
       fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'quarter') {
+      fromDate = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000);
     } else if (timeframe === 'year') {
       fromDate = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
     }

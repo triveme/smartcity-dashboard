@@ -121,18 +121,20 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const attributeNames = Object.keys(corporateInfos);
 
-      for (const coporateInfo of response.body) {
+      for (const corporateInfo of response.body) {
         for (const attributeName of attributeNames) {
-          expect(coporateInfo).toHaveProperty(attributeName);
+          expect(corporateInfo).toHaveProperty(attributeName);
 
-          const columnDefinition = coporateInfo[attributeName];
+          const columnDefinition = corporateInfo[attributeName];
           if (columnDefinition && columnDefinition.notNull) {
-            expect(coporateInfo[attributeName]).not.toBeNull();
+            expect(corporateInfo[attributeName]).not.toBeNull();
           }
         }
       }
 
-      const responseIds = response.body.map((coporateInfo) => coporateInfo.id);
+      const responseIds = response.body.map(
+        (corporateInfo) => corporateInfo.id,
+      );
       expect(responseIds).toContain(corporateInfo.id);
     });
 
@@ -150,13 +152,13 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const attributeNames = Object.keys(corporateInfos);
 
-      for (const coporateInfo of response.body) {
+      for (const corporateInfo of response.body) {
         for (const attributeName of attributeNames) {
-          expect(coporateInfo).toHaveProperty(attributeName);
+          expect(corporateInfo).toHaveProperty(attributeName);
 
-          const columnDefinition = coporateInfo[attributeName];
+          const columnDefinition = corporateInfo[attributeName];
           if (columnDefinition && columnDefinition.notNull) {
-            expect(coporateInfo[attributeName]).not.toBeNull();
+            expect(corporateInfo[attributeName]).not.toBeNull();
           }
         }
       }
@@ -165,36 +167,13 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(responseIds).toContain(corporateInfo.id);
     });
 
-    // getById
-    it('/corporate-infos/:id (GET)', async () => {
-      const corporateInfo = await createCorporateInfoByObject(
-        db,
-        getCorporateInfo(),
-      );
-
-      const response = await request(app.getHttpServer()).get(
-        '/corporate-infos/' + corporateInfo.id,
-      );
-
-      const attributeNames = Object.keys(corporateInfos);
-
-      for (const attributeName of attributeNames) {
-        expect(response.body).toHaveProperty(attributeName);
-
-        const columnDefinition = corporateInfos[attributeName];
-        if (columnDefinition.notNull) {
-          expect(response.body[attributeName]).not.toBeNull();
-        }
-      }
-    });
-
     // update
     it('/corporate-infos/:id (PATCH)', async () => {
       const corporateInfo = await createCorporateInfoByObject(
         db,
         getCorporateInfo(),
       );
-      const updateCoporateInfo = {
+      const updateCorporateInfo = {
         logo: 'https://example-updated.com/logo.png',
         dashboardPrimaryColor: 'https://example-updated.com/dashboard_bg.jpg',
         widgetPrimaryColor: 'https://example-updated.com/widget_bg.jpg',
@@ -205,10 +184,10 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/corporate-infos/' + corporateInfo.id)
-        .send(updateCoporateInfo)
+        .send(updateCorporateInfo)
         .expect(200);
 
-      expect(response.body).toMatchObject(updateCoporateInfo);
+      expect(response.body).toMatchObject(updateCorporateInfo);
     });
 
     it('/corporate-infos/:id (PATCH) add sidebar logo to corporate info', async () => {

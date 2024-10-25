@@ -34,14 +34,6 @@ export class CorporateInfoController {
   }
 
   @Public()
-  @Get('/:id')
-  async getById(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ): Promise<CorporateInfo> {
-    return this.service.getById(id);
-  }
-
-  @Public()
   @Get('/tenant/:tenant')
   async getByTenant(
     @Param('tenant') tenant: string,

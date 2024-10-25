@@ -14,14 +14,10 @@ import {
   Panel,
 } from '@app/postgres-db/schemas/dashboard.panel.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
-import { PanelDataService } from './panel.data.service';
 
 @Controller('panels')
 export class PanelController {
-  constructor(
-    private readonly service: PanelService,
-    private readonly panelDataService: PanelDataService,
-  ) {}
+  constructor(private readonly service: PanelService) {}
 
   @Public()
   @Get('/')
@@ -66,11 +62,5 @@ export class PanelController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<Panel> {
     return this.service.delete(id);
-  }
-
-  @Public()
-  @Get('/download-data/:panelId')
-  async downloadData(@Param('panelId') panelId: string): Promise<string> {
-    return this.panelDataService.downloadPanelData(panelId);
   }
 }

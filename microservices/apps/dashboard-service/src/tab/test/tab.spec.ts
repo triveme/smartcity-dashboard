@@ -7,12 +7,11 @@ import {
   runLocalDatabasePreparation,
   truncateTables,
 } from '../../../../test/database-operations/prepare-database';
-import { createTab, getTab } from './test-data';
+import { createDataModel, createTab, getTab } from './test-data';
 import { createWidgetByObject, getWidget } from '../../widget/test/test-data';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { Client } from 'pg';
 import { createQuery, getNGSILiveQuery } from '../../query/test/test-data';
-import { createDataModel } from '../../data-model/test/test-data';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;

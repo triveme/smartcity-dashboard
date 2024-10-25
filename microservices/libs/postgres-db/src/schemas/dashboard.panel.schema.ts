@@ -12,6 +12,7 @@ export const panels = pgTable('panel', {
   width: smallint('width'),
   position: smallint('position'),
   headlineColor: text('headline_color'),
+  icon: text('icon'),
   info: text('info_msg'),
   generalInfo: text('general_info'),
   showGeneralInfo: boolean('show_general_info'),

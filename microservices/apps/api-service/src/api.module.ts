@@ -11,7 +11,6 @@ import { AuthModule } from './auth/auth.module';
 import { OrganisationScheduleService } from './organisation-schedule.service';
 import { OrganisationService } from './organisation/organisation.service';
 import { OrganisationModule } from './organisation/organisation.module';
-import { DataConversionModule } from './data-conversion/data-conversion.module';
 import { SystemUserService } from './system-user/system-user.service';
 import { TenantService } from 'apps/dashboard-service/src/tenant/tenant.service';
 import { ReportModule } from '../../ngsi-service/src/report/report.module';
@@ -23,14 +22,14 @@ import { ReportService } from './report/report.service';
 import { CorporateInfoService } from 'apps/dashboard-service/src/corporate-info/corporate-info.service';
 import { CorporateInfoRepo } from 'apps/dashboard-service/src/corporate-info/corporate-info.repo';
 import { TenantRepo } from 'apps/dashboard-service/src/tenant/tenant.repo';
-import { CorporateInfoSidebarLogosRepo } from 'apps/dashboard-service/src/corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from 'apps/dashboard-service/src/corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from 'apps/dashboard-service/src/logo/logo.repo';
 import { LogoService } from '../../dashboard-service/src/logo/logo.service';
+import { GeneralSettingsRepo } from 'apps/dashboard-service/src/general-settings/general-settings.repo';
 
 @Module({
   imports: [
     AuthModule,
-    DataConversionModule,
     DataModule,
     HttpModule,
     OrganisationModule,
@@ -47,6 +46,7 @@ import { LogoService } from '../../dashboard-service/src/logo/logo.service';
     CorporateInfoService,
     CorporateInfoSidebarLogosRepo,
     DataService,
+    GeneralSettingsRepo,
     LogoRepo,
     LogoService,
     OrganisationScheduleService,
