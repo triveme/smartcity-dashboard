@@ -32,6 +32,7 @@ type GroupingElementWizardProps = {
   borderColor: string;
   backgroundColor: string;
   fontColor: string;
+  geColor: string;
 };
 
 export default function GroupingElementAddDashboardWizard(
@@ -48,6 +49,7 @@ export default function GroupingElementAddDashboardWizard(
     borderColor,
     backgroundColor,
     fontColor,
+    geColor,
   } = props;
   const auth = useAuth();
   const { openSnackbar } = useSnackbar();
@@ -65,7 +67,12 @@ export default function GroupingElementAddDashboardWizard(
   const [groupName, setGroupName] = useState('');
   const [groupUrl, setGroupUrl] = useState('');
   const [groupIcon, setGroupIcon] = useState('ChevronLeft');
-  const [groupColor, setGroupColor] = useState('#ffffff');
+  const [groupBackgroundColor, setGroupBackgroundColor] = useState('#ffffff');
+  const [groupFontColor, setGroupFontColor] = useState(
+    editElement?.fontColor && editElement?.fontColor !== geColor
+      ? editElement?.fontColor
+      : geColor,
+  );
   const [groupIsGradient, setGroupIsGradient] = useState(false);
 
   const handleSaveClick = async (): Promise<void> => {
@@ -74,12 +81,12 @@ export default function GroupingElementAddDashboardWizard(
         id: editElement?.id || undefined,
         name: selectedDashboard?.name || null,
         url: selectedDashboard?.url || null,
-        icon: selectedDashboard?.icon || null,
-        color: null,
+        backgroundColor: null,
+        fontColor: groupFontColor,
         gradient: null,
+        icon: selectedDashboard?.icon || null,
         isDashboard: true,
         parentGroupingElementId: parentGroupId || null,
-        // children: [],
         position: newElementPosition,
         tenantAbbreviation: tenant,
       };
@@ -88,15 +95,15 @@ export default function GroupingElementAddDashboardWizard(
       const tGroup: GroupingElement = {
         id: editElement?.id || undefined,
         name: groupName,
-        url: groupUrl,
-        icon: groupIcon,
-        color: groupColor,
+        backgroundColor: groupBackgroundColor,
+        fontColor: groupFontColor,
         gradient: groupIsGradient,
+        icon: groupIcon,
         isDashboard: false,
         parentGroupingElementId: parentGroupId || null,
-        //children: editElement?.children || [],
         position: newElementPosition,
         tenantAbbreviation: tenant,
+        url: groupUrl,
       };
       await handleElementSave(tGroup);
     }
@@ -152,7 +159,8 @@ export default function GroupingElementAddDashboardWizard(
       setGroupName(editElement.name || '');
       setGroupUrl(editElement.url || '');
       setGroupIcon(editElement.icon || '');
-      setGroupColor(editElement.color || '');
+      setGroupBackgroundColor(editElement.backgroundColor || '');
+      setGroupFontColor(editElement.fontColor || '');
       setGroupIsGradient(editElement.gradient || false);
     }
   }, [editElement]);
@@ -216,34 +224,52 @@ export default function GroupingElementAddDashboardWizard(
         {elementType === 'Dashboardseite' && (
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Dashboard" />
-            <WizardDropdownSelection
-              currentValue={selectedDashboard?.name || ''}
-              selectableValues={allDashboards.map(
-                (dashboard) => dashboard.name!,
-              )}
-              onSelect={(value: string | number): void =>
-                handleDashboardSelect(value.toString())
-              }
-              iconColor={iconColor}
-              borderColor={borderColor}
-              backgroundColor={backgroundColor}
-            />
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex grow">
+                <WizardDropdownSelection
+                  currentValue={selectedDashboard?.name || ''}
+                  selectableValues={allDashboards.map(
+                    (dashboard) => dashboard.name!,
+                  )}
+                  onSelect={(value: string | number): void =>
+                    handleDashboardSelect(value.toString())
+                  }
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+              <ColorPickerComponent
+                currentColor={groupFontColor || fontColor}
+                handleColorChange={setGroupFontColor}
+                label={'Menu Schriftfarbe'}
+              />
+            </div>
           </div>
         )}
         {elementType === 'Gruppe' && (
           <div className="flex flex-col justify-between">
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Name" />
-                <WizardTextfield
-                  value={groupName}
-                  onChange={(value: string | number): void =>
-                    setGroupName(value.toString())
-                  }
-                  error={errors && errors.nameError}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
+                <div className="flex flex-row items-center gap-4">
+                  <div className="flex grow">
+                    <WizardTextfield
+                      value={groupName}
+                      onChange={(value: string | number): void =>
+                        setGroupName(value.toString())
+                      }
+                      error={errors && errors.nameError}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <ColorPickerComponent
+                    currentColor={groupFontColor || fontColor}
+                    handleColorChange={setGroupFontColor}
+                    label={'Menü Schriftfarbe'}
+                  />
+                </div>
               </div>
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Url" />
@@ -271,9 +297,9 @@ export default function GroupingElementAddDashboardWizard(
                 <WizardLabel label="Farbe" />
                 <div className="flex justify-start">
                   <ColorPickerComponent
-                    currentColor={groupColor}
-                    handleColorChange={setGroupColor}
-                    label="Farbe"
+                    currentColor={groupBackgroundColor}
+                    handleColorChange={setGroupBackgroundColor}
+                    label="Icon Farbe"
                   />
                   <CheckBox
                     label={'Farbverlauf'}

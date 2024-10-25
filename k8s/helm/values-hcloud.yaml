@@ -1,0 +1,196 @@
+hosting:
+  protocol: https
+  domainName: smartcity-system.de  # Update to your new domain
+
+trustedCAFile: "certificates/hcloud_ca.pem"
+
+migrations:
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/migrations
+    tag: '0.11.0'
+    pullPolicy: Always
+
+keycloak:
+  proxy: edge
+  production: true
+  ingress:
+    enabled: true
+    hostname: keycloak.smartcity-system.de
+    tls:
+      - hosts:
+          - keycloak.smartcity-system.de
+        secretName: keycloak-tls-secret
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+dashboard-service:
+  jwks: "https://keycloak.smartcity-system.de/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "https://smartcity-system.de"
+  adminRole: "scs-admin"
+  logRotationCron: "5 1 * * * *"
+  editRoles: |
+    [ "editor", "tester", "scs-admin" ]
+  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - dashboard-service.smartcity-system.de
+        secretName: dashboard-service-tls-secret
+    hosts:
+      - host: dashboard-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
+    tag: '0.11.0'
+    pullPolicy: Always
+
+ngsi-service:
+  jwks: "https://keycloak.smartcity-system.de/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "https://smartcity-system.de"
+  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - ngsi-service.smartcity-system.de
+        secretName: ngsi-service-tls-secret
+    hosts:
+      - host: ngsi-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
+    tag: '0.11.0'
+    pullPolicy: Always
+
+api-service:
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - api-service.smartcity-system.de
+        secretName: api-service-tls-secret
+    hosts:
+      - host: api-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/api-service
+    tag: '0.11.0'
+    pullPolicy: Always
+
+mail-service:
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - mail-service.smartcity-system.de
+        secretName: mail-service-tls-secret
+    hosts:
+      - host: mail-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/mail-service
+    tag: '0.11.0'
+    pullPolicy: Always
+
+infopin-service:
+  jwks: "https://keycloak.smartcity-system.de/realms/testrealm/protocol/openid-connect/certs"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - infopin-service.smartcity-system.de
+        secretName: infopin-service-tls-secret
+    hosts:
+      - host: infopin-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
+    tag: '0.11.0'
+    pullPolicy: Always
+
+
+report-service:
+  frontendUrl: "https://smartcity-system.de"
+  mailServiceUrl: "https://mail-service.smartcity-system.de"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - report-service.smartcity-system.de
+        secretName: report-service-tls-secret
+    hosts:
+      - host: report-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/report-service
+    tag: 'latest-feature'
+    pullPolicy: Always
+
+frontend:
+  url: "https://smartcity-system.de"
+  basepath: ""
+  prefix: ""
+  oidc:
+    auth: "https://keycloak.smartcity-system.de/realms/testrealm"
+    redirectUri: "https://smartcity-system.de"
+    clientId: scs-frontend
+  backendUrl: "https://dashboard-service.smartcity-system.de"
+  apiServiceUrl: "https://api-service.smartcity-system.de"
+  ngsiServiceUrl: "https://ngsi-service.smartcity-system.de"
+  tlsRejectUnauthorized: "0"
+  mailTo: "smart.city@edag.com"
+  mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
+  adminRole: "scs-admin"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    className: nginx
+    tls:
+      - hosts:
+          - smartcity-system.de
+        secretName: frontend-tls-secret
+    hosts:
+      - host: smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/frontend
+    tag: '0.11.0'
+    pullPolicy: Always

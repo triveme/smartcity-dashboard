@@ -16,15 +16,11 @@ export default function VisibilityDisplay(
   let bgColor;
   let textColor;
   let icon;
-  const text = visibilityOptions.find((option) => option.value === visibility)
-    ?.label;
+  const text = visibilityOptions.find(
+    (option) => option.value === visibility,
+  )?.label;
 
   switch (visibility) {
-    case 'invisible':
-      icon = 'EyeSlash';
-      bgColor = 'bg-[#D9D9D9]';
-      textColor = 'text-[#3D4760]';
-      break;
     case 'protected':
       icon = 'Key';
       bgColor = 'bg-[#FACC15]';

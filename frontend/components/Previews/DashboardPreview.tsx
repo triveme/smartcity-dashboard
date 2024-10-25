@@ -23,6 +23,7 @@ type DashboardPreviewProps = {
   dashboardType: string;
   selectedTab: Tab | undefined;
   fontColor: string;
+  iconColor: string;
   backgroundColor: string;
   borderColor: string;
 };
@@ -38,6 +39,7 @@ export default function DashboardPreview(
     dashboardType,
     selectedTab,
     fontColor,
+    iconColor,
     borderColor,
     backgroundColor,
   } = props;
@@ -238,6 +240,7 @@ export default function DashboardPreview(
           handlePanelChange={handlePanelChange}
           isCreate={isCreate}
           fontColor={fontColor}
+          iconColor={iconColor}
           backgroundColor={backgroundColor}
           borderColor={borderColor}
         />

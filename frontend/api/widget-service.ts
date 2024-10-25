@@ -70,6 +70,37 @@ export async function getWidgetsByPanelId(
   }
 }
 
+export async function getWidgetDownloadData(
+  accessToken: string | undefined,
+  widgetId?: string,
+): Promise<string> {
+  try {
+    const response = await axios.get(
+      `${NEXT_PUBLIC_BACKEND_URL}/widgets/download-data/${widgetId}`,
+      {
+        headers: accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : undefined,
+        responseType: 'blob',
+      },
+    );
+
+    const csvData = await response.data.text();
+    return csvData;
+  } catch (err) {
+    console.error('Error fetching CSV data:', err);
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        'HTTP Error on getWidgetDownloadData:',
+        err.response?.status,
+      );
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}
+
 export async function postWidget(
   accessToken: string | undefined,
   newWidget: Widget,

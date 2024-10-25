@@ -34,14 +34,6 @@ export class QueryConfigController {
   }
 
   @Public()
-  @Get('/tab/:id')
-  async getByTabId(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ): Promise<QueryConfig> {
-    return this.service.getQueryConfigByTabId(id);
-  }
-
-  @Public()
   @Post('/')
   async create(@Body() row: NewQueryConfig): Promise<QueryConfig> {
     return this.service.create(row);

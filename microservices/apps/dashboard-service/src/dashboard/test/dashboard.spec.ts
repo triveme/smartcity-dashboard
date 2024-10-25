@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DashboardServiceModule } from '../../dashboard-service.module';
 import { dashboards } from '@app/postgres-db/schemas/dashboard.schema';
-import axios from 'axios';
 import {
   runLocalDatabasePreparation,
   truncateTables,
@@ -31,13 +30,13 @@ import {
 import { GroupingElement } from '@app/postgres-db/schemas/dashboard.grouping-element.schema';
 import { createPanelByObject, getPanel } from '../../panel/test/test-data';
 import { createWidgetByObject, getWidget } from '../../widget/test/test-data';
-import { createTab } from '../../tab/test/test-data';
+import { createTab, getTab } from '../../tab/test/test-data';
+import { generateJWTToken } from '../../../../test/jwt-token-util';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
   let client: Client;
   let db: DbType;
-  const dashboardUrls = ['dashboard1', 'dashboard2'];
 
   beforeAll(async () => {
     process.env.EDIT_ROLES = '["scs-admin"]';
@@ -56,21 +55,10 @@ describe('DashboardServiceControllers (e2e)', () => {
   let JWTToken = null;
 
   beforeEach(async () => {
-    // Get JWT token
-    const authUrl = process.env.KEYCLOAK_CLIENT_URI;
-
-    const data = new URLSearchParams();
-    data.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-    data.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-    data.append('grant_type', 'client_credentials');
-
-    try {
-      await process.nextTick(() => {});
-      const res = await axios.post(authUrl, data);
-      JWTToken = res.data.access_token;
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
+    JWTToken = await generateJWTToken(
+      process.env.KEYCLOAK_CLIENT_ID,
+      process.env.KEYCLOAK_CLIENT_SECRET,
+    );
 
     await truncateTables(client);
   });
@@ -82,31 +70,6 @@ describe('DashboardServiceControllers (e2e)', () => {
   describe('Dashboards', () => {
     // create
     it('/dashboards (POST)', async () => {
-      for (let i = 0; i < 3; i++) {
-        const dashboard = getDashboard();
-        dashboard.id = uuid();
-        dashboard.url = dashboard.url + i;
-
-        const response = await request(app.getHttpServer())
-          .post('/dashboards')
-          .set('Authorization', `Bearer ${JWTToken}`)
-          .send(dashboard)
-          .expect(201);
-
-        const attributeNames = Object.keys(dashboards);
-
-        for (const attributeName of attributeNames) {
-          expect(response.body).toHaveProperty(attributeName);
-
-          const columnDefinition = dashboards[attributeName];
-          if (columnDefinition.notNull) {
-            expect(dashboards[attributeName]).not.toBeNull();
-          }
-        }
-      }
-    });
-
-    it('/dashboards (POST) with tenant', async () => {
       const tenant = await createTenantByObject(db, getTenant());
 
       for (let i = 0; i < 3; i++) {
@@ -195,72 +158,52 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // getById
     it('/dashboards/:id (GET)', async () => {
-      for (const url of dashboardUrls) {
-        const dashboard = await createDashboardByObject(db, getDashboard(url));
+      const dashboard = await createDashboardByObject(db, getDashboard());
 
-        const response = await request(app.getHttpServer())
-          .get('/dashboards/' + dashboard.id)
-          .set('Authorization', `Bearer ${JWTToken}`);
+      const response = await request(app.getHttpServer())
+        .get('/dashboards/' + dashboard.id)
+        .set('Authorization', `Bearer ${JWTToken}`);
 
-        const attributeNames = Object.keys(dashboards);
+      const attributeNames = Object.keys(dashboards);
 
-        for (const attributeName of attributeNames) {
-          expect(response.body).toHaveProperty(attributeName);
+      for (const attributeName of attributeNames) {
+        expect(response.body).toHaveProperty(attributeName);
 
-          const columnDefinition = dashboards[attributeName];
-          if (columnDefinition.notNull) {
-            expect(response.body[attributeName]).not.toBeNull();
-          }
+        const columnDefinition = dashboards[attributeName];
+        if (columnDefinition.notNull) {
+          expect(response.body[attributeName]).not.toBeNull();
         }
       }
     });
 
     // getByUrl
     it('/dashboards/url/:url (GET)', async () => {
-      for (const url of dashboardUrls) {
-        await createDashboardByObject(db, getDashboard(url));
+      const dashboard = await createDashboardByObject(db, getDashboard());
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
 
-        const response = await request(app.getHttpServer())
-          .get('/dashboards/url/' + url)
-          .set('Authorization', `Bearer ${JWTToken}`);
+      const response = await request(app.getHttpServer())
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
+        .set('Authorization', `Bearer ${JWTToken}`);
 
-        const attributeNames = Object.keys(dashboards);
+      const attributeNames = Object.keys(dashboards);
 
-        for (const attributeName of attributeNames) {
-          expect(response.body).toHaveProperty(attributeName);
+      for (const attributeName of attributeNames) {
+        expect(response.body).toHaveProperty(attributeName);
 
-          const columnDefinition = dashboards[attributeName];
-          if (columnDefinition.notNull) {
-            expect(response.body[attributeName]).not.toBeNull();
-          }
+        const columnDefinition = dashboards[attributeName];
+        if (columnDefinition.notNull) {
+          expect(response.body[attributeName]).not.toBeNull();
         }
       }
     });
 
     // update
-    it('/dashboards/:id (PATCH)', async () => {
-      const dashboard = await createDashboardByObject(db, getDashboard());
-      await createGroupingElementByObject(db, getGroupingElement());
-
-      const updateDashboard = {
-        name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
-        icon: '/testicon/updated',
-        type: 'example',
-        readRoles: [],
-        writeRoles: [],
-        visibility: 'public',
-      };
-
-      const response = await request(app.getHttpServer())
-        .patch('/dashboards/' + dashboard.id)
-        .set('Authorization', `Bearer ${JWTToken}`)
-        .send(updateDashboard)
-        .expect(200);
-
-      expect(response.body).toMatchObject(updateDashboard);
-    });
-
     it('/dashboards/:id (PATCH) with updated tenant abbreviation', async () => {
       const tenant = await createTenantByObject(db, getTenant());
       const updateTenantObject = getTenant();
@@ -275,7 +218,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'testUrl',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -305,7 +248,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'testUrl',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -314,7 +257,7 @@ describe('DashboardServiceControllers (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer())
-        .patch(`/dashboards/${dashboard.id}`)
+        .patch(`/dashboards/${dashboard.id}?tenant=edag`)
         .set('Authorization', `Bearer ${JWTToken}`)
         .send(updateDashboard)
         .expect(200);
@@ -332,7 +275,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'testUrl',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -350,7 +293,10 @@ describe('DashboardServiceControllers (e2e)', () => {
     });
 
     it('/dashboards/:id (PATCH) with not existing tenant abbreviation', async () => {
-      const dashboard = await createDashboardByObject(db, getDashboard());
+      const dashboard = await createDashboardByObject(
+        db,
+        getDashboard('test1'),
+      );
       await createGroupingElementByObject(
         db,
         getGroupingElement(true, dashboard.url),
@@ -358,7 +304,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'test1',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -375,11 +321,17 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     // update
     it('/dashboards/:id (PATCH) but new url exists', async () => {
-      await createDashboardByObject(db, getDashboard('test1'));
+      const tenant = await createTenantByObject(db, getTenant());
+      const dashboard1 = await createDashboardByObject(
+        db,
+        getDashboard('test1'),
+      );
       const dashboard2 = await createDashboardByObject(
         db,
         getDashboard('test2'),
       );
+      await createDashboardToTenant(db, dashboard1.id, tenant.id);
+      await createDashboardToTenant(db, dashboard2.id, tenant.id);
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
@@ -392,7 +344,7 @@ describe('DashboardServiceControllers (e2e)', () => {
       };
 
       await request(app.getHttpServer())
-        .patch('/dashboards/' + dashboard2.id)
+        .patch(`/dashboards/${dashboard2.id}?tenant=${tenant.abbreviation}`)
         .set('Authorization', `Bearer ${JWTToken}`)
         .send(updateDashboard)
         .expect(409);
@@ -402,7 +354,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     it('/dashboards/:id (PATCH) but not found', async () => {
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'testUrl',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -423,7 +375,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const updateDashboard = {
         name: 'Sample Dashboard updated',
-        url: 'http://localhost:1234/dashboard-updated',
+        url: 'testUrl',
         icon: '/testicon/updated',
         type: 'example',
         readRoles: [],
@@ -459,7 +411,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/dashboards/' + dashboard.id)
@@ -476,7 +428,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/dashboards/' + dashboard.id)
@@ -572,17 +524,29 @@ describe('DashboardServiceControllers (e2e)', () => {
       );
     });
 
-    it('should return the first dashboard url without grouping elements', async () => {
-      await createDashboardByObject(db, getDashboard('test1'));
-      await createDashboardByObject(db, getDashboard('test2'));
+    it('should return the first dashboard url without nested grouping elements', async () => {
+      const tenant = await createTenantByObject(db, getTenant());
+
+      const dashboard1 = await createDashboardByObject(
+        db,
+        getDashboard('test1'),
+      );
+      const dashboard2 = await createDashboardByObject(
+        db,
+        getDashboard('test2'),
+      );
+
+      await createDashboardToTenant(db, dashboard1.id, tenant.id);
+      await createDashboardToTenant(db, dashboard2.id, tenant.id);
+
       const groupingElement1: GroupingElement =
         await createGroupingElementByObject(
           db,
-          getGroupingElement(true, 'test1', null, 0),
+          getGroupingElement(true, 'test1', null, 0, 'edag'),
         );
       await createGroupingElementByObject(
         db,
-        getGroupingElement(true, 'test2', null, 1),
+        getGroupingElement(true, 'test2', null, 1, 'edag'),
       );
 
       const response = await request(app.getHttpServer())

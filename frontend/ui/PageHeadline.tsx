@@ -11,7 +11,7 @@ export default function PageHeadline(props: PageHeadlineProps): ReactElement {
   return (
     <div
       style={{ color: fontColor || 'white' }}
-      className="text-2xl mr-auto font-bold mb-4 overflow-hidden overflow-ellipsis whitespace-nowrap"
+      className="text-2xl mr-auto font-bold overflow-hidden overflow-ellipsis whitespace-nowrap"
     >
       {headline}
     </div>

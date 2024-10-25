@@ -22,10 +22,14 @@ import RoleSelection from '@/components/RoleSelecton';
 import WizardSuffixUrlTextfield from '@/ui/WizardSuffixUrlTextfield';
 import { WizardErrors } from '@/types/errors';
 import { visibilityOptions } from '@/utils/enumMapper';
+import CheckBox from '@/ui/CheckBox';
+import ColorPickerComponent from '@/ui/ColorPickerComponent';
 
 type DashboardWizardProps = {
   dashboardName: string;
   setDashboardName: (name: string) => void;
+  dashboardFontColor: string;
+  setDashboardFontColor: (name: string) => void;
   dashboardUrl: string;
   setDashboardUrl: (url: string) => void;
   dashboardVisibility: string;
@@ -38,6 +42,8 @@ type DashboardWizardProps = {
   setDashboardIcon: (icon: string) => void;
   dashboardType: string;
   setDashboardType: (type: string) => void;
+  dashboardAllowDataExport: boolean;
+  setDashboardAllowDataExport: (type: boolean) => void;
   selectedTab: Tab | undefined;
   setSelectedTab: (tab: Tab) => void;
   panels: Panel[] | undefined;
@@ -57,6 +63,8 @@ export default function DashboardWizard(
   const {
     dashboardName,
     setDashboardName,
+    dashboardFontColor,
+    setDashboardFontColor,
     dashboardUrl,
     setDashboardUrl,
     dashboardVisibility,
@@ -69,6 +77,8 @@ export default function DashboardWizard(
     setDashboardIcon,
     dashboardType,
     setDashboardType,
+    dashboardAllowDataExport,
+    setDashboardAllowDataExport,
     setSelectedTab,
     panels,
     setPanels,
@@ -216,15 +226,24 @@ export default function DashboardWizard(
     <div>
       <div className="flex flex-col w-full pb-2">
         <WizardLabel label="Name" />
-        <WizardTextfield
-          value={dashboardName}
-          onChange={(value: string | number): void =>
-            setDashboardName(value.toString())
-          }
-          error={errors && errors.nameError}
-          borderColor={borderColor}
-          backgroundColor={backgroundColor}
-        />
+        <div className="flex flex-row items-center gap-4">
+          <div className="flex grow">
+            <WizardTextfield
+              value={dashboardName}
+              onChange={(value: string | number): void =>
+                setDashboardName(value.toString())
+              }
+              error={errors && errors.nameError}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+            />
+          </div>
+          <ColorPickerComponent
+            currentColor={dashboardFontColor}
+            handleColorChange={setDashboardFontColor}
+            label={'Schriftfarbe des Dashboardnamens'}
+          />
+        </div>
       </div>
       <div className="flex flex-col w-full pb-2">
         <WizardLabel label="Url" />
@@ -311,6 +330,7 @@ export default function DashboardWizard(
             }
             onSelect={setSelectedWidgetInDropdown}
             backgroundColor={backgroundColor}
+            borderColor={borderColor}
             hoverColor={hoverColor}
           />
         </div>
@@ -324,6 +344,13 @@ export default function DashboardWizard(
           }
           iconColor={iconColor}
           borderColor={borderColor}
+        />
+      </div>
+      <div className="flex flex-col w-full py-2">
+        <CheckBox
+          label="Datenexport zulassen"
+          value={dashboardAllowDataExport}
+          handleSelectChange={setDashboardAllowDataExport}
         />
       </div>
       <HorizontalDivider />

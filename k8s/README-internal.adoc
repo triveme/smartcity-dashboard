@@ -1,0 +1,307 @@
+= Kubernetes Setup in an EDAG environment
+
+This README assists EDAG developers in setting up the SmartCity Dashboard in both their local k8s cluster and our EDAG k8s cluster.
+
+:toc: macro
+:toc-title: Table of Contents
+
+== Table of Contents
+
+* <<Prequisites & Additional Directory Info, Prequisites & Additional Directory Info>>
+* <<Local Deployment, Local Deployment>>
+* <<EDAG Deployment with Kubernetes (helm), EDAG Deployment with Kubernetes (helm)>>
+* <<Deploy to dev namespace, Deploy to EDAG dev namespace>>
+* <<Deploy to test namespace, Deploy to EDAG test namespace>>
+* <<Deploy to prod namespace, Deploy to EDAG prod namespace>>
+* <<Hetzner Cloud Deployment with Kubernetes (helm), Hetzner Cloud Deployment with Kubernetes (helm)>>
+* <<Additional Pod Info, Additional Pod Info>>
+
+
+== Prequisites & Additional Directory Info
+
+=== Prequisites:
+
+* Local Kubernetes cluster. +
+  Install https://rancherdesktop.io/[rancher-desktop] as admin. Admin rights are important otherwise the kube config might not be populated with the rancher context. +
+  Rancher comes with a Kubernetes engine installed.
+* Nice-To-Have: K9S - Terminal UI very useful for managing k8s deployments. +
+  You can manually restart pods, easily view their logs, port forward containers and many more useful features.
+
+=== k8s Directory Structure Breakdown
+
+* *Chart.yaml:* In the helm directory the Chart.yaml defines the dependencies that will be installed.
+E.g. postgres will pull its image from the bitnami URL and insert to the charts subdir.
+
+* *values.yaml:* Here we define the env variables of the dependencies defined in the main Chart.yaml file.
+E.g. we can configure envFrom to point to a configmap to get the env variables for the postgres db.
+
+* *templates:* When installing the helm chart, it looks for a 'templates' directory and configures all yaml inside as env
+variables. Inside we have 'configmaps' for defining not-so confidential env vars such as hosts/ports.  We also have 'secrets'
+for defining confidential env vars like passwords.
+
+* *charts:* When installing the helm chart, it looks for a 'charts' directory where additional Charts & values files may be
+contained and includes these in the installation.  Here we would store the Chart and values yaml for each microservice and
+the frontend.
+
+* *charts/common:*  The 'common' folder is a helm generated folder which includes templates for k8s deployments, services,
+ingresses etc.  We reference these templates in the 'templates/service' & 'templates/deployment' files of each microservice & frontend
+chart.  The templates that are referenced are then populated by whatever is defined in the values.yaml of each
+microservice & frontend chart.
+
+== Local Deployment
+
+This sections walks us through the Dashboard's infrastructure deployment in a local rancher-desktop k8s cluster.  Locally, our k8s workflow is to deploy only the postgres, its migrations and keycloak.  We then portforward these pods and continue to use npm to start the individual microservices and frontend.
+
+=== TLDR
+[source,bash]
+----
+docker build -t smartcity/migrations -f Dockerfile.migrations .
+kubectl create namespace smart-city-local
+cd k8s/helm
+helm dependency build
+helm install smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml .
+kubectl port-forward smart-city-keycloak-0 8080:8080 -n smart-city-local
+kubectl port-forward smart-city-postgresql-0  5432:5432 -n smart-city-local
+----
+
+=== Create the image for our automatic db migrations container
+
+[source,bash]
+----
+docker build -t smartcity/migrations -f Dockerfile.migrations .
+----
+
+=== Create a Kubernetes namespace
+Note: this only needs to be done once on initial local cluster setup.
+
+[source,bash]
+----
+kubectl create namespace smart-city-local
+----
+
+If need be, the Kubernetes namespace can be deleted.
+
+[source,bash]
+----
+kubectl delete namespace smart-city-local
+----
+
+=== Build helm dependencies
+Installs the dependencies defined in the Chart.yaml files
+
+[source,bash]
+----
+cd k8s/helm
+helm dependency build
+----
+
+=== Install infrastructure (postgres, migrations & keycloak)
+Performs a fresh installation of the helm charts with passed values.yaml file(s).
+This command will install the infrastructure needed for our dashboard.
+
+[source,bash]
+----
+helm install smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml .
+----
+
+=== Port Forwarding the Infrastructure for local development
+
+With the infrastructure installed to the smart-city-local namespace, we can now port forward the keycloak and postgres pods using the following commands.
+With that, we can then start our microservices with *npm run start [microservice name]* and the frontend with *npm run dev*.
+
+[source,bash]
+----
+kubectl port-forward smart-city-keycloak-0 8080:8080 -n smart-city-local
+kubectl port-forward smart-city-postgresql-0  5432:5432 -n smart-city-local
+----
+
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace smart-city-local
+----
+
+
+== EDAG Deployment with Kubernetes (helm)
+
+This section details how our developers can deploy the Dashboard to any of our three EDAG k8s cluster namespaces.  You will need access to these namespaces and will need to be on the company network to follow this section.
+
+Unlike our local kubernetes workflow, this helm install will deploy both the infrastructure AND the microservice/frontend.  With ingresses configured in the values yaml, the dashboard is accessible at a Https URL at our container.edag domain.
+
+=== Prequisites
+
+=== Configure EDAG kubernetes cluster
+When connected to the EDAG network, the config file to setup the EDAG K8S cluster on your local rancher desktop can be found at the url:
+
+**https://loginapp.container.edag**
+
+* At this URL, navigate to "Full KubeConfig" and copy the contents.
+* Paste the Full KubeConfig into your **.kube/config** file, replacing what is already inside.
+* This .kube folder is installed with rancher desktop and can be found at this example path: "C:\Users\your-user\ .kube"
+
+=== Build helm dependencies
+Installs the dependencies defined in the Chart.yaml files
+
+=== Specify the target image tag
+In the file: **k8s/helm/values-edag.yaml** , we can specify the image tag which we want to deploy.
+During our Jenkins pipeline, these image tags are defined based on the branch being built, and the images are then pushed to our Nexus image artifactory.
+
+The options are:
+* 'latest-dev' - which is the latest build on our dev branch.
+* 'latest-feature' - which is the latest commit to a feature branch.
+* 'latest-PR' - which is the latest commit to an open PR.
+* 'latest-testing' - which is the latest commit to a testing branch
+* 'latest-bugfix' - which is the latest commit to a bugfix branch
+
+[source,bash]
+----
+cd k8s/helm
+helm dependency build
+----
+
+== Deploy to dev namespace
+
+This section will install the dashboard to our mit-smartcity-suite-dev namespace making the dashboard available at:
+
+*https://mit-smartcity-suite-dev-frontend.container.edag/edag/admin*
+
+=== Install all helm charts
+Performs a fresh installation of the helm charts with passed values.yaml file(s)
+
+[source,bash]
+----
+helm install smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml .
+----
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace mit-smartcity-suite-dev
+----
+
+=== Update helm chart
+Performs an update of the specified charts if there is already an existing deployment.
+
+[source,bash]
+----
+helm upgrade smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml .
+----
+
+== Deploy to test namespace
+
+This section will install the dashboard to our mit-smartcity-suite-test namespace making the dashboard available at:
+
+*https://mit-smartcity-suite-test-frontend.container.edag/edag/admin*
+
+=== Install all helm charts
+Performs a fresh installation of the helm charts with passed values.yaml file(s)
+
+[source,bash]
+----
+helm install smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml .
+----
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace mit-smartcity-suite-test
+----
+
+=== Update helm chart
+Performs an update of the specified charts if there is already an existing deployment.
+
+[source,bash]
+----
+helm upgrade smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml .
+----
+
+== Deploy to prod namespace
+
+This section will install the dashboard to our mit-smartcity-suite-prod namespace making the dashboard available at:
+
+*https://mit-smartcity-suite-frontend.container.edag/edag/admin*
+
+=== Install all helm charts
+Performs a fresh installation of the helm charts with passed values.yaml file(s)
+
+[source,bash]
+----
+helm install smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml .
+----
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace mit-smartcity-suite-prod
+----
+
+=== Update helm chart
+Performs an update of the specified charts if there is already an existing deployment.
+
+[source,bash]
+----
+helm upgrade smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml .
+----
+
+
+== Hetzner Cloud Deployment with Kubernetes (helm)
+
+This section details how to deploy the dashboard to our kubernetes server running on Hetzner Cloud.  Installing these helm charts will make the dashboard publically available at:
+
+*https://smartcity-system.de/edag/admin*
+
+Switch our k8s (rancher) context to k3s, which is the kubernetes server deployed on our hcloud.  This k3s config can be found by following the README in our hcloud directory.
+
+=== Install all helm charts
+Performs a fresh installation of the helm charts with passed values.yaml file(s)
+
+[source,bash]
+----
+helm install smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml .
+----
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace hcloud
+----
+
+=== Update helm chart
+Performs an update of the specified charts if there is already an existing deployment.
+
+[source,bash]
+----
+helm upgrade smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml .
+----
+
+
+== Additional Pod Info
+
+=== Migrations Pod - automatic database migrations
+
+* During the helm install, a migrations pod will be deployed.
+* This pod uses the image defined in the Dockerfile.migrations file, where the 'npm run db:migrate:dev' command is executed, running the migrations scripts.
+* This pod is a Job which is executed once on initial helm deployment.
+* The migrations are ran on the postgres instance defined in the postgresql-connection-configmap.yaml, located at path k8s/helm/templates/configmaps.
+* The postgres values here may be altered to point to a different postgres instance hosted elsewhere.
+* NOTE: If for any reason, the migrations should be restarted while keeping up the other helm charts, we can delete the job (via k9s or kubectl) and run the helm upgrade command.
+
+=== KeycloakCLI Job Pod - automatic keycloak realm setup
+
+* On Helm install, our dashboard is deployed with a Keycloak pod and a KeycloakConfigCLI pod.
+* The Keycloak Config CLI pod is responsible for importing specified realm JSON to the Keycloak pod.
+* When all specified realms have been successfully imported, this pod will complete and remove itself from the k8s environment.
+
+NOTE: In the k8s/helm directory, we have a keycloak-config folder which contains a direct copy of the realm JSONs which already exist in our root keycloak/import/ directory.
+This duplication is necessary because, in Helm, the '.Files' function, which is used to reference files in configmaps, is limited to files within the Helm chart's directory structure.  This means it cannot directly access files outside of the Helm chart directory, such as the realm JSON defined in our project's root.

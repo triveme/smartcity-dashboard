@@ -40,7 +40,7 @@ export default function SupportRequest(): ReactElement {
 
   const { data: corporateInfo } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
   //Dynamic Styling

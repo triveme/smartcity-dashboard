@@ -1,0 +1,40 @@
+= Readme for the api-service microservice
+
+== Description
+
+Short description about the api endpoints for systemUsers
+
+[options="header"]
+|===
+| Name | Description | HTTP Method | URL* | Parameters
+| Get all SystemUsers | Getting all existing SystemUsers | `GET` | /systemUsers | -
+| Create SystemUser | Creating a new entry for a new SystemUser | `POST` | /systemUsers |
+Header: +
+password: string +
+ +
+Body: +
+tenantAbbreviation: string; +
+username: string
+| Delete SystemUsers | Delete all existing SystemUsers | `DELETE` | /systemUsers | -
+| Get specific SystemUser | Getting a specific SystemUser by their id | `GET` | /systemUsers/{id} | id: string
+| Get specific SystemUsers | Getting a specific SystemUser by their tenantAbbreviation | `GET` | /systemUsers/tenant/{tenantAbbreviation} | tenantAbbreviation: string
+| Delete a SystemUser | Delete a specific SystemUser by their username | `DELETE` | /systemUsers/{username} | username: string
+|===
+*URL: This is the URL part after the basepath of the api-service, so it depends on how you map your trafic for this microservice
+
+== Environment Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_FRONTEND_URL` | Adress to the frontend. Required to set appropriate CORS settings | `http:localhost:3000`
+| `API_MANDATORS_URL` | Connection information to the external api required to get mandators. | `http://external-api.com/api/v1`
+| `API_KEYCLOAK_URL` | Adress to the ulm keycloak | `http:localhost:8080`
+| `API_GRANT_TYPE` | Authentication type for keycloak | `password`
+| `API_CLIENT_ID` | Client id specified in keycloak | `client-id`
+| `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
+| `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
+| `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
+| `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
+| `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+|===

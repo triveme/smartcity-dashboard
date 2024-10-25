@@ -44,8 +44,13 @@ export async function getPanelsByDashboardId(
 
 export async function updatePanel(
   accessToken: string | undefined,
-  updatePanel: Panel,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updatePanel: Panel & { [key: string]: any },
 ): Promise<Panel> {
+  if (updatePanel.widgets) {
+    delete updatePanel.widgets;
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

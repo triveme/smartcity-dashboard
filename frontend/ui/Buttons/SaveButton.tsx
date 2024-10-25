@@ -2,6 +2,7 @@ import { ReactElement, useState } from 'react';
 import DashboardIcons from '../Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type SaveButtonProps = {
   handleSaveClick: () => void;
@@ -11,6 +12,7 @@ export default function SaveButton(props: SaveButtonProps): ReactElement {
   const { handleSaveClick } = props;
   const [isSaving, setIsSaving] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const tenant = getTenantOfPage();
 
   const onClick = async (): Promise<void> => {
     setIsSaving(true); // Disable the button
@@ -23,7 +25,7 @@ export default function SaveButton(props: SaveButtonProps): ReactElement {
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(),
+    queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
 

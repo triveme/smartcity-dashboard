@@ -9,8 +9,13 @@ import { QueryConfigService } from '../../query-config/query-config.service';
 import { DataSourceService } from '../../data-source/data-source.service';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
-import { FiwareAttribute, FiwareAttributeData } from './fiware.types';
+import {
+  FiwareAttribute,
+  FiwareAttributeData,
+  FiwareAttributeEntity,
+} from './fiware.types';
 import { PopulateMapService } from './populate-map.service';
+import { getGermanLabelForAttribute } from './populate.util';
 
 @Injectable()
 export class PopulateChartService {
@@ -40,6 +45,14 @@ export class PopulateChartService {
       tab.chartData = [];
       tab.chartLabels = [];
 
+      if (
+        query &&
+        query.queryData &&
+        tab.componentSubType === 'Slider Übersicht'
+      ) {
+        this.populateSliderOverview(query, tab);
+        return;
+      }
       for (const attribute of queryConfig.attributes) {
         if (query && query.queryData && tab.componentType !== 'Karte') {
           if (Array.isArray(query.queryData)) {
@@ -79,6 +92,34 @@ export class PopulateChartService {
     }
   }
 
+  private populateSliderOverview(
+    query: Query,
+    tab: Tab & { chartData: ChartData[] },
+  ): void {
+    if (Array.isArray(query.queryData)) {
+      for (let i = 0; i < query.queryData.length; i++) {
+        const queryDataElement = query.queryData[i];
+
+        const chartData: ChartData = {
+          name: queryDataElement.id,
+          values: [],
+        };
+
+        const currentValue =
+          queryDataElement[tab.sliderCurrentAttribute]?.value;
+        const maximumValue =
+          queryDataElement[tab.sliderMaximumAttribute]?.value;
+
+        if (currentValue !== undefined && maximumValue !== undefined) {
+          chartData.values.push([tab.sliderCurrentAttribute, currentValue]);
+          chartData.values.push([tab.sliderMaximumAttribute, maximumValue]);
+        }
+
+        tab.chartData.push(chartData);
+      }
+    }
+  }
+
   private populateTabWithQueryDataArray(
     queryConfig: QueryConfig,
     query: Query,
@@ -101,11 +142,39 @@ export class PopulateChartService {
 
     // Piechart adjustment
     if (tab.componentSubType === 'Pie Chart') {
-      const tquery = query.queryData[0];
-      const tvalue = tquery[attribute];
+      if (query && Array.isArray(query.queryData)) {
+        // One Sensor with multiple Attributes
+        if (query.queryData.length === 1) {
+          const tquery = query.queryData[0] as { [key: string]: any };
+          let tvalue = tquery[attribute];
 
-      tab.chartLabels.push(attribute);
-      tab.chartValues.push(tvalue);
+          tvalue =
+            tvalue && typeof tvalue === 'object' && 'value' in tvalue
+              ? tvalue['value']
+              : null;
+
+          if (tvalue !== null) {
+            tab.chartLabels.push(attribute);
+            tab.chartValues.push(tvalue);
+          }
+        }
+        // Multiple Sensors with the same attribute
+        else if (query.queryData.length > 1) {
+          query.queryData.forEach((queryEntry, i) => {
+            const { id, ...attributes } = queryEntry as {
+              id: string;
+              [key: string]: any;
+            };
+
+            const sensorValue =
+              attributes[queryConfig.attributes[0]]?.value || 0;
+            const sensorLabel = `Sensor ${id?.slice(-4) || i}`;
+
+            tab.chartLabels.push(sensorLabel);
+            tab.chartValues.push(sensorValue);
+          });
+        }
+      }
     }
   }
 
@@ -145,10 +214,6 @@ export class PopulateChartService {
         color: null,
       };
 
-      if (!chartDataMap.has(key)) {
-        chartDataMap.set(key, { values: [], timestamps: [] });
-      }
-
       value.sort((a, b) => {
         if (a['timestamp'] == null && b['timestamp'] == null) {
           return 0;
@@ -163,28 +228,13 @@ export class PopulateChartService {
           );
         }
       });
+
       value.forEach((queryDataItem) => {
         const attributeValue = queryDataItem[attribute] as FiwareAttributeData;
         const timestamp = queryDataItem['timestamp'];
 
-        if (timestamp) {
-          chartDataMap
-            .get(key)
-            .timestamps.push(this.formatDateLabel(timestamp, queryConfig));
-        }
-
-        if (datasource.origin === 'ngsi') {
-          if (attributeValue && attributeValue.type == 'Number') {
-            chartDataMap.get(key).values.push(+attributeValue.value);
-          } else if (attributeValue) {
-            tab.textValue = attributeValue.value;
-          }
-        } else {
-          chartDataMap.get(key).values.push(+attributeValue);
-        }
+        chartDataItem.values.push([timestamp, +attributeValue]);
       });
-
-      chartDataItem.values = chartDataMap.get(key).values;
       tab.chartData.push(chartDataItem);
     });
 
@@ -203,19 +253,12 @@ export class PopulateChartService {
     attribute: string,
   ): void {
     if (queryConfig.entityIds.length === 1) {
-      this.populateHistoricTabWithSingleEntityId(tab, queryDataMap, attribute);
-
-      const timestamps: string[] = queryDataMap.get('index');
-
-      tab.chartLabels = timestamps.map((timestamp) =>
-        this.formatDateLabel(timestamp, queryConfig),
-      );
+      this.populateHistoricTabWithSingleEntityId(tab, queryDataMap);
     } else {
       this.populateHistoricTabWithMultipleEntityIds(
         tab,
         queryDataMap,
         attribute,
-        queryConfig,
       );
     }
   }
@@ -226,16 +269,29 @@ export class PopulateChartService {
       mapObject: MapObject[];
     },
     queryDataMap: Map<string, any>,
-    attribute: string,
   ): void {
-    const attributes = queryDataMap.get('attributes');
-    const attributeObject = attributes.filter(
-      (attributeListObject) => attributeListObject.attrName === attribute,
-    )[0];
+    const entityAttributes = queryDataMap.get('attributes');
+    const entityId: string = queryDataMap.get('entityId');
+    const index: string[] = queryDataMap.get('index');
 
-    if (attributeObject && attributeObject.values) {
-      this.pushValuesToChartData(attributeObject, tab.id, tab);
-    }
+    // Loop through each attribute in entityAttributes
+    entityAttributes.forEach((attr) => {
+      const attrName = attr.attrName;
+
+      // Create FiwareAttributeEntity for the current attribute
+      const attributeObject: FiwareAttributeEntity = {
+        entityId: entityId,
+        index: index,
+        values: attr.values, // Use the values specific to this attribute
+      };
+
+      // Push values to chart data
+      this.pushValuesToChartData(
+        attributeObject,
+        `${getGermanLabelForAttribute(attrName)}`,
+        tab,
+      );
+    });
   }
 
   private populateHistoricTabWithMultipleEntityIds(
@@ -245,35 +301,67 @@ export class PopulateChartService {
     },
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
-    queryConfig: QueryConfig,
   ): void {
+    let sensorName: string = null;
+    if (attribute === 'name') return; // Skip if the attribute itself is "name"
+
     let attributes: FiwareAttribute[] = queryDataMap.get('attrs');
-    attributes = attributes.filter(
-      (attributeListObject) => attributeListObject.attrName === attribute,
-    );
-    const attributeObject = attributes[0];
+    if (attributes) {
+      attributes = attributes.filter(
+        (attributeListObject) => attributeListObject.attrName === attribute,
+      );
+      const attributeObject = attributes[0];
 
-    if (attributeObject) {
-      for (const type of attributeObject.types) {
-        const entities = type.entities;
+      if (attributeObject) {
+        for (const type of attributeObject.types) {
+          const entities = type.entities;
 
-        for (
-          let entityIndex = 0;
-          entityIndex < entities.length;
-          entityIndex++
-        ) {
-          const entity = entities[entityIndex];
+          for (
+            let entityIndex = 0;
+            entityIndex < entities.length;
+            entityIndex++
+          ) {
+            const entity = entities[entityIndex];
 
-          this.pushValuesToChartData(
-            entity,
-            `${entity.entityId} | ${attribute}`,
-            tab,
-          );
+            // Logik to set sensor name if sensorattribute "name" is available
+            const nameAttribute = queryDataMap
+              .get('attrs')
+              ?.find((attr) => attr.attrName === 'name');
+            if (nameAttribute) {
+              const matchingEntity = nameAttribute.types.find((t) =>
+                t.entities.some((e) => e.entityId === entity.entityId),
+              );
 
-          if (entityIndex === entities.length - 1) {
-            tab.chartLabels = entity.index.map((timestamp) =>
-              this.formatDateLabel(timestamp, queryConfig),
+              if (matchingEntity) {
+                const matchingEntityData = matchingEntity.entities.find(
+                  (e) => e.entityId === entity.entityId,
+                );
+                if (
+                  matchingEntityData &&
+                  matchingEntityData.values &&
+                  matchingEntityData.values.length > 0
+                ) {
+                  sensorName =
+                    matchingEntityData.values[
+                      matchingEntityData.values.length - 1
+                    ].toString();
+                }
+              }
+            }
+
+            // Fallback to "Sensor ${entityIndex}" if sensorName is still null
+            if (!sensorName) {
+              sensorName = `Sensor ${entityIndex + 1}`; // Use 1-based index
+            }
+
+            this.pushValuesToChartData(
+              entity,
+              `${sensorName} | ${getGermanLabelForAttribute(attribute)}`,
+              tab,
             );
+
+            // Reset sensorName for the next iteration
+            sensorName = null;
           }
         }
       }
@@ -296,30 +384,11 @@ export class PopulateChartService {
         }
       }
     }
-
     return sensorDataMap;
   }
 
-  private formatDateLabel(timestamp: string, queryConfig: QueryConfig): string {
-    const date = new Date(timestamp);
-    if (queryConfig.timeframe === 'day') {
-      // Format label for every hour
-      return date.toLocaleTimeString('de-DE', {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } else {
-      // Format label for the date
-      return date.toLocaleDateString('de-DE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      });
-    }
-  }
-
   private pushValuesToChartData(
-    attributeObject,
+    attributeObject: FiwareAttributeEntity,
     chartDataName: string,
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
@@ -329,10 +398,16 @@ export class PopulateChartService {
     const numberValues = attributeObject.values.map((value) =>
       isNaN(value) ? 0.0 : Number(value),
     );
+    const timeValues = attributeObject.index.map((timevalue) => timevalue);
+
+    const resultArray: [string, number][] = [];
+    for (let i = 0; i < timeValues.length; i++) {
+      resultArray.push([timeValues[i], numberValues[i]]);
+    }
 
     tab.chartData.push({
       name: chartDataName,
-      values: numberValues,
+      values: resultArray,
       color: null,
     });
   }

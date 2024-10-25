@@ -24,6 +24,7 @@ import IconWithLink from '@/ui/IconWithLink';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
+import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   ssr: false,
@@ -92,6 +93,7 @@ export default function DashboardWidgetPreview(
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
             <StageableChart
               unit={tab.chartUnit || ''}
+              tiles={tab.tiles || 5}
               minValue={tab.chartMinimum || 0}
               maxValue={tab.chartMaximum || 100}
               staticValues={tab.chartStaticValues || [0]}
@@ -147,7 +149,7 @@ export default function DashboardWidgetPreview(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
             <MeasurementComponent
-              dataValues={tab.chartValues || []}
+              dataValues={tab && tab.chartData ? tab.chartData[0]?.values : []}
               timeValues={tab.chartLabels || []}
               valueWarning={tab.chartStaticValues?.[0] || 0}
               valueAlarm={tab.chartStaticValues?.[1] || 0}
@@ -178,6 +180,10 @@ export default function DashboardWidgetPreview(
               value={tab.chartValues ? tab.chartValues[0] : 25}
             />
           )}
+
+          {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (
+            <SliderOverview data={[]} />
+          )}
         </div>
       )}
       {tab.componentType === tabComponentTypeEnum.value && (
@@ -193,7 +199,7 @@ export default function DashboardWidgetPreview(
           {tab.componentSubType === tabComponentSubTypeEnum.text && (
             <div
               style={{ color: data?.fontColor || 'white' }}
-              className="ql-editor flex items-center no-border-ql-editor"
+              className="ql-editor content-center no-border-ql-editor"
               dangerouslySetInnerHTML={{
                 __html: tab.textValue || '',
               }}
@@ -260,7 +266,10 @@ export default function DashboardWidgetPreview(
           <div className="p-2 flex justify-end gap-4">
             {widgetCount && widgetCount > 1 && index !== 0 && (
               <button onClick={(): void => moveWidget!(widget.id!, 'left')}>
-                <DashboardIcons iconName="ChevronLeft" color="white" />
+                <DashboardIcons
+                  iconName="ChevronLeft"
+                  color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                />
               </button>
             )}
             {widgetCount && widgetCount > 1 && index !== widgetCount - 1 && (
@@ -268,7 +277,10 @@ export default function DashboardWidgetPreview(
                 className="pl-4"
                 onClick={(): void => moveWidget!(widget.id!, 'right')}
               >
-                <DashboardIcons iconName="ChevronRight" color="white" />
+                <DashboardIcons
+                  iconName="ChevronRight"
+                  color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                />
               </button>
             )}
             <button onClick={(): void => deleteRelation!(widget.id!)}>

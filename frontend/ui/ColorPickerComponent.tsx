@@ -14,11 +14,29 @@ type CustomStyle = React.CSSProperties & {
 export default function ColorPickerComponent(
   props: ColorPickerComponentProps,
 ): ReactElement {
-  const { currentColor, handleColorChange, label } = props;
-  const [color, setColor] = useState(currentColor || '#fff');
+  const { currentColor, handleColorChange: onColorChange, label } = props;
+  const [color, setColor] = useState({
+    hex: currentColor || '#fff',
+    rgb: { r: 255, g: 255, b: 255, a: 1 },
+    hsl: { h: 0, s: 0, l: 1, a: 1 },
+    hsv: { h: 0, s: 0, v: 1, a: 1 },
+    alpha: 1,
+  });
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
-  const style: CustomStyle = { '--nav-item-color': color };
+  const style: CustomStyle = { '--nav-item-color': color.hex };
+
+  const handleInternalColorChange = (hex: string, alpha: number): void => {
+    // Convert the alpha value to a two-digit hexadecimal string
+    const alphaHex = Math.round(alpha * 255)
+      .toString(16)
+      .padStart(2, '0');
+
+    // Concatenate the hex color and the alpha value
+    const colorWithAlpha = `${hex}${alphaHex}`;
+
+    onColorChange(colorWithAlpha); // Call the prop function
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
@@ -40,11 +58,16 @@ export default function ColorPickerComponent(
   }, [isPickerOpen]);
 
   useEffect(() => {
-    if (currentColor && currentColor !== color) {
-      setColor(currentColor);
-      handleColorChange(currentColor);
+    if (currentColor && currentColor !== `${color.hex},${color.alpha}`) {
+      const [hex, alpha] = currentColor.split(',');
+      const newColor = {
+        ...color,
+        hex: hex.trim(),
+        alpha: parseFloat(alpha) || 1,
+      };
+      setColor(newColor);
     }
-  }, [currentColor, color]);
+  }, [currentColor]);
 
   return (
     <div className="relative w-[300px] h-11 rounded-lg" ref={pickerRef}>
@@ -52,19 +75,26 @@ export default function ColorPickerComponent(
         className="bg-transparent w-72 h-11 rounded-lg flex items-center justify-between"
         style={style}
       >
-        <div
-          className="bg-[var(--nav-item-color)] w-32 h-11 rounded-lg cursor-pointer border border-[#3D4760]"
-          onClick={(): void => setIsPickerOpen(!isPickerOpen)}
-        />
+        <div className="bg-white rounded-lg">
+          <div
+            className="w-24 h-11 rounded-md cursor-pointer border border-[#3D4760]"
+            onClick={(): void => setIsPickerOpen(!isPickerOpen)}
+            style={{ backgroundColor: 'var(--nav-item-color)' }}
+          />
+        </div>
         <div className="px-2 w-full">{label}</div>
       </div>
       {isPickerOpen && (
         <div className="absolute z-50">
           <ColorPicker
-            color={color}
+            color={color.hex}
             onChange={(color: ColorObject): void => {
-              setColor(color.hex);
-              handleColorChange(color.hex);
+              const newColor = {
+                ...color,
+                alpha: color.alpha || color.alpha === 0 ? color.alpha : 1, // Ensure alpha is set correctly
+              };
+              setColor(newColor);
+              handleInternalColorChange(color.hex, newColor.alpha); // Use the internal function
             }}
             theme={{
               background: '#1D2330',

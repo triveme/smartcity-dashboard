@@ -13,9 +13,9 @@ import {
   createDataSourceByObject,
   getDataSource,
 } from '../../data-source/test/test-data';
-import axios from 'axios';
 import { EncryptionUtil } from '../../util/encryption.util';
 import { AuthData } from '@app/postgres-db/schemas/auth-data.schema';
+import { generateJWTToken } from '../../../../test/jwt-token-util';
 
 describe('AuthDatas (e2e)', () => {
   let app: INestApplication;
@@ -36,21 +36,11 @@ describe('AuthDatas (e2e)', () => {
   });
 
   beforeEach(async () => {
-    // Get JWT token
-    const authUrl = process.env.KEYCLOAK_CLIENT_URI;
+    JWTToken = await generateJWTToken(
+      process.env.KEYCLOAK_CLIENT_ID,
+      process.env.KEYCLOAK_CLIENT_SECRET,
+    );
 
-    const data = new URLSearchParams();
-    data.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-    data.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-    data.append('grant_type', 'client_credentials');
-
-    try {
-      await process.nextTick(() => {});
-      const res = await axios.post(authUrl, data);
-      JWTToken = res.data.access_token;
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
     await truncateTables(client);
   });
 

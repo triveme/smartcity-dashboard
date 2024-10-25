@@ -188,6 +188,7 @@ export class AuthDataService {
           authDataId: createdAuthData.id,
           name: createdAuthData.name,
           origin: createdAuthData.type,
+          collections: createdAuthData.collections,
         },
         tx,
       );
@@ -238,6 +239,7 @@ export class AuthDataService {
       const dataSource = await this.dataSourceService.getByAuthDataId(id);
       if (values.name) dataSource.name = values.name;
       if (values.type) dataSource.origin = values.type;
+      if (values.collections) dataSource.collections = values.collections;
 
       await this.dataSourceService.update(dataSource.id, dataSource, tx);
 

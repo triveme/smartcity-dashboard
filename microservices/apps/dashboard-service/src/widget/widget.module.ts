@@ -27,8 +27,13 @@ import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/quer
 import { AuthService as NgsiAuthService } from '../../../ngsi-service/src/auth/auth.service';
 import { HttpModule } from '@nestjs/axios';
 import { WidgetDataService } from './widget.data.service';
-import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from '../corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
+import { LogoService } from '../logo/logo.service';
+import { DataSourceService } from '../data-source/data-source.service';
+import { AuthDataRepo } from '../auth-data/auth-data.repo';
+import { DataSourceRepo } from '../data-source/data-source.repo';
+import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
 
 @Module({
   imports: [HttpModule],
@@ -56,6 +61,11 @@ import { LogoRepo } from '../logo/logo.repo';
     NgsiAuthService,
     CorporateInfoSidebarLogosRepo,
     LogoRepo,
+    LogoService,
+    DataSourceService,
+    DataSourceRepo,
+    AuthDataRepo,
+    GeneralSettingsRepo,
   ],
   controllers: [WidgetController],
 })

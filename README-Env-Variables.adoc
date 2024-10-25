@@ -49,6 +49,16 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_API_SERVICE_URL` | Base URL for an external api. | `http://external-api.com/api/v1/`
 |===
 
+== Dashboard Logging Variables
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `MAX_LOGS` | Maximum number of logfiles to keep | `3`
+| `LOG_PATH` | Path in which to save logs | `./logs`
+| `LOG)ROTATION_CRON` | Set a cron string to control log rotaion timing | `3 2 * * * *`
+|===
+
 == Mail Service Variables
 
 [options="header"]
@@ -59,6 +69,7 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `MAIL_USER` | email address for host user. | `example-email@gmail.com`
 | `MAIL_PASS` | App Password secret generated from the host user's account | `1234 5678 9123 4567`
 | `DEFECT_REPORT_EMAIL` | target email to receive defect reports | `example-email2@gmail.com`
+|`DASHBOARD_SERVICE_URL`| Url of the backend to fetch logs from | 
 
 |===
 

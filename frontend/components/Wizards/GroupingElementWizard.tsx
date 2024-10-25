@@ -44,7 +44,8 @@ export default function GroupingElementWizard(
   const [groupName, setGroupName] = useState('');
   const [groupUrl, setGroupUrl] = useState('');
   const [groupIcon, setGroupIcon] = useState('');
-  const [groupColor, setGroupColor] = useState('');
+  const [groupBackgroundColor, setBackgroundGroupColor] = useState('');
+  const [groupFontColor, setGroupFontColor] = useState('');
   const [groupIsGradient, setGroupIsGradient] = useState(false);
   const [errors, setErrors] = useState<WizardErrors>({});
   const { openSnackbar } = useSnackbar();
@@ -61,7 +62,8 @@ export default function GroupingElementWizard(
       name: groupName,
       url: groupUrl,
       icon: groupIcon,
-      color: groupColor,
+      backgroundColor: groupBackgroundColor,
+      fontColor: groupFontColor,
       gradient: groupIsGradient,
       isDashboard: false,
       children: groupingElement?.children || [],
@@ -78,7 +80,7 @@ export default function GroupingElementWizard(
     if (!groupUrl) {
       errorsOccured.urlError = 'Url is required!';
     }
-    if (!groupColor) {
+    if (!groupBackgroundColor) {
       errorsOccured.colorError = 'Color is required!';
     }
     if (Object.keys(errorsOccured).length) {
@@ -117,7 +119,7 @@ export default function GroupingElementWizard(
       setGroupName(groupingElement.name!);
       setGroupUrl(groupingElement.url!);
       setGroupIcon(groupingElement.icon!);
-      setGroupColor(groupingElement.color || 'ffffff');
+      setBackgroundGroupColor(groupingElement.backgroundColor || '#FFFFFF');
       setGroupIsGradient(groupingElement.gradient!);
     }
   }, [groupingElement]);
@@ -128,15 +130,22 @@ export default function GroupingElementWizard(
         <PageHeadline headline="Gruppe bearbeiten" fontColor={fontColor} />
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label="Name" />
-          <WizardTextfield
-            value={groupName}
-            onChange={(value: string | number): void =>
-              setGroupName(value.toString())
-            }
-            error={errors && errors.nameError}
-            borderColor={borderColor}
-            backgroundColor={backgroundColor}
-          />
+          <div className="flex flex-row">
+            <WizardTextfield
+              value={groupName}
+              onChange={(value: string | number): void =>
+                setGroupName(value.toString())
+              }
+              error={errors && errors.nameError}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+            />
+            <ColorPickerComponent
+              currentColor={groupFontColor || fontColor}
+              handleColorChange={setGroupFontColor}
+              label={'Überschriftfarbe'}
+            />
+          </div>
         </div>
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label="Url" />
@@ -162,9 +171,9 @@ export default function GroupingElementWizard(
           <WizardLabel label="Farbe" />
           <div className="flex justify-start">
             <ColorPickerComponent
-              currentColor={groupColor}
-              handleColorChange={setGroupColor}
-              label="Farbe"
+              currentColor={groupBackgroundColor}
+              handleColorChange={setBackgroundGroupColor}
+              label="Hintergrundfarbe"
             />
             <CheckBox
               label={'Farbverlauf'}

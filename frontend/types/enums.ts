@@ -16,7 +16,6 @@ export enum timeframeEnum {
 export enum visibilityEnum {
   public = 'public',
   protected = 'protected',
-  invisible = 'invisible',
 }
 
 export enum tabComponentTypeEnum {
@@ -25,6 +24,7 @@ export enum tabComponentTypeEnum {
   diagram = 'Diagramm',
   slider = 'Slider',
   map = 'Karte',
+  combinedComponent = 'Kombinierte Komponente',
   value = 'Wert',
   iframe = 'iFrame',
   image = 'Bild',
@@ -51,6 +51,7 @@ export enum tabComponentSubTypeEnum {
   onlyFormArea = 'Only form area',
   combinedPinAndForm = 'Combined form and pin',
   coloredSlider = 'Farbiger Slider',
+  overviewSlider = 'Slider Übersicht',
 }
 
 export enum authDataTypeEnum {
@@ -79,4 +80,24 @@ export enum supportRequestTypeEnum {
   supportRequest = 'Supportanfrage',
   bugReport = 'Fehlerbericht',
   suggestion = 'Vorschläge',
+}
+
+export enum widthTypeEnum {
+  small = 4,
+  middle = 8,
+  large = 12,
+}
+
+export enum fontFamilyEnum {
+  Helvetica = 'Helvetica',
+  Arial = 'Arial',
+  Verdana = 'Verdana',
+  Tahoma = 'Tahoma',
+  GillSans = 'Gill Sans',
+  TimesNewRoman = 'Times New Roman',
+  Georgia = 'Georgia',
+  Palatino = 'Palatino',
+  Courier = 'Courier',
+  Lucida = 'Lucida',
+  Monaco = 'Monaco',
 }

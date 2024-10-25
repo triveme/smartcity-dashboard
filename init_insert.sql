@@ -15,9 +15,16 @@ SELECT '5f17a8b9-9241-40da-938e-03a50d48a7d1', 'edag'
 WHERE NOT EXISTS (SELECT 1 FROM public.tenant);
 
 -- Insert default data into corporate_info if table is empty
-INSERT INTO public.corporate_info (id, tenant_id, dashboard_font_color, dashboard_primary_color, dashboard_secondary_color, font_color, header_font_color, header_logo_id, header_primary_color, header_secondary_color, header_title_admin, header_title_dashboards, logo, menu_active_color, menu_font_color, menu_hover_color, menu_logo_id, menu_primary_color, menu_secondary_color, panel_border_color, panel_border_radius, panel_border_size, panel_font_color, panel_primary_color, panel_secondary_color, show_header_logo, show_menu_logo, title_bar, widget_border_color, widget_border_radius, widget_border_size, widget_font_color, widget_primary_color, widget_secondary_color, scrollbar_background, scrollbar_color)
-SELECT '1b23e0f7-01d9-4140-aac3-1466e06e4006', 'edag', '#FFF', '#2D3244', '#3D4760', '#FFF', '#FFF', NULL, '#2B3244', '#3D4760', 'Smart Region Dashboard', 'Dashboards', NULL, '#FFF', '#fff', '#3D4760', NULL, '#3D4760', '#1d2330', '#3D4760', '4px', 'px', '#FFF', '#3D4760', '#3D4760', false, false, 'edag', '#3D4760', '4px', '4px', '#FFF', '#3D4760', '#3D4760', '#3D4760', '#3D4760'
-WHERE NOT EXISTS (SELECT 1 FROM public.corporate_info);
+INSERT INTO public.corporate_info (id, tenant_id, dashboard_font_color, dashboard_primary_color, dashboard_secondary_color, font_color, header_font_color, header_logo_id, header_primary_color, header_secondary_color, header_title_admin, header_title_dashboards, logo, menu_active_color, menu_font_color, menu_hover_color, menu_logo_id, menu_primary_color, menu_secondary_color, panel_border_color, panel_border_radius, panel_border_size, panel_font_color, panel_primary_color, panel_secondary_color, show_header_logo, show_menu_logo, widget_border_color, widget_border_radius, widget_border_size, widget_font_color, widget_primary_color, widget_secondary_color, scrollbar_background, scrollbar_color, menu_active_font_color, use_color_transition_header, use_color_transition_menu, save_button_color, save_hover_button_color, cancel_button_color, cancel_hover_button_color, title_bar, font_family)
+SELECT '155c75e1-5e13-4037-9fb7-b74a71458964', 'edag', '#FFF', '#2B3244', '#2B3244', '#FFF', NULL, NULL, '#3D4760', '#3D4760', 'Smart Region Dashboard', 'Dashboard', NULL, '#FFF', NULL, '#3D4760', NULL, '#3D4760', '#3D4760', '#3D4760', '4px', '4px', NULL, '#3D4760', '#3D4760', true, true, '#3D4760', '4px', '4px', NULL, '#3D4760', '#3D4760', NULL, NULL, '#FFF', false, false, NULL, NULL, NULL, NULL, 'Light', 'Helvetica'
+WHERE NOT EXISTS (SELECT 1 FROM public.corporate_info WHERE id = '155c75e1-5e13-4037-9fb7-b74a71458964');
+INSERT INTO public.corporate_info (id, tenant_id, dashboard_font_color, dashboard_primary_color, dashboard_secondary_color, font_color, header_font_color, header_logo_id, header_primary_color, header_secondary_color, header_title_admin, header_title_dashboards, logo, menu_active_color, menu_font_color, menu_hover_color, menu_logo_id, menu_primary_color, menu_secondary_color, panel_border_color, panel_border_radius, panel_border_size, panel_font_color, panel_primary_color, panel_secondary_color, show_header_logo, show_menu_logo, widget_border_color, widget_border_radius, widget_border_size, widget_font_color, widget_primary_color, widget_secondary_color, scrollbar_background, scrollbar_color, menu_active_font_color, use_color_transition_header, use_color_transition_menu, save_button_color, save_hover_button_color, cancel_button_color, cancel_hover_button_color, title_bar, font_family)
+SELECT '1e890844-55c7-40f6-ba9a-1a69ae58355d', 'edag', '#FFF', '#2B3244', '#2B3244', '#FFF', NULL, NULL, '#3D4760', '#3D4760', 'Smart Region Dashboard', 'Dashboard', NULL, '#FFF', NULL, '#3D4760', NULL, '#3D4760', '#3D4760', '#3D4760', '4px', '4px', NULL, '#3D4760', '#3D4760', true, true, '#3D4760', '4px', '4px', NULL, '#3D4760', '#3D4760', NULL, NULL, '#FFF', false, false, NULL, NULL, NULL, NULL, 'Dark', 'Helvetica'
+WHERE NOT EXISTS (SELECT 1 FROM public.corporate_info WHERE id = '1e890844-55c7-40f6-ba9a-1a69ae58355d');
+
+INSERT INTO public.general_settings (id, tenant, information, imprint, privacy)
+SELECT 'e0c83789-f400-4f54-8855-9eca0c467043'::uuid, 'edag', 'https://smartcity.edag.com/', 'https://smartcity.edag.com/impressum/', 'https://smartcity.edag.com/datenschutz/'
+WHERE NOT EXISTS (SELECT 1 FROM public.general_settings);
 
 -- Insert default data into auth_data if table is empty
 INSERT INTO public.auth_data (id, tenant_abbreviation, name, type, client_id, client_secret, app_user, app_user_password, api_token, auth_url, live_url, time_series_url, created_at, updated_at, read_roles, write_roles, visibility)
@@ -66,6 +73,11 @@ WHERE NOT EXISTS (SELECT 1 FROM public.widget_to_panel);
 
 
 -- Insert default data into grouping_element if table is empty
-INSERT INTO public.grouping_element (id, parent_grouping_element_id, "name", url, color, gradient, icon, is_dashboard, "position", tenant_abbreviation)
-SELECT '112d4eea-8deb-4210-b7a0-fac55d9bb75a'::uuid, NULL, 'Default Group', 'defaultGroup', '#3a4691', false, 'Menu', false, 0, 'edag'
+INSERT INTO public.grouping_element (id, parent_grouping_element_id, "name", url, background_color, gradient, font_color, icon, is_dashboard, "position", tenant_abbreviation)
+SELECT '112d4eea-8deb-4210-b7a0-fac55d9bb75a'::uuid, NULL, 'Default Group', 'defaultGroup', '#3a4691', false, '#000', 'Menu', false, 0, 'edag'
 WHERE NOT EXISTS (SELECT 1 FROM public.grouping_element);
+
+-- Insert default dashboard if it doesn't already exist
+INSERT INTO public.grouping_element (id, parent_grouping_element_id, "name", url, background_color, gradient, font_color, icon, is_dashboard, "position", tenant_abbreviation)
+SELECT '5af4f990-8b51-4d2e-ad7a-07e422ae7136'::uuid, '112d4eea-8deb-4210-b7a0-fac55d9bb75a'::uuid, 'Default Dashboard', 'defaultURL', NULL, NULL, NULL, 'Building', true, 0, 'edag'
+WHERE NOT EXISTS (SELECT 1 FROM public.grouping_element WHERE id = '5af4f990-8b51-4d2e-ad7a-07e422ae7136');

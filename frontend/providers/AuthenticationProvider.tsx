@@ -38,8 +38,12 @@ export default function AuthenticationProvider({
     });
   }
 
+  function onSigninCallback(): void {
+    window.location.href = '/';
+  }
+
   return (
-    <AuthProvider {...oidcConfig}>
+    <AuthProvider {...oidcConfig} onSigninCallback={onSigninCallback}>
       <AuthWrapper>{children}</AuthWrapper>
     </AuthProvider>
   );

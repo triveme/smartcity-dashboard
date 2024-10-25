@@ -20,12 +20,14 @@ export function getAuthDataValue(
     authUrl: 'https://localhost/test-auth',
     liveUrl: 'https://localhost/live',
     timeSeriesUrl: 'https://localhost/timeSeries',
+    fiwareServices: ['etteln_dataspace', 'edag'],
     apiUrl: 'https://localhost/api',
     createdAt: undefined,
     updatedAt: undefined,
     readRoles: ['scs-admin'],
     writeRoles: ['scs-admin'],
     visibility: 'protected',
+    collections: ['edag'],
   };
 }
 
