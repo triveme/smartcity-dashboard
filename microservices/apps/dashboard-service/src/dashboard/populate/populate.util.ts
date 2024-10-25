@@ -123,7 +123,10 @@ export function isCombinedWidgetTab(
     chartData: ChartData[];
   } & { mapObject: MapObject[] },
 ): boolean {
-  return tab.componentType === 'Kombinierte Komponente';
+  return (
+    tab.componentType === 'Kombinierte Komponente' ||
+    tab.componentSubType === 'Kombinierte Karte'
+  );
 }
 
 export function isSingleValueTab(
@@ -141,4 +144,53 @@ export function isSingleValueTab(
         tab.componentSubType === '360° Chart' ||
         tab.componentSubType === 'Stageable Chart'))
   );
+}
+
+export function getGermanLabelForAttribute(attribute: string): string {
+  switch (attribute.toUpperCase()) {
+    case 'MONTHLYCONSUMPTIONSUMGAS':
+      return 'Monatlicher Gasverbrauch';
+    case 'MONTHLYCONSUMPTIONSUMWATER':
+      return 'Monatlicher Wasserverbrauch';
+    case 'CO2':
+      return 'Kohlenstoffdioxid';
+    case 'SOILMOISTUREEC':
+      return 'Bodenfeuchtigkeit';
+    case 'SOILMOISTUREVWC':
+      return 'Bodenfeuchtigkeit';
+    case 'SOILMOISTUREVWC_TIEFE_1':
+      return 'Bodenfeuchtigkeit 10cm';
+    case 'SOILMOISTUREVWC_TIEFE_2':
+      return 'Bodenfeuchtigkeit 25cm';
+    case 'SOILMOISTUREVWC_TIEFE_3':
+      return 'Bodenfeuchtigkeit 50cm';
+    case 'SOILMOISTUREVWC_TIEFE_4':
+      return 'Bodenfeuchtigkeit 75cm';
+    case 'SOILMOISTUREVWC_TIEFE_5':
+      return 'Bodenfeuchtigkeit 90cm';
+    case 'SOILMOISTUREVWC_TIEFE_6':
+      return 'Bodenfeuchtigkeit 1m';
+    case 'SOILTEMPERATURE':
+      return 'Bodentemperatur';
+    case 'TOTALCONSUMPTIONSUM_GAS':
+      return 'Gesamtverbrauch Gas';
+    case 'TOTALCONSUMPTIONSUM_WATER':
+      return 'Gesamtverbrauch Wasser';
+    case 'CO2AVG':
+      return 'CO2 Durchschnitt';
+    case 'TEMPERATURE':
+      return 'Temperatur';
+    case 'CURRENT_LEVEL':
+      return 'Aktueller Pegelstand';
+    case 'DEWPOINT':
+      return 'Taupunkt';
+    case 'RELATIVEHUMIDITY':
+      return 'Relative Luftfeuchte';
+    case 'SOILTEMPERATUR':
+      return 'Boden Temperatur';
+    case 'CURRENT_LEVEL':
+      return 'Aktueller Pegelstand';
+    default:
+      return attribute;
+  }
 }

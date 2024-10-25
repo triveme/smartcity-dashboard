@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { INestApplication } from '@nestjs/common';
-import { Client } from 'pg';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { Test, TestingModule } from '@nestjs/testing';
 import { runLocalDatabasePreparation } from '../../../test/database-operations/prepare-database';
@@ -13,12 +12,6 @@ import {
   getSensorReport,
 } from './test-data';
 import { ReportModule } from '../report.module';
-import {
-  createWidgetByObject,
-  getWidget,
-} from '../../../dashboard-service/src/widget/test/test-data';
-import { getTab } from '../../../dashboard-service/src/tab/test/test-data';
-import * as request from 'supertest';
 
 describe('ReportService (e2e)', () => {
   let app: INestApplication;

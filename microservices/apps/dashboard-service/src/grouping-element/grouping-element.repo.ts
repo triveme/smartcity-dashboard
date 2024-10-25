@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -47,6 +47,23 @@ export class GroupingElementRepo {
       .select()
       .from(groupingElements)
       .where(eq(groupingElements.url, url));
+
+    return result.length > 0 ? result[0] : null;
+  }
+
+  async getByUrlAndTenant(
+    url: string,
+    tenant: string,
+  ): Promise<GroupingElement> {
+    const result = await this.db
+      .select()
+      .from(groupingElements)
+      .where(
+        and(
+          eq(groupingElements.url, url),
+          eq(groupingElements.tenantAbbreviation, tenant),
+        ),
+      );
 
     return result.length > 0 ? result[0] : null;
   }

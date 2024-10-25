@@ -14,6 +14,8 @@ export const timeframeEnum = pgEnum('timeframe', [
   'day',
   'week',
   'month',
+  'quarter',
+  'year',
 ]);
 
 export const aggregationPeriodEnum = pgEnum('aggregation_period', [
@@ -49,6 +51,7 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Measurement',
   'Pin',
   'Parking',
+  'Kombinierte Karte',
   'Farbiger Slider',
   'Slider Übersicht',
 ]);
@@ -58,6 +61,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'ngsi-v2',
   'ngsi-ld',
   'api',
+  'static-endpoint',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [
@@ -89,7 +93,14 @@ export const corporateInfoFontFamiliesTypeEnum = pgEnum(
     'Monaco',
   ],
 );
+
 export const titleBarThemeTypeEnum = pgEnum('title_bar_theme', [
   'Dark',
   'Light',
+]);
+
+export const chartLegendPlacement = pgEnum('chart_legend_placement', [
+  'Left',
+  'Right',
+  'Top',
 ]);

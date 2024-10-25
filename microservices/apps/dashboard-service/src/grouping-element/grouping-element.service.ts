@@ -65,6 +65,25 @@ export class GroupingElementService {
     return await this.buildResponse(dbResult, dashboardsFromDb, roles);
   }
 
+  async getByUrlAndTenant(
+    url: string,
+    tenant: string,
+  ): Promise<GroupingElement> {
+    const dbResult: GroupingElement =
+      await this.groupingElementRepo.getByUrlAndTenant(url, tenant);
+
+    if (!dbResult) {
+      this.logger.error(
+        `GroupingElement not found for the given url ${url} and tenant ${tenant}`,
+      );
+    }
+    return dbResult;
+  }
+
+  async getByUrl(url: string): Promise<GroupingElement> {
+    return this.groupingElementRepo.getByUrl(url);
+  }
+
   private async buildHierarchy(
     element: GroupingElement,
     dbResult: GroupingElement[],
@@ -125,10 +144,6 @@ export class GroupingElementService {
     }
   }
 
-  async getByUrl(url: string): Promise<GroupingElement> {
-    return this.groupingElementRepo.getByUrl(url);
-  }
-
   async create(row: NewGroupingElement): Promise<GroupingElement> {
     await this.validateTenantAbbreviation(row);
 
@@ -145,14 +160,16 @@ export class GroupingElementService {
         (element) => element.url.toLowerCase() === newUrlLower,
       );
 
-      if (groupingElementWithNewUrl) {
-        this.logger.warn(
-          `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
-        );
-        throw new HttpException(
-          `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
-          HttpStatus.CONFLICT,
-        );
+      if (!row.isDashboard) {
+        if (groupingElementWithNewUrl) {
+          this.logger.warn(
+            `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
+          );
+          throw new HttpException(
+            `Grouping Element with the URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${row.tenantAbbreviation}`,
+            HttpStatus.CONFLICT,
+          );
+        }
       }
     }
 
@@ -184,14 +201,16 @@ export class GroupingElementService {
           element.id !== id && element.url.toLowerCase() === newUrlLower,
       );
 
-      if (groupingElementWithNewUrl) {
-        this.logger.warn(
-          `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
-        );
-        throw new HttpException(
-          `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
-          HttpStatus.CONFLICT,
-        );
+      if (!values.isDashboard) {
+        if (groupingElementWithNewUrl) {
+          this.logger.warn(
+            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+          );
+          throw new HttpException(
+            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+            HttpStatus.CONFLICT,
+          );
+        }
       }
     }
     await this.manageUpdateDependencies(id, values, roles);

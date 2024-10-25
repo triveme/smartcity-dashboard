@@ -79,7 +79,7 @@ describe('DataService (e2e)', () => {
 
       const data = await dataService.getDataFromDataSource(queryBatch);
 
-      expect(data).toMatchObject(query);
+      expect(data).toMatchObject([query]);
       expect(spyInstance).toHaveBeenCalledWith(queryBatch.auth_data.liveUrl, {
         headers: {
           'Fiware-Service': queryBatch.query_config.fiwareService,
@@ -90,6 +90,7 @@ describe('DataService (e2e)', () => {
           id: queryBatch.query_config.entityIds.join(','),
           attrs: queryBatch.query_config.attributes.join(','),
           type: queryBatch.query_config.fiwareType,
+          limit: '1000',
         },
       });
     });
@@ -277,7 +278,7 @@ describe('DataService (e2e)', () => {
       const data = await dataService.getDataFromDataSource(queryBatch);
 
       expect(data).toBeUndefined();
-      expect(spyInstance).toHaveBeenCalledWith(
+      expect(spyInstance).not.toHaveBeenCalledWith(
         queryBatch.auth_data.timeSeriesUrl,
         {
           headers: {

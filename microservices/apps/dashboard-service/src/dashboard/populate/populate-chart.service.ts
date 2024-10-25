@@ -15,6 +15,7 @@ import {
   FiwareAttributeEntity,
 } from './fiware.types';
 import { PopulateMapService } from './populate-map.service';
+import { getGermanLabelForAttribute } from './populate.util';
 
 @Injectable()
 export class PopulateChartService {
@@ -141,11 +142,39 @@ export class PopulateChartService {
 
     // Piechart adjustment
     if (tab.componentSubType === 'Pie Chart') {
-      const tquery = query.queryData[0];
-      const tvalue = tquery[attribute];
+      if (query && Array.isArray(query.queryData)) {
+        // One Sensor with multiple Attributes
+        if (query.queryData.length === 1) {
+          const tquery = query.queryData[0] as { [key: string]: any };
+          let tvalue = tquery[attribute];
 
-      tab.chartLabels.push(attribute);
-      tab.chartValues.push(tvalue);
+          tvalue =
+            tvalue && typeof tvalue === 'object' && 'value' in tvalue
+              ? tvalue['value']
+              : null;
+
+          if (tvalue !== null) {
+            tab.chartLabels.push(attribute);
+            tab.chartValues.push(tvalue);
+          }
+        }
+        // Multiple Sensors with the same attribute
+        else if (query.queryData.length > 1) {
+          query.queryData.forEach((queryEntry, i) => {
+            const { id, ...attributes } = queryEntry as {
+              id: string;
+              [key: string]: any;
+            };
+
+            const sensorValue =
+              attributes[queryConfig.attributes[0]]?.value || 0;
+            const sensorLabel = `Sensor ${id?.slice(-4) || i}`;
+
+            tab.chartLabels.push(sensorLabel);
+            tab.chartValues.push(sensorValue);
+          });
+        }
+      }
     }
   }
 
@@ -224,7 +253,7 @@ export class PopulateChartService {
     attribute: string,
   ): void {
     if (queryConfig.entityIds.length === 1) {
-      this.populateHistoricTabWithSingleEntityId(tab, queryDataMap, attribute);
+      this.populateHistoricTabWithSingleEntityId(tab, queryDataMap);
     } else {
       this.populateHistoricTabWithMultipleEntityIds(
         tab,
@@ -240,17 +269,29 @@ export class PopulateChartService {
       mapObject: MapObject[];
     },
     queryDataMap: Map<string, any>,
-    attribute: string,
   ): void {
-    const attributes = queryDataMap.get('attributes');
-    const timestamps: string[] = queryDataMap.get('index');
-    const attributeObject = attributes.filter(
-      (attributeListObject) => attributeListObject.attrName === attribute,
-    )[0];
-    attributeObject.index = timestamps;
-    if (attributeObject && attributeObject.values) {
-      this.pushValuesToChartData(attributeObject, tab.id, tab);
-    }
+    const entityAttributes = queryDataMap.get('attributes');
+    const entityId: string = queryDataMap.get('entityId');
+    const index: string[] = queryDataMap.get('index');
+
+    // Loop through each attribute in entityAttributes
+    entityAttributes.forEach((attr) => {
+      const attrName = attr.attrName;
+
+      // Create FiwareAttributeEntity for the current attribute
+      const attributeObject: FiwareAttributeEntity = {
+        entityId: entityId,
+        index: index,
+        values: attr.values, // Use the values specific to this attribute
+      };
+
+      // Push values to chart data
+      this.pushValuesToChartData(
+        attributeObject,
+        `${getGermanLabelForAttribute(attrName)}`,
+        tab,
+      );
+    });
   }
 
   private populateHistoricTabWithMultipleEntityIds(
@@ -261,28 +302,67 @@ export class PopulateChartService {
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
   ): void {
+    let sensorName: string = null;
+    if (attribute === 'name') return; // Skip if the attribute itself is "name"
+
     let attributes: FiwareAttribute[] = queryDataMap.get('attrs');
-    attributes = attributes.filter(
-      (attributeListObject) => attributeListObject.attrName === attribute,
-    );
-    const attributeObject = attributes[0];
+    if (attributes) {
+      attributes = attributes.filter(
+        (attributeListObject) => attributeListObject.attrName === attribute,
+      );
+      const attributeObject = attributes[0];
 
-    if (attributeObject) {
-      for (const type of attributeObject.types) {
-        const entities = type.entities;
+      if (attributeObject) {
+        for (const type of attributeObject.types) {
+          const entities = type.entities;
 
-        for (
-          let entityIndex = 0;
-          entityIndex < entities.length;
-          entityIndex++
-        ) {
-          const entity = entities[entityIndex];
+          for (
+            let entityIndex = 0;
+            entityIndex < entities.length;
+            entityIndex++
+          ) {
+            const entity = entities[entityIndex];
 
-          this.pushValuesToChartData(
-            entity,
-            `${entity.entityId} | ${attribute}`,
-            tab,
-          );
+            // Logik to set sensor name if sensorattribute "name" is available
+            const nameAttribute = queryDataMap
+              .get('attrs')
+              ?.find((attr) => attr.attrName === 'name');
+            if (nameAttribute) {
+              const matchingEntity = nameAttribute.types.find((t) =>
+                t.entities.some((e) => e.entityId === entity.entityId),
+              );
+
+              if (matchingEntity) {
+                const matchingEntityData = matchingEntity.entities.find(
+                  (e) => e.entityId === entity.entityId,
+                );
+                if (
+                  matchingEntityData &&
+                  matchingEntityData.values &&
+                  matchingEntityData.values.length > 0
+                ) {
+                  sensorName =
+                    matchingEntityData.values[
+                      matchingEntityData.values.length - 1
+                    ].toString();
+                }
+              }
+            }
+
+            // Fallback to "Sensor ${entityIndex}" if sensorName is still null
+            if (!sensorName) {
+              sensorName = `Sensor ${entityIndex + 1}`; // Use 1-based index
+            }
+
+            this.pushValuesToChartData(
+              entity,
+              `${sensorName} | ${getGermanLabelForAttribute(attribute)}`,
+              tab,
+            );
+
+            // Reset sensorName for the next iteration
+            sensorName = null;
+          }
         }
       }
     }

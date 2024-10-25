@@ -11,7 +11,7 @@ import {
   SidebarLogo,
 } from './corporate-info.repo';
 import { CorporateInfoSidebarLogo } from '@app/postgres-db/schemas/corporate-info-sidebar-logos.schema';
-import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from './corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
 
 @Injectable()
@@ -55,10 +55,6 @@ export class CorporateInfoService {
 
   async getAll(): Promise<CorporateInfo[]> {
     return this.corporateInfoRepository.getAll();
-  }
-
-  async getById(id: string): Promise<CorporateInfo> {
-    return this.corporateInfoRepository.getById(id);
   }
 
   async getByTenant(

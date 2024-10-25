@@ -5,7 +5,7 @@ import { DashboardToTenantRepo } from './dashboard-to-tenant.repo';
 import { TenantRepo } from '../tenant/tenant.repo';
 import { CorporateInfoService } from '../corporate-info/corporate-info.service';
 import { CorporateInfoRepo } from '../corporate-info/corporate-info.repo';
-import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from '../corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
 import { LogoService } from '../logo/logo.service';
 import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';

@@ -12,6 +12,7 @@ export function getPanel(dashboardId?: string): Panel {
     position: 1,
     headlineColor: '#000',
     info: 'Sample Message',
+    icon: 'ChevronRight',
     generalInfo: 'Sample General Info',
     showGeneralInfo: false,
     showJumpoffButton: false,

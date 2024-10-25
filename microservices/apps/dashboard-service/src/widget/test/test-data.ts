@@ -14,7 +14,9 @@ export function getWidget(readRoles: string[], writeRoles: string[]): Widget {
   return {
     id: uuid(),
     name: 'Sample Widget',
+    description: 'This is the description',
     showName: true,
+    subheadline: '',
     height: 200,
     width: 140,
     visibility: 'public',

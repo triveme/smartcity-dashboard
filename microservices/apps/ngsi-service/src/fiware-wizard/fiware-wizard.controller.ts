@@ -49,14 +49,14 @@ export class FiwareWizardController {
     @Param('dataSourceId', new ParseUUIDPipe({ version: '4' }))
     dataSourceId: string,
     @Req() request: AuthenticatedRequest,
-    @Query('entityIds') entityIds?: string[],
+    @Query('entityType') entityType: string[],
   ): Promise<string[]> {
     const roles = request.roles ?? [];
     return this.service.getEntityAttributes(
       fiwareService,
       dataSourceId,
       roles,
-      entityIds,
+      entityType,
     );
   }
 }
