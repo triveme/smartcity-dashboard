@@ -10,9 +10,13 @@ import {
   calculateDeviationPercentage,
 } from '@/utils/mathHelper';
 import ColumnChart from '@/ui/Charts/ColumnChart';
+import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
+import { useQuery } from '@tanstack/react-query';
+import { getCorporateInfosWithLogos } from '@/app/actions';
+import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type MeasurementComponentProps = {
-  dataValues: number[];
+  dataValues: [string, number][];
   timeValues: string[];
   valueWarning: number;
   valueAlarm: number;
@@ -23,6 +27,7 @@ type MeasurementComponentProps = {
   fontColor: string;
   axisColor: string;
 };
+
 export default function MeasurementComponent(
   props: MeasurementComponentProps,
 ): ReactElement {
@@ -45,10 +50,28 @@ export default function MeasurementComponent(
   const [currentValue, setCurrentValue] = useState<number>(0);
   const [averageValue, setAverageValue] = useState<number>(0);
   const [deviationValue, setDeviationValue] = useState<number>(0);
-  const [dataWeekValues, setDataWeekValues] = useState<number[]>([]);
-  const [dataWeekDates, setDataWeekDates] = useState<string[]>([]);
-  const [dataMonthValues, setDataMonthValues] = useState<number[]>(dataValues);
-  const [dataMonthDates, setDataMonthDates] = useState<string[]>(timeValues);
+  const [dataWeek, setDataWeek] = useState<[string, number][]>([]);
+  const [dataMonth, setDataMonth] = useState<[string, number][]>(dataValues);
+
+  const tenant = getTenantOfPage();
+  const { data } = useQuery({
+    queryKey: ['corporate-info'],
+    queryFn: () => getCorporateInfosWithLogos(tenant),
+    enabled: false,
+  });
+
+  const fontStyle = data?.dashboardFontColor || '#FFF';
+
+  const autoScaleFont = useAutoScaleFont({
+    minSize: 12,
+    maxSize: 14,
+    divisor: 60,
+  });
+  const autoScaleCurrentValueFont = useAutoScaleFont({
+    minSize: 100,
+    maxSize: 168,
+    divisor: 10,
+  });
 
   const handleIntervalClick = (interval: string): void => {
     switch (interval) {
@@ -74,20 +97,17 @@ export default function MeasurementComponent(
 
   useEffect(() => {
     if (dataValues && dataValues.length > 0) {
-      setCurrentValue(roundToDecimal(dataValues[dataValues.length - 1], 2));
+      setCurrentValue(roundToDecimal(dataValues[dataValues.length - 1][1], 2));
 
       if (dataValues.length < 7) {
-        setDataWeekValues([...dataValues]);
-        setDataWeekDates([...timeValues]);
+        setDataWeek([...dataValues]);
       } else {
-        setDataWeekValues(dataValues.slice(-7));
-        setDataWeekDates(timeValues.slice(-7));
+        setDataWeek(dataValues.slice(-7));
       }
 
-      setDataMonthValues(dataValues);
-      setDataMonthDates(timeValues);
+      setDataMonth(dataValues);
 
-      setAverageValue(calculateAverage(dataValues));
+      setAverageValue(calculateAverage(dataValues.map((entry) => entry[1])));
 
       if (averageValue !== 0) {
         setDeviationValue(
@@ -123,21 +143,24 @@ export default function MeasurementComponent(
         </div>
       </div>
       <div className="flex-grow flex w-full h-full">
-        <div className="w-full h-full flex flex-col justify-center items-center">
+        <div className="w-full h-full flex flex-col justify-center items-center pl-2 pr-2">
           {dayActive && (
-            <div className="text-center">
-              <span className="text-[10.5rem] leading-none font-bold text-[#DE507D]">
+            <div className="text-center" style={{ color: fontStyle }}>
+              <span
+                className="leading-none font-bold"
+                style={{
+                  fontSize: `${autoScaleCurrentValueFont}px`,
+                }}
+              >
                 {currentValue}
               </span>
-              <span className="text-[1.5rem] leading-none text-white">
-                {unit}
-              </span>
+              <span className="text-[1.5rem] leading-none">{unit}</span>
             </div>
           )}
           {weekActive && (
             <LineChart
-              labels={dataWeekDates || undefined}
-              data={[{ name: 'Woche', values: dataWeekValues }] || undefined}
+              labels={dataWeek.map((entry) => entry[0]) || undefined}
+              data={[{ name: 'Woche', values: dataWeek }] || undefined}
               staticValues={[valueWarning, valueAlarm, valueMax]}
               staticValuesColors={['#FFA500', '#FF4500', '#00FF00']}
               xAxisLabel={chartXAxisLabel || ''}
@@ -150,8 +173,8 @@ export default function MeasurementComponent(
           )}
           {monthActive && (
             <LineChart
-              labels={dataMonthDates || []}
-              data={[{ name: 'Monat', values: dataMonthValues }] || []}
+              labels={dataMonth.map((entry) => entry[0]) || []}
+              data={[{ name: 'Monat', values: dataMonth }] || []}
               staticValues={[valueWarning, valueAlarm, valueMax]}
               staticValuesColors={['#FFA500', '#FF4500', '#00FF00']}
               xAxisLabel={chartXAxisLabel || ''}
@@ -197,7 +220,10 @@ export default function MeasurementComponent(
             valueWarning={valueWarning}
             valueAlarm={valueAlarm}
           />
-          <div className="text-sm font-bold mb-2 text-center">
+          <div
+            className="font-bold mb-2 text-center"
+            style={{ fontSize: `${autoScaleFont}px`, color: `${fontStyle}` }}
+          >
             Aktueller Stand
           </div>
         </div>

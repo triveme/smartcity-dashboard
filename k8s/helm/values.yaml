@@ -55,6 +55,16 @@ ngsi-service:
         name: "postgresql-connection-configmap"
     - secretRef:
         name: "postgresql-connection-secrets"
+## api-service config
+api-service:
+  enabled: true
+  envFrom:
+  - configMapRef:
+      name: "api-service-configmap"
+  - configMapRef:
+      name: "postgresql-connection-configmap"
+  - secretRef:
+      name: "postgresql-connection-secrets"
 ## mail-service config
 mail-service:
   enabled: true
@@ -73,10 +83,23 @@ infopin-service:
       name: "trusted-ca-configmap"
   - secretRef:
       name: "postgresql-connection-secrets"
-
+## infopin-service config
+report-service:
+  enabled: true
+  envFrom:
+  - configMapRef:
+      name: "report-service-configmap"
+  - configMapRef:
+      name: "postgresql-connection-configmap"
+  - configMapRef:
+      name: "trusted-ca-configmap"
+  - secretRef:
+      name: "postgresql-connection-secrets"
 ## frontend config
 frontend:
   enabled: true
   envFrom:
     - configMapRef:
         name: "frontend-configmap"
+    - secretRef:
+        name: "frontend-secrets"

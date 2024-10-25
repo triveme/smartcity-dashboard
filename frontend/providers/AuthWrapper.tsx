@@ -2,7 +2,7 @@
 
 import React, { ReactElement, useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
-import { useRouter } from 'next/navigation';
+import { useSnackbar } from './SnackBarFeedbackProvider';
 import Cookies from 'js-cookie';
 
 const AuthWrapper = ({
@@ -10,22 +10,29 @@ const AuthWrapper = ({
 }: {
   children: React.ReactNode;
 }): ReactElement => {
-  const router = useRouter();
   const auth = useAuth();
+  const { openSnackbar } = useSnackbar();
+
+  switch (auth.activeNavigator) {
+    case 'signinSilent':
+      return <div>Signing you in...</div>;
+    case 'signoutRedirect':
+      return <div>Signing you out...</div>;
+  }
+
+  if (auth.isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (auth.error) {
+    openSnackbar(auth.error.toString(), 'error');
+  }
 
   const handleSignin = (): void => {
-    if (typeof window !== 'undefined' && auth.isAuthenticated && auth.user) {
-      const url = sessionStorage.getItem('postLoginRedirectUrl');
-      Cookies.set('access_token', auth.user.access_token, {
-        secure: true,
-        sameSite: 'Strict',
-      });
-      if (url) {
-        router.replace(url);
-      } else {
-        router.refresh();
-      }
-    }
+    Cookies.set('access_token', auth.user!.access_token, {
+      secure: true,
+      sameSite: 'Strict',
+    });
   };
 
   useEffect(() => {
@@ -33,7 +40,6 @@ const AuthWrapper = ({
       handleSignin();
     }
   }, [auth.isAuthenticated, auth.user]);
-
   return <>{children}</>;
 };
 

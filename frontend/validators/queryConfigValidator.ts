@@ -8,6 +8,7 @@ import { WizardErrors } from '@/types/errors';
 export function validateQueryConfig(
   queryConfig: QueryConfig,
   componentType: string,
+  origin: string,
   componentSubType?: string,
 ): WizardErrors {
   const errorsOccured: WizardErrors = {};
@@ -20,7 +21,7 @@ export function validateQueryConfig(
       'Aktualisierungsintervall ist erforderlich';
   }
 
-  if (!queryConfig?.fiwareService) {
+  if (origin !== 'ngsi-ld' && !queryConfig?.fiwareService) {
     errorsOccured.fiwareServiceError =
       'Fiware-Dienst-/Sammlungsfeld ist erforderlich';
   }

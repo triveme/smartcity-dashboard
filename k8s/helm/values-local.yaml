@@ -9,11 +9,20 @@ ngsi-service:
   ingress:
     enabled: false
 
+api-service:
+  ingress:
+    enabled: false
+  frontendUrl: "http://localhost:3000"
+
 mail-service:
   ingress:
     enabled: false
 
 infopin-service:
+  ingress:
+    enabled: false
+
+report-service:
   ingress:
     enabled: false
 

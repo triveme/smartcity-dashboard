@@ -49,19 +49,6 @@ export async function getDashboardByIdWithContent(
   return fetched;
 }
 
-export async function getDashboardByUrl(
-  dashboardUrl: string,
-): Promise<Dashboard> {
-  const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/url/${dashboardUrl}`,
-  )
-    .then((res) => res.json())
-    .catch((err) => {
-      console.error(err);
-    });
-  return fetched;
-}
-
 export async function getDashboards(
   accessToken: string | undefined,
   includeContent?: boolean,
@@ -94,6 +81,37 @@ export async function getDashboards(
     return response.data;
   } catch (err) {
     console.error(err);
+    throw err;
+  }
+}
+
+export async function getDashboardDownloadData(
+  accessToken: string | undefined,
+  dashboardId?: string,
+): Promise<string> {
+  try {
+    const response = await axios.get(
+      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/download-data/${dashboardId}`,
+      {
+        headers: accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : undefined,
+        responseType: 'blob',
+      },
+    );
+
+    const csvData = await response.data.text();
+    return csvData;
+  } catch (err) {
+    console.error('Error fetching CSV data:', err);
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        'HTTP Error on dashboardDownloadData:',
+        err.response?.status,
+      );
+      console.error('Response body:', err.response?.data);
+    }
     throw err;
   }
 }

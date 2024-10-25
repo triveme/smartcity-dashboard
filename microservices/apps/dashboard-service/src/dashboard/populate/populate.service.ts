@@ -4,8 +4,6 @@ import {
   ChartData,
   DashboardWithContent,
   MapObject,
-  PanelWithContent,
-  TabWithContent,
   WidgetWithContent,
 } from '../dashboard.service';
 import { Dashboard, Panel, Tab, Widget } from '@app/postgres-db/schemas';
@@ -16,6 +14,12 @@ import { WidgetToPanelService } from '../../widget-to-panel/widget-to-panel.serv
 import { FlatDashboardData } from '../dashboard.repo';
 import { PopulateValueService } from './populate-value.service';
 import { PopulateChartService } from './populate-chart.service';
+import { PopulateCombinedWidgetService } from './populate-combined-widget.service';
+import {
+  isCombinedWidgetTab,
+  isSingleValueTab,
+  reduceDashboard,
+} from './populate.util';
 
 @Injectable()
 export class PopulateService {
@@ -25,6 +29,7 @@ export class PopulateService {
     private readonly widgetToPanelService: WidgetToPanelService,
     private readonly populateValueService: PopulateValueService,
     private readonly populateChartService: PopulateChartService,
+    private readonly populateCombinedWidgetService: PopulateCombinedWidgetService,
   ) {}
 
   async populateDashboardsWithContent(
@@ -106,79 +111,22 @@ export class PopulateService {
       }
     });
 
-    function reduceDashboard(
-      currentDashboard: DashboardWithContent,
-    ): DashboardWithContent {
-      // Filter panels related to the current dashboard from the panelMap and store in an array
-      const currentPanels = Array.from(panelMap.values()).filter(
-        (panel) => panel.dashboardId === currentDashboard.id,
-      );
-
-      // Setting the panels of the current dashboard and operating on each one - reducing their data
-      currentDashboard.panels = currentPanels.map((panel) => {
-        // Passing a spreaded panel object & explicitly setting it's widgets to an empty array
-        return reducePanel({ ...panel, widgets: [] });
-      });
-
-      return currentDashboard;
-    }
-
-    function reducePanel(currentPanel: PanelWithContent): PanelWithContent {
-      // Filter the widgetToPanelMap with ids that match the currentPanel id and store in an array.
-      const currentWidgetToPanels = Array.from(
-        widgetToPanelMap.values(),
-      ).filter((widgetToPanel) => widgetToPanel.panelId === currentPanel.id);
-
-      // Getting all widgets in the widgetMap by the widget IDs stored in the currentWidgetToPanels array
-      const currentWidgets = currentWidgetToPanels.map((widgetToPanel) =>
-        widgetMap.get(widgetToPanel.widgetId),
-      );
-
-      // Setting the widgets of the current panel and operating on each one - reducing their data
-      currentPanel.widgets = currentWidgets.map((widget) => {
-        // Passing a spreaded widget object & explicitly setting it's tabs to an empty array
-        return reduceWidget({ ...widget, tabs: [] });
-      });
-
-      return currentPanel;
-    }
-
-    function reduceWidget(currentWidget: WidgetWithContent): WidgetWithContent {
-      // Filter tabs related to the current widget from the tabMap and store in an array
-      const currentTabs = Array.from(tabMap.values()).filter(
-        (tab) => tab.widgetId === currentWidget.id,
-      );
-
-      // Setting the tabs of the current widget and operating on each one - reducing their data
-      currentWidget.tabs = currentTabs.map((tab) => {
-        // Passing a spreaded tab object & explicitly setting its query to null
-        return reduceTab({
-          ...tab,
-          query: null,
-          dataModel: null,
-          chartData: null,
-          mapObject: null,
-        });
-      });
-
-      return currentWidget;
-    }
-
-    function reduceTab(currentTab: TabWithContent): TabWithContent {
-      // Getting the query of the current Tab by it's queryId
-      const currentQuery = queryMap.get(currentTab.queryId);
-      // Setting the current Tab's query property
-      currentTab.dataModel = dataModelMap.get(currentTab.dataModelId);
-      currentTab.query = currentQuery;
-
-      return currentTab;
-    }
-
     // Returning and array of the reduced dashboard object: DashboardWithContent
     let dashboardsWithContent: DashboardWithContent[] = Array.from(
       dashboardMap.values(),
     ).map((dashboard) => {
-      return reduceDashboard({ ...dashboard, panels: [] });
+      return reduceDashboard(
+        {
+          ...dashboard,
+          panels: [],
+        },
+        panelMap,
+        widgetToPanelMap,
+        widgetMap,
+        tabMap,
+        dataModelMap,
+        queryMap,
+      );
     });
 
     if (includeData) {
@@ -217,35 +165,21 @@ export class PopulateService {
   private async populateTabWithContents(
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
-    } & { mapObject: MapObject[] },
+    } & { mapObject: MapObject[] } & { combinedWidgets: WidgetWithContent[] },
   ): Promise<void> {
     if (
       tab.componentType !== 'Informationen' &&
       tab.componentType !== 'Bild' &&
       tab.componentType !== 'iFrame'
     ) {
-      if (this.isSingleValueTab(tab)) {
+      if (isSingleValueTab(tab)) {
         await this.populateValueService.populateTab(tab);
+      } else if (isCombinedWidgetTab(tab)) {
+        await this.populateCombinedWidgetService.populateTab(tab);
       } else {
         await this.populateChartService.populateTab(tab);
       }
     }
-  }
-
-  private isSingleValueTab(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-    } & { mapObject: MapObject[] },
-  ): boolean {
-    return (
-      tab.componentType === 'Wert' ||
-      tab.componentType === 'Bild' ||
-      tab.componentType === 'Slider' ||
-      (tab.componentType === 'Diagramm' &&
-        (tab.componentSubType === '180° Chart' ||
-          tab.componentSubType === '360° Chart' ||
-          tab.componentSubType === 'Stageable Chart'))
-    );
   }
 
   async sortWidgets(dashboard: DashboardWithContent): Promise<void> {

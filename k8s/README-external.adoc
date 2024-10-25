@@ -1,0 +1,315 @@
+= Kubernetes Setup in an external environment
+
+This README assists developers outside of EDAG in setting up the SmartCity Dashboard in both their local k8s cluster and their server hosted k8s cluster.
+
+:toc: macro
+:toc-title: Table of Contents
+
+== Table of Contents
+
+* <<Prequisites & Additional Directory Info, Prequisites & Additional Directory Info>>
+* <<Local Dashboard Deploymentwith Kubernetes (helm), Local Dashboard Deployment with Kubernetes (helm)>>
+* <<Server Dashboard Deployment with Kubernetes (helm), Server Dashboard Deployment with Kubernetes (helm)>>
+* <<Additional Pod Info, Additional Pod Info>>
+
+
+== Prequisites & Additional Directory Info
+
+=== Prequisites:
+
+* Local Kubernetes cluster. +
+  Install https://rancherdesktop.io/[rancher-desktop] as admin. Admin rights are important otherwise the kube config might not be populated with the rancher context. +
+  Rancher comes with a Kubernetes engine installed.
+* Nice-To-Have: K9S - Terminal UI very useful for managing k8s deployments. +
+  You can manually restart pods, easily view their logs, port forward containers and many more useful features.
+
+=== k8s Directory Structure Breakdown
+
+* *Chart.yaml:* In the helm directory the Chart.yaml defines the dependencies that will be installed.
+E.g. postgres will pull its image from the bitnami URL and insert to the charts subdir.
+
+* *values.yaml:* Here we define the env variables of the dependencies defined in the main Chart.yaml file.
+E.g. we can configure envFrom to point to a configmap to get the env variables for the postgres db.
+
+* *templates:* When installing the helm chart, it looks for a 'templates' directory and configures all yaml inside as env
+variables. Inside we have 'configmaps' for defining not-so confidential env vars such as hosts/ports.  We also have 'secrets'
+for defining confidential env vars like passwords.
+
+* *charts:* When installing the helm chart, it looks for a 'charts' directory where additional Charts & values files may be
+contained and includes these in the installation.  Here we would store the Chart and values yaml for each microservice and
+the frontend.
+
+* *charts/common:*  The 'common' folder is a helm generated folder which includes templates for k8s deployments, services,
+ingresses etc.  We reference these templates in the 'templates/service' & 'templates/deployment' files of each microservice & frontend
+chart.  The templates that are referenced are then populated by whatever is defined in the values.yaml of each
+microservice & frontend chart.
+
+== Local Dashboard Deployment with Kubernetes (helm)
+
+This sections walks us through the Dashboard's infrastructure deployment in a local rancher-desktop k8s cluster.  Locally, our k8s workflow is to deploy only the postgres, its migrations and keycloak.  We then portforward these pods and continue to use npm to start the individual microservices and frontend locally.
+
+=== TLDR
+[source,bash]
+----
+docker build -t smartcity/migrations -f Dockerfile.migrations .
+kubectl create namespace smart-city-local
+cd k8s/helm
+helm dependency build
+helm install smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml .
+kubectl port-forward smart-city-keycloak-0 8080:8080 -n smart-city-local
+kubectl port-forward smart-city-postgresql-0  5432:5432 -n smart-city-local
+----
+
+=== Create the image for our automatic db migrations container
+
+[source,bash]
+----
+docker build -t smartcity/migrations -f Dockerfile.migrations .
+----
+
+=== Create a Kubernetes namespace
+Note: this only needs to be done once on initial local cluster setup.
+
+[source,bash]
+----
+kubectl create namespace smart-city-local
+----
+
+If need be, the Kubernetes namespace can be deleted.
+
+[source,bash]
+----
+kubectl delete namespace smart-city-local
+----
+
+=== Build helm dependencies
+Installs the dependencies defined in the Chart.yaml files
+
+[source,bash]
+----
+cd k8s/helm
+helm dependency build
+----
+
+=== Install infrastructure (postgres, migrations & keycloak)
+Performs a fresh installation of the helm charts with passed values.yaml file(s).
+This command will install the infrastructure needed for our dashboard.
+
+[source,bash]
+----
+helm install smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml .
+----
+
+=== Port Forwarding the Infrastructure for local development
+
+With the infrastructure installed to the smart-city-local namespace, we can now port forward the keycloak and postgres pods using the following commands.
+With that, we can then start our microservices with *npm run start [microservice name]* and the frontend with *npm run dev*.
+
+[source,bash]
+----
+kubectl port-forward smart-city-keycloak-0 8080:8080 -n smart-city-local
+kubectl port-forward smart-city-postgresql-0  5432:5432 -n smart-city-local
+----
+
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace smart-city-local
+----
+
+
+== Server Dashboard Deployment with Kubernetes (helm)
+
+=== Additional Context For values.yaml
+
+* In the *k8s/helm* directory, the values.yaml holds the basic configmap references for all nodes of the dashboard from postgres to frontend, this values file must be used in the helm install for all environments.
+
+* You will also notice values-hcloud.yaml, this holds the following configuration for deploying to our Hetzner Cloud k8s server:
+
+  ** The domain hostname configured with Hetzner DNS.
+  ** Full repository path, including image tag, to the docker images stored in our Nexus image artifactory.
+  ** Ingress configuration pointing to subdomains of our Hetzner hostname.
+  ** The specific values for our env defined in the configmaps.
+
+
+=== Steps Involved in Customizing Deployment
+
+Using values-hcloud.yaml as an example, you can edit the Ingress hosts and each URL to point to your own Domain Hostname.  Here are some steps to achieve customized
+
+* Using values-hcloud.yaml as a template, create a new values yaml: *values-[city-name].yaml*.
+* Edit the hosting domain name to point to your specific domain.
+* Insert your own tls server certificates in the helm/certificated folder and edit the trustedCaFile value to point to yours.
+* Change the Ingress configuration of every Dashboard node to point to your own server domain name, making sure to define subdomain names for each node, i.e. keycloak.yourSmartCity.de.
+* Depending on what ClusterIssuer is configured in your k8s cluster, you may need to edit the ingress annotations for each node.
+* Edit the image repository paths to point to your own location where the Dashboard images are stored.
+
+=== Key Customization Points by Pod
+
+==== 1. Migrations
+* **Image Repository:**
+  ** Key: `migrations.image.repository`
+  ** Value: `ghcr.io/triveme/smartcity-dashboard/migrations`
+  ** Description: Points to the Docker image used for database migrations.
+  ** Customization: Change this value to your own Docker registry if you host the image elsewhere.
+
+* **Image Tag:**
+  ** Key: `migrations.image.tag`
+  ** Value: `'0.9.3'`
+  ** Customization: Update the tag if you are using a different version.
+
+==== 2. Keycloak
+* **Ingress Hostname:**
+  ** Key: `keycloak.ingress.hostname`
+  ** Value: `keycloak.smartcity-system.de`
+  ** Description: The domain where Keycloak is accessible.
+  ** Customization: Change this to the hostname of your Keycloak instance, e.g., `keycloak.yourdomain.com`.
+
+* **Ingress TLS Secret:**
+  ** Key: `keycloak.ingress.tls.secretName`
+  ** Value: `keycloak-tls-secret`
+  ** Customization: Update the secret name if your TLS certificate is stored differently.
+
+* **Proxy Configuration:**
+  ** Key: `keycloak.proxy`
+  ** Value: `edge`
+  ** Customization: This configures how Keycloak is exposed. Generally, this value remains the same, but you can adjust it based on your setup.
+
+==== 3. Dashboard Service
+* **Ingress Host:**
+  ** Key: `dashboard-service.ingress.hosts.host`
+  ** Value: `dashboard-service.smartcity-system.de`
+  ** Customization: Change this to point to your domain, e.g., `dashboard-service.yourdomain.com`.
+
+* **Frontend URL:**
+  ** Key: `dashboard-service.frontendUrl`
+  ** Value: `https://smartcity-system.de`
+  ** Customization: Update this URL to match your frontend domain.
+
+* **JWKS URL:**
+  ** Key: `dashboard-service.jwks`
+  ** Value: `https://keycloak.smartcity-system.de/realms/testrealm/protocol/openid-connect/certs`
+  ** Customization: Update this URL if your Keycloak instance is hosted elsewhere.
+
+* **Admin Role:**
+  ** Key: `dashboard-service.adminRole`
+  ** Value: `scs-admin`
+  ** Customization: This role is assigned admin privileges within the system. If you have a custom Keycloak client with different roles, replace `scs-admin` with the appropriate role name configured in your Keycloak client.
+
+* **Edit Roles:**
+  ** Key: `dashboard-service.editRoles`
+  ** Value: `[ "editor", "tester", "scs-admin" ]`
+  ** Customization: These roles determine which users have editing rights. Modify this array to reflect the roles defined in your Keycloak client that should have edit access.
+
+==== 4. NGSI Service
+* **Ingress Host:**
+  ** Key: `ngsi-service.ingress.hosts.host`
+  ** Value: `ngsi-service.smartcity-system.de`
+  ** Customization: Modify this value to use your own domain, e.g., `ngsi-service.yourdomain.com`.
+
+* **Password Encryption Key:**
+  ** Key: `ngsi-service.passwordEncryptKey`
+  ** Customization: You’ll likely need to generate and set a new encryption key if you’re deploying to a different environment. It needs to be a 32 bytes hex based code. You can generate one here: https://www.random.org/cgi-bin/randbyte?nbytes=32&format=h
+
+==== 5. API Service
+* **Ingress Host:**
+  ** Key: `api-service.ingress.hosts.host`
+  ** Value: `api-service.smartcity-system.de`
+  ** Customization: Update this to point to your domain, e.g., `api-service.yourdomain.com`.
+
+==== 6. Mail Service
+* **Ingress Host:**
+  ** Key: `mail-service.ingress.hosts.host`
+  ** Value: `mail-service.smartcity-system.de`
+  ** Customization: Update this to match your domain, e.g., `mail-service.yourdomain.com`.
+
+==== 7. Frontend
+* **Main URL:**
+  ** Key: `frontend.url`
+  ** Value: `https://smartcity-system.de`
+  ** Customization: Change this to the base URL of your deployment, e.g., `https://yourdomain.com`.
+
+* **OIDC Authentication URL:**
+  ** Key: `frontend.oidc.auth`
+  ** Value: `https://keycloak.smartcity-system.de/realms/testrealm`
+  ** Customization: Update this to point to your Keycloak realm’s URL.
+
+* **OIDC Redirect URI:**
+  ** Key: `frontend.oidc.redirectUri`
+  ** Value: `https://smartcity-system.de/admin`
+  ** Customization: Update this to the appropriate URL for your frontend ingress host, e.g., `https://yourdomain.com/admin`.
+
+* **Backend Service URL:**
+  ** Key: `frontend.backendUrl`
+  ** Value: `https://dashboard-service.smartcity-system.de`
+  ** Customization: This URL should point to your Dashboard Service ingress host. Update it to, e.g., `https://dashboard-service.yourdomain.com`.
+
+* **API Service URL:**
+  ** Key: `frontend.apiServiceUrl`
+  ** Value: `https://api-service.smartcity-system.de`
+  ** Customization: This URL should point to your API Service ingress host. Update it to, e.g., `https://api-service.yourdomain.com`.
+
+* **Ingress Host:**
+  ** Key: `frontend.ingress.hosts.host`
+  ** Value: `smartcity-system.de`
+  ** Customization: Change this to your domain, e.g., `yourdomain.com`.
+
+==== General Customization Steps
+1. **Domain Names:** Update the ingress hostnames and related URLs across all services to reflect your domain.
+2. **TLS Certificates:** Make sure your TLS certificates (secret names) match those in your Kubernetes cluster.
+3. **Image Repositories:** If you host the Docker images elsewhere, update the `repository` and `tag` fields accordingly.
+
+=== Install Helm Charts
+
+With the new values yaml created and customised to fit your own server host, we can now deploy the dashboard there.
+
+Performs a fresh installation of the helm charts with passed values.yaml file(s).  Be sure to replace [namespace] & [cityname] with your own.
+
+[source,bash]
+----
+helm install smart-city --namespace [namespace] -f values.yaml -f values-[cityname].yaml .
+----
+
+=== Uninstall helm chart
+Performs an uninstall of the specified charts
+
+[source,bash]
+----
+helm uninstall smart-city --namespace [namespace]
+----
+
+=== Update helm chart
+Performs an update of the specified charts if there is already an existing deployment.
+
+[source,bash]
+----
+helm upgrade smart-city --namespace [namespace] -f values.yaml -f values-[cityname].yaml .
+----
+
+
+== Additional Pod Info
+
+=== Migrations Pod - automatic database migrations
+
+* During the helm install, a migrations pod will be deployed.
+* This pod uses the image defined in the Dockerfile.migrations file, where the 'npm run db:migrate:dev' command is executed, running the migrations scripts.
+* This pod is a Job which is executed once on initial helm deployment.
+* The migrations are ran on the postgres instance defined in the postgresql-connection-configmap.yaml, located at path k8s/helm/templates/configmaps.
+* The postgres values here may be altered to point to a different postgres instance hosted elsewhere.
+* NOTE: If for any reason, the migrations should be restarted while keeping up the other helm charts, we can delete the job (via k9s or kubectl) and run the helm upgrade command.
+
+=== KeycloakCLI Job Pod - automatic keycloak realm setup
+
+* On Helm install, our dashboard is deployed with a Keycloak pod and a KeycloakConfigCLI pod.
+* The Keycloak Config CLI pod is responsible for importing specified realm JSON to the Keycloak pod.
+* When all specified realms have been successfully imported, this pod will complete and remove itself from the k8s environment.
+
+NOTE: In the k8s/helm directory, we have a keycloak-config folder which contains a direct copy of the realm JSONs which already exist in our root keycloak/import/ directory.
+This duplication is necessary because, in Helm, the '.Files' function, which is used to reference files in configmaps, is limited to files within the Helm chart's directory structure.  This means it cannot directly access files outside of the Helm chart directory, such as the realm JSON defined in our project's root.
+
+
+
+
+

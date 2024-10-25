@@ -11,4 +11,5 @@ data:
   NEST_JWKS_URI: {{ index .Values "dashboard-service" "jwks" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "dashboard-service" "frontendUrl" }}
   PASSWORD_ENCRYPT_KEY: {{ index .Values "dashboard-service" "passwordEncryptKey" }}
+  LOG_ROTATION_CRON: {{ index .Values "dashboard-service" "logRotationCron" }}
 {{- end }}

@@ -8,4 +8,6 @@ data:
   NODE_ENV: "development"
   ADMIN_ROLE: "scs-admin"
   PASSWORD_ENCRYPT_KEY: {{ index .Values "ngsi-service" "passwordEncryptKey" }}
+  NEST_JWKS_URI: {{ index .Values "ngsi-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "ngsi-service" "frontendUrl" }}
 {{- end }}

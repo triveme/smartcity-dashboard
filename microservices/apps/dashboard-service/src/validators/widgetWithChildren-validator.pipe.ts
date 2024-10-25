@@ -1,4 +1,4 @@
-import { PipeTransform, Injectable } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import { WidgetWithChildren } from '../widget/widget.service';
 import { SanitizeTabDataPipe } from './tab-validator.pipe';
 import { ValidateWidgetPipe } from './widget-validator.pipe';
@@ -17,16 +17,17 @@ export class ValidateWidgetWithChildrenPipe implements PipeTransform {
     result.widget = widget;
     if (
       data.queryConfig &&
+      data.datasource &&
       tab.componentType !== 'Informationen' &&
       tab.componentType !== 'Bild' &&
       tab.componentType !== 'iFrame'
     ) {
-      const validatedQueryConfig = new SanitizeQueryConfigPipe().transform({
+      result.queryConfig = new SanitizeQueryConfigPipe().transform({
         ...queryConfig,
         componentType: validatedTab.componentType,
         componentSubType: validatedTab.componentSubType,
+        dataSourceType: data.datasource.origin,
       });
-      result.queryConfig = validatedQueryConfig;
     }
     return data;
   }

@@ -16,7 +16,7 @@ export default function Home(): ReactElement {
   const tenant = getTenantOfPage();
   let isPageAllowed = true;
 
-  if (tenant) {
+  if (tenant && auth && auth.user) {
     isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
   }
 
@@ -55,6 +55,9 @@ export default function Home(): ReactElement {
         />
         <div className="grid grid-cols-12 gap-4">
           <BlockContainer props={blockStyle}>
+            <FullSizedLink url={`${adminUrl}/general`}>Allgemein</FullSizedLink>
+          </BlockContainer>
+          <BlockContainer props={blockStyle}>
             <FullSizedLink url={`${adminUrl}/widgets`}>Widgets</FullSizedLink>
           </BlockContainer>
           <BlockContainer props={blockStyle}>
@@ -71,6 +74,11 @@ export default function Home(): ReactElement {
           <BlockContainer props={blockStyle}>
             <FullSizedLink url={`${adminUrl}/dataplatform`}>
               Datenanbindung
+            </FullSizedLink>
+          </BlockContainer>
+          <BlockContainer props={blockStyle}>
+            <FullSizedLink url={`${adminUrl}/tenantadministration`}>
+              Mandantenverwaltung
             </FullSizedLink>
           </BlockContainer>
         </div>

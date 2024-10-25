@@ -1,5 +1,6 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Cookies from 'js-cookie';
 
 import { GroupingElement } from '@/types';
 import DashboardIcons from './Icons/DashboardIcon';
@@ -10,7 +11,6 @@ import {
   updateMenuGroupingElement,
 } from '@/api/menu-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
-import { useAuth } from 'react-oidc-context';
 import '../app/globals.css';
 import { useParams } from 'next/navigation';
 import { env } from 'next-runtime-env';
@@ -53,7 +53,8 @@ export default function GroupingElementComponent(
     borderColor,
   } = props;
   const { openSnackbar } = useSnackbar();
-  const auth = useAuth();
+  const cookie = Cookies.get('access_token');
+  const accessToken = cookie || '';
   const params = useParams();
   const [verticalHeight, setVerticalHeight] = useState(0);
 
@@ -65,11 +66,9 @@ export default function GroupingElementComponent(
 
   const { refetch } = useQuery({
     queryKey: ['menu'],
-    queryFn: () =>
-      tenant
-        ? getMenuGroupingElements(tenant, auth.user?.access_token)
-        : getMenuGroupingElements(auth.user?.access_token),
+    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
   });
+
   const screenWidth = window.innerWidth;
   const calculateResponsiveWidth = (depth: number): number => {
     const screenWidth = window.innerWidth;
@@ -149,7 +148,7 @@ export default function GroupingElementComponent(
     try {
       await Promise.all(
         updates.map((el) =>
-          updateMenuGroupingElement(auth?.user?.access_token, {
+          updateMenuGroupingElement(accessToken, {
             id: el.id,
             position: el.position,
           }),

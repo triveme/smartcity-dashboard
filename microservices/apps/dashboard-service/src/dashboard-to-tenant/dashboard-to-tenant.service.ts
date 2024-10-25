@@ -57,12 +57,10 @@ export class DashboardToTenantService {
     dashboardId: string,
     tenantAbbreviation: string,
   ): Promise<void> {
-    const tenants =
-      await this.tenantService.getTenantsByAbbreviation(tenantAbbreviation);
+    const tenant =
+      await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
 
-    if (tenants.length > 0) {
-      const tenant = tenants[0];
-
+    if (tenant) {
       const dashboardToTenant: DashboardToTenant = {
         dashboardId: dashboardId,
         tenantId: tenant.id,
@@ -80,15 +78,15 @@ export class DashboardToTenantService {
       await this.getDashboardToTenantRelationshipByDashboardId(dashboardId);
 
     if (tenantAbbreviation) {
-      const tenants =
-        await this.tenantService.getTenantsByAbbreviation(tenantAbbreviation);
-      if (tenants.length === 0) {
+      const tenant =
+        await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
+
+      if (!tenant) {
         throw new HttpException(
           'manageUpdate: Tenant not existing',
           HttpStatus.BAD_REQUEST,
         );
       }
-      const tenant = tenants[0];
 
       if (dashboardToTenant && dashboardToTenant.tenantId !== tenant.id) {
         await this.updateDashboardToTenantRelationship(

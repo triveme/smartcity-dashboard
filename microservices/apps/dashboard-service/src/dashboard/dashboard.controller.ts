@@ -47,8 +47,9 @@ export class DashboardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<Dashboard | DashboardWithContent> {
     const roles = request.roles ?? [];
+    const tenant = request.tenant ?? undefined;
     if (includeContent === 'true') {
-      return this.service.getDashboardWithContent(id, roles);
+      return this.service.getDashboardWithContent(id, roles, tenant);
     }
 
     return this.service.getById(id, roles);
@@ -59,10 +60,19 @@ export class DashboardController {
   async getByUrl(
     @Param('url') url: string,
     @Req() request: AuthenticatedRequest,
+    @Query('abbreviation') abbreviation: string,
   ): Promise<Dashboard | DashboardWithContent> {
     const roles = request.roles ?? [];
-    const dashboard = await this.service.getByUrl(url, roles);
-    return this.service.getDashboardWithContent(dashboard.id, roles);
+    const dashboard = await this.service.getByUrlAndTenant(
+      url,
+      roles,
+      abbreviation,
+    );
+    return this.service.getDashboardWithContent(
+      dashboard.id,
+      roles,
+      abbreviation,
+    );
   }
 
   @Public()
@@ -71,7 +81,8 @@ export class DashboardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getFirstDashboardUrl(roles);
+    const tenant = request.tenant ?? undefined;
+    return this.service.getFirstDashboardUrl(roles, tenant);
   }
 
   @Public()
@@ -99,9 +110,11 @@ export class DashboardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
+    const tenant = request.tenant ?? undefined;
     return this.service.getDashboardUrlByTenantAbbreviation(
       abbreviation,
       roles,
+      tenant,
     );
   }
 
@@ -135,7 +148,8 @@ export class DashboardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<Dashboard> {
     const roles = request.roles ?? [];
-    return this.service.delete(id, roles);
+    const tenant = request.tenant ?? undefined;
+    return this.service.delete(id, roles, tenant);
   }
 
   @Public()

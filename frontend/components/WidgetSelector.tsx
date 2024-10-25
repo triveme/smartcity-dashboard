@@ -17,13 +17,14 @@ import { getWidgets, getWidgetsByPanelId } from '@/api/widget-service';
 type WidgetSelectorProps = {
   panelId: string;
   backgroundColor: string;
+  borderColor: string;
   hoverColor: string;
 };
 
 export default function WidgetSelector(
   props: WidgetSelectorProps,
 ): ReactElement {
-  const { panelId, backgroundColor, hoverColor } = props;
+  const { panelId, backgroundColor, borderColor, hoverColor } = props;
   const auth = useAuth();
 
   const [allWidgets, setAllWidgets] = useState<Widget[]>([]);
@@ -115,6 +116,7 @@ export default function WidgetSelector(
           }
           onSelect={setSelectedWidgetInDropdown}
           backgroundColor={backgroundColor}
+          borderColor={borderColor}
           hoverColor={hoverColor}
         />
       </div>

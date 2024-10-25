@@ -20,7 +20,7 @@ export default function SetViewToBounds({
 
       map.fitBounds(bounds);
     }
-  }, [markerPositions, centerPosition, map]);
+  }, [map]); // this effect will only run once when the component mounts
 
   return null;
 }

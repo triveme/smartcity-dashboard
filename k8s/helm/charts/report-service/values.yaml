@@ -1,0 +1,66 @@
+replicaCount: 1
+
+## Service values
+service:
+  type: ClusterIP
+  port: 8086
+
+## Deployment values
+image:
+  repository: smartcity/report-service
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+container:
+  ports:
+    - name: http
+      containerPort: 8085
+      protocol: TCP
+  livenessProbe:
+    port: 8085
+  readinessProbe:
+    port: 8085
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  tls: []
+
+# Helm Required Values
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+resources: {}
+
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+
+common:
+  enabled: true

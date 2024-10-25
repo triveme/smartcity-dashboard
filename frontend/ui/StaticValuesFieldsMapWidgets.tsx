@@ -1,10 +1,11 @@
-import { useState, ReactElement, CSSProperties } from 'react';
+import { useState, ReactElement, CSSProperties, useEffect } from 'react';
 import WizardTextfield from './WizardTextfield';
 import {
   MapModalWidget,
   Tab,
   tabComponentTypeEnum,
   tabComponentSubTypeEnum,
+  QueryConfig,
 } from '@/types';
 import CreateDashboardElementButton from './Buttons/CreateDashboardElementButton';
 import ColorPickerComponent from './ColorPickerComponent';
@@ -14,6 +15,7 @@ import WizardLabel from './WizardLabel';
 import HorizontalDivider from './HorizontalDivider';
 import { WizardErrors } from '@/types/errors';
 import { EMPTY_MAP_MODAL_WIDGET } from '@/utils/objectHelper';
+import { getAttributes } from '@/api/wizard-service-fiware';
 
 type StaticValuesFieldProps = {
   errors?: WizardErrors;
@@ -21,6 +23,8 @@ type StaticValuesFieldProps = {
   backgroundColor: string;
   borderColor: string;
   initialMapModalWidgetsValues?: MapModalWidget[];
+  queryConfig: QueryConfig;
+  accessToken: string;
 };
 
 export default function StaticValuesFieldMapWidgets(
@@ -32,12 +36,34 @@ export default function StaticValuesFieldMapWidgets(
     borderColor,
     backgroundColor,
     initialMapModalWidgetsValues,
+    queryConfig,
+    accessToken,
   } = props;
 
   const defaultMapModalWidget: MapModalWidget = EMPTY_MAP_MODAL_WIDGET;
   const [mapWidgetValues, setMapWidgetValues] = useState<MapModalWidget[]>(
     initialMapModalWidgetsValues || [defaultMapModalWidget],
   );
+
+  // Get all Attributes
+  const [availableAttributes, setAvailableAttributes] = useState<string[]>([]);
+  const requestAttributes = async (): Promise<void> => {
+    const req = await getAttributes(
+      queryConfig?.entityIds,
+      accessToken,
+      queryConfig?.fiwareService,
+      queryConfig?.dataSourceId,
+    );
+    if (req && req.length > 0) {
+      setAvailableAttributes(req);
+    }
+  };
+
+  useEffect((): void => {
+    if (queryConfig && accessToken) {
+      requestAttributes();
+    }
+  }, [queryConfig, accessToken]);
 
   const getAllowableComponentTypes = (): string[] => {
     return Object.values(tabComponentTypeEnum).filter(
@@ -100,7 +126,7 @@ export default function StaticValuesFieldMapWidgets(
                 style={mapWidgetHasError ? errorStyle : {}}
               >
                 {/* component, subcomponent and attributes */}
-                <div className="flex flex-row justify-between gap-x-2">
+                <div className="flex flex-row justify-between items-end gap-x-2">
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Komponente" />
                     <WizardDropdownSelection
@@ -160,10 +186,10 @@ export default function StaticValuesFieldMapWidgets(
                     />
                   </div>
                   <div className="flex flex-col w-full pb-2">
-                    <WizardLabel label="Attribute" />
+                    <WizardLabel label="Attribute (nach Query Konfiguration möglich)" />
                     <WizardDropdownSelection
                       currentValue={value?.attributes || ''}
-                      selectableValues={[]}
+                      selectableValues={availableAttributes}
                       onSelect={(newValue): void => {
                         const updatedMapWidgetValues = mapWidgetValues.map(
                           (widget, idx) =>

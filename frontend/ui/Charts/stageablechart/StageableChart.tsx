@@ -3,9 +3,11 @@
 import { ReactElement, useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { ECharts, EChartsOption } from 'echarts';
+import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
 
 type StageableChartProps = {
   unit: string;
+  tiles: number;
   minValue: number;
   maxValue: number;
   staticValues: number[];
@@ -18,17 +20,29 @@ type ColorStage = [number, string];
 export default function StageableChart(
   props: StageableChartProps,
 ): ReactElement {
-  const { minValue, maxValue, unit, staticValues, staticValuesColors, value } =
-    props;
+  const {
+    tiles,
+    minValue,
+    maxValue,
+    unit,
+    staticValues,
+    staticValuesColors,
+    value,
+  } = props;
   const chartRef = useRef<HTMLDivElement>(null);
   const myChartRef = useRef<ECharts | null>(null);
+  const autoScaleAxisLabelFont = useAutoScaleFont({
+    minSize: 10,
+    maxSize: 20,
+    divisor: 35,
+  });
 
   useEffect(() => {
     if (typeof window !== 'undefined' && chartRef.current) {
       myChartRef.current = echarts.init(chartRef.current);
 
       const resizeChart = (): void => {
-        if (myChartRef.current) {
+        if (myChartRef.current && chartRef.current) {
           myChartRef.current.resize();
         }
       };
@@ -49,7 +63,6 @@ export default function StageableChart(
     maxValue: number,
     staticValues: number[],
   ): number[] {
-    // convert static values to decimals based on min and max value
     return staticValues.map((boundary) => {
       return (boundary - minValue) / (maxValue - minValue);
     });
@@ -65,7 +78,7 @@ export default function StageableChart(
   for (let i = 0; i < decimalsArray.length; i++) {
     colorConfig.push([decimalsArray[i], staticValuesColors[i]]);
   }
-  colorConfig.push([1, staticValuesColors[staticValuesColors.length - 1]]); // make the last item to be 1
+  colorConfig.push([1, staticValuesColors[staticValuesColors.length - 1]]);
 
   useEffect(() => {
     if (myChartRef.current) {
@@ -73,6 +86,7 @@ export default function StageableChart(
         series: [
           {
             type: 'gauge',
+            splitNumber: tiles,
             min: minValue,
             max: maxValue,
             axisLine: {
@@ -101,13 +115,13 @@ export default function StageableChart(
               length: 35,
               lineStyle: {
                 color: '#fff',
-                width: 7,
+                width: 4,
               },
             },
             axisLabel: {
               color: 'black',
               distance: 44,
-              fontSize: 20,
+              fontSize: autoScaleAxisLabelFont,
             },
             detail: {
               valueAnimation: true,
@@ -126,7 +140,15 @@ export default function StageableChart(
 
       myChartRef.current.setOption(option);
     }
-  }, [minValue, maxValue, staticValues, staticValuesColors, unit, value]);
+  }, [
+    minValue,
+    maxValue,
+    staticValues,
+    staticValuesColors,
+    unit,
+    value,
+    autoScaleAxisLabelFont,
+  ]);
 
-  return <div className="w-full h-full" ref={chartRef} />;
+  return <div className="w-full h-full" id="chartRef" ref={chartRef} />;
 }

@@ -5,9 +5,17 @@ import { validateQueryConfig } from './queryConfigValidator';
 
 export function validateWidgetWithChildren(
   widgetWithChildren: WidgetWithChildren,
+  origin: string,
 ): WizardErrors {
-  let errorsOccured: WizardErrors = validateWidget(widgetWithChildren.widget);
-  errorsOccured = { ...errorsOccured, ...validateTab(widgetWithChildren.tab) };
+  let errorsOccured: WizardErrors = {};
+
+  errorsOccured = {
+    ...errorsOccured,
+    ...validateWidget(widgetWithChildren.widget),
+    ...validateTab(widgetWithChildren.tab),
+    ...validateWidgetHeightBasedOnComponentType(widgetWithChildren),
+  };
+
   if (widgetWithChildren.queryConfig && widgetWithChildren?.tab.componentType) {
     if (
       widgetWithChildren?.tab.componentType !==
@@ -20,6 +28,7 @@ export function validateWidgetWithChildren(
         ...validateQueryConfig(
           widgetWithChildren.queryConfig,
           widgetWithChildren.tab.componentType,
+          origin,
           widgetWithChildren.tab.componentSubType,
         ),
       };
@@ -66,10 +75,6 @@ export function validateWidgetWithChildren(
 export function validateWidget(widget: Widget): WizardErrors {
   const errorsOccured: WizardErrors = {};
   if (!widget.name) errorsOccured.nameError = 'Name muss ausgefüllt werden!';
-  if (!widget.height)
-    errorsOccured.widgetHeightError = 'Höhe muss ausgefüllt werden!';
-  if (widget.height && widget.height < 400)
-    errorsOccured.widgetHeightError = 'Die Höhe muss mehr als 400 betragen!';
   if (widget.visibility === 'protected') {
     if (widget.readRoles.length === 0)
       errorsOccured.readRolesError = 'Leserechte müssen ausgefüllt werden!';
@@ -78,6 +83,43 @@ export function validateWidget(widget: Widget): WizardErrors {
         'Schreibberechtigungen müssen ausgefüllt sein!';
   }
   return errorsOccured;
+}
+
+export function validateWidgetHeightBasedOnComponentType(
+  widgetWithChildren: WidgetWithChildren,
+): WizardErrors {
+  const errorsOccured: WizardErrors = {};
+  const { widget, tab } = widgetWithChildren;
+
+  if (!widget.height) {
+    errorsOccured.widgetHeightError = 'Höhe muss ausgefüllt werden!';
+    return errorsOccured;
+  }
+
+  const minimumWidgetHeight = getMinHeightBasedOnComponentType(
+    tab.componentType as tabComponentTypeEnum,
+  );
+
+  if (widget.height < minimumWidgetHeight) {
+    errorsOccured.widgetHeightError = `Die Höhe muss mehr als ${minimumWidgetHeight} betragen!`;
+  }
+
+  return errorsOccured;
+}
+
+function getMinHeightBasedOnComponentType(
+  tabComponentType: tabComponentTypeEnum,
+): number {
+  const largeComponentTypes = [
+    tabComponentTypeEnum.diagram,
+    tabComponentTypeEnum.map,
+  ];
+
+  if (largeComponentTypes.includes(tabComponentType)) {
+    return 400;
+  } else {
+    return 200;
+  }
 }
 
 export function validateMapWidgetsAttributesSelected(

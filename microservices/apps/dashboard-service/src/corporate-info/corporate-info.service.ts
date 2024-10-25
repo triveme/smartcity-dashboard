@@ -11,7 +11,7 @@ import {
   SidebarLogo,
 } from './corporate-info.repo';
 import { CorporateInfoSidebarLogo } from '@app/postgres-db/schemas/corporate-info-sidebar-logos.schema';
-import { CorporateInfoSidebarLogosRepo } from '../corporate-info-sidebar-logos/corporate-info-sidebar-logos.repo';
+import { CorporateInfoSidebarLogosRepo } from './corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
 
 @Injectable()
@@ -57,15 +57,14 @@ export class CorporateInfoService {
     return this.corporateInfoRepository.getAll();
   }
 
-  async getById(id: string): Promise<CorporateInfo> {
-    return this.corporateInfoRepository.getById(id);
-  }
-
   async getByTenant(
-    tenantId: string,
+    tenantAbbreviation: string,
     withLogos: boolean,
-  ): Promise<CorporateInfo | CorporateInfoWithLogos> {
-    return this.corporateInfoRepository.getByTenant(tenantId, withLogos);
+  ): Promise<CorporateInfo[] | CorporateInfoWithLogos[]> {
+    return this.corporateInfoRepository.getByTenant(
+      tenantAbbreviation,
+      withLogos,
+    );
   }
 
   async create(
@@ -119,6 +118,30 @@ export class CorporateInfoService {
       );
 
       return deletedCorporateInfo;
+    });
+  }
+
+  async deleteByTenant(
+    tenantAbbreviation: string,
+    transaction?: DbType,
+  ): Promise<CorporateInfo[]> {
+    const dbActor = transaction ? transaction : this.db;
+
+    return dbActor.transaction(async (tx) => {
+      const deletedCorporateInfos =
+        await this.corporateInfoRepository.deleteByTenant(
+          tenantAbbreviation,
+          transaction,
+        );
+
+      for (const deletedCorporateInfo of deletedCorporateInfos) {
+        await this.corporateInfoSidebarLogosRepo.deleteRelationsForCorporateInfo(
+          deletedCorporateInfo.id,
+          tx,
+        );
+      }
+
+      return deletedCorporateInfos;
     });
   }
 

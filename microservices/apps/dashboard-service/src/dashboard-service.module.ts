@@ -7,7 +7,6 @@ import { PostgresDbModule } from '@app/postgres-db';
 import { WidgetModule } from './widget/widget.module';
 import { PanelModule } from './panel/panel.module';
 import { TabModule } from './tab/tab.module';
-import { DataModelModule } from './data-model/data-model.module';
 import { GroupingElementModule } from './grouping-element/grouping-element.module';
 import { WidgetToPanelModule } from './widget-to-panel/widget-to-panel.module';
 import { CorporateInfoModule } from './corporate-info/corporate-info.module';
@@ -22,7 +21,8 @@ import { DashboardToTenantModule } from './dashboard-to-tenant/dashboard-to-tena
 import { WidgetToTenantModule } from './widget-to-tenant/widget-to-tenant.module';
 import { LogoModule } from './logo/logo.module';
 import { AuthHelperUtility } from '@app/auth-helper';
-import { CorporateInfoSidebarLogosModule } from './corporate-info-sidebar-logos/corporate-info-sidebar-logos.module';
+import { LoggerModule } from './logging/logger.module';
+import { GeneralSettingsModule } from './general-settings/general-settings.module';
 
 @Module({
   imports: [
@@ -34,11 +34,9 @@ import { CorporateInfoSidebarLogosModule } from './corporate-info-sidebar-logos/
     WidgetModule,
     PanelModule,
     TabModule,
-    DataModelModule,
     GroupingElementModule,
     WidgetToPanelModule,
     CorporateInfoModule,
-    CorporateInfoSidebarLogosModule,
     TenantModule,
     AuthDataModule,
     JwtModule.register({
@@ -47,6 +45,8 @@ import { CorporateInfoSidebarLogosModule } from './corporate-info-sidebar-logos/
     DashboardToTenantModule,
     WidgetToTenantModule,
     LogoModule,
+    LoggerModule,
+    GeneralSettingsModule,
   ],
   providers: [
     AuthDataService,

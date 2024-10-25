@@ -30,7 +30,7 @@ export default function WizardDropdownSelection(
 
   return (
     <div
-      className={`relative h-14 border-4 rounded-lg`}
+      className={`relative h-14 border-4 rounded-lg w-full`}
       style={{
         borderColor: error ? '#FFEB3B' : borderColor,
         background: backgroundColor,

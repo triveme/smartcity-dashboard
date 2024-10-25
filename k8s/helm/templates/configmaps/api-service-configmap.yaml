@@ -1,0 +1,14 @@
+{{- if index .Values "api-service" "enabled" }}
+# Env vars specific for the dashboard-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-service-configmap
+data:
+  NODE_ENV: "development"
+  API_MANDATORS_URL: "https://dev-iot-dash.swu.de/consumer-api/v1"
+  API_KEYCLOAK_URL: "https://dev-iot-dash.swu.de/auth/realms/ocon/protocol/openid-connect/token"
+  API_CLIENT_ID: "orchideo-connect-app"
+  API_GRANT_TYPE: "password"
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "api-service" "frontendUrl" }}
+{{- end }}

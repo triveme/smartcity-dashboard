@@ -21,6 +21,7 @@ type TableContentProps<T> = {
   borderColor: string;
   hoverColor: string;
   showSuffixText?: boolean;
+  isTenant?: boolean;
 };
 
 export default function TableContent<T>(
@@ -34,6 +35,7 @@ export default function TableContent<T>(
     borderColor,
     hoverColor,
     showSuffixText,
+    isTenant = false,
   } = props;
   const [selectedItemId, setSelectedItemId] = useState<string>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -51,7 +53,6 @@ export default function TableContent<T>(
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   const renderCell = (item: GenericTableContentItem<T>, column: keyof T) => {
-    // HelperFunction to display other components than just plain text
     const renderFunc = renderFunctions[column as string];
     if (renderFunc) {
       return renderFunc(item);
@@ -59,7 +60,9 @@ export default function TableContent<T>(
     return item[column] as ReactNode;
   };
 
-  function handleRowClick<T extends { id?: unknown }>(item: T): void {
+  function handleRowClick(item: GenericTableContentItemWithId<T>): void {
+    if (isTenant) return;
+
     if ('id' in item && item.id !== undefined) {
       push(`${pathname}/edit?id=${item.id}`);
     }

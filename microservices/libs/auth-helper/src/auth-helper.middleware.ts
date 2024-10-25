@@ -11,13 +11,15 @@ const rootDir = path.resolve(__dirname, '../../../');
 const envPath = path.join(rootDir, '.env');
 config({ path: envPath }); // Load environment variables from .env file in root directory
 
-export type AuthenticatedRequest = Request & { roles?: string[] };
+export type AuthenticatedRequest = Request & { roles?: string[] } & {
+  tenant?: string;
+};
 
 @Injectable()
 export class AuthHelperMiddleware implements NestMiddleware {
   readonly jwksUri = process.env.NEST_JWKS_URI as string;
   readonly ca = process.env.TRUSTED_CA;
-
+  readonly logger = new Logger('Auth Guard');
   constructor() {
     if (!this.jwksUri) {
       throw new Error('Missing JWKS URI environment variable');
@@ -85,7 +87,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
     try {
       const token = this.extractJwtFromHeader(req);
       if (!token) {
-        Logger.log('Unauthenticated request');
+        this.logger.log('Unauthenticated request');
         req.roles = undefined;
         next();
         return;
@@ -100,18 +102,23 @@ export class AuthHelperMiddleware implements NestMiddleware {
         verify(token as string, signingKey as string);
       } catch (error) {
         // We use a normal log here because failing verifications are expected.
-        Logger.log(error);
+        this.logger.log(error);
         req.roles = undefined;
         next();
         return;
       }
 
       const roles = payload.realm_access?.roles;
+      const tenant = payload.mandator_code;
       req.roles = roles || undefined;
-      Logger.log(`Authenticated request with roles: ${roles.join(', ')}`);
+      this.logger.log(
+        `Authenticated request with roles: ${roles.join(
+          ', ',
+        )} for tenant:  ${tenant}`,
+      );
       next();
     } catch (err) {
-      Logger.error(err);
+      this.logger.error(err);
       req.roles = undefined;
       next();
       return;

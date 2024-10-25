@@ -11,9 +11,15 @@ export const panels = pgTable('panel', {
   height: smallint('height'),
   width: smallint('width'),
   position: smallint('position'),
+  headlineColor: text('headline_color'),
+  icon: text('icon'),
   info: text('info_msg'),
   generalInfo: text('general_info'),
   showGeneralInfo: boolean('show_general_info'),
+  showJumpoffButton: boolean('show_jumpoff_button'),
+  jumpoffLabel: text('jumpoff_label'),
+  jumpoffIcon: text('jumpoff_icon'),
+  jumpoffUrl: text('jumpoff_url'),
 });
 
 export const panelsRelations = relations(panels, ({ one }) => ({

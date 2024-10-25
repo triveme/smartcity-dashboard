@@ -5,9 +5,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
+
 interface QueryConfigWithTypes extends QueryConfig {
   componentType?: string;
   componentSubType?: string;
+  dataSourceType?: string;
 }
 
 @Injectable()
@@ -28,18 +30,27 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       errorsOccured.push('Aktualisierungsintervall ist erforderlich');
     }
 
-    if (!queryConfig?.fiwareService) {
-      errorsOccured.push('Fiware-Dienst-/Sammlungsfeld ist erforderlich');
-    }
-    if (!queryConfig?.fiwareType) {
-      errorsOccured.push('Fiware-Typ ist erforderlich');
-    }
-    if (!queryConfig?.aggrMode) {
-      errorsOccured.push('Aggregationsmodus ist erforderlich');
+    if (
+      queryConfig.dataSourceType !== 'static-endpoint' &&
+      queryConfig.dataSourceType !== 'ngs-ld'
+    ) {
+      if (!queryConfig?.fiwareService) {
+        errorsOccured.push('Fiware-Dienst-/Sammlungsfeld ist erforderlich');
+      }
+      if (!queryConfig?.fiwareType) {
+        errorsOccured.push('Fiware-Typ ist erforderlich');
+      }
+      if (!queryConfig?.aggrMode) {
+        errorsOccured.push('Aggregationsmodus ist erforderlich');
+      }
+      if (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) {
+        errorsOccured.push('Sensoren sind erforderlich');
+      }
     }
     if (
       queryConfig.componentType !== 'Karte' &&
       queryConfig.componentType !== 'Wert' &&
+      queryConfig.componentType !== 'Slider' &&
       queryConfig.componentSubType !== '180° Chart' &&
       queryConfig.componentSubType !== '360° Chart' &&
       queryConfig.componentSubType !== 'Stageable Chart' &&
@@ -47,9 +58,6 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       queryConfig?.timeframe === 'live'
     ) {
       errorsOccured.push('Zeitwert ist erforderlich');
-    }
-    if (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) {
-      errorsOccured.push('Sensoren sind erforderlich');
     }
 
     if (queryConfig.componentType === 'Diagram') {

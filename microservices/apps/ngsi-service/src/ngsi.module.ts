@@ -8,7 +8,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ReportModule } from './report/report.module';
 import { DataModule } from './data/data.module';
 import { QueryModule } from './query/query.module';
-import { NgsiController } from './ngsi.controller';
 import { FiwareWizardModule } from './fiware-wizard/fiware-wizard.module';
 import { FiwareWizardController } from './fiware-wizard/fiware-wizard.controller';
 import { FiwareWizardService } from './fiware-wizard/fiware-wizard.service';
@@ -24,6 +23,6 @@ import { FiwareWizardService } from './fiware-wizard/fiware-wizard.service';
     FiwareWizardModule,
   ],
   providers: [NgsiService, AuthService, ScheduleService, FiwareWizardService],
-  controllers: [NgsiController, FiwareWizardController],
+  controllers: [FiwareWizardController],
 })
 export class NgsiModule {}

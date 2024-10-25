@@ -1,6 +1,7 @@
 import { Logo, NewLogo } from '@app/postgres-db/schemas/logo.schema';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LogoRepo } from './logo.repo';
+import { DbType } from '@app/postgres-db';
 
 @Injectable()
 export class LogoService {
@@ -30,5 +31,15 @@ export class LogoService {
 
   async delete(id: string): Promise<Logo> {
     return this.logoRepo.delete(id);
+  }
+
+  async deleteByTenant(
+    tenantAbbreviation: string,
+    transaction?: DbType,
+  ): Promise<Logo[]> {
+    return this.logoRepo.deleteByTenantAbbreviation(
+      tenantAbbreviation,
+      transaction,
+    );
   }
 }

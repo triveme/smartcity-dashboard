@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DashboardServiceModule } from '../../dashboard-service.module';
 import { widgets } from '@app/postgres-db/schemas/dashboard.widget.schema';
-import axios from 'axios';
 import {
   runLocalDatabasePreparation,
   truncateTables,
@@ -26,6 +25,7 @@ import {
 } from '../../data-source/test/test-data';
 import { v4 as uuid } from 'uuid';
 import { createTenantByObject, getTenant } from '../../tenant/test/test-data';
+import { generateJWTToken } from '../../../../test/jwt-token-util';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
@@ -48,20 +48,10 @@ describe('DashboardServiceControllers (e2e)', () => {
 
   beforeEach(async () => {
     // Get JWT token
-    const authUrl = process.env.KEYCLOAK_CLIENT_URI;
-
-    const data = new URLSearchParams();
-    data.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-    data.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-    data.append('grant_type', 'client_credentials');
-
-    try {
-      await process.nextTick(() => {});
-      const res = await axios.post(authUrl, data);
-      JWTToken = res.data.access_token;
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
+    JWTToken = await generateJWTToken(
+      process.env.KEYCLOAK_CLIENT_ID,
+      process.env.KEYCLOAK_CLIENT_SECRET,
+    );
 
     await truncateTables(client);
   });
@@ -415,7 +405,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // delete
     it('/widgets/:id (DELETE)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/widgets/' + widget.id)
@@ -426,7 +416,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     it('/widgets/:id (DELETE) with tenant', async () => {
       const tenant = await createTenantByObject(db, getTenant());
       const widget = await createWidgetByObject(db, getWidget([], []));
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
       await createWidgetToTenantRelation(db, widget.id, tenant.id);
 
       await request(app.getHttpServer())
@@ -439,7 +429,7 @@ describe('DashboardServiceControllers (e2e)', () => {
       const widgetObject = getWidget(['scs-admin'], ['scs-admin']);
       widgetObject.visibility = 'protected';
       const widget = await createWidgetByObject(db, widgetObject);
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/widgets/' + widget.id)
@@ -451,7 +441,7 @@ describe('DashboardServiceControllers (e2e)', () => {
       const widgetObject = getWidget([], []);
       widgetObject.visibility = 'protected';
       const widget = await createWidgetByObject(db, widgetObject);
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/widgets/' + widget.id)
@@ -472,11 +462,9 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = getWidget([], []);
-      const tab = getTab(widget.id);
+      const tab = await getTab(db, widget.id, 'Karte', 'Parking');
       const queryConfig = getQueryConfig(dataSource.id);
 
-      tab.componentSubType = 'Parking';
-      tab.componentType = 'Karte';
       tab.mapLatitude = 50.585075277802574;
       tab.mapLongitude = 9.603538459598571;
 
@@ -493,9 +481,8 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     it('/widgets/with-children (POST Image Config)', async () => {
       const widget = getWidget([], []);
-      const tab = getTab(widget.id);
+      const tab = await getTab(db, widget.id, 'Bild', null);
 
-      tab.componentType = 'Bild';
       tab.imageSrc = 'https://google.com/logo.png';
 
       await request(app.getHttpServer())
@@ -515,7 +502,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const response = await request(app.getHttpServer())
@@ -533,7 +520,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const response = await request(app.getHttpServer())
@@ -552,7 +539,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
       const queryConfig = await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const updateValues = {
@@ -584,7 +571,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     it('/widgets/with-children/:id (PATCH) with image', async () => {
       await createDataSourceByObject(db, await getDataSource(undefined, db));
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
 
       const updateValues = {
         widget: {
@@ -602,8 +589,6 @@ describe('DashboardServiceControllers (e2e)', () => {
         .send(updateValues)
         .expect(200);
 
-      console.log(response.body);
-
       expect(response.body.widget).toMatchObject(updateValues.widget);
       expect(response.body.tab).toMatchObject(updateValues.tab);
       expect(response.body.queryConfig).toBeNull();
@@ -615,7 +600,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const updateValues = {
@@ -645,7 +630,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const updateValues = {
@@ -674,7 +659,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getDataSource(undefined, db),
       );
       const widget = await createWidgetByObject(db, getWidget([], []));
-      await createTab(db, widget.id);
+      await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const updateValues = {

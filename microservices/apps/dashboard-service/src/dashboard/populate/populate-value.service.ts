@@ -100,8 +100,12 @@ export class PopulateValueService {
     if (attributeValue.type) {
       if (attributeValue.type === 'Number') {
         tab.chartValues.push(attributeValue.value);
-      } else if (attributeValue.type === 'String') {
+      } else if (attributeValue.type === 'Text') {
         tab.textValue = attributeValue.value;
+      } else if (attributeValue.type === 'Property') {
+        // NGSI-LD
+        tab.textValue = attributeValue.value;
+        tab.chartValues.push(attributeValue.value);
       }
     } else {
       tab.chartValues.push(attributeValue);

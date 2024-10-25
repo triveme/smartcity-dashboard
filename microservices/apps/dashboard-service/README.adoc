@@ -1,4 +1,4 @@
-= Readme for the dashboard-service microservice
+= Readme for the api-service microservice
 
 == Description
 

@@ -7,12 +7,11 @@ import {
   runLocalDatabasePreparation,
   truncateTables,
 } from '../../../../test/database-operations/prepare-database';
-import { createTab, getTab } from './test-data';
+import { createDataModel, createTab, getTab } from './test-data';
 import { createWidgetByObject, getWidget } from '../../widget/test/test-data';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { Client } from 'pg';
-import { createQuery } from '../../query/test/test-data';
-import { createDataModel } from '../../data-model/test/test-data';
+import { createQuery, getNGSILiveQuery } from '../../query/test/test-data';
 
 describe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
@@ -43,7 +42,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // create
     it('/tabs (POST)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = getTab(widget.id);
+      const tab = await getTab(db, widget.id, 'Diagramm', 'Balken Chart');
 
       const response = await request(app.getHttpServer())
         .post('/tabs')
@@ -60,7 +59,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // getAll
     it('/tabs (GET)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
 
       const response = await request(app.getHttpServer()).get('/tabs');
       expect(response.body).toBeInstanceOf(Array);
@@ -85,7 +84,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // getById
     it('/tabs/:id (GET)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
 
       const response = await request(app.getHttpServer()).get(
         '/tabs/' + tab.id,
@@ -106,7 +105,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // getByWidgetId
     it('/tabs/widget/:id (GET)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
 
       const response = await request(app.getHttpServer()).get(
         '/tabs/widget/' + widget.id,
@@ -136,8 +135,8 @@ describe('DashboardServiceControllers (e2e)', () => {
     it('/tabs/:id (PATCH)', async () => {
       const widget1 = await createWidgetByObject(db, getWidget([], []));
       const widget2 = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget1.id);
-      const query = await createQuery(db);
+      const tab = await createTab(db, await getTab(db, widget1.id));
+      const query = await createQuery(db, getNGSILiveQuery());
       const dataModel = await createDataModel(db);
 
       const updateTab = {
@@ -157,7 +156,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     // delete
     it('/tabs/:id (DELETE)', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
-      const tab = await createTab(db, widget.id);
+      const tab = await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
         .delete('/tabs/' + tab.id)

@@ -37,11 +37,14 @@ import { TabRepo } from '../tab/tab.repo';
 import { TenantRepo } from '../tenant/tenant.repo';
 import { WidgetRepo } from './widget.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
+import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
+import { DataSourceService } from '../data-source/data-source.service';
 
 export type WidgetWithChildren = {
   widget: Widget;
   tab: Tab;
   queryConfig: QueryConfig;
+  datasource: DataSource;
 };
 
 @Injectable()
@@ -60,6 +63,7 @@ export class WidgetService {
     private readonly tenantService: TenantService,
     private readonly tenantRepo: TenantRepo,
     private readonly widgetToTenantService: WidgetToTenantService,
+    private readonly dataSourceService: DataSourceService,
   ) {}
 
   private readonly logger = new Logger(WidgetService.name);
@@ -140,18 +144,65 @@ export class WidgetService {
     return panelWidgets;
   }
 
+  async getByTenantAndTabComponentType(
+    componentType: string,
+    rolesFromRequest: string[],
+    tenantAbbreviation: string,
+  ): Promise<WidgetWithChildren[]> {
+    const tenantWidgets =
+      await this.getWidgetsByTenantAbbreviation(tenantAbbreviation);
+    const widgetsWithChildren: WidgetWithChildren[] = [];
+
+    for (const widget of tenantWidgets) {
+      // Fetch the tabs associated with the widget
+      const tabs = await this.tabService.getTabsByWidgetId(widget.id);
+
+      // Filter tabs that match the componentType param
+      const matchingTabs = tabs.filter(
+        (tab) => tab.componentType === componentType,
+      );
+
+      // If there are any matching tabs, proceed
+      for (const tab of matchingTabs) {
+        const response: WidgetWithChildren = {
+          widget: widget,
+          tab: tab,
+          queryConfig: null,
+          datasource: null,
+        };
+
+        if (this.shouldUseQueryConfig(tab)) {
+          response.queryConfig =
+            await this.queryConfigService.getQueryConfigByTabId(tab.id);
+          response.datasource = await this.dataSourceService.getById(
+            response.queryConfig.dataSourceId,
+          );
+        }
+
+        if (rolesFromRequest.length === 0) {
+          delete widget.readRoles;
+          delete widget.writeRoles;
+        }
+
+        widgetsWithChildren.push(response);
+      }
+    }
+
+    return widgetsWithChildren;
+  }
+
   async getWidgetsByTenantAbbreviation(
     abbreviation: string,
   ): Promise<Widget[]> {
-    const tenant = await this.tenantRepo.getTenantsByAbbreviation(abbreviation);
+    const tenant = await this.tenantRepo.getTenantByAbbreviation(abbreviation);
 
-    if (tenant.length === 0)
+    if (!tenant)
       throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
 
     const widgetToTenantIds = await this.db
       .select()
       .from(widgetsToTenants)
-      .where(eq(widgetsToTenants.tenantId, tenant[0].id));
+      .where(eq(widgetsToTenants.tenantId, tenant.id));
 
     const retrievedWidgets: Widget[] = [];
 
@@ -295,6 +346,7 @@ export class WidgetService {
       widget: null,
       tab: null,
       queryConfig: null,
+      datasource: null,
     };
 
     const widget = await this.getById(id, rolesFromRequest);
@@ -397,6 +449,7 @@ export class WidgetService {
         widget: null,
         tab: null,
         queryConfig: null,
+        datasource: null,
       };
 
       response.widget = await this.update(
@@ -505,7 +558,12 @@ export class WidgetService {
     return (
       payloadTab.componentType !== 'Bild' &&
       payloadTab.componentType !== 'Informationen' &&
-      payloadTab.componentType !== 'iFrame'
+      payloadTab.componentType !== 'iFrame' &&
+      payloadTab.componentType !== 'Kombinierte Komponente' &&
+      !(
+        payloadTab.componentType === 'Karte' &&
+        payloadTab.componentSubType === 'Kombinierte Karte'
+      )
     );
   }
 

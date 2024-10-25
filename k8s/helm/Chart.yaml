@@ -40,11 +40,17 @@ dependencies:
   - name: ngsi-service
     condition: ngsi-service.enabled
     version: 0.1.0
+  - name: api-service
+    condition: api-service.enabled
+    version: 0.1.0
   - name: mail-service
     condition: mail-service.enabled
     version: 0.1.0
   - name: infopin-service
     condition: infopin-service.enabled
+    version: 0.1.0
+  - name: report-service
+    condition: report-service.enabled
     version: 0.1.0
   - name: frontend
     condition: frontend.enabled
