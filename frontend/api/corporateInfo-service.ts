@@ -2,9 +2,10 @@ import axios from 'axios';
 
 import { CorporateInfo } from '@/types';
 import { env } from 'next-runtime-env';
+import Cookies from 'js-cookie';
+import { DEFAULT_CI } from '@/utils/objectHelper';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
-// see TODO in action.ts
 export async function getCorporateInfo(
   accessToken: string | undefined,
   tenant?: string | undefined,
@@ -32,7 +33,9 @@ export async function getCorporateInfosWithLogos(
   tenant?: string | undefined,
 ): Promise<CorporateInfo> {
   try {
+    const isLightTheme = Cookies.get('isLightTheme') === 'true';
     const tenantParam = tenant && tenant !== '' ? `/tenant/${tenant}` : '';
+
     const response = await axios.get(
       `${NEXT_PUBLIC_BACKEND_URL}/corporate-infos${tenantParam}?includeLogos=true`,
       {
@@ -42,10 +45,15 @@ export async function getCorporateInfosWithLogos(
       },
     );
 
-    return response.data;
+    const data = response.data;
+
+    if (Array.isArray(data) && data.length > 0) {
+      return isLightTheme ? data[0] : data[1];
+    }
+    throw new Error('Unexpected data format');
   } catch (err) {
-    console.error(err);
-    throw err;
+    console.error('Failed to fetch corporate info:', err);
+    return DEFAULT_CI;
   }
 }
 

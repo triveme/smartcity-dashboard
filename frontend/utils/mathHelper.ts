@@ -3,6 +3,17 @@ export function roundToDecimal(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
+export function roundToDecimalIfValueHasDecimal(
+  value: number,
+  decimals: number,
+): number {
+  if (Number.isInteger(value)) {
+    return value;
+  }
+
+  return roundToDecimal(value, decimals);
+}
+
 export function calculateAverage(arr: number[]): number {
   if (arr.length === 0) {
     // Handle the case where the array is empty to avoid division by zero.
@@ -13,8 +24,7 @@ export function calculateAverage(arr: number[]): number {
     (accumulator, currentValue) => accumulator + currentValue,
     0,
   );
-  const average = sum / arr.length;
-  return average;
+  return sum / arr.length;
 }
 
 export function calculateDeviationPercentage(
@@ -27,8 +37,5 @@ export function calculateDeviationPercentage(
   }
 
   // Calculate the deviation in percentage.
-  const deviationPercentage =
-    ((currentValue - averageValue) / averageValue) * 100;
-
-  return deviationPercentage;
+  return ((currentValue - averageValue) / averageValue) * 100;
 }

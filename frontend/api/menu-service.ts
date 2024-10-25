@@ -6,8 +6,8 @@ import { env } from 'next-runtime-env';
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
 export async function getMenuGroupingElements(
-  tenant?: string | undefined,
-  accessToken?: string | undefined,
+  tenant: string | undefined,
+  accessToken: string,
 ): Promise<GroupingElement[]> {
   try {
     const headers = accessToken
@@ -17,8 +17,6 @@ export async function getMenuGroupingElements(
     let url = '';
     if (tenant && tenant !== '') {
       url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/tenant/${tenant}`;
-    } else {
-      url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements`;
     }
 
     const response = await axios.get(url, { headers });

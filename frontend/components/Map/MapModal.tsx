@@ -2,11 +2,13 @@
 import {
   MapModalChartStyle,
   MapModalWidget,
+  QueryDataAttributeValues,
   tabComponentSubTypeEnum,
 } from '@/types';
 import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import HorizontalDivider from '@/ui/HorizontalDivider';
+import { roundToDecimalIfValueHasDecimal } from '@/utils/mathHelper';
 import React, { ReactElement, CSSProperties } from 'react';
 
 type Marker = {
@@ -19,6 +21,7 @@ type Marker = {
 type MapModalProps = {
   selectedMarker: Marker;
   mapWidgetValues?: MapModalWidget[];
+  mapQueryDataAttributeValues?: QueryDataAttributeValues[];
   menuStyle?: CSSProperties;
   chartStyle?: MapModalChartStyle;
   onCloseModal: () => void;
@@ -28,10 +31,34 @@ export default function MapModal(props: MapModalProps): ReactElement {
   const {
     selectedMarker,
     mapWidgetValues,
+    mapQueryDataAttributeValues,
     menuStyle,
     chartStyle,
     onCloseModal,
   } = props;
+
+  const getChartValueBasedOnAttrName = (widgetAttribute: string): number => {
+    const value = mapQueryDataAttributeValues?.find(
+      (queryData) => queryData.attrName === widgetAttribute,
+    );
+
+    const rawValue = value?.values?.[value.values.length - 1];
+
+    if (typeof rawValue === 'number') {
+      const numValue = Number(rawValue);
+      // if value has decimals, then round to 1 decimal point
+      return roundToDecimalIfValueHasDecimal(numValue, 1);
+    }
+
+    return 25;
+  };
+
+  function getMarkerDetailsValue(value: string | number): string {
+    if (typeof value === 'number') {
+      return roundToDecimalIfValueHasDecimal(value, 1).toString();
+    }
+    return value;
+  }
 
   return (
     <div
@@ -44,7 +71,8 @@ export default function MapModal(props: MapModalProps): ReactElement {
           {Object.entries(selectedMarker.details).map(([key, value]) =>
             typeof value === 'string' || typeof value === 'number' ? (
               <div key={key}>
-                {key.toUpperCase()}: <strong>{value.toString()}</strong>
+                {key.toUpperCase()}:{' '}
+                <strong>{getMarkerDetailsValue(value)}</strong>
               </div>
             ) : null,
           )}
@@ -62,7 +90,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         minValue={widget.chartMinimum || 0}
                         maxValue={widget.chartMaximum || 100}
                         unit={widget.chartUnit || ''}
-                        value={27}
+                        value={getChartValueBasedOnAttrName(widget.attributes)}
                         mainColor={
                           chartStyle?.dashboardSecondaryColor || '#3D4760'
                         }
@@ -75,6 +103,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     {widget.componentSubType ===
                       tabComponentSubTypeEnum.stageableChart && (
                       <StageableChart
+                        tiles={widget.tiles || 5}
                         minValue={widget.chartMinimum || 0}
                         maxValue={widget.chartMaximum || 100}
                         unit={widget.chartUnit || ''}
@@ -82,7 +111,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         staticValuesColors={
                           widget.chartStaticValuesColors || []
                         }
-                        value={25}
+                        value={getChartValueBasedOnAttrName(widget.attributes)}
                       />
                     )}
                   </div>

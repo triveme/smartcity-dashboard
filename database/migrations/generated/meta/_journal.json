@@ -64,6 +64,34 @@
       "when": 1723476101679,
       "tag": "0008_wonderful_omega_red_0.10.1",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1724848834313,
+      "tag": "0009_wonderful_fat_cobra_0.11.0",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1725430631375,
+      "tag": "0010_slippery_santa_claus_0.11.2",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1725879444379,
+      "tag": "0011_bitter_loa_0.12.0a",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1726036347804,
+      "tag": "0012_peaceful_galactus_0.12.0b",
+      "breakpoints": true
     }
   ]
 }

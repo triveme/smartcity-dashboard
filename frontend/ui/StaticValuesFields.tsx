@@ -210,10 +210,12 @@ export default function StaticValuesField(
         </div>
       ))}
 
-      <CreateDashboardElementButton
-        label="+ Statischen Wert hinzufügen"
-        handleClick={handleAddMainValue}
-      />
+      {type !== 'sliderOverview' && (
+        <CreateDashboardElementButton
+          label="+ Statischen Wert hinzufügen"
+          handleClick={handleAddMainValue}
+        />
+      )}
 
       {type === 'slider' && (
         <>
@@ -234,7 +236,7 @@ export default function StaticValuesField(
               <div className="flex gap-4 h-14">
                 <div className="w-64">
                   <WizardTextfield
-                    value={tickValues[index]}
+                    value={tickValues[index] || 'Label'}
                     onChange={(value): void => handleChangeTick(value, index)}
                     isNumeric={true}
                     borderColor={borderColor}
@@ -254,7 +256,7 @@ export default function StaticValuesField(
                 </div>
                 <div className="w-1/2">
                   <WizardTextfield
-                    value={textValues[index]}
+                    value={textValues[index] || 'Attribut'}
                     onChange={(value): void =>
                       handleChangeText(value.toString(), index)
                     }

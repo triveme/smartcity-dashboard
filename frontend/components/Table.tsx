@@ -18,6 +18,7 @@ type TableProps<T> = {
   hoverColor: string;
   borderColor: string;
   showSuffixText?: boolean;
+  isTenant?: boolean;
 };
 
 export default function Table<T>(props: TableProps<T>): ReactElement {
@@ -31,6 +32,7 @@ export default function Table<T>(props: TableProps<T>): ReactElement {
     hoverColor,
     borderColor,
     showSuffixText,
+    isTenant = false,
   } = props;
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(
@@ -110,6 +112,7 @@ export default function Table<T>(props: TableProps<T>): ReactElement {
           borderColor={borderColor}
           hoverColor={hoverColor}
           showSuffixText={showSuffixText}
+          isTenant={isTenant}
         />
       </TableWrapper>
       <TablePagination

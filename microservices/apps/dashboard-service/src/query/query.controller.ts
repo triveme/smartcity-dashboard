@@ -31,14 +31,6 @@ export class QueryController {
   }
 
   @Public()
-  @Get('/tab/:id')
-  async getByTabId(
-    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
-  ): Promise<Query> {
-    return this.service.getQueryByTabId(id);
-  }
-
-  @Public()
   @Post('/')
   async create(@Body() row: NewQuery): Promise<Query> {
     return this.service.create(row);

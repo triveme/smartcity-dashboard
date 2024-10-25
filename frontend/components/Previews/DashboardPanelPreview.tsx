@@ -211,7 +211,10 @@ export default function DashboardPanelPreview(
         <div className="flex gap-4">
           {panelCount > 1 && index !== 0 && (
             <button onClick={(): void => movePanel!(panel.id!, 'left')}>
-              <DashboardIcons iconName="ChevronLeft" color="white" />
+              <DashboardIcons
+                iconName="ChevronLeft"
+                color={data?.headerPrimaryColor ?? '#FFFFFF'}
+              />
             </button>
           )}
           {panelCount > 1 && index !== panelCount - 1 && (
@@ -219,11 +222,17 @@ export default function DashboardPanelPreview(
               className="pl-4"
               onClick={(): void => movePanel!(panel.id!, 'right')}
             >
-              <DashboardIcons iconName="ChevronRight" color="white" />
+              <DashboardIcons
+                iconName="ChevronRight"
+                color={data?.headerPrimaryColor ?? '#FFFFFF'}
+              />
             </button>
           )}
           <button onClick={(): void => handleEditPanelClick(panel)}>
-            <DashboardIcons iconName="Pen" color="white" />
+            <DashboardIcons
+              iconName="Pen"
+              color={data?.headerPrimaryColor ?? '#FFFFFF'}
+            />
           </button>
           <button onClick={(): void => handleRemovePanelClick(panel)}>
             <DashboardIcons iconName="Trashcan" color="#FA4141" />
@@ -260,6 +269,7 @@ export default function DashboardPanelPreview(
           refetch={refetch}
           tenant={tenant}
           backgroundColor={data?.panelPrimaryColor || '#2B3244'}
+          borderColor={data?.panelBorderColor || '#59647D'}
           fontColor={data?.panelFontColor || '#FFF'}
           hoverColor={data?.menuHoverColor || '#FFF'}
         />

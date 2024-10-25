@@ -53,6 +53,7 @@ export default function DataPlatformWizard(
   const [timeSeriesUrl, setTimeSeriesUrl] = useState('');
   const [apiUrl, setApiUrl] = useState('');
   const [errors, setErrors] = useState<WizardErrors>({});
+  const [collections, setCollections] = useState<string[]>([]);
 
   const {
     data: fetchedAuthData,
@@ -77,6 +78,7 @@ export default function DataPlatformWizard(
       setLiveUrl(fetchedAuthData.liveUrl);
       setTimeSeriesUrl(fetchedAuthData.timeSeriesUrl);
       setApiUrl(fetchedAuthData.apiUrl || '');
+      setCollections(fetchedAuthData.collections || []);
     }
   }, [fetchedAuthData]);
 
@@ -85,6 +87,21 @@ export default function DataPlatformWizard(
       openSnackbar('Error: ' + error.message, 'error');
     }
   }, [isError, error, openSnackbar]);
+
+  let collectionChangeTimeout: NodeJS.Timeout;
+  const handleCollectionChange = (input: string): void => {
+    clearTimeout(collectionChangeTimeout);
+    collectionChangeTimeout = setTimeout(() => {
+      // Replace spaces with commas and split the input by commas
+      const updatedCollections = input
+        .replace(/\s+/g, ',')
+        .split(',')
+        .filter(Boolean);
+
+      // Update the collections state
+      setCollections(updatedCollections);
+    }, 500);
+  };
 
   const handleSaveDataPlatformClick = async (): Promise<void> => {
     const authData: AuthData = {
@@ -101,6 +118,7 @@ export default function DataPlatformWizard(
       liveUrl,
       timeSeriesUrl,
       apiUrl,
+      collections: collections,
     };
 
     const textfieldErrorMessages: string[] = [];
@@ -285,6 +303,18 @@ export default function DataPlatformWizard(
                 error={errors && errors.timeSeriesUrlError}
                 iconColor={iconColor}
                 borderColor={borderColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Collections / Services (Liste mit Komma getrennt eingeben)" />
+              <WizardTextfield
+                value={collections.join(',')}
+                onChange={(value: string | number): void =>
+                  handleCollectionChange(value.toString().replace(' ', ','))
+                }
+                error={errors && errors.appUserError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
               />
             </div>
           </div>

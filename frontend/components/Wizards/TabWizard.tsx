@@ -4,7 +4,13 @@ import { ReactElement, useEffect, useState } from 'react';
 
 import WizardLabel from '@/ui/WizardLabel';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
-import { Tab, tabComponentTypeEnum, tabComponentSubTypeEnum } from '@/types';
+import {
+  Tab,
+  tabComponentTypeEnum,
+  tabComponentSubTypeEnum,
+  QueryConfig,
+  Widget,
+} from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import PieChart from '@/ui/Charts/PieChart';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
@@ -26,6 +32,11 @@ import HorizontalDivider from '@/ui/HorizontalDivider';
 import StaticValuesFieldMapWidgets from '@/ui/StaticValuesFieldsMapWidgets';
 import WizardTextfield from '@/ui/WizardTextfield';
 import StaticValuesFieldMapLegend from '@/ui/StaticValuesFieldsMapLegend';
+import WizardIntegerfield from '@/ui/WizardIntegerfield';
+import { useAuth } from 'react-oidc-context';
+import { getWidgets } from '@/api/widget-service';
+import { useQuery } from '@tanstack/react-query';
+import SearchableDropdown from '@/ui/SearchableDropdown';
 
 type TabWizardProps = {
   tab: Tab | undefined;
@@ -34,12 +45,26 @@ type TabWizardProps = {
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
+  hoverColor: string;
+  queryConfig: QueryConfig;
+  tenant: string | undefined;
 };
 
 export default function TabWizard(props: TabWizardProps): ReactElement {
-  const { tab, setTab, errors, iconColor, borderColor, backgroundColor } =
-    props;
+  const {
+    tab,
+    setTab,
+    errors,
+    iconColor,
+    borderColor,
+    backgroundColor,
+    hoverColor,
+    queryConfig,
+    tenant,
+  } = props;
 
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token || '';
   const [tabFormIsOpen, setTabFormIsOpen] = useState(false);
   const [longitude, setLongitude] = useState(
     tab?.mapLongitude || 9.603538459598571,
@@ -50,12 +75,23 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   const [maxZoom, setMaxZoom] = useState(tab?.mapMaxZoom || 20);
   const [minZoom, setMinZoom] = useState(tab?.mapMinZoom || 10);
   const [standardZoom, setStandardZoom] = useState(tab?.mapStandardZoom || 15);
+  const [selectedTopWidgetId, setSelectedTopWidgetId] = useState(
+    tab?.childWidgets?.[0] || '',
+  );
+  const [selectedBottomWidgetId, setSelectedBottomWidgetId] = useState(
+    tab?.childWidgets?.[1] || '',
+  );
 
   const handleTabChange = (update: Partial<Tab>): void => {
     setTab((prevTab) => ({ ...prevTab, ...update }));
   };
 
   const [imageSource, setImageSource] = useState('URL');
+
+  const { data: allWidgets } = useQuery<Widget[], Error>({
+    queryKey: ['widgets'],
+    queryFn: () => getWidgets(auth?.user?.access_token, tenant),
+  });
 
   const handleImageSourceChange = (selectedImageSource: string): void => {
     if (selectedImageSource === 'Datei') {
@@ -83,6 +119,13 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       }
     }
   }, [tab]);
+
+  useEffect(() => {
+    if (tab && tab.componentType === tabComponentTypeEnum.combinedComponent) {
+      setSelectedTopWidgetId(tab?.childWidgets?.[0] || '');
+      setSelectedBottomWidgetId(tab?.childWidgets?.[1] || '');
+    }
+  }, [allWidgets, tab?.childWidgets]);
 
   useEffect(() => {
     if (tab) {
@@ -256,6 +299,17 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       value={tab?.chartUnit || ''}
                       onChange={(value: string | number): void =>
                         handleTabChange({ chartUnit: value.toString() })
+                      }
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Number of Tiles" />
+                    <WizardTextfield
+                      value={tab?.tiles || ''}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({ tiles: value as number })
                       }
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
@@ -503,6 +557,36 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   </div>
                 </div>
               )}
+              {tab?.componentSubType === 'Slider Übersicht' && (
+                <div>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Sensor Attribut für aktuellen Wert" />
+                    <WizardTextfield
+                      value={tab?.sliderCurrentAttribute || ''}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({
+                          sliderCurrentAttribute: value.toString(),
+                        })
+                      }
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Sensor Attribut für maximalen Wert" />
+                    <WizardTextfield
+                      value={tab?.sliderMaximumAttribute || ''}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({
+                          sliderMaximumAttribute: value.toString(),
+                        })
+                      }
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {tab?.componentType === tabComponentTypeEnum.information && (
@@ -553,13 +637,15 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     iconColor={iconColor}
                     borderColor={borderColor}
                   />
-                  <ColorPickerComponent
-                    currentColor={tab?.iconColor || '#fff'}
-                    handleColorChange={(color: string): void =>
-                      handleTabChange({ iconColor: color })
-                    }
-                    label="Icon Farbe"
-                  />
+                  <div className="mt-3">
+                    <ColorPickerComponent
+                      currentColor={tab?.iconColor || '#fff'}
+                      handleColorChange={(color: string): void =>
+                        handleTabChange({ iconColor: color })
+                      }
+                      label="Icon Farbe"
+                    />
+                  </div>
                   <WizardLabel label="Text" />
                   <WizardTextfield
                     value={tab?.iconText || ''}
@@ -602,8 +688,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
               </div>
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Dezimalstellen" />
-                <WizardTextfield
-                  value={tab?.decimalPlaces || ''}
+                <WizardIntegerfield
+                  value={tab?.decimalPlaces || '0'}
                   onChange={(value: string | number): void =>
                     handleTabChange({
                       decimalPlaces: value as number,
@@ -688,7 +774,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       errors={errors}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
-                      initialMapModalWidgetsValues={tab?.mapWidgetValues || []}
+                      queryConfig={queryConfig}
+                      accessToken={accessToken}
                     />
                   </div>
                 </>
@@ -776,9 +863,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   tabComponentSubTypeEnum.combinedPinAndForm ||
                   tab.mapDisplayMode ===
                     tabComponentSubTypeEnum.onlyFormArea) && (
-                  <div>
+                  <div className="py-2">
                     <WizardLabel label="Formoptionen" />
-                    <div className="flex flex-row justify-center items-center gap-4">
+                    <div className="flex flex-row justify-center items-center gap-4 pt-2">
                       <div className="flex-grow">
                         <WizardDropdownSelection
                           currentValue={
@@ -819,7 +906,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   <div className="py-2">
                     <HorizontalDivider />
                     <WizardLabel label="Marker Optionen" />
-                    <div className="flex items-end">
+                    <div className="flex items-end py-2">
                       <ColorPickerComponent
                         currentColor={tab?.mapMarkerColor || '#257dc9'}
                         handleColorChange={(color: string): void =>
@@ -838,7 +925,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
 
                     <div className="py-2">
                       <WizardLabel label="Icon Auswahl" />
-                      <div className="flex w-full items-center justify-between gap-4">
+                      <div className="flex w-full items-center justify-between gap-4 pt-2">
                         <IconSelection
                           activeIcon={tab?.mapMarkerIcon || ''}
                           handleIconSelect={(iconName: string): void =>
@@ -991,6 +1078,96 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   <WizardFileUpload setFile={setFile} />
                 </>
               )}
+            </div>
+          )}
+          {tab?.componentType === tabComponentTypeEnum.combinedComponent && (
+            <div>
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Widget für obere Position auswählen" />
+                <SearchableDropdown
+                  value={
+                    allWidgets?.find(
+                      (widget) => widget.id === selectedTopWidgetId,
+                    )?.name || ''
+                  }
+                  onSelect={(selectedName): void => {
+                    const selectedWidget = allWidgets?.find(
+                      (widget) => widget.name === selectedName,
+                    );
+                    setSelectedTopWidgetId(selectedWidget?.id || '');
+                    handleTabChange({
+                      childWidgets: [
+                        selectedWidget?.id || '',
+                        selectedBottomWidgetId,
+                      ],
+                    });
+                  }}
+                  onClear={(): void => {
+                    setSelectedTopWidgetId('');
+                    handleTabChange({
+                      childWidgets: ['', selectedBottomWidgetId],
+                    });
+                  }}
+                  options={
+                    allWidgets?.length
+                      ? [
+                          ...(allWidgets || [])
+                            .filter(
+                              (widget) => widget.id !== selectedBottomWidgetId,
+                            )
+                            .map((widget) => widget.name),
+                        ]
+                      : ['']
+                  }
+                  backgroundColor={backgroundColor}
+                  hoverColor={hoverColor}
+                  borderColor={borderColor}
+                  error={errors?.combinedTopWidgetError}
+                />
+              </div>
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Widget für untere Position auswählen" />
+                <SearchableDropdown
+                  value={
+                    allWidgets?.find(
+                      (widget) => widget.id === selectedBottomWidgetId,
+                    )?.name || ''
+                  }
+                  onSelect={(selectedName): void => {
+                    const selectedWidget = allWidgets?.find(
+                      (widget) => widget.name === selectedName,
+                    );
+                    setSelectedBottomWidgetId(selectedWidget?.id || '');
+                    handleTabChange({
+                      childWidgets: [
+                        selectedTopWidgetId,
+                        selectedWidget?.id || '',
+                      ],
+                    });
+                  }}
+                  onClear={(): void => {
+                    setSelectedBottomWidgetId('');
+                    handleTabChange({
+                      childWidgets: [selectedTopWidgetId, ''],
+                    });
+                  }}
+                  options={
+                    allWidgets?.length
+                      ? [
+                          ...(allWidgets || [])
+                            .filter(
+                              (widget) => widget.id !== selectedTopWidgetId,
+                            )
+                            .map((widget) => widget.name),
+                        ]
+                      : ['']
+                  }
+                  backgroundColor={backgroundColor}
+                  borderColor={borderColor}
+                  hoverColor={hoverColor}
+                  error={errors?.combinedBottomWidgetError}
+                />
+              </div>
             </div>
           )}
         </div>

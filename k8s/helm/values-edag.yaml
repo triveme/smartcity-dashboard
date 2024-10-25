@@ -92,6 +92,27 @@ ngsi-service:
       memory: "512Mi"
       cpu: "200m"
 
+api-service:
+  nodeSelector:
+    location: 06-Fulda-Steinauer-Str
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: ca-issuer
+      cert-manager.io/issuer-kind: ClusterIssuer
+    ingressClassName: nginx
+  image:
+    repository: nexus.edag.de:8206/mobit-malaysia/scs/api-service
+    tag: 'latest-dev'
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
 mail-service:
   nodeSelector:
     location: 06-Fulda-Steinauer-Str
@@ -125,6 +146,27 @@ infopin-service:
   image:
     repository: nexus.edag.de:8206/mobit-malaysia/scs/infopin-service
     tag: 'latest-dev'
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
+report-service:
+  nodeSelector:
+    location: 06-Fulda-Steinauer-Str
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: ca-issuer
+      cert-manager.io/issuer-kind: ClusterIssuer
+    ingressClassName: nginx
+  image:
+    repository: nexus.edag.de:8206/mobit-malaysia/scs/report-service
+    tag: 'latest-feature'
     pullPolicy: Always
   resources:
     requests:

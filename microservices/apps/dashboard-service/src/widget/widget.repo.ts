@@ -12,12 +12,24 @@ import {
   WidgetToPanel,
 } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
-import { Tab } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import { Tab, tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import {
+  DataModel,
+  dataModels,
+} from '@app/postgres-db/schemas/data-model.schema';
+import { queries, Query } from '@app/postgres-db/schemas/query.schema';
 
 export type WidgetWithChildren = {
   widget: Widget;
   tab: Tab;
   queryConfig: QueryConfig;
+};
+
+export type FlatWidgetData = {
+  widget: Widget;
+  tab: Tab;
+  data_model: DataModel;
+  query: Query;
 };
 
 @Injectable()
@@ -35,6 +47,16 @@ export class WidgetRepo {
       .where(eq(widgets.id, id));
 
     return widgetArr.length > 0 ? widgetArr[0] : null;
+  }
+
+  async getWidgetWithContent(id: string): Promise<FlatWidgetData[]> {
+    return this.db
+      .select()
+      .from(widgets)
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
+      .leftJoin(queries, eq(tabs.queryId, queries.id))
+      .where(eq(widgets.id, id));
   }
 
   async getWidgetsByPanelId(

@@ -15,7 +15,8 @@ data:
   NEXT_PUBLIC_BACKEND_URL: {{ index .Values "frontend" "backendUrl" }}
   NODE_TLS_REJECT_UNAUTHORIZED: "{{ .Values.frontend.tlsRejectUnauthorized }}"
   NEXT_PUBLIC_API_SERVICE_URL: {{ index .Values "frontend" "apiServiceUrl" }}
+  NEXT_PUBLIC_NGSI_SERVICE_URL: {{ index .Values "frontend" "ngsiServiceUrl" }}
   NEXT_PUBLIC_MULTI_TENANCY: "true"
   NEXT_PUBLIC_MAIL_TO: {{ index .Values "frontend" "mailTo" }}
-  NEXT_PUBLIC_MAPBOX_TOKEN: {{ index .Values "frontend" "mapBoxToken" }}
+  NEXT_PUBLIC_ADMIN_ROLE: {{ index .Values "frontend" "adminRole" }}
 {{- end }}

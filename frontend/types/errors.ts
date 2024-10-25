@@ -29,5 +29,13 @@ export type WizardErrors = {
   mapModalWidgetError?: string;
   mapModalWidgetIndexError?: number[];
   mapFilterAttributeError?: string;
+  panelGeneralInfoError?: string;
+  panelJumpoffLabel?: string;
+  panelJumpoffUrl?: string;
+  combinedTopWidgetError?: string;
+  combinedBottomWidgetError?: string;
+  informationUrlError?: string;
+  imprintUrlError?: string;
+  privacyUrlError?: string;
   [key: string]: string | number[] | undefined; // Index signature allowing any string key to have either a string, number[] or undefined type
 };

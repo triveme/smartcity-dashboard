@@ -1,8 +1,8 @@
-import {config} from 'dotenv';
-import {Client} from 'pg';
+import { config } from 'dotenv';
+import { Client } from 'pg';
 import * as path from 'path';
-import {drizzle} from 'drizzle-orm/node-postgres';
-import {migrate} from 'drizzle-orm/node-postgres/migrator';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 // import { execSync } from 'child_process';
 
 const TEST_DEPENDENT_CONNECTIONS = 120000; // only the own connection
@@ -115,6 +115,7 @@ export const truncateTables = async (client: Client): Promise<void> => {
     'report',
     'defect',
     'sensor_report',
+    'general_settings',
   ];
 
   try {

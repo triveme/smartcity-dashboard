@@ -28,6 +28,7 @@ export async function getDataSource(
     id: uuid(),
     authDataId: authDataId,
     name: 'Sample DataSource',
+    collections: ['edag'],
     origin: type,
   };
 }

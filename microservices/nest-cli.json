@@ -44,6 +44,24 @@
         "tsConfigPath": "apps/infopin-service/tsconfig.app.json"
       }
     },
+    "api-service": {
+      "type": "application",
+      "root": "apps/api-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-service/tsconfig.app.json"
+      }
+    },
+    "static-data-service": {
+      "type": "application",
+      "root": "apps/static-data-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/static-data-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/static-data-service/tsconfig.app.json"
+      }
+    },
     "mail-service": {
       "type": "application",
       "root": "apps/mail-service",
@@ -71,7 +89,6 @@
         "tsConfigPath": "libs/auth-helper/tsconfig.lib.json"
       }
     }
-
   },
   "monorepo": true,
   "root": "apps/dashboard-service"

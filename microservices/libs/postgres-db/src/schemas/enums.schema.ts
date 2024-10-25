@@ -14,6 +14,8 @@ export const timeframeEnum = pgEnum('timeframe', [
   'day',
   'week',
   'month',
+  'quarter',
+  'year',
 ]);
 
 export const aggregationPeriodEnum = pgEnum('aggregation_period', [
@@ -31,6 +33,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Diagramm',
   'Slider',
   'Karte',
+  'Kombinierte Komponente',
   'Wert',
   'iFrame',
   'Bild',
@@ -48,7 +51,9 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Measurement',
   'Pin',
   'Parking',
+  'Kombinierte Karte',
   'Farbiger Slider',
+  'Slider Übersicht',
 ]);
 
 export const authDataTypeEnum = pgEnum('auth_data_type', [
@@ -56,6 +61,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'ngsi-v2',
   'ngsi-ld',
   'api',
+  'static-endpoint',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [
@@ -69,4 +75,32 @@ export const reportThresholdTriggerTypeEnum = pgEnum('threshold_trigger_type', [
   'exceeding',
   'falls below',
   'equals',
+]);
+
+export const corporateInfoFontFamiliesTypeEnum = pgEnum(
+  'corporate_info_font_families_type',
+  [
+    'Helvetica',
+    'Arial',
+    'Verdana',
+    'Tahoma',
+    'Gill Sans',
+    'Times New Roman',
+    'Georgia',
+    'Palatino',
+    'Courier',
+    'Lucida',
+    'Monaco',
+  ],
+);
+
+export const titleBarThemeTypeEnum = pgEnum('title_bar_theme', [
+  'Dark',
+  'Light',
+]);
+
+export const chartLegendPlacement = pgEnum('chart_legend_placement', [
+  'Left',
+  'Right',
+  'Top',
 ]);

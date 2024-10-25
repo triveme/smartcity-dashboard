@@ -9,13 +9,13 @@ import CorporateInfoWizard from '@/components/Wizards/CorporateInfoWizard';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { CorporateInfo, SidebarLogo } from '@/types';
 import {
-  getCorporateInfosWithLogos,
   postCorporateInfo,
   updateCorporateInfo,
 } from '@/api/corporateInfo-service';
 import { WizardErrors } from '@/types/errors';
 import useWizardState from '@/app/custom-hooks/singleState';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
+import { getCorporateInfosWithLogos } from '@/app/actions';
 
 export default function CorporateIdentity(): ReactElement {
   const auth = useAuth();
@@ -91,6 +91,7 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.dashboardSecondaryColor,
       );
       updateState('fontColor', corporateInfo.fontColor);
+      updateState('fontFamily', corporateInfo.fontFamily);
       updateState('headerFontColor', corporateInfo.headerFontColor);
       updateState('headerPrimaryColor', corporateInfo.headerPrimaryColor);
       updateState('headerSecondaryColor', corporateInfo.headerSecondaryColor);

@@ -7,13 +7,11 @@ import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/d
 import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
 import { AuthService as NgsiAuthService } from '../../../ngsi-service/src/auth/auth.service';
 import { HttpModule } from '@nestjs/axios';
-import { PanelDataService } from './panel.data.service';
 
 @Module({
   imports: [HttpModule],
   providers: [
     PanelService,
-    PanelDataService,
     PanelRepo,
     WidgetToPanelRepo,
     NgsiAuthService,

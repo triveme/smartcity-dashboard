@@ -42,7 +42,7 @@ export default function IconSelection(props: IconSelectionProps): ReactElement {
       ref={dropdownRef}
       style={{ borderColor: borderColor }}
     >
-      <button onClick={toggleDropdown} className="p-2 rounded w-full">
+      <button onClick={toggleDropdown} className="p-2 rounded w-full h-full">
         <DashboardIcons iconName={activeIcon} color={iconColor} />
       </button>
 

@@ -11,7 +11,6 @@ import {
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
   Dashboard,
-  dashboards,
   NewDashboard,
 } from '@app/postgres-db/schemas/dashboard.schema';
 import { Widget } from '@app/postgres-db/schemas/dashboard.widget.schema';
@@ -35,11 +34,10 @@ import { RoleUtil } from '../../../infopin-service/src/utility/RoleUtil';
 import { DashboardRepo } from './dashboard.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
-import { and, eq, ne } from 'drizzle-orm';
 
 export type ChartData = {
   name: string;
-  values: number[];
+  values: [string, number][];
   color?: string;
 };
 
@@ -55,7 +53,9 @@ export type MapObject = {
 };
 export type TabWithContent = Tab & { query?: Query } & {
   dataModel: DataModel;
-} & { chartData: ChartData[] } & { mapObject: MapObject[] };
+} & { chartData: ChartData[] } & { combinedWidgets: WidgetWithContent[] } & {
+  mapObject: MapObject[];
+};
 export type WidgetWithContent = Widget & { tabs: TabWithContent[] };
 export type PanelWithContent = Panel & { widgets: WidgetWithContent[] };
 export type DashboardWithContent = Dashboard & { panels: PanelWithContent[] };
@@ -91,6 +91,7 @@ export class DashboardService {
   async getDashboardWithContent(
     id: string,
     rolesFromRequest: string[],
+    tenantFromRequest: string,
     includeData: boolean = true,
   ): Promise<DashboardWithContent> {
     const flatDashboardData =
@@ -105,6 +106,19 @@ export class DashboardService {
         );
       const dashboardWithContent =
         dashboardWithContentArr.length > 0 ? dashboardWithContentArr[0] : null;
+
+      if (dashboardWithContent.visibility !== 'public') {
+        const dashboardWithTenant =
+          await this.dashboardToTenantService.getDashboardToTenantRelationshipByDashboardId(
+            dashboardWithContent.id,
+          );
+        const tenantFromDashboard = await this.tenantService.getById(
+          dashboardWithTenant.tenantId,
+        );
+        if (tenantFromDashboard.abbreviation !== tenantFromRequest) {
+          throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+        }
+      }
 
       // Order the widgets
       if (dashboardWithContent) {
@@ -173,26 +187,63 @@ export class DashboardService {
     }
   }
 
-  async getByUrl(url: string, rolesFromRequest: string[]): Promise<Dashboard> {
-    const dashboard: Dashboard = await this.dashboardRepo.getByUrl(url);
+  async getByUrlAndTenant(
+    url: string,
+    rolesFromRequest: string[],
+    tenantAbbreviation: string,
+  ): Promise<Dashboard> {
+    // Fetch dashboards by URL
+    const dashboardsByUrl: Dashboard[] = await this.dashboardRepo.getByUrl(url);
+
+    // Check if any dashboards were found
+    if (dashboardsByUrl.length === 0) {
+      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    // Retrieve tenant by abbreviation
+    const tenant =
+      await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
+    if (!tenant) {
+      throw new HttpException('Tenant Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    // Filter dashboards by tenant
+    const dashboardToTenantRelations =
+      await this.dashboardToTenantService.getDashboardToTenantRelationshipsByTenantId(
+        tenant.id,
+      );
+
+    const dashboard = dashboardsByUrl.find((dashboard) =>
+      dashboardToTenantRelations.some(
+        (relation) => relation.dashboardId === dashboard.id,
+      ),
+    );
 
     if (!dashboard) {
-      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
-    } else {
-      if (rolesFromRequest.length === 0) {
-        delete dashboard.readRoles;
-        delete dashboard.writeRoles;
-      }
-
-      return dashboard;
+      throw new HttpException(
+        'Dashboard Not Found for the given Tenant',
+        HttpStatus.NOT_FOUND,
+      );
     }
+
+    // Authorization checks
+    checkAuthorizationToRead(dashboard, rolesFromRequest);
+    checkAuthorizationToWrite(dashboard, rolesFromRequest);
+
+    // Exclude role properties for unauthenticated users
+    if (rolesFromRequest.length === 0) {
+      delete dashboard.readRoles;
+      delete dashboard.writeRoles;
+    }
+
+    return dashboard;
   }
 
   async getDashboardsByTenantAbbreviation(
     abbreviation: string,
   ): Promise<Dashboard[]> {
     const tenant =
-      await this.tenantService.getTenantsByAbbreviation(abbreviation);
+      await this.tenantService.getTenantByAbbreviation(abbreviation);
 
     const dashboardToTenantIds = await this.getDashboardToTenantIds(tenant);
 
@@ -222,13 +273,13 @@ export class DashboardService {
     rolesFromRequest: string[],
     abbreviation: string,
   ): Promise<DashboardWithContent[]> {
-    const tenants =
-      await this.tenantService.getTenantsByAbbreviation(abbreviation);
-    if (tenants.length === 0) return [];
+    const tenant =
+      await this.tenantService.getTenantByAbbreviation(abbreviation);
+    if (!tenant) return [];
 
     const flatDashboardData =
       await this.dashboardRepo.getDashboardsWithContentByAbbreviation(
-        tenants[0].id,
+        tenant.id,
         rolesFromRequest,
       );
 
@@ -245,19 +296,24 @@ export class DashboardService {
   async getDashboardUrlByTenantAbbreviation(
     abbreviation: string,
     roles: string[],
+    tenantFromRequest: string,
   ): Promise<string[]> {
     const groupingElements: GroupingElement[] =
       await this.groupingElementService.getByTenantAbbreviation(
         abbreviation,
         roles,
+        tenantFromRequest,
       );
 
     return await this.getFirstDashboardUrlForGroupingElements(groupingElements);
   }
 
-  async getFirstDashboardUrl(roles: string[]): Promise<string[]> {
+  async getFirstDashboardUrl(
+    roles: string[],
+    tenantFromRequest: string,
+  ): Promise<string[]> {
     const groupingElements: GroupingElement[] =
-      await this.groupingElementService.getAll(roles);
+      await this.groupingElementService.getAll(roles, tenantFromRequest);
 
     return this.getFirstDashboardUrlForGroupingElements(groupingElements);
   }
@@ -265,7 +321,7 @@ export class DashboardService {
   async create(
     row: NewDashboard,
     rolesFromRequest: string[],
-    tenant?: string,
+    tenant: string,
   ): Promise<Dashboard> {
     let tenantExists: boolean = false;
 
@@ -282,37 +338,44 @@ export class DashboardService {
     if (
       !this.authHelperUtility.isAdmin(rolesFromRequest) &&
       !this.authHelperUtility.isEditor(rolesFromRequest)
-    )
+    ) {
       throw new HttpException('Cannot create dashboard', HttpStatus.FORBIDDEN);
+    }
 
-    const existingDashboard = await this.dashboardRepo.getByUrl(row.url);
+    const existingDashboards =
+      await this.getDashboardsByTenantAbbreviation(tenant);
 
-    if (existingDashboard) {
+    const rowUrlLower = row.url.toLowerCase();
+    if (
+      existingDashboards.some(
+        (dashboard) => dashboard.url.toLowerCase() === rowUrlLower,
+      )
+    ) {
+      this.logger.warn(
+        `Dashboard with the same URL already exists for the Tenant: ${tenant}`,
+      );
       throw new HttpException(
-        'Dashboard with the same URL already exists',
+        `Dashboard with the same URL already exists for the Tenant: ${tenant}`,
         HttpStatus.CONFLICT,
       );
-    } else {
-      RoleUtil.populateRoles(row, rolesFromRequest);
-
-      const newDashboard = await this.dashboardRepo.create(row);
-
-      if (newDashboard && tenantExists) {
-        await this.dashboardToTenantService.manageCreate(
-          newDashboard.id,
-          tenant,
-        );
-      }
-
-      return newDashboard;
     }
+
+    RoleUtil.populateRoles(row, rolesFromRequest);
+
+    const newDashboard = await this.dashboardRepo.create(row);
+
+    if (newDashboard && tenantExists) {
+      await this.dashboardToTenantService.manageCreate(newDashboard.id, tenant);
+    }
+
+    return newDashboard;
   }
 
   async update(
     id: string,
     values: Partial<Dashboard>,
     rolesFromRequest: string[],
-    tenant?: string,
+    tenant: string,
   ): Promise<Dashboard> {
     // Check if the URL is being updated to an already existing URL
     if (values.url) {
@@ -324,14 +387,23 @@ export class DashboardService {
 
       RoleUtil.populateRoles(values, rolesFromRequest);
 
-      const dashboardWithNewUrl = await this.db
-        .select()
-        .from(dashboards)
-        .where(and(ne(dashboards.id, id), eq(dashboards.url, values.url)));
+      // Fetch dashboards for the tenant to ensure URL uniqueness
+      const existingDashboards =
+        await this.getDashboardsByTenantAbbreviation(tenant);
+      const newUrlLower = values.url.toLowerCase();
 
-      if (dashboardWithNewUrl.length > 0) {
+      // Check if any dashboard in the same tenant has the same URL, excluding the current one
+      const dashboardWithNewUrl = existingDashboards.find(
+        (dashboard) =>
+          dashboard.id !== id && dashboard.url.toLowerCase() === newUrlLower,
+      );
+
+      if (dashboardWithNewUrl) {
+        this.logger.warn(
+          `Dashboard with the updated URL "${dashboardWithNewUrl.url}" already exists for Tenant: ${tenant}`,
+        );
         throw new HttpException(
-          'Dashboard with the new URL already exists',
+          `Dashboard with the updated URL "${dashboardWithNewUrl.url}" already exists for Tenant: ${tenant}`,
           HttpStatus.CONFLICT,
         );
       }
@@ -374,11 +446,16 @@ export class DashboardService {
   }
 
   // Cascade deletion of a Dashboard and all of its foreign key entries from the db
-  async delete(id: string, rolesFromRequest: string[]): Promise<Dashboard> {
+  async delete(
+    id: string,
+    rolesFromRequest: string[],
+    tenantFromRequest: string,
+  ): Promise<Dashboard> {
     const rawDashboard = await this.getById(id, rolesFromRequest);
     const dashboardToDelete = await this.getDashboardWithContent(
       id,
       rolesFromRequest,
+      tenantFromRequest,
       false,
     );
 
@@ -447,11 +524,11 @@ export class DashboardService {
   }
 
   private async getDashboardToTenantIds(
-    tenants: Tenant[],
+    tenant: Tenant,
   ): Promise<DashboardToTenant[]> {
     const dashboardToTenantRelationships =
       await this.dashboardToTenantService.getDashboardToTenantRelationshipsByTenantId(
-        tenants[0].id,
+        tenant.id,
       );
 
     if (dashboardToTenantRelationships.length === 0) {

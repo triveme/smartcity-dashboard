@@ -60,10 +60,11 @@ export default function Menu(): ReactElement {
           fontColor={corporateInfo?.dashboardFontColor || '#FFFFFF'}
         />
         <MenuWizard
-          iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+          iconColor={corporateInfo?.dashboardFontColor || '#FFFFFF'}
           borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
           backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
-          fontColor={corporateInfo?.dashboardFontColor || '#fff'}
+          fontColor={corporateInfo?.dashboardFontColor || '#FFFFFF'}
+          geColor={corporateInfo?.menuFontColor || '#FFFFFF'}
         />
       </div>
     </div>

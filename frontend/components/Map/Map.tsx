@@ -25,6 +25,7 @@ import {
   MapModalWidget,
   MapModalLegend,
   QueryDataAttributes,
+  QueryDataAttributeValues,
   QueryDataEntities,
   tabComponentSubTypeEnum,
 } from '@/types';
@@ -46,6 +47,7 @@ type MapProps = {
   mapAllowFilter?: boolean;
   mapFilterAttribute?: string;
   mapQueryDataAttributes?: QueryDataAttributes[];
+  mapQueryDataAttributeValues?: QueryDataAttributeValues[];
   mapAllowLegend?: boolean;
   mapLegendValues?: MapModalLegend[];
   mapLegendDisclaimer?: string;
@@ -73,6 +75,11 @@ export type Marker = {
   details: any;
 };
 
+type SelectedMarker = {
+  id: number | null;
+  data: Marker | null;
+};
+
 export default function Map(props: MapProps): JSX.Element {
   const {
     mapMaxZoom,
@@ -84,6 +91,7 @@ export default function Map(props: MapProps): JSX.Element {
     mapAllowFilter,
     mapFilterAttribute,
     mapQueryDataAttributes,
+    mapQueryDataAttributeValues,
     mapAllowLegend,
     mapLegendValues,
     mapLegendDisclaimer,
@@ -103,20 +111,15 @@ export default function Map(props: MapProps): JSX.Element {
     menuStyle,
   } = props;
 
-  type SelectedMarkerRefType = {
-    marker: L.Marker | null;
-    lastClickedId: number | null;
-  };
   const [mapZoom] = useState(6);
   const iconRef = useRef<HTMLDivElement>(null);
   const [iconSvgMarkup, setIconSvgMarkup] = useState('');
   const [initialLoad, setInitialLoad] = useState(true);
   const [isMobileView, setIsMobileView] = useState(false);
-  const selectedMarkerRef = useRef<SelectedMarkerRefType>({
-    marker: null,
-    lastClickedId: null,
+  const [selectedMarker, setSelectedMarker] = useState<SelectedMarker>({
+    id: null,
+    data: null,
   });
-  const [selectedMarker, setSelectedMarker] = useState<Marker | null>(null);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
@@ -370,11 +373,10 @@ export default function Map(props: MapProps): JSX.Element {
   };
 
   function handleOnCloseModal(): void {
-    selectedMarkerRef.current = {
-      marker: null,
-      lastClickedId: null,
-    };
-    setSelectedMarker(null);
+    setSelectedMarker({
+      id: null,
+      data: null,
+    });
   }
 
   const getDivStyle = (): CSSProperties => {
@@ -445,37 +447,22 @@ export default function Map(props: MapProps): JSX.Element {
                 <Marker
                   key={index}
                   position={marker.position as LatLngExpression}
-                  icon={createCustomIcon(mapMarkerColor)}
+                  icon={createCustomIcon(
+                    selectedMarker.id === index
+                      ? mapActiveMarkerColor
+                      : mapMarkerColor,
+                  )}
                   eventHandlers={{
                     click: (e): void => {
-                      // Check if this marker is the same as the last clicked marker
-                      if (selectedMarkerRef.current.lastClickedId === index) {
-                        // Toggle back to default color
-                        e.target.setIcon(createCustomIcon(mapMarkerColor));
-                        // Reset the ref since we toggled it off
-                        selectedMarkerRef.current = {
-                          marker: null,
-                          lastClickedId: null,
-                        };
-                        setSelectedMarker(null);
+                      // Prevent the map from panning to the clicked marker
+                      e.originalEvent.stopPropagation();
+                      if (selectedMarker.id === index) {
+                        setSelectedMarker({ id: null, data: null });
                       } else {
-                        // If there's a previously selected marker, reset its color
-                        if (selectedMarkerRef.current.marker) {
-                          selectedMarkerRef.current.marker.setIcon(
-                            createCustomIcon(mapMarkerColor),
-                          );
-                        }
-                        // Change the current marker's color
-                        const newColor = mapActiveMarkerColor;
-                        e.target.setIcon(createCustomIcon(newColor));
-                        // Store the current marker and its ID in the ref
-                        selectedMarkerRef.current = {
-                          marker: e.target,
-                          lastClickedId: index,
-                        };
-                        setSelectedMarker(marker);
+                        setSelectedMarker({ id: index, data: marker });
                       }
                     },
+                    popupclose: handleOnCloseModal,
                   }}
                 >
                   {mapAllowPopups && !isFullscreenMap ? (
@@ -592,10 +579,11 @@ export default function Map(props: MapProps): JSX.Element {
         </div>
       </div>
       {/* sidebar modal */}
-      {mapAllowPopups && selectedMarker && isFullscreenMap && (
+      {mapAllowPopups && selectedMarker.data && isFullscreenMap && (
         <MapModal
-          selectedMarker={selectedMarker}
+          selectedMarker={selectedMarker.data}
           mapWidgetValues={mapWidgetValues}
+          mapQueryDataAttributeValues={mapQueryDataAttributeValues}
           menuStyle={menuStyle}
           chartStyle={chartStyle}
           onCloseModal={handleOnCloseModal}

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { GroupingElement } from '@/types';
 import DashboardSidebarDashboard from './DashboardSidebarDashboard';
 import '../app/globals.css';
-import { getCorporateInfosWithLogos } from '@/api/corporateInfo-service';
+import { getCorporateInfosWithLogos } from '@/app/actions';
 import { useQuery } from '@tanstack/react-query';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 
@@ -30,9 +30,9 @@ export default function DashboardSidebarGroup(
   const childContainerRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-  const defaultBgColor = '#3D4760';
+
   const DynamicStyles = {
-    customBgColor: groupElement.color || defaultBgColor,
+    customBgColor: groupElement.backgroundColor || '#3D4760',
   };
   const tenant = getTenantOfPage();
 
@@ -121,6 +121,9 @@ export default function DashboardSidebarGroup(
   };
 
   const determineFontColor = (): string => {
+    if (groupElement.fontColor) {
+      return groupElement.fontColor;
+    }
     if (isActiveDropdown()) {
       return data?.menuActiveFontColor ?? '#FFFFFF';
     } else {
@@ -132,10 +135,10 @@ export default function DashboardSidebarGroup(
     width: '100%',
     padding: '6px',
     cursor: 'pointer',
+    color: determineFontColor(),
     ...(isActiveDropdown() ? getBgColorForActiveDropdown(groupElement) : {}),
     // For hover effect using dynamic color
     ...(isHovered && getBgColorOnHover(groupElement)),
-    color: determineFontColor(),
   };
 
   return (
@@ -149,16 +152,25 @@ export default function DashboardSidebarGroup(
       >
         <div className="basis-1/5">
           {groupElement.icon && (
-            <DashboardIcons iconName={groupElement.icon} color="white" />
+            <DashboardIcons
+              iconName={groupElement.icon}
+              color={groupElement.fontColor}
+            />
           )}
         </div>
-        <div className="basis-3/5 text-white">{groupElement.name}</div>
+        <div className="basis-3/5">{groupElement.name}</div>
         <div className="basis-1/5">
           <div className="h-5 w-5 ml-auto transform">
             {isOpen ? (
-              <DashboardIcons iconName="ChevronDown" color="white" />
+              <DashboardIcons
+                iconName="ChevronDown"
+                color={groupElement.fontColor}
+              />
             ) : (
-              <DashboardIcons iconName="ChevronUp" color="white" />
+              <DashboardIcons
+                iconName="ChevronUp"
+                color={groupElement.fontColor}
+              />
             )}
           </div>
         </div>
@@ -191,6 +203,7 @@ export default function DashboardSidebarGroup(
                     url={`${url}/${element.url!}`}
                     elementUrl={element.url!}
                     icon={element.icon!}
+                    menuColor={element.fontColor}
                     onDashboardClick={onDashboardClick}
                   />
                 ) : (

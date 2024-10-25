@@ -4,14 +4,26 @@ type SearchableDropdownProps = {
   value: string;
   options: string[];
   onSelect: (value: string) => void;
+  onClear?: () => void;
+  error?: string;
   backgroundColor: string;
+  borderColor: string;
   hoverColor: string;
 };
 
 export default function SearchableDropdown(
   props: SearchableDropdownProps,
 ): ReactElement {
-  const { value, options, onSelect, backgroundColor, hoverColor } = props;
+  const {
+    value,
+    options,
+    onSelect,
+    onClear,
+    error,
+    backgroundColor,
+    borderColor,
+    hoverColor,
+  } = props;
   const [searchTerm, setSearchTerm] = useState(value || '');
   const [showDropdown, setShowDropdown] = useState(false);
   const containerInputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +38,7 @@ export default function SearchableDropdown(
   const clearInput = (): void => {
     setSearchTerm('');
     setShowDropdown(false);
+    if (onClear) onClear();
   };
 
   const handleClickOutside = (event: MouseEvent): void => {
@@ -59,12 +72,16 @@ export default function SearchableDropdown(
 
   return (
     <div
-      className="relative w-full h-full rounded-lg border-4 border-[#59647D]"
+      className="relative w-full h-14 rounded-lg border-4"
+      style={{
+        borderColor: error ? '#FFEB3B' : borderColor,
+        background: backgroundColor,
+      }}
       ref={containerInputRef}
     >
       <input
         type="text"
-        className="p-2 w-full flex cursor-pointer bg-transparent justify-between items-center content-center gap-2"
+        className="px-3 py-2 w-full h-full flex cursor-pointer bg-transparent justify-between items-center content-center gap-2"
         value={searchTerm}
         onChange={(e): void => setSearchTerm(e.target.value)}
         onClick={(): void => setShowDropdown(true)}
@@ -72,14 +89,14 @@ export default function SearchableDropdown(
       {searchTerm !== '' && (
         <button
           onClick={clearInput}
-          className="absolute right-0 top-0 mt-2 mr-2 px-4 text-center flex justify-center items-center content-center"
+          className="absolute right-0 top-0 mt-3 px-4 text-center flex justify-center items-center content-center"
         >
           &#x2715; {/* Unicode Multiplication X */}
         </button>
       )}
       {showDropdown && filteredOptions.length > 0 && (
         <div
-          className="absolute w-full border max-h-60 overflow-y-auto"
+          className="absolute w-full border max-h-60 overflow-y-auto z-10"
           style={{ backgroundColor: backgroundColor }}
         >
           {filteredOptions.map((option, idx) => (

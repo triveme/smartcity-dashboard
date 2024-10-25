@@ -13,18 +13,17 @@ import {
 } from '@app/postgres-db/schemas/corporate-info-sidebar-logos.schema';
 import { eq } from 'drizzle-orm';
 
-export function getCorporateInfo(
-  logoId?: string,
-  tenantId?: string,
-): CorporateInfo {
+export function getCorporateInfo(logoId?: string): CorporateInfo {
   return {
     id: uuid(),
-    tenantId: tenantId ?? 'edag',
+    tenantId: null,
     dashboardFontColor: '#333',
     dashboardPrimaryColor: '#333',
     dashboardSecondaryColor: '#333',
-    fontColor: '#333',
-    headerFontColor: '#333',
+    dashboardHeadlineFontSize: '24px',
+    fontFamily: 'Helvetica',
+    fontColor: '#FFF',
+    headerFontColor: '#FFF',
     headerLogoId: logoId ?? null,
     headerPrimaryColor: '#333',
     headerSecondaryColor: '#333',
@@ -33,7 +32,7 @@ export function getCorporateInfo(
     logo: 'https://example.com/logo.png',
     menuActiveColor: 'menu_active_color',
     menuActiveFontColor: 'menu_active_font_color',
-    menuFontColor: '#333',
+    menuFontColor: '#FFF',
     menuHoverColor: '#333',
     menuLogoId: logoId ?? null,
     menuPrimaryColor: '#333',
@@ -43,7 +42,8 @@ export function getCorporateInfo(
     panelBorderColor: '#333',
     panelBorderRadius: 'panel_border_radius',
     panelBorderSize: 'panel_border_size',
-    panelFontColor: '#333',
+    panelFontColor: '#FFF',
+    panelHeadlineFontSize: '24px',
     panelPrimaryColor: '#333',
     panelSecondaryColor: '#333',
     scrollbarBackground: '#333',
@@ -54,13 +54,125 @@ export function getCorporateInfo(
     cancelHoverButtonColor: '#333',
     showHeaderLogo: true,
     showMenuLogo: true,
-    titleBar: 'Company Name',
+    titleBar: 'Light',
     widgetBorderColor: '#333',
     widgetBorderRadius: 'widget_border_radius',
     widgetBorderSize: 'widget_border_size',
-    widgetFontColor: '#333',
+    widgetFontColor: '#FFF',
+    widgetHeadlineFontSize: '16px',
+    widgetSubheadlineFontSize: '14px',
     widgetPrimaryColor: '#333',
     widgetSecondaryColor: '#333',
+    informationTextFontSize: '11',
+    informationTextFontColor: '#FFF',
+    iconWithLinkFontSize: '11',
+    iconWithLinkFontColor: '#FFF',
+    iconWithLinkIconSize: '11',
+    iconWithLinkIconColor: '#FFF',
+    degreeChart180FontSize: '11',
+    degreeChart180FontColor: '#FFF',
+    degreeChart180BgColor: '#FFF',
+    degreeChart180FillColor: '#FFF',
+    degreeChart180UnitFontSize: '10',
+    degreeChart360FontSize: '11',
+    degreeChart360FontColor: '#FFF',
+    degreeChart360BgColor: '#FFF',
+    degreeChart360FillColor: '#FFF',
+    degreeChart360UnitFontSize: '11',
+    stageableChartTicksFontSize: '11',
+    stageableChartTicksFontColor: '#FFF',
+    stageableChartFontSize: '11',
+    stageableChartFontColor: '#FFF',
+    pieChartFontSize: '11',
+    pieChartFontColor: '#FFF',
+    pieChartCurrentValuesColors: [
+      '#4CAF50',
+      '#2196F3',
+      '#FF9800',
+      '#F44336',
+      '#9C27B0',
+    ],
+    lineChartAxisTicksFontSize: '11',
+    lineChartAxisLabelSize: '11',
+    lineChartAxisLabelFontColor: '#FFF',
+    lineChartLegendFontSize: '11',
+    lineChartLegendFontColor: '#FFFFF',
+    lineChartTicksFontColor: '#FFF',
+    lineChartAxisLineColor: '11',
+    lineChartCurrentValuesColors: [
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+    ],
+    lineChartFilterColor: '#333',
+    lineChartFilterTextColor: '#FFFFFF',
+    lineChartGridColor: '#3D4760',
+    barChartAxisTicksFontSize: '11',
+    barChartAxisLabelSize: '11',
+    barChartAxisLabelFontColor: '#FFFFFF',
+    barChartAxisLabelColor: '#FFFFFF',
+    barChartLegendFontSize: '11',
+    barChartLegendFontColor: '#FFFFFF',
+    barChartTicksFontColor: '#FFF',
+    barChartAxisLineColor: '#FFF',
+    barChartCurrentValuesColors: [
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+    ],
+    barChartFilterColor: '#333',
+    barChartFilterTextColor: '#FFFFFF',
+    barChartGridColor: '#3D4760',
+    measurementChartBigValueFontSize: '11',
+    measurementChartBigValueFontColor: '#FFF',
+    measurementChartTopButtonBgColor: '#FFF',
+    measurementChartTopButtonInactiveBgColor: '#FFF',
+    measurementChartTopButtonHoverColor: '#FFF',
+    measurementChartTopButtonFontColor: '#FFF',
+    measurementChartCardsBgColor: '#FFF',
+    measurementChartCardsFontColor: '#FFF',
+    measurementChartCardsIconColors: ['#3D4760', '#3D4760', '#3D4760'],
+    measurementChartBarColor: '#FFF',
+    measurementChartLabelFontColor: '#FFF',
+    measurementChartGridColor: '#FFF',
+    measurementChartAxisLineColor: '#FFF',
+    measurementChartAxisTicksFontColor: '#FFF',
+    measurementChartAxisLabelFontColor: '#FFF',
+    measurementChartCurrentValuesColors: [
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+      '#3D4760',
+    ],
+    coloredSliderBigValueFontSize: '11',
+    coloredSliderBigValueFontColor: '#FFF',
+    coloredSliderLabelFontSize: '11',
+    coloredSliderLabelFontColor: '#FFF',
+    coloredSliderArrowColor: '#FFF',
+    coloredSliderUnitFontSize: '11',
+    wertFontSize: '20',
+    wertUnitFontSize: '11',
+    wertFontColor: '#FFFFF',
   };
 }
 
@@ -79,11 +191,18 @@ export async function createCorporateInfoByObject(
   db: DbType,
   corporateInfo: CorporateInfo,
 ): Promise<CorporateInfo> {
+  let tenant;
+  if (!corporateInfo.tenantId) {
+    tenant = await createTenantByObject(db, getTenant());
+  } else {
+    tenant = corporateInfo.tenantId;
+  }
+
   if (!corporateInfo.menuLogoId && !corporateInfo.headerLogoId) {
-    await createTenantByObject(db, getTenant());
     const logo = await createLogoByObject(db, getLogo());
     corporateInfo.menuLogoId = logo.id;
     corporateInfo.headerLogoId = logo.id;
+    corporateInfo.tenantId = tenant.abbreviation;
   }
 
   const createdCorporateInfos = await db
@@ -116,4 +235,14 @@ export async function getCorporateInfoSidebarLogoRelationsByCorporateInfoId(
     .select()
     .from(corporateInfoSidebarLogos)
     .where(eq(corporateInfoSidebarLogos.corporateInfoId, corporateInfoId));
+}
+
+export async function getCorporateInfosByTenantAbbreviation(
+  db: DbType,
+  tenantAbbreviation: string,
+): Promise<CorporateInfo[]> {
+  return db
+    .select()
+    .from(corporateInfos)
+    .where(eq(corporateInfos.tenantId, tenantAbbreviation));
 }

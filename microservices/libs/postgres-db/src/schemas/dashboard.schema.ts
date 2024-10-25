@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 export const visibilityEnum = pgEnum('visibility', [
   'public',
@@ -11,12 +11,14 @@ export const dashboards = pgTable('dashboard', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text('name'),
-  url: text('url'),
+  allowDataExport: boolean('allow_data_export'),
+  headlineColor: text('headline_color'),
   icon: text('icon'),
-  type: text('type'),
   readRoles: text('read_roles').array(),
-  writeRoles: text('write_roles').array(),
+  type: text('type'),
+  url: text('url'),
   visibility: visibilityEnum('visibility'),
+  writeRoles: text('write_roles').array(),
 });
 
 export type Dashboard = typeof dashboards.$inferSelect;

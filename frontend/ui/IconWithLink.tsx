@@ -38,11 +38,13 @@ export default function IconWithLink(props: IconWithLinkProps): ReactElement {
           href={iconUrl}
           className="flex flex-row justify-center items-center w-fit pl-4 cursor-pointer"
         >
-          <DashboardIcons
-            iconName={icon || 'ChevronLeft'}
-            color={iconColor || 'white'}
-            size="xl"
-          />
+          {icon && (
+            <DashboardIcons
+              iconName={icon}
+              color={iconColor || 'white'}
+              size="xl"
+            />
+          )}
           <div
             style={{ color: fontColor }}
             className={`ql-editor no-border-ql-editor`}

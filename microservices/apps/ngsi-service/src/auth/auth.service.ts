@@ -51,7 +51,7 @@ export class AuthService {
           ),
       );
 
-      if (data.access_token && data.expires_in && data.refresh_token) {
+      if (data && data.access_token && data.expires_in && data.refresh_token) {
         this.tokenDataDictionary[queryBatch.query_config.dataSourceId] = data;
         return this.mapExternalTokenData(data);
       } else {
@@ -79,24 +79,30 @@ export class AuthService {
   async getAuthTokenRequestWithUserName(
     queryBatch: QueryBatch,
   ): Promise<TokenData> {
+    let authCredentials = {};
+    if (queryBatch.auth_data.type === 'ngsi-ld') {
+      authCredentials = {
+        client_id: queryBatch.auth_data.clientId,
+        client_secret: queryBatch.auth_data.clientSecret,
+        grant_type: 'client_credentials',
+      };
+    } else {
+      authCredentials = {
+        grant_type: 'password',
+        client_id: queryBatch.auth_data.clientId,
+        client_secret: queryBatch.auth_data.clientSecret,
+        username: queryBatch.auth_data.appUser,
+        password: queryBatch.auth_data.appUserPassword,
+        scope: 'api:read api:write api:delete',
+      };
+    }
     const { data } = await lastValueFrom(
       this.httpService
-        .post(
-          queryBatch.auth_data.authUrl,
-          {
-            grant_type: 'password',
-            client_id: queryBatch.auth_data.clientId,
-            client_secret: queryBatch.auth_data.clientSecret,
-            username: queryBatch.auth_data.appUser,
-            password: queryBatch.auth_data.appUserPassword,
-            scope: 'api:read api:write api:delete',
+        .post(queryBatch.auth_data.authUrl, authCredentials, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
-          {
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          },
-        )
+        })
         .pipe(
           catchError((error: AxiosError) => {
             if (error.response) {
@@ -109,7 +115,8 @@ export class AuthService {
         ),
     );
 
-    if (data.access_token && data.expires_in && data.refresh_token) {
+    if (data && data.access_token && data.expires_in) {
+      // if (data && data.access_token && data.expires_in && data.refresh_token) {
       return this.mapExternalTokenData(data);
     } else {
       this.logger.error(
@@ -150,7 +157,7 @@ export class AuthService {
           }),
         ),
     );
-    if (data.access_token && data.expires_in && data.refresh_token) {
+    if (data && data.access_token && data.expires_in && data.refresh_token) {
       return this.mapExternalTokenData(data);
     } else {
       this.logger.error(
@@ -211,7 +218,7 @@ export class AuthService {
 
     return {
       accessToken: externalTokenData.access_token,
-      refreshToken: externalTokenData.refresh_token,
+      refreshToken: externalTokenData.refresh_token || '',
       expiresIn: expirationTimestamp,
     };
   }

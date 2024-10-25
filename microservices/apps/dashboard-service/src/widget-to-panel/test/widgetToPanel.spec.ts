@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { DashboardServiceModule } from '../../dashboard-service.module';
 import { widgetsToPanels } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
-import axios from 'axios';
 import { widgets } from '@app/postgres-db/schemas/dashboard.widget.schema';
 import {
   runLocalDatabasePreparation,
@@ -18,6 +17,7 @@ import { Client } from 'pg';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { createPanelByObject, getPanel } from '../../panel/test/test-data';
 import { v4 as uuid } from 'uuid';
+import { generateJWTToken } from '../../../../test/jwt-token-util';
 
 describe('WidgetToPanelService (e2e)', () => {
   let app: INestApplication;
@@ -39,21 +39,10 @@ describe('WidgetToPanelService (e2e)', () => {
   let JWTToken = null;
 
   beforeEach(async () => {
-    // Get JWT token
-    const authUrl = process.env.KEYCLOAK_CLIENT_URI;
-
-    const data = new URLSearchParams();
-    data.append('client_id', process.env.KEYCLOAK_CLIENT_ID);
-    data.append('client_secret', process.env.KEYCLOAK_CLIENT_SECRET);
-    data.append('grant_type', 'client_credentials');
-
-    try {
-      await process.nextTick(() => {});
-      const res = await axios.post(authUrl, data);
-      JWTToken = res.data.access_token;
-    } catch (error) {
-      console.error('Error occurred:', error);
-    }
+    JWTToken = await generateJWTToken(
+      process.env.KEYCLOAK_CLIENT_ID,
+      process.env.KEYCLOAK_CLIENT_SECRET,
+    );
 
     await truncateTables(client);
   });
