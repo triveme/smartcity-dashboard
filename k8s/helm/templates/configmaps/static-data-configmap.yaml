@@ -1,0 +1,9 @@
+{{- if index .Values "static-data-service" "enabled" }}
+# Env vars specific for the static-data-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-data-service-configmap
+data:
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "static-data-service" "frontendUrl" }}
+{{- end }}

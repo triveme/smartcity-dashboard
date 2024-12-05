@@ -3,23 +3,23 @@ replicaCount: 1
 ## Service values
 service:
   type: ClusterIP
-  port: 8086
+  port: 8087
 
 ## Deployment values
 image:
-  repository: smartcity/report-service
+  repository: smartcity/static-data-service
   pullPolicy: IfNotPresent
   tag: "latest"
 
 container:
   ports:
     - name: http
-      containerPort: 8086
+      containerPort: 8084
       protocol: TCP
   livenessProbe:
-    port: 8086
+    port: 8087
   readinessProbe:
-    port: 8086
+    port: 8087
 
 service:
   type: ClusterIP

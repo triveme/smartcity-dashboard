@@ -22,6 +22,10 @@ infopin-service:
   ingress:
     enabled: false
 
+static-data-service:
+  ingress:
+    enabled: false
+
 report-service:
   ingress:
     enabled: false
@@ -36,3 +40,11 @@ frontend:
   backendUrl: http://host.docker.internal:3001
   tlsRejectUnauthorized: "1"
 
+migrations:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "100m"

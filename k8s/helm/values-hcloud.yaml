@@ -7,8 +7,15 @@ trustedCAFile: "certificates/hcloud_ca.pem"
 migrations:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "100m"
 
 keycloak:
   proxy: edge
@@ -30,6 +37,7 @@ dashboard-service:
   frontendUrl: "https://smartcity-system.de"
   adminRole: "scs-admin"
   logRotationCron: "5 1 * * * *"
+  logPath: "/logs"
   editRoles: |
     [ "editor", "tester", "scs-admin" ]
   passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
@@ -50,7 +58,7 @@ dashboard-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
 
 ngsi-service:
@@ -73,7 +81,7 @@ ngsi-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
 
 api-service:
@@ -93,7 +101,7 @@ api-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/api-service
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
 
 mail-service:
@@ -113,7 +121,7 @@ mail-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/mail-service
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
 
 infopin-service:
@@ -134,7 +142,7 @@ infopin-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always
 
 
@@ -157,8 +165,30 @@ report-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/report-service
-    tag: 'latest-feature'
+    tag: '0.18.3'
     pullPolicy: Always
+
+static-data-service:
+  frontendUrl: "https://smartcity-system.de"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - static-data-service.smartcity-system.de
+        secretName: static-data-service-tls-secret
+    hosts:
+      - host: static-data-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/static-data-service
+    tag: '0.18.3'
+    pullPolicy: Always
+
 
 frontend:
   url: "https://smartcity-system.de"
@@ -173,7 +203,7 @@ frontend:
   ngsiServiceUrl: "https://ngsi-service.smartcity-system.de"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"
-  mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
+  mapBoxToken: "pk.eyJ1Ijoic21hcnRjaXR5LWRhc2hib2FyZCIsImEiOiJjbTEwbXFvNDUwaXBiMnlxeW82d2hocW00In0.uEvv3lk8hamE9aLg7AsDxA"
   adminRole: "scs-admin"
   ingress:
     enabled: true
@@ -192,5 +222,5 @@ frontend:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/frontend
-    tag: '0.11.0'
+    tag: '0.18.3'
     pullPolicy: Always

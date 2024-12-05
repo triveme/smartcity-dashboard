@@ -16,6 +16,7 @@ dashboard-service:
   frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
   adminRole: "scs-admin"
   logRotationCron: "5 1 * * * *"
+  logPath: "/logs"
   editRoles: |
     [ "editor", "tester", "scs-admin" ]
   passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
@@ -94,6 +95,19 @@ report-service:
         secretName: report-service-tls-secret ## auto-generated unique tls
     hosts:
       - host: mit-smartcity-suite-report-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
+static-data-service:
+  frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-static-data-service.container.edag
+        secretName: static-data-service-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-static-data-service.container.edag
         paths:
           - path: /
             pathType: Prefix
