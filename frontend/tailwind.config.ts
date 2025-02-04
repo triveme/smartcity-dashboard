@@ -31,6 +31,10 @@ const config: Config = {
     'xl:col-span-12',
   ],
   theme: {
+    screens: {
+      sm: '770px',
+      lg: '1024px',
+    },
     extend: {
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

@@ -53,6 +53,22 @@ export class PopulateChartService {
         this.populateSliderOverview(query, tab);
         return;
       }
+
+      if (query && query.queryData && tab.componentSubType === 'Pie Chart') {
+        this.populateTabWithQueryDataArray(
+          queryConfig,
+          query,
+          queryConfig.attributes[0],
+          datasource,
+          tab,
+        );
+        return;
+      }
+
+      // Track amount of attributes for labeling
+      const isSingleAttribute =
+        queryConfig.attributes.filter((attr) => attr !== 'name').length === 1;
+
       for (const attribute of queryConfig.attributes) {
         if (query && query.queryData && tab.componentType !== 'Karte') {
           if (Array.isArray(query.queryData)) {
@@ -69,6 +85,7 @@ export class PopulateChartService {
               attribute,
               queryConfig,
               tab,
+              isSingleAttribute,
             );
           }
         } else {
@@ -101,7 +118,7 @@ export class PopulateChartService {
         const queryDataElement = query.queryData[i];
 
         const chartData: ChartData = {
-          name: queryDataElement.id,
+          name: queryDataElement['name']?.value || queryDataElement.id,
           values: [],
         };
 
@@ -117,6 +134,23 @@ export class PopulateChartService {
 
         tab.chartData.push(chartData);
       }
+    } else {
+      const queryDataElement: any = query.queryData;
+
+      const chartData: ChartData = {
+        name: queryDataElement.id,
+        values: [],
+      };
+
+      const currentValue = queryDataElement[tab.sliderCurrentAttribute]?.value;
+      const maximumValue = queryDataElement[tab.sliderMaximumAttribute]?.value;
+
+      if (currentValue !== undefined && maximumValue !== undefined) {
+        chartData.values.push([tab.sliderCurrentAttribute, currentValue]);
+        chartData.values.push([tab.sliderMaximumAttribute, maximumValue]);
+      }
+
+      tab.chartData.push(chartData);
     }
   }
 
@@ -130,49 +164,71 @@ export class PopulateChartService {
       mapObject: MapObject[];
     },
   ): void {
-    const sensorDataMap = this.buildSensorDataMap(query);
-
-    this.buildChartDataArray(
-      queryConfig,
-      sensorDataMap,
-      attribute,
-      datasource,
-      tab,
-    );
-
     // Piechart adjustment
     if (tab.componentSubType === 'Pie Chart') {
-      if (query && Array.isArray(query.queryData)) {
-        // One Sensor with multiple Attributes
-        if (query.queryData.length === 1) {
-          const tquery = query.queryData[0] as { [key: string]: any };
-          let tvalue = tquery[attribute];
+      if (query) {
+        // Handle array case
+        if (Array.isArray(query.queryData)) {
+          // One Sensor with multiple Attributes
+          if (query.queryData.length === 1) {
+            const tquery = query.queryData[0] as { [key: string]: any };
 
-          tvalue =
-            tvalue && typeof tvalue === 'object' && 'value' in tvalue
-              ? tvalue['value']
-              : null;
+            // Get all keys from the query data
+            const attributes = Object.keys(tquery).filter(
+              (key) =>
+                // Filter out common metadata fields - adjust as needed
+                !['id', '_id', 'timestamp', 'sensorId'].includes(key),
+            );
 
-          if (tvalue !== null) {
-            tab.chartLabels.push(attribute);
-            tab.chartValues.push(tvalue);
+            // Process each attribute
+            attributes.forEach((attr) => {
+              let tvalue = tquery[attr];
+
+              tvalue =
+                tvalue && typeof tvalue === 'object' && 'value' in tvalue
+                  ? tvalue['value']
+                  : tvalue;
+
+              if (tvalue !== null && tvalue !== undefined) {
+                tab.chartLabels.push(getGermanLabelForAttribute(attr));
+                tab.chartValues.push(tvalue);
+              }
+            });
+          }
+          // Multiple Sensors with the same attribute
+          else if (query.queryData.length > 1) {
+            query.queryData.forEach((queryEntry, i) => {
+              const { id, ...attributes } = queryEntry as {
+                id: string;
+                [key: string]: any;
+              };
+
+              const sensorValue =
+                attributes[queryConfig.attributes[0]]?.value || 0;
+              const sensorLabel = attributes['name']?.value || `${id} ${i}`;
+
+              tab.chartLabels.push(getGermanLabelForAttribute(sensorLabel));
+              tab.chartValues.push(sensorValue);
+            });
           }
         }
-        // Multiple Sensors with the same attribute
-        else if (query.queryData.length > 1) {
-          query.queryData.forEach((queryEntry, i) => {
-            const { id, ...attributes } = queryEntry as {
-              id: string;
-              [key: string]: any;
-            };
+        // Handle object case
+        else if (
+          typeof query.queryData === 'object' &&
+          query.queryData !== null
+        ) {
+          const queryData = query.queryData as { [key: string]: any };
+          let value = queryData[attribute];
 
-            const sensorValue =
-              attributes[queryConfig.attributes[0]]?.value || 0;
-            const sensorLabel = `Sensor ${id?.slice(-4) || i}`;
+          value =
+            value && typeof value === 'object' && 'value' in value
+              ? value['value']
+              : null;
 
-            tab.chartLabels.push(sensorLabel);
-            tab.chartValues.push(sensorValue);
-          });
+          if (value !== null) {
+            tab.chartLabels.push(getGermanLabelForAttribute(attribute));
+            tab.chartValues.push(value);
+          }
         }
       }
     }
@@ -186,10 +242,17 @@ export class PopulateChartService {
       chartData: ChartData[];
       mapObject: MapObject[];
     },
+    isSingleAttribute: boolean,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
 
-    this.populateHistoricTab(queryConfig, tab, queryDataMap, attribute);
+    this.populateHistoricTab(
+      queryConfig,
+      tab,
+      queryDataMap,
+      attribute,
+      isSingleAttribute,
+    );
   }
 
   private buildChartDataArray(
@@ -251,6 +314,7 @@ export class PopulateChartService {
     },
     queryDataMap: Map<string, any>,
     attribute: string,
+    isSingleAttribute: boolean,
   ): void {
     if (queryConfig.entityIds.length === 1) {
       this.populateHistoricTabWithSingleEntityId(tab, queryDataMap);
@@ -259,6 +323,7 @@ export class PopulateChartService {
         tab,
         queryDataMap,
         attribute,
+        isSingleAttribute,
       );
     }
   }
@@ -278,19 +343,26 @@ export class PopulateChartService {
     entityAttributes.forEach((attr) => {
       const attrName = attr.attrName;
 
-      // Create FiwareAttributeEntity for the current attribute
-      const attributeObject: FiwareAttributeEntity = {
-        entityId: entityId,
-        index: index,
-        values: attr.values, // Use the values specific to this attribute
-      };
-
-      // Push values to chart data
-      this.pushValuesToChartData(
-        attributeObject,
-        `${getGermanLabelForAttribute(attrName)}`,
-        tab,
+      // Check if an entry for the attribute for the entityId already exists in tab.chartData
+      const existingEntry = tab.chartData.find(
+        (data) => data.name === `${getGermanLabelForAttribute(attrName)}`,
       );
+
+      if (!existingEntry) {
+        // Create FiwareAttributeEntity for the current attribute
+        const attributeObject: FiwareAttributeEntity = {
+          entityId: entityId,
+          index: index,
+          values: attr.values, // Use the values specific to this attribute
+        };
+
+        // Push values to chart data
+        this.pushValuesToChartData(
+          attributeObject,
+          `${getGermanLabelForAttribute(attrName)}`,
+          tab,
+        );
+      }
     });
   }
 
@@ -301,7 +373,9 @@ export class PopulateChartService {
     },
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
+    isSingleAttribute: boolean,
   ): void {
+    console.log('populateHistoricTabWithMultipleEntityIds', attribute);
     let sensorName: string = null;
     if (attribute === 'name') return; // Skip if the attribute itself is "name"
 
@@ -344,7 +418,7 @@ export class PopulateChartService {
                   sensorName =
                     matchingEntityData.values[
                       matchingEntityData.values.length - 1
-                    ].toString();
+                    ]?.toString() || null;
                 }
               }
             }
@@ -356,7 +430,7 @@ export class PopulateChartService {
 
             this.pushValuesToChartData(
               entity,
-              `${sensorName} | ${getGermanLabelForAttribute(attribute)}`,
+              this.utilNameFunction(attribute, sensorName, isSingleAttribute),
               tab,
             );
 
@@ -365,6 +439,18 @@ export class PopulateChartService {
           }
         }
       }
+    }
+  }
+
+  private utilNameFunction(
+    labelAttribute: string,
+    sensorName: string,
+    isSingleAttribute: boolean,
+  ): string {
+    if (isSingleAttribute) {
+      return `${getGermanLabelForAttribute(sensorName)}`;
+    } else {
+      return `${getGermanLabelForAttribute(sensorName)} | ${getGermanLabelForAttribute(labelAttribute)}`;
     }
   }
 

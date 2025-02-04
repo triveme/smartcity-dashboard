@@ -12,20 +12,16 @@ import DashboardWizard from '@/components/Wizards/DashboardWizard';
 import DashboardPreview from '@/components/Previews/DashboardPreview';
 import { Dashboard, Panel, Tab, visibilityEnum } from '@/types';
 import {
-  getDashboardByIdWithContent,
+  getDashboardByIdWithStructure,
   postDashboard,
   updateDashboard,
 } from '@/api/dashboard-service';
-import {
-  deletePanel,
-  getPanelsByDashboardId,
-  postPanel,
-  updatePanel,
-} from '@/api/panel-service';
+import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { WizardErrors } from '@/types/errors';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
+import DashboardIcons from '@/ui/Icons/DashboardIcon';
 
 export default function Pages(): ReactElement {
   const auth = useAuth();
@@ -66,6 +62,7 @@ export default function Pages(): ReactElement {
   const [selectedTab, setSelectedTab] = useState<Tab>();
   const [errors, setErrors] = useState<WizardErrors>({});
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isInitDone, setIsInitDone] = useState(!itemId ? true : false);
 
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
@@ -89,6 +86,7 @@ export default function Pages(): ReactElement {
   //Dynamic Styling
   const dashboardStyle = {
     backgroundColor: data?.dashboardPrimaryColor || '#2B3244',
+    color: data?.dashboardFontColor || '#FFFFFF',
     marginLeft: isCollapsed ? '80px' : '250px',
     maxWidth: 'auto',
     width: 'auto',
@@ -97,6 +95,8 @@ export default function Pages(): ReactElement {
   useEffect(() => {
     if (itemId) {
       setCanFetch(true);
+    } else {
+      setIsInitDone(true);
     }
   }, [itemId]);
 
@@ -108,54 +108,51 @@ export default function Pages(): ReactElement {
   } = useQuery({
     queryKey: ['dashboard', itemId],
     queryFn: () =>
-      getDashboardByIdWithContent(auth?.user?.access_token, itemId!),
+      getDashboardByIdWithStructure(auth?.user?.access_token, itemId!),
     enabled: !!itemId,
-  });
-  const {
-    data: panelData,
-    refetch: refetchPanel,
-    isError: panelIsError,
-    error: panelError,
-  } = useQuery({
-    queryKey: ['panel', itemId],
-    queryFn: () => getPanelsByDashboardId(auth?.user?.access_token, itemId!),
-    enabled: canFetch,
   });
 
   useEffect(() => {
-    if (panelData && panelData.length > 0) {
-      setPanels(panelData);
+    if (
+      dashboardData &&
+      dashboardData.panels &&
+      dashboardData.panels.length > 0
+    ) {
+      setPanels(dashboardData.panels);
     }
-  }, [panelData]);
+  }, [dashboardData]);
+
   useEffect(() => {
     if (dashboardData) {
+      console.log('DASHBOARD DATA', dashboardData);
       setDashboardName(dashboardData.name || '');
-      setDashboardFontColor(dashboardData.headlineColor || '');
       setDashboardUrl(dashboardData.url || '');
       setDashboardVisibility(dashboardData.visibility);
       setDashboardReadRoles(dashboardData.readRoles || []);
       setDashboardWriteRoles(dashboardData.writeRoles || []);
       setDashboardIcon(dashboardData.icon || '');
       setPanels(dashboardData.panels || []);
-      setDashboardType(dashboardData.type || '');
+      setDashboardType(dashboardData.type || 'Allgemein');
       setDashboardAllowDataExport(dashboardData.allowDataExport || false);
       if (dashboardData.headlineColor) {
         setDashboardFontColor(dashboardData.headlineColor);
       } else {
         setDashboardFontColor(data?.dashboardFontColor || '#FFFFFF');
       }
+      setIsInitDone(true);
+      return;
     }
-  }, [dashboardData]);
+    if (data) {
+      setDashboardFontColor(data?.dashboardFontColor || '#FFFFFF');
+    }
+  }, [dashboardData, data]);
 
   useEffect(() => {
-    if (panelIsError) {
-      openSnackbar('Error: ' + panelError, 'error');
-    }
-
     if (dashboardIsError) {
       openSnackbar('Error: ' + dashboardError, 'error');
     }
-  }, [panelIsError, dashboardIsError]);
+  }, [dashboardIsError]);
+
   const handleCreateDashboardClick = async (): Promise<void> => {
     let dashboardResponse: Dashboard;
     const dashboard: Dashboard = {
@@ -247,6 +244,7 @@ export default function Pages(): ReactElement {
         position: panels[i].position,
         showGeneralInfo: panels[i].showGeneralInfo,
         showJumpoffButton: panels[i].showJumpoffButton,
+        openJumpoffLinkInNewTab: panels[i].openJumpoffLinkInNewTab,
         width: panels[i].width,
       };
       editedPanels.push(element);
@@ -260,7 +258,7 @@ export default function Pages(): ReactElement {
       }
     }
     if (canFetch) {
-      refetchPanel();
+      refetchDashboards();
     }
   };
 
@@ -276,6 +274,17 @@ export default function Pages(): ReactElement {
     }
     router.back();
   };
+
+  if (!isInitDone) {
+    return (
+      <div
+        style={dashboardStyle}
+        className="flex flex-row min-h-screen justify-center items-center text-2xl"
+      >
+        <DashboardIcons iconName="Spinner" color={dashboardStyle.color} />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -301,14 +310,13 @@ export default function Pages(): ReactElement {
           <DashboardPreview
             panels={panels}
             handlePanelChange={setPanels}
-            refetchPanel={refetchPanel}
-            canFetch={canFetch}
             dashboardType={dashboardType}
             selectedTab={selectedTab}
             fontColor={data?.dashboardFontColor || '#fff'}
             iconColor={data?.dashboardFontColor || '#fff'}
             backgroundColor={data?.dashboardPrimaryColor || '#2B3244'}
             borderColor={data?.widgetBorderColor || '#2B3244'}
+            panelHeadlineColor={data?.panelFontColor || '#FFFFFF'}
           />
         </div>
         <div
@@ -335,7 +343,7 @@ export default function Pages(): ReactElement {
             setDashboardWriteRoles={setDashboardWriteRoles}
             dashboardIcon={dashboardIcon}
             setDashboardUrl={setDashboardUrl}
-            dashboardType={dashboardType}
+            dashboardType={dashboardType || 'Allgemein'}
             setDashboardType={setDashboardType}
             dashboardAllowDataExport={dashboardAllowDataExport}
             setDashboardAllowDataExport={setDashboardAllowDataExport}
@@ -350,6 +358,12 @@ export default function Pages(): ReactElement {
             backgroundColor={data?.dashboardPrimaryColor || '#2B3244'}
             borderColor={data?.widgetBorderColor || '#2B3244'}
             hoverColor={data?.menuHoverColor || '#59647D'}
+            dashboardMap={
+              dashboardData?.type === 'Karte'
+                ? dashboardData?.panels[0]?.widgets[0]
+                : undefined
+            }
+            originalDashboardType={dashboardData?.type || 'Allgemein'}
           />
         </div>
       </div>

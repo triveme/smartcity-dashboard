@@ -25,9 +25,13 @@
   position: absolute;
   top: 50%;
   left:-9.1%;
-  height: 2px; 
-  background-color: #C7D2EE; 
+  height: 2px;
+  background-color: #C7D2EE;
   width: var(--child-node-before-width, 45px); /* Fallback to 45px if the variable is not defined */
   transform: translateY(-50%);
- 
+
+}
+
+body, html {
+  height: 100%;
 }

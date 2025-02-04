@@ -3,13 +3,20 @@ import DashboardIcons from '../Icons/DashboardIcon';
 
 type RefreshButtonProps = {
   handleClick: () => void;
+  className?: string;
   fontColor: string;
   hoverColor: string;
   backgroundColor: string;
 };
 
 export default function RefreshButton(props: RefreshButtonProps): ReactElement {
-  const { handleClick, fontColor, hoverColor, backgroundColor } = props;
+  const {
+    handleClick,
+    className = '',
+    fontColor,
+    hoverColor,
+    backgroundColor,
+  } = props;
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = (): void => {
@@ -37,7 +44,11 @@ export default function RefreshButton(props: RefreshButtonProps): ReactElement {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <DashboardIcons iconName={'Update'} color={fontColor} />
+        <DashboardIcons
+          iconName={'Update'}
+          color={fontColor}
+          className={className}
+        />
       </button>
     </div>
   );

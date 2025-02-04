@@ -14,13 +14,14 @@ import LogoCiWizard from './LogoCiWizard';
 import FontCiWizard from './FontCiWizard';
 import useWizardState from '../../app/custom-hooks/singleState';
 import { SizeProp } from '@fortawesome/fontawesome-svg-core';
+import ComponentsCiWizard from './ComponentsCiWizard';
 
 type Props = {
   corporateInfo: CorporateInfo | undefined;
   state: ReturnType<typeof useWizardState>['state'];
   updateState: ReturnType<typeof useWizardState>['updateState'];
-  headerLogoId: string | undefined;
-  setHeaderLogoId: Dispatch<SetStateAction<string | undefined>>;
+  headerLogoId: string | null;
+  setHeaderLogoId: Dispatch<SetStateAction<string | null>>;
   sidebarLogos: SidebarLogo[];
   setSidebarLogos: Dispatch<SetStateAction<SidebarLogo[]>>;
   errors: WizardErrors | undefined;
@@ -51,6 +52,7 @@ export default function CorporateInfoWizard({
     { name: 'Dashboard', icon: 'Bar', size: 'sm' },
     { name: 'Panel', icon: 'File', size: 'sm' },
     { name: 'Widget', icon: 'Gear', size: 'sm' },
+    { name: 'Component', icon: 'Cogs', size: 'sm' },
     { name: 'Logo', icon: 'Image', size: 'sm' },
     { name: 'Schriftarten', icon: 'Font', size: 'sm' }, // Fonts
   ];
@@ -108,8 +110,17 @@ export default function CorporateInfoWizard({
       >
         {activeTab === 'Layout' && (
           <LayoutCiWizard
+            corporateInfo={corporateInfo}
             titleBar={state.titleBar}
             setTitleBar={(value): void => updateState('titleBar', value)}
+            menuCornerColor={state.menuCornerColor}
+            setMenuCornerColor={(value): void =>
+              updateState('menuCornerColor', value)
+            }
+            menuCornerFontColor={state.menuCornerFontColor}
+            setMenuCornerFontColor={(value): void =>
+              updateState('menuCornerFontColor', value)
+            }
             headerPrimaryColor={state.headerPrimaryColor}
             setHeaderPrimaryColor={(color): void =>
               updateState('headerPrimaryColor', color)
@@ -170,9 +181,14 @@ export default function CorporateInfoWizard({
             setCancelHoverButtonColor={(color): void =>
               updateState('cancelHoverButtonColor', color)
             }
+            menuArrowDirection={state.menuArrowDirection}
+            setMenuArrowDirection={(direction): void =>
+              updateState('menuArrowDirection', direction)
+            }
             errors={errors}
             borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
           />
         )}
         {activeTab === 'Dashboard' && (
@@ -185,6 +201,13 @@ export default function CorporateInfoWizard({
             setDashboardSecondaryColor={(color): void =>
               updateState('dashboardSecondaryColor', color)
             }
+            dashboardHeadlineFontSize={state.dashboardHeadlineFontSize}
+            setDashboardHeadlineFontSize={(value): void =>
+              updateState('dashboardHeadlineFontSize', value)
+            }
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
           />
         )}
         {activeTab === 'Panel' && (
@@ -205,10 +228,19 @@ export default function CorporateInfoWizard({
             setPanelBorderSize={(value): void =>
               updateState('panelBorderSize', value)
             }
-            panelBorderRadius={state.widgetBorderRadius}
+            panelBorderRadius={state.panelBorderRadius}
             setPanelBorderRadius={(value): void =>
               updateState('panelBorderRadius', value)
             }
+            panelHeadlineFontSize={state.panelHeadlineFontSize}
+            setPanelHeadlineFontSize={(value): void =>
+              updateState('panelHeadlineFontSize', value)
+            }
+            isPanelHeadlineBold={state.isPanelHeadlineBold}
+            setIsPanelHeadlineBold={(value): void =>
+              updateState('isPanelHeadlineBold', value)
+            }
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
             borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
           />
@@ -235,8 +267,396 @@ export default function CorporateInfoWizard({
             setWidgetBorderRadius={(value): void =>
               updateState('widgetBorderRadius', value)
             }
+            widgetHeadlineFontSize={state.widgetHeadlineFontSize}
+            setWidgetHeadlineFontSize={(value): void =>
+              updateState('widgetHeadlineFontSize', value)
+            }
+            widgetSubheadlineFontSize={state.widgetSubheadlineFontSize}
+            setWidgetSubheadlineFontSize={(value): void =>
+              updateState('widgetSubheadlineFontSize', value)
+            }
+            isWidgetHeadlineBold={state.isWidgetHeadlineBold}
+            setIsWidgetHeadlineBold={(value): void =>
+              updateState('isWidgetHeadlineBold', value)
+            }
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
             borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          />
+        )}
+        {activeTab === 'Component' && (
+          <ComponentsCiWizard
+            informationTextFontSize={state.informationTextFontSize}
+            setInformationTextFontSize={(value): void =>
+              updateState('informationTextFontSize', value)
+            }
+            informationTextFontColor={state.informationTextFontColor}
+            setInformationTextFontColor={(value): void =>
+              updateState('informationTextFontColor', value)
+            }
+            iconWithLinkFontSize={state.iconWithLinkFontSize}
+            setIconWithLinkFontSize={(value): void =>
+              updateState('iconWithLinkFontSize', value)
+            }
+            iconWithLinkFontColor={state.iconWithLinkFontColor}
+            setIconWithLinkFontColor={(value): void =>
+              updateState('iconWithLinkFontColor', value)
+            }
+            iconWithLinkIconSize={state.iconWithLinkIconSize}
+            setIconWithLinkIconSize={(value): void =>
+              updateState('iconWithLinkIconSize', value)
+            }
+            iconWithLinkIconColor={state.iconWithLinkIconColor}
+            setIconWithLinkIconColor={(value): void =>
+              updateState('iconWithLinkIconColor', value)
+            }
+            degreeChart180FontSize={state.degreeChart180FontSize}
+            setDegreeChart180FontSize={(value): void =>
+              updateState('degreeChart180FontSize', value)
+            }
+            degreeChart180FontColor={state.degreeChart180FontColor}
+            setDegreeChart180FontColor={(value): void =>
+              updateState('degreeChart180FontColor', value)
+            }
+            degreeChart180BgColor={state.degreeChart180BgColor}
+            setDegreeChart180BgColor={(value): void =>
+              updateState('degreeChart180BgColor', value)
+            }
+            degreeChart180FillColor={state.degreeChart180FillColor}
+            setDegreeChart180FillColor={(value): void =>
+              updateState('degreeChart180FillColor', value)
+            }
+            degreeChart180UnitFontSize={state.degreeChart180UnitFontSize}
+            setDegreeChart180UnitFontSize={(value): void =>
+              updateState('degreeChart180UnitFontSize', value)
+            }
+            degreeChart360FontSize={state.degreeChart360FontSize}
+            setDegreeChart360FontSize={(value): void =>
+              updateState('degreeChart360FontSize', value)
+            }
+            degreeChart360FontColor={state.degreeChart360FontColor}
+            setDegreeChart360FontColor={(value): void =>
+              updateState('degreeChart360FontColor', value)
+            }
+            degreeChart360BgColor={state.degreeChart360BgColor}
+            setDegreeChart360BgColor={(value): void =>
+              updateState('degreeChart360BgColor', value)
+            }
+            degreeChart360FillColor={state.degreeChart360FillColor}
+            setDegreeChart360FillColor={(value): void =>
+              updateState('degreeChart360FillColor', value)
+            }
+            degreeChart360UnitFontSize={state.degreeChart360UnitFontSize}
+            setDegreeChart360UnitFontSize={(value): void =>
+              updateState('degreeChart360UnitFontSize', value)
+            }
+            sliderCurrentFontColor={state.sliderCurrentFontColor}
+            setSliderCurrentFontColor={(value): void =>
+              updateState('sliderCurrentFontColor', value)
+            }
+            sliderMaximumFontColor={state.sliderMaximumFontColor}
+            setSliderMaximumFontColor={(value): void =>
+              updateState('sliderMaximumFontColor', value)
+            }
+            sliderGeneralFontColor={state.sliderGeneralFontColor}
+            setSliderGeneralFontColor={(value): void =>
+              updateState('sliderGeneralFontColor', value)
+            }
+            sliderCurrentColor={state.sliderCurrentColor}
+            setSliderCurrentColor={(value): void =>
+              updateState('sliderCurrentColor', value)
+            }
+            sliderMaximumColor={state.sliderMaximumColor}
+            setsliderMaximumColor={(value): void =>
+              updateState('sliderMaximumColor', value)
+            }
+            stageableChartTicksFontSize={state.stageableChartTicksFontSize}
+            setStageableChartTicksFontSize={(value): void =>
+              updateState('stageableChartTicksFontSize', value)
+            }
+            stageableChartTicksFontColor={state.stageableChartTicksFontColor}
+            setStageableChartTicksFontColor={(value): void =>
+              updateState('stageableChartTicksFontColor', value)
+            }
+            stageableChartFontSize={state.stageableChartFontSize}
+            setStageableChartFontSize={(value): void =>
+              updateState('stageableChartFontSize', value)
+            }
+            stageableChartFontColor={state.stageableChartFontColor}
+            setStageableChartFontColor={(value): void =>
+              updateState('stageableChartFontColor', value)
+            }
+            pieChartFontSize={state.pieChartFontSize}
+            setPieChartFontSize={(value): void =>
+              updateState('pieChartFontSize', value)
+            }
+            pieChartFontColor={state.pieChartFontColor}
+            setPieChartFontColor={(value): void =>
+              updateState('pieChartFontColor', value)
+            }
+            pieChartCurrentValuesColors={state.pieChartCurrentValuesColors}
+            setPieChartCurrentValuesColors={(value): void =>
+              updateState('pieChartCurrentValuesColors', value)
+            }
+            lineChartAxisTicksFontSize={state.lineChartAxisTicksFontSize}
+            setLineChartAxisTicksFontSize={(value): void =>
+              updateState('lineChartAxisTicksFontSize', value)
+            }
+            lineChartAxisLabelSize={state.lineChartAxisLabelSize}
+            setLineChartAxisLabelSize={(value): void =>
+              updateState('lineChartAxisLabelSize', value)
+            }
+            lineChartAxisLabelFontColor={state.lineChartAxisLabelFontColor}
+            setLineChartAxisLabelFontColor={(value): void =>
+              updateState('lineChartAxisLabelFontColor', value)
+            }
+            lineChartLegendFontSize={state.lineChartLegendFontSize}
+            setLineChartLegendFontSize={(value): void =>
+              updateState('lineChartLegendFontSize', value)
+            }
+            lineChartLegendFontColor={state.lineChartLegendFontColor}
+            setLineChartLegendFontColor={(value): void =>
+              updateState('lineChartLegendFontColor', value)
+            }
+            lineChartTicksFontColor={state.lineChartTicksFontColor}
+            setLineChartTicksFontColor={(value): void =>
+              updateState('lineChartTicksFontColor', value)
+            }
+            lineChartAxisLineColor={state.lineChartAxisLineColor}
+            setLineChartAxisLineColor={(value): void =>
+              updateState('lineChartAxisLineColor', value)
+            }
+            lineChartFilterColor={state.lineChartFilterColor}
+            setLineChartFilterColor={(value): void =>
+              updateState('lineChartFilterColor', value)
+            }
+            lineChartFilterTextColor={state.lineChartFilterTextColor}
+            setLineChartFilterTextColor={(value): void =>
+              updateState('lineChartFilterTextColor', value)
+            }
+            lineChartCurrentValuesColors={state.lineChartCurrentValuesColors}
+            setLineChartCurrentValuesColors={(value): void =>
+              updateState('lineChartCurrentValuesColors', value)
+            }
+            lineChartGridColor={state.lineChartGridColor}
+            setLineChartGridColor={(value): void =>
+              updateState('lineChartGridColor', value)
+            }
+            barChartAxisTicksFontSize={state.barChartAxisTicksFontSize}
+            setBarChartAxisTicksFontSize={(value): void =>
+              updateState('barChartAxisTicksFontSize', value)
+            }
+            barChartAxisLabelSize={state.barChartAxisLabelSize}
+            setBarChartAxisLabelSize={(value): void =>
+              updateState('barChartAxisLabelSize', value)
+            }
+            barChartAxisLabelFontColor={state.barChartAxisLabelFontColor}
+            setBarChartAxisLabelFontColor={(value): void =>
+              updateState('barChartAxisLabelFontColor', value)
+            }
+            barChartFilterColor={state.barChartFilterColor}
+            setBarChartFilterColor={(value): void =>
+              updateState('barChartFilterColor', value)
+            }
+            barChartFilterTextColor={state.barChartFilterTextColor}
+            setBarChartFilterTextColor={(value): void =>
+              updateState('barChartFilterTextColor', value)
+            }
+            barChartLegendFontSize={state.barChartLegendFontSize}
+            setBarChartLegendFontSize={(value): void =>
+              updateState('barChartLegendFontSize', value)
+            }
+            barChartLegendFontColor={state.barChartLegendFontColor}
+            setBarChartLegendFontColor={(value): void =>
+              updateState('barChartLegendFontColor', value)
+            }
+            barChartTicksFontColor={state.barChartTicksFontColor}
+            setBarChartTicksFontColor={(value): void =>
+              updateState('barChartTicksFontColor', value)
+            }
+            barChartAxisLineColor={state.barChartAxisLineColor}
+            setBarChartAxisLineColor={(value): void =>
+              updateState('barChartAxisLineColor', value)
+            }
+            barChartCurrentValuesColors={state.barChartCurrentValuesColors}
+            setBarChartCurrentValuesColors={(value): void =>
+              updateState('barChartCurrentValuesColors', value)
+            }
+            barChartGridColor={state.barChartGridColor}
+            setBarChartGridColor={(value): void =>
+              updateState('barChartGridColor', value)
+            }
+            measurementChartBigValueFontSize={
+              state.measurementChartBigValueFontSize
+            }
+            setMeasurementChartBigValueFontSize={(value): void =>
+              updateState('measurementChartBigValueFontSize', value)
+            }
+            measurementChartBigValueFontColor={
+              state.measurementChartBigValueFontColor
+            }
+            setMeasurementChartBigValueFontColor={(value): void =>
+              updateState('measurementChartBigValueFontColor', value)
+            }
+            measurementChartTopButtonBgColor={
+              state.measurementChartTopButtonBgColor
+            }
+            setMeasurementChartTopButtonBgColor={(value): void =>
+              updateState('measurementChartTopButtonBgColor', value)
+            }
+            measurementChartTopButtonInactiveBgColor={
+              state.measurementChartTopButtonInactiveBgColor
+            }
+            setMeasurementChartTopButtonInactiveBgColor={(value): void =>
+              updateState('measurementChartTopButtonInactiveBgColor', value)
+            }
+            measurementChartTopButtonHoverColor={
+              state.measurementChartTopButtonHoverColor
+            }
+            setMeasurementChartTopButtonHoverColor={(value): void =>
+              updateState('measurementChartTopButtonHoverColor', value)
+            }
+            measurementChartTopButtonFontColor={
+              state.measurementChartTopButtonFontColor
+            }
+            setMeasurementChartTopButtonFontColor={(value): void =>
+              updateState('measurementChartTopButtonFontColor', value)
+            }
+            measurementChartCardsBgColor={state.measurementChartCardsBgColor}
+            setMeasurementChartCardsBgColor={(value): void =>
+              updateState('measurementChartCardsBgColor', value)
+            }
+            measurementChartCardsFontColor={
+              state.measurementChartCardsFontColor
+            }
+            setMeasurementChartCardsFontColor={(value): void =>
+              updateState('measurementChartCardsFontColor', value)
+            }
+            measurementChartCardsIconColors={
+              state.measurementChartCardsIconColors
+            }
+            setMeasurementChartCardsIconColors={(value): void =>
+              updateState('measurementChartCardsIconColors', value)
+            }
+            measurementChartBarColor={state.measurementChartBarColor}
+            setMeasurementChartBarColor={(value): void =>
+              updateState('measurementChartBarColor', value)
+            }
+            measurementChartLabelFontColor={
+              state.measurementChartLabelFontColor
+            }
+            setMeasurementChartLabelFontColor={(value): void =>
+              updateState('measurementChartLabelFontColor', value)
+            }
+            measurementChartGridColor={state.measurementChartGridColor}
+            setMeasurementChartGridColor={(value): void =>
+              updateState('measurementChartGridColor', value)
+            }
+            measurementChartAxisLineColor={state.measurementChartAxisLineColor}
+            setMeasurementChartAxisLineColor={(value): void =>
+              updateState('measurementChartAxisLineColor', value)
+            }
+            measurementChartAxisTicksFontColor={
+              state.measurementChartAxisTicksFontColor
+            }
+            setMeasurementChartAxisTicksFontColor={(value): void =>
+              updateState('measurementChartAxisTicksFontColor', value)
+            }
+            measurementChartAxisLabelFontColor={
+              state.measurementChartAxisLabelFontColor
+            }
+            setMeasurementChartAxisLabelFontColor={(value): void =>
+              updateState('measurementChartAxisLabelFontColor', value)
+            }
+            measurementChartCurrentValuesColors={
+              state.measurementChartCurrentValuesColors
+            }
+            setMeasurementChartCurrentValuesColors={(value): void =>
+              updateState('measurementChartCurrentValuesColors', value)
+            }
+            coloredSliderBigValueFontSize={state.coloredSliderBigValueFontSize}
+            setColoredSliderBigValueFontSize={(value): void =>
+              updateState('coloredSliderBigValueFontSize', value)
+            }
+            coloredSliderBigValueFontColor={
+              state.coloredSliderBigValueFontColor
+            }
+            setColoredSliderBigValueFontColor={(value): void =>
+              updateState('coloredSliderBigValueFontColor', value)
+            }
+            coloredSliderLabelFontSize={state.coloredSliderLabelFontSize}
+            setColoredSliderLabelFontSize={(value): void =>
+              updateState('coloredSliderLabelFontSize', value)
+            }
+            coloredSliderLabelFontColor={state.coloredSliderLabelFontColor}
+            setColoredSliderLabelFontColor={(value): void =>
+              updateState('coloredSliderLabelFontColor', value)
+            }
+            coloredSliderArrowColor={state.coloredSliderArrowColor}
+            setColoredSliderArrowColor={(value): void =>
+              updateState('coloredSliderArrowColor', value)
+            }
+            coloredSliderUnitFontSize={state.coloredSliderUnitFontSize}
+            setColoredSliderUnitFontSize={(value): void =>
+              updateState('coloredSliderUnitFontSize', value)
+            }
+            wertFontSize={state.wertFontSize}
+            setWertFontSize={(value): void =>
+              updateState('wertFontSize', value)
+            }
+            wertUnitFontSize={state.wertUnitFontSize}
+            setWertUnitFontSize={(value): void =>
+              updateState('wertUnitFontSize', value)
+            }
+            wertFontColor={state.wertFontColor}
+            setWertFontColor={(value): void =>
+              updateState('wertFontColor', value)
+            }
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+            weatherWarningBgColor={
+              corporateInfo?.weatherWarningBgColor || '#3D4760'
+            }
+            setWeatherWarningBgColor={function (color: string): void {
+              updateState('weatherWarningBgColor', color);
+            }}
+            weatherWarningHeadlineColor={
+              corporateInfo?.weatherWarningHeadlineColor || '#E74C3C'
+            }
+            setWeatherWarningHeadlineColor={function (color: string): void {
+              updateState('weatherWarningHeadlineColor', color);
+            }}
+            weatherInstructionsColor={
+              corporateInfo?.weatherInstructionsColor || '#000000'
+            }
+            setWeatherInstructionsColor={function (color: string): void {
+              updateState('weatherInstructionsColor', color);
+            }}
+            weatherAlertDescriptionColor={
+              corporateInfo?.weatherAlertDescriptionColor || '#000000'
+            }
+            setWeatherAlertDescriptionColor={function (color: string): void {
+              updateState('weatherAlertDescriptionColor', color);
+            }}
+            weatherDateColor={corporateInfo?.weatherDateColor || '#FFFFFF'}
+            setWeatherDateColor={function (color: string): void {
+              updateState('weatherDateColor', color);
+            }}
+            weatherWarningButtonBackgroundColor={
+              corporateInfo?.weatherWarningButtonBackgroundColor || '#2C3E50'
+            }
+            setWeatherWarningButtonBackgroundColor={function (
+              color: string,
+            ): void {
+              updateState('weatherWarningButtonBackgroundColor', color);
+            }}
+            weatherWarningButtonIconColor={
+              corporateInfo?.weatherWarningButtonIconColor || '#FFFFFF'
+            }
+            setWeatherWarningButtonIconColor={function (color: string): void {
+              updateState('weatherWarningButtonIconColor', color);
+            }}
           />
         )}
         {activeTab === 'Logo' && (

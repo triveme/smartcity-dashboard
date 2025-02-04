@@ -49,6 +49,9 @@ dependencies:
   - name: infopin-service
     condition: infopin-service.enabled
     version: 0.1.0
+  - name: static-data-service
+    condition: static-data-service.enabled
+    version: 0.1.0
   - name: report-service
     condition: report-service.enabled
     version: 0.1.0

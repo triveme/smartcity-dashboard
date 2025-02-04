@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import DashboardIcons from '../Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +20,7 @@ export default function SmallDataExportButton(
   const { id, type } = props;
   const tenant = getTenantOfPage();
   const { openSnackbar } = useSnackbar();
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
@@ -36,11 +37,17 @@ export default function SmallDataExportButton(
   const accessToken = auth.user?.access_token || '';
 
   const handleDownloadCSV = async (): Promise<void> => {
+    setIsDisabled(true);
     await downloadCSV(accessToken, id, type, openSnackbar);
+    setTimeout(() => setIsDisabled(false), 5000);
   };
 
   return (
-    <button style={{ color: widgetStyle.color }} onClick={handleDownloadCSV}>
+    <button
+      style={{ color: widgetStyle.color }}
+      onClick={handleDownloadCSV}
+      disabled={isDisabled}
+    >
       <DashboardIcons
         iconName="Download"
         color={`${widgetStyle.color}`}

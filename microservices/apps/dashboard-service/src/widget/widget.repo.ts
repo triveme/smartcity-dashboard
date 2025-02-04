@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -47,6 +47,10 @@ export class WidgetRepo {
       .where(eq(widgets.id, id));
 
     return widgetArr.length > 0 ? widgetArr[0] : null;
+  }
+
+  async getByIds(ids: string[]): Promise<Widget[]> {
+    return this.db.select().from(widgets).where(inArray(widgets.id, ids));
   }
 
   async getWidgetWithContent(id: string): Promise<FlatWidgetData[]> {
@@ -102,5 +106,27 @@ export class WidgetRepo {
       .returning();
 
     return result.length > 0 ? result[0] : null;
+  }
+
+  async existsByName(name: string): Promise<boolean> {
+    const existingDashboard = await this.db
+      .select()
+      .from(widgets)
+      .where(eq(widgets.name, name))
+      .limit(1);
+
+    return existingDashboard.length > 0;
+  }
+
+  async generateUniqueName(baseName: string): Promise<string> {
+    let counter = 1;
+    let uniqueName = `${baseName} (Copy)`;
+
+    while (await this.existsByName(uniqueName)) {
+      uniqueName = `${baseName} (Copy ${counter})`;
+      counter++;
+    }
+
+    return uniqueName;
   }
 }

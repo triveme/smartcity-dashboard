@@ -53,6 +53,8 @@ export class GeneralSettingsService {
           information: null,
           imprint: null,
           privacy: null,
+          allowThemeSwitching: false,
+          disclaimer: null,
         };
   }
 

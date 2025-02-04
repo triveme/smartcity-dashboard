@@ -16,6 +16,7 @@ export function getPanel(dashboardId?: string): Panel {
     generalInfo: 'Sample General Info',
     showGeneralInfo: false,
     showJumpoffButton: false,
+    openJumpoffLinkInNewTab: true,
     jumpoffLabel: 'Sample Label',
     jumpoffIcon: 'ChevronLeft',
     jumpoffUrl: 'defaultUrl',

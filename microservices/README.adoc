@@ -55,10 +55,12 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `API_SERVICE_URL` | Connection information to the external api required for API calls. | `http://external-api.com/api/v1`
 | `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
 | `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
+| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `dashboard-super-admin`
 | `NEST_JWKS_URI` | Url information for the keycloak connection and authentication. | `http://localhost:8080/realms/testrealm`
 | `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
 | `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`
 | `POSTGRES_DB` | The name of the PostgreSQL database. | `scs`
 | `POSTGRES_HOST` | The host address of the PostgreSQL server. | `127.0.0.1`
 | `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
+| `POSTGRES_REJECT_UNAUTHORIZED` | The SSL mode for the PostgreSQL connection, is being used for cases with an insecure connection that needs to accept self-signed certificates. | `true`
 |===

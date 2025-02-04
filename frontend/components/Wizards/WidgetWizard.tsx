@@ -57,11 +57,24 @@ type WidgetWizardProps = {
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
+  panelFontColor: string;
+  panelBorderRadius: string;
+  panelBorderSize: string;
   hoverColor: string;
+  widgetHeadlineColor: string;
 };
 
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
-  const { iconColor, borderColor, backgroundColor, hoverColor } = props;
+  const {
+    iconColor,
+    borderColor,
+    backgroundColor,
+    panelFontColor,
+    panelBorderRadius,
+    panelBorderSize,
+    hoverColor,
+    widgetHeadlineColor,
+  } = props;
   const paramsSearch = useSearchParams();
   const itemId = paramsSearch.get('id');
   const params = useParams();
@@ -74,7 +87,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const router = useRouter();
 
   // WIDGET
-  const [widget, setWidget] = useState<Widget>(EMPTY_WIDGET);
+  const [widget, setWidget] = useState<Widget>({
+    ...EMPTY_WIDGET,
+    headlineColor: widgetHeadlineColor,
+  });
   const [datasourceOrigin, setDatasourceOrigin] = useState('');
   const [generalFormIsOpen, setGeneralFormIsOpen] = useState(
     !itemId ? true : false,
@@ -85,6 +101,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     useState<QueryConfig>(EMPTY_QUERY_CONFIG);
   const [widgetHasQueryConfig, setWidgetHasQueryConfig] =
     useState<boolean>(false);
+
   //ReportConfig
   const [reportConfig, setReportConfig] =
     useState<ReportConfig>(EMPTY_REPORT_CONFIG);
@@ -166,16 +183,18 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     if (
       !tab?.componentType ||
       tab?.componentType === tabComponentTypeEnum.default ||
-      tab?.componentType === tabComponentTypeEnum.information ||
       tab?.componentType === tabComponentTypeEnum.image ||
       tab?.componentType === tabComponentTypeEnum.iframe ||
-      tab?.componentType === tabComponentTypeEnum.combinedComponent
+      tab?.componentType === tabComponentTypeEnum.combinedComponent ||
+      tab?.componentType === tabComponentTypeEnum.information ||
+      (tab?.componentType === tabComponentTypeEnum.map &&
+        tab?.componentSubType === tabComponentSubTypeEnum.combinedMap)
     ) {
       setWidgetHasQueryConfig(false);
     } else {
       setWidgetHasQueryConfig(true);
     }
-  }, [tab?.componentType]);
+  }, [tab?.componentType, tab?.componentSubType]);
 
   const handleCreateWidgetClick = async (): Promise<void> => {
     if (tab) {
@@ -191,8 +210,12 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
           tab.chartMaximum = 100;
         }
       }
-      // Default settings for map
-      if (tab.componentType === tabComponentTypeEnum.map) {
+      // Default settings for map and weather warning
+      if (
+        (tab.componentType === tabComponentTypeEnum.map &&
+          tab.componentSubType !== tabComponentSubTypeEnum.combinedMap) ||
+        tab.componentType === tabComponentTypeEnum.weatherWarning
+      ) {
         queryConfig.aggrMode = aggregationEnum.none;
         queryConfig.timeframe = timeframeEnum.live;
       }
@@ -216,6 +239,40 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       ) {
         queryConfig.aggrMode = aggregationEnum.none;
         queryConfig.timeframe = timeframeEnum.live;
+      }
+      // Default layout settings for combined components
+      if (tab.componentType === tabComponentTypeEnum.combinedComponent) {
+        if (tab.isLayoutVertical === undefined) {
+          tab.isLayoutVertical = true;
+        }
+        // remove empty values if user did not select
+        const filteredCombinedComponentWidgets = tab.childWidgets?.filter(
+          (widget) => widget !== '',
+        );
+        tab.childWidgets = filteredCombinedComponentWidgets;
+      }
+      // remove empty values if user did not select
+      if (
+        tab.componentType === tabComponentTypeEnum.map &&
+        tab.componentSubType === tabComponentSubTypeEnum.combinedMap
+      ) {
+        const filteredCombinedMapWidgets = tab.childWidgets?.filter(
+          (widget) => widget !== '',
+        );
+        tab.childWidgets = filteredCombinedMapWidgets;
+      }
+      if (
+        tab.componentType === tabComponentTypeEnum.slider &&
+        tab.componentSubType === tabComponentSubTypeEnum.coloredSlider
+      ) {
+        const filteredLogos = tab.rangeStaticValuesLogos?.filter(
+          (logo) => logo !== '',
+        );
+        const filteredLabels = tab.rangeStaticValuesLabels?.filter(
+          (label) => label !== '',
+        );
+        tab.rangeStaticValuesLogos = filteredLogos;
+        tab.rangeStaticValuesLabels = filteredLabels;
       }
     }
 
@@ -378,6 +435,28 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                   </div>
                 </div>
                 <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Beschreibung" />
+                  <WizardTextfield
+                    value={widget.description}
+                    onChange={(value: string | number): void =>
+                      handleWidgetChange({ description: value as string })
+                    }
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Subheadline" />
+                  <WizardTextfield
+                    value={widget.subheadline}
+                    onChange={(value: string | number): void =>
+                      handleWidgetChange({ subheadline: value as string })
+                    }
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+                <div className="flex flex-col w-full pb-2">
                   <WizardLabel label="Höhe / Breite" />
                   <div className="flex gap-1">
                     <div style={{ flex: '0 1 auto' }}>
@@ -409,11 +488,16 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                             handleWidgetChange({ width: selectedOption.value });
                           }
                         }}
+                        error={errors && errors.widgetWidthError}
                         iconColor={iconColor}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}
                       />
                     </div>
+                  </div>
+                  <div className="text-xs ml-4 mt-2">
+                    Stellen Sie für Informations- und Wert-Widgets Höhe = 0 ein,
+                    damit das Widget automatisch an den Inhalt angepasst wird.
                   </div>
                 </div>
                 <div className="flex flex-col w-full">
@@ -512,10 +596,14 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
             <TabWizard
               tab={tab || {}}
               setTab={handleSetTab}
+              handleWidgetChange={handleWidgetChange}
               errors={errors}
               iconColor={iconColor}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+              panelFontColor={panelFontColor}
+              panelBorderRadius={panelBorderRadius}
+              panelBorderSize={panelBorderSize}
               hoverColor={hoverColor}
               queryConfig={queryConfig}
               tenant={tenant}
@@ -549,7 +637,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
           />
         </div>
       </div>
-      <div className="flex justify-end py-4">
+      <div className="flex justify-end space-x-2 py-4">
         <CancelButton />
         <SaveButton handleSaveClick={handleCreateWidgetClick} />
       </div>

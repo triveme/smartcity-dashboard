@@ -13,9 +13,9 @@ export async function getCorporateInfosWithLogos(
 
     // Check the theme preference from the cookie, default to using light
     const isLightThemeCookie = cookieStore.get('isLightTheme');
-    let isLight = true;
-    if (isLightThemeCookie?.value === 'false') {
-      isLight = false;
+    let isLight = false;
+    if (isLightThemeCookie?.value === 'true') {
+      isLight = true;
     }
 
     const response = await fetch(

@@ -1,15 +1,15 @@
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { getTenantOfPage } from '@/utils/tenantHelper';
+import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useQuery } from '@tanstack/react-query';
-import React, { ReactElement, useEffect, useRef } from 'react';
+import React, { CSSProperties, ReactElement, useEffect, useRef } from 'react';
 
 type GeneralInfoMessageModalProps = {
   isVisible: boolean;
   headline: string;
   message: string;
   onClose: () => void;
+  infoModalBackgroundColor: string;
+  infoModalFontColor: string;
 };
 
 export default function GeneralInfoMessageModal({
@@ -17,18 +17,15 @@ export default function GeneralInfoMessageModal({
   headline,
   message,
   onClose,
+  infoModalBackgroundColor,
+  infoModalFontColor,
 }: GeneralInfoMessageModalProps): ReactElement | null {
   const modalRef = useRef<HTMLDivElement>(null);
-  const tenant = getTenantOfPage();
-
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
+  const isMobileView = determineIsMobileView();
 
   const fontStyle = {
-    color: data?.fontColor ?? '#FFF',
+    color: infoModalFontColor,
+    height: '90%',
   };
 
   useEffect(() => {
@@ -52,23 +49,40 @@ export default function GeneralInfoMessageModal({
 
   if (!isVisible) return null;
 
+  const infoModalStyle: CSSProperties = {
+    backgroundColor: infoModalBackgroundColor,
+    color: infoModalFontColor,
+    width: isMobileView ? '90%' : '50%',
+    maxHeight: isMobileView ? '80vh' : '70vh',
+  };
+
   return (
-    <div className="fixed z-50 inset-0 bg-[#1E1E1E] bg-opacity-70 flex flex-col justify-center items-center">
+    <div className="fixed w-full h-full z-50 inset-0 bg-[#1E1E1E] bg-opacity-70 flex flex-col justify-center items-center">
       <div
         ref={modalRef}
-        className="rounded-lg bg-white text-black p-6 shadow-md w-1/2"
+        className="rounded-lg p-6 shadow-md w-1/2 h-4/6"
+        style={infoModalStyle}
       >
-        <div className="flex items-center mb-4">
-          <FontAwesomeIcon
-            icon={faExclamationCircle}
-            size="lg"
-            className="text-black mr-3"
-          />
-          <h2 className="text-xl">{headline}</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <FontAwesomeIcon
+              icon={faExclamationCircle}
+              size="lg"
+              className="mr-3"
+            />
+            <h2 className="text-xl">{headline}</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:opacity-70"
+            aria-label="Close"
+          >
+            ✕
+          </button>
         </div>
         <div
           style={fontStyle}
-          className="ql-editor no-border-ql-editor text-lg"
+          className="h-5/6 w-full ql-editor no-border-ql-editor text-lg overflow-y-auto"
           dangerouslySetInnerHTML={{ __html: message || '' }}
         ></div>
       </div>

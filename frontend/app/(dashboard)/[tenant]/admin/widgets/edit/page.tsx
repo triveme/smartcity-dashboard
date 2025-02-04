@@ -74,7 +74,11 @@ export default function Pages(): ReactElement {
         iconColor={corporateInfo?.dashboardFontColor || '#fff'}
         borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
         backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+        panelFontColor={corporateInfo?.panelFontColor || '#fff'}
+        panelBorderRadius={corporateInfo?.panelBorderRadius || '4px'}
+        panelBorderSize={corporateInfo?.panelBorderSize || '4px'}
         hoverColor={corporateInfo?.menuHoverColor || '#FFFFFF50'}
+        widgetHeadlineColor={corporateInfo?.widgetFontColor || '#FFFFFF'}
       />
     </div>
   );

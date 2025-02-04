@@ -96,7 +96,6 @@ export default function WidgetSelectorModal(
                           ),
                       )
                       .map((widget) => widget.name),
-                    'Kein Widget verfügbar',
                   ]
                 : ['Kein Widget verfügbar']
             }

@@ -117,7 +117,7 @@ export default function Pages(): ReactElement {
           fontColor={dashboardStyle.color}
         />
         <CreateDashboardElementButton
-          label="+ Tenant hinzufügen"
+          label="+ Mandanten hinzufügen"
           handleClick={handleNewTenant}
         />
       </div>

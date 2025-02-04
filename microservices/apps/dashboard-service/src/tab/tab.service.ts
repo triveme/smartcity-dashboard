@@ -29,6 +29,20 @@ export class TabService {
     return widgetTabs;
   }
 
+  async getTabsByWidgetIds(widgetIds: string[]): Promise<Tab[]> {
+    return this.tabRepo.getTabsByWidgetIds(widgetIds);
+  }
+
+  async getTabsByWidgetIdsAndComponentType(
+    widgetIds: string[],
+    componentType: string,
+  ): Promise<Tab[]> {
+    return this.tabRepo.getTabsByWidgetIdsAndComponentType(
+      widgetIds,
+      componentType,
+    );
+  }
+
   async create(row: NewTab, transaction?: DbType): Promise<Tab> {
     this.validateTabData(row);
 

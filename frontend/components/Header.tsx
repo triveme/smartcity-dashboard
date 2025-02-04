@@ -17,11 +17,14 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { env } from 'next-runtime-env';
 import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
 
 import InfoMessageModal from '@/ui/InfoMessageModal';
 import HeaderLogo from '@/ui/HeaderLogo';
 import GenericButton from '@/ui/Buttons/GenericButton';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { useQuery } from '@tanstack/react-query';
+import { getGeneralSettingsByTenant } from '@/api/general-settings-service';
 
 type HeaderProps = {
   isLoginHeader?: boolean;
@@ -31,6 +34,11 @@ type HeaderProps = {
   useColorTransitionHeader: boolean;
   fontColor: string;
   showLogo: boolean;
+  dynamicHeadline: string;
+  infoModalBackgroundColor: string;
+  infoModalFontColor: string;
+  informationTextFontColor?: string;
+  informationTextFontSize?: string;
 };
 
 type BackgroundColorStyle =
@@ -46,6 +54,11 @@ export default function Header(props: HeaderProps): ReactElement {
     useColorTransitionHeader,
     fontColor,
     showLogo,
+    dynamicHeadline,
+    infoModalBackgroundColor,
+    infoModalFontColor,
+    informationTextFontColor,
+    informationTextFontSize,
   } = props;
   const { isAuthenticated, signoutRedirect, signinRedirect } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -61,6 +74,18 @@ export default function Header(props: HeaderProps): ReactElement {
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
   const adminRole = env('NEXT_PUBLIC_ADMIN_ROLE');
 
+  // Edit public dashboards
+  const [allowEdit, setAllowEdit] = useState(
+    Cookies.get('allowEdit') === 'true',
+  );
+
+  const handleAllowEditToggle = (): void => {
+    const newValue = !allowEdit;
+    setAllowEdit(newValue);
+    Cookies.set('allowEdit', newValue.toString(), { path: '/' });
+    window.location.reload(); // Reload to pick up updated cookie
+  };
+
   useEffect(() => {
     if (auth && auth.user && auth.user?.access_token) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,11 +95,16 @@ export default function Header(props: HeaderProps): ReactElement {
     }
   }, [auth]);
 
+  const { data: generalSetting } = useQuery({
+    queryKey: ['generalSettings'],
+    queryFn: () => getGeneralSettingsByTenant(tenant),
+  });
+
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const handleResize = (): void => {
-        setIsCollapsed(window.innerWidth < 768);
+        setIsCollapsed(window.innerWidth < 800);
       };
 
       window.addEventListener('resize', handleResize);
@@ -110,10 +140,17 @@ export default function Header(props: HeaderProps): ReactElement {
     };
 
     deleteCookie('access_token');
+    deleteCookie('allowEdit');
 
-    signoutRedirect({
-      post_logout_redirect_uri: `${window.location.origin}${basepath}/${tenant}`,
-    });
+    if (basepath !== undefined) {
+      signoutRedirect({
+        post_logout_redirect_uri: `${window.location.origin}${basepath}/${tenant}`,
+      });
+    } else {
+      signoutRedirect({
+        post_logout_redirect_uri: `${window.location.origin}/${tenant}`,
+      });
+    }
   };
 
   const handleUserIconClick = (): void => {
@@ -149,18 +186,21 @@ export default function Header(props: HeaderProps): ReactElement {
   }, [loginRef]);
 
   return (
-    <div style={headerstyle} className="flex shrink-0 justify-between h-16">
+    <div
+      style={headerstyle}
+      className="flex shrink-0 justify-between h-16 z-30"
+    >
       <div className="flex items-center">
         {showLogo && (
           <div className="p-3">
             <HeaderLogo />
           </div>
         )}
-        <p className="text-md ml-9 sm:text-xl leading-7">
-          Smart Region Dashboard
+        <p className="text-md ml-9 sm:text-xl leading-7 capitalize">
+          {dynamicHeadline}
         </p>
       </div>
-      <div className="flex items-center">
+      <div className="flex items-center z-30">
         {!isLoginHeader ? (
           <div className="mr-6">
             {isAuthenticated ? (
@@ -178,19 +218,38 @@ export default function Header(props: HeaderProps): ReactElement {
                     <InfoMessageModal
                       isVisible={isModalVisible}
                       headline={'Information'}
-                      message={
-                        'Angaben wie sich die Werte ergeben, Durchschnittswerte oder letzte Werte'
+                      message={generalSetting?.disclaimer || ''}
+                      infoModalBackgroundColor={infoModalBackgroundColor}
+                      infoModalFontColor={infoModalFontColor}
+                      informationTextFontColor={
+                        informationTextFontColor || '#3D4760'
                       }
+                      informationTextFontSize={informationTextFontSize || '11'}
                       onClose={(): void => setIsModalVisible(false)}
                     />
                     {adminRole && roleOptions.includes(adminRole) ? (
-                      <GenericButton
-                        label="Admin"
-                        handleClick={(): void => {
-                          push(tenant ? `/${tenant}/admin` : '/admin');
-                        }}
-                        fontColor={headerstyle.color || '#FFFFFF'}
-                      />
+                      <div className="hidden sm:flex">
+                        <GenericButton
+                          label="Admin"
+                          handleClick={(): void => {
+                            push(tenant ? `/${tenant}/admin` : '/admin');
+                          }}
+                          fontColor={headerstyle.color || '#FFFFFF'}
+                        />
+                        <div className="flex items-center ml-4">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={allowEdit}
+                              onChange={handleAllowEditToggle}
+                              className="w-10 h-5 bg-gray-300 rounded-full relative appearance-none cursor-pointer transition-all checked:bg-green-500"
+                            />
+                            <span className="text-sm text-white">
+                              Bearbeiten
+                            </span>
+                          </label>
+                        </div>
+                      </div>
                     ) : null}
                   </>
                 ) : null}
@@ -212,9 +271,13 @@ export default function Header(props: HeaderProps): ReactElement {
                 <InfoMessageModal
                   isVisible={isModalVisible}
                   headline={'Information'}
-                  message={
-                    'Angaben wie sich die Werte ergeben, Durchschnittswerte oder letzte Werte'
+                  message={generalSetting?.disclaimer || ''}
+                  infoModalBackgroundColor={infoModalBackgroundColor}
+                  infoModalFontColor={infoModalFontColor}
+                  informationTextFontColor={
+                    informationTextFontColor || '#3D4760'
                   }
+                  informationTextFontSize={informationTextFontSize || '11'}
                   onClose={(): void => setIsModalVisible(false)}
                 />
                 <div className="cursor-pointer" ref={loginRef}>
@@ -222,7 +285,7 @@ export default function Header(props: HeaderProps): ReactElement {
                     <FontAwesomeIcon icon={faCircleUser} size="lg" />
                     {dropdownOpen && (
                       <div
-                        className="absolute mt-2 right-6 bg-white shadow-md rounded px-4 py-2 z-50"
+                        className="fixed mt-2 right-6 bg-white shadow-md rounded px-4 py-2"
                         onClick={handleUserIconClick} // Directly invoke login on click
                       >
                         <button className="text-black">Login</button>

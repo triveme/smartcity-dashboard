@@ -25,6 +25,7 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
+import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   ssr: false,
@@ -85,9 +86,11 @@ export default function DashboardWidgetPreview(
               maxValue={tab.chartMaximum || 100}
               unit={tab.chartUnit || ''}
               value={tab.chartValues ? tab.chartValues[0] : 25}
-              mainColor={data?.dashboardSecondaryColor || '#3D4760'}
-              secondaryColor={data?.dashboardFontColor || '#FFF'}
               fontColor={data?.dashboardFontColor || '#fff'}
+              fontSize={data?.degreeChart180FontSize || '11'}
+              unitFontSize={data?.degreeChart180UnitFontSize || '11'}
+              backgroundColor={data?.degreeChart180BgColor || '#fff'}
+              fillColor={data?.degreeChart180FillColor || '#fff'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
@@ -98,6 +101,7 @@ export default function DashboardWidgetPreview(
               maxValue={tab.chartMaximum || 100}
               staticValues={tab.chartStaticValues || [0]}
               staticValuesColors={tab.chartStaticValuesColors || ['#808080']}
+              staticValuesTexts={tab.chartStaticValuesTexts || ['Label']}
               value={tab.chartValues ? tab.chartValues[0] : 25}
             />
           )}
@@ -110,18 +114,34 @@ export default function DashboardWidgetPreview(
               mainColor={data?.dashboardPrimaryColor || '#3D4760'}
               secondaryColor={data?.dashboardSecondaryColor || '#3D4760'}
               fontColor={data?.dashboardFontColor || '#fff'}
+              fontSize={data?.degreeChart360FontSize || '11'}
+              unitFontSize={data?.degreeChart360UnitFontSize || '#fff'}
+              backgroundColor={data?.degreeChart360BgColor || '#fff'}
+              fillColor={data?.degreeChart360FillColor || '#fff'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
             <PieChart
               labels={tab.chartLabels || []}
               data={tab.chartValues || []}
+              fontSize={data?.pieChartFontSize || '11'}
+              fontColor={data?.pieChartFontColor || '#fff'}
+              unit={tab.chartUnit || ''}
+              currentValuesColors={
+                data?.pieChartCurrentValuesColors || [
+                  '#4CAF50',
+                  '#2196F3',
+                  '#FF9800',
+                  '#F44336',
+                  '#9C27B0',
+                ]
+              }
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
               labels={undefined}
-              data={undefined}
+              data={DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowZoom={tab.mapAllowZoom || false}
@@ -129,14 +149,38 @@ export default function DashboardWidgetPreview(
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
-              fontColor={data?.dashboardFontColor || '#fff'}
-              axisColor={data?.headerPrimaryColor || '#fff'}
+              axisLabelFontColor={data?.lineChartAxisLabelFontColor || '#fff'}
+              axisLineColor={data?.lineChartAxisLineColor || '#fff'}
+              axisTicksFontColor={data?.lineChartAxisTicksFontSize || '#fff'}
+              legendFontSize={data?.lineChartLegendFontSize || '11'}
+              legendFontColor={data?.lineChartLegendFontColor || '#FFFFF'}
+              axisFontSize={data?.lineChartAxisTicksFontSize || '11'}
+              axisLabelSize={data?.lineChartAxisLabelSize || '11'}
+              currentValuesColors={
+                data?.lineChartCurrentValuesColors || [
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                ]
+              }
+              gridColor={'#fff'}
+              legendAlignment={tab.chartLegendAlign || 'Top'}
+              hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
+              filterColor={data?.lineChartFilterColor || '#F1B434'}
+              filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
               labels={undefined}
-              data={undefined}
+              data={DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowZoom={tab.mapAllowZoom || false}
@@ -145,10 +189,36 @@ export default function DashboardWidgetPreview(
               staticValuesColors={tab.chartStaticValuesColors || []}
               fontColor={data?.dashboardFontColor || '#fff'}
               axisColor={data?.headerPrimaryColor || '#fff'}
+              axisFontSize={data?.barChartAxisTicksFontSize || '11'}
+              currentValuesColors={
+                data?.barChartCurrentValuesColors || [
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                ]
+              }
+              gridColor={data?.barChartGridColor || '#3D4760'}
+              legendFontSize={data?.barChartLegendFontSize || '11'}
+              axisLabelSize={data?.barChartAxisLabelSize || '11'}
+              legendAlignment={tab.chartLegendAlign || 'Top'}
+              legendFontColor={data?.barChartLegendFontColor || '#FFFFF'}
+              hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
+              isStackedChart={tab.isStepline || false}
+              filterColor={data?.barChartFilterColor || '#F1B434'}
+              filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
+              axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
             <MeasurementComponent
+              preview={true}
               dataValues={tab && tab.chartData ? tab.chartData[0]?.values : []}
               timeValues={tab.chartLabels || []}
               valueWarning={tab.chartStaticValues?.[0] || 0}
@@ -157,8 +227,58 @@ export default function DashboardWidgetPreview(
               unit={tab.chartUnit || ''}
               chartXAxisLabel={tab.chartXAxisLabel || ''}
               chartYAxisLabel={tab.chartYAxisLabel || ''}
-              fontColor={data?.dashboardFontColor || '#fff'}
-              axisColor={data?.headerPrimaryColor || '#fff'}
+              bigValueFontSize={data?.measurementChartBigValueFontSize || '168'}
+              bigValueFontColor={
+                data?.measurementChartBigValueFontColor || '#fffff'
+              }
+              topButtonBackgroundColor={
+                data?.measurementChartTopButtonBgColor || '#fffff'
+              }
+              topButtonInactiveBackgroundColor={
+                data?.measurementChartTopButtonBgColor || '#fffff'
+              }
+              topButtonHoverColor={
+                data?.measurementChartTopButtonHoverColor || '#fffff'
+              }
+              topButtonFontColor={
+                data?.measurementChartTopButtonFontColor || '#fffff'
+              }
+              cardsBackgroundColor={
+                data?.measurementChartCardsBgColor || '#fffff'
+              }
+              cardsFontColor={data?.measurementChartCardsFontColor || '#fffff'}
+              cardsIconColors={
+                data?.measurementChartCardsIconColors || [
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                ]
+              }
+              barColor={data?.measurementChartBarColor || '#fffff'}
+              labelFontColor={data?.measurementChartLabelFontColor || '#fffff'}
+              gridColor={data?.measurementChartGridColor || '#fffff'}
+              axisLineColor={data?.measurementChartAxisLineColor || '#fffff'}
+              axisTicksFontColor={
+                data?.measurementChartAxisTicksFontColor || '#fffff'
+              }
+              axisLabelFontColor={
+                data?.measurementChartAxisLabelFontColor || '#fffff'
+              }
+              currentValuesColors={
+                data?.measurementChartCurrentValuesColors || [
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                ]
+              }
             />
           )}
         </div>
@@ -170,19 +290,46 @@ export default function DashboardWidgetPreview(
               unit={tab.chartUnit || ''}
               minValue={tab.chartMinimum || 0}
               maxValue={tab.chartMaximum || 100}
-              staticValues={tab.chartStaticValues || [0]}
-              staticValuesColors={tab.chartStaticValuesColors || ['#808080']}
+              staticValues={tab.rangeStaticValuesMax || [0]}
+              staticValuesColors={tab.rangeStaticValuesColors || ['#808080']}
               staticValuesTicks={tab.chartStaticValuesTicks || []}
-              staticValuesLogos={tab.chartStaticValuesLogos || ['']}
-              staticValuesTexts={tab.chartStaticValuesTexts || ['']}
+              staticValuesLogos={tab.chartStaticValuesLogos || []}
+              staticValuesTexts={tab.chartStaticValuesTexts || []}
               iconColor={tab.iconColor || '#000000'}
               labelColor={tab.labelColor || '#000000'}
-              value={tab.chartValues ? tab.chartValues[0] : 25}
+              value={
+                tab.chartValues && tab.chartValues.length > 0
+                  ? tab.chartValues[0]
+                  : 25
+              }
+              bigValueFontSize={data?.coloredSliderBigValueFontSize || '11'}
+              bigValueFontColor={data?.coloredSliderBigValueFontColor || '#fff'}
+              labelFontSize={data?.coloredSliderLabelFontSize || '11'}
+              labelFontColor={data?.coloredSliderLabelFontColor || '#fff'}
+              arrowColor={data?.coloredSliderArrowColor || '#fff'}
+              unitFontSize={data?.coloredSliderUnitFontSize || '#fff'}
             />
           )}
 
           {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (
-            <SliderOverview data={[]} />
+            <SliderOverview
+              data={[
+                {
+                  name: 'urn:ngsi-ld:ParkingSpot:',
+                  values: [
+                    ['status_isFreeSum', 0],
+                    ['status_isOccupiedSum', 4],
+                  ],
+                },
+              ]}
+              currentCapacityAttribute={'status_isFreeSum'}
+              maximumCapacityAttribute={'status_isOccupiedSum'}
+              fontColorCurrent={data?.sliderCurrentFontColor || '#000000'}
+              fontColorMaximum={data?.sliderMaximumFontColor || '#FFFFFF'}
+              fontColorGeneral={data?.sliderGeneralFontColor || '#FFFFFF'}
+              colorCurrent={data?.sliderCurrentColor || '#DC2626'}
+              colorMaximum={data?.sliderMaximumColor || '#000000'}
+            />
           )}
         </div>
       )}
@@ -191,7 +338,13 @@ export default function DashboardWidgetPreview(
           decimalPlaces={tab.decimalPlaces || 0}
           value={tab.chartValues?.[0] || 6.5791231231321312}
           unit={tab.chartUnit || ''}
-          fontColor={data?.dashboardFontColor || '#fff'}
+          staticValues={tab.chartStaticValues || []}
+          staticValuesColors={tab.chartStaticValuesColors || []}
+          staticValuesTexts={tab.chartStaticValuesTexts || []}
+          staticValuesLogos={tab.chartStaticValuesLogos || []}
+          fontSize={data?.wertFontSize || '50'}
+          fontColor={data?.wertFontColor || '#fff'}
+          unitFontSize={data?.wertUnitFontSize || '30'}
         />
       )}
       {tab.componentType === tabComponentTypeEnum.information && (
@@ -243,7 +396,15 @@ export default function DashboardWidgetPreview(
               tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
             }
             mapShapeColor={tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'}
-          ></Map>
+            mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
+            mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
+            mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
+            staticValues={tab.chartStaticValues || []}
+            staticValuesColors={tab.chartStaticValuesColors || []}
+            mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
+            mapWmsUrl={tab.mapWmsUrl || ''}
+            mapWmsLayer={tab.mapWmsLayer || ''}
+          />
         </div>
       )}
       {tab.componentType === tabComponentTypeEnum.iframe && (
@@ -268,7 +429,7 @@ export default function DashboardWidgetPreview(
               <button onClick={(): void => moveWidget!(widget.id!, 'left')}>
                 <DashboardIcons
                   iconName="ChevronLeft"
-                  color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                  color={data?.panelFontColor ?? '#FFFFFF'}
                 />
               </button>
             )}
@@ -279,7 +440,7 @@ export default function DashboardWidgetPreview(
               >
                 <DashboardIcons
                   iconName="ChevronRight"
-                  color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                  color={data?.panelFontColor ?? '#FFFFFF'}
                 />
               </button>
             )}

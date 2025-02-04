@@ -4,6 +4,7 @@ import {
   ChartData,
   DashboardWithContent,
   MapObject,
+  WeatherWarningData,
   WidgetWithContent,
 } from '../dashboard.service';
 import { Dashboard, Panel, Tab, Widget } from '@app/postgres-db/schemas';
@@ -165,7 +166,9 @@ export class PopulateService {
   private async populateTabWithContents(
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
-    } & { mapObject: MapObject[] } & { combinedWidgets: WidgetWithContent[] },
+    } & { mapObject: MapObject[] } & {
+      weatherWarnings: WeatherWarningData[];
+    } & { combinedWidgets: WidgetWithContent[] },
   ): Promise<void> {
     if (
       tab.componentType !== 'Informationen' &&
@@ -198,15 +201,33 @@ export class PopulateService {
         });
       }
 
-      // Sort widgets based on the position from widgetsToPanels
-      // prettier-ignore
-      panel.widgets.sort((a, b) => {
-        const positionA = widgetsToPanels.find((w) => w.widgetId === a.id)
-          ?.position;
-        const positionB = widgetsToPanels.find((w) => w.widgetId === b.id)
-          ?.position;
+      // Sort widgets based on the position from widgetsToPanels and ensure positions are unique
+      const positionMap = new Map<number, string>();
+      const adjustedWidgets = widgetsToPanels.map((w) => {
+        let position = w.position ?? Number.MAX_SAFE_INTEGER; // Default position if none exists
+        while (positionMap.has(position)) {
+          position++; // Increment to avoid overlap of widget positions
+        }
+        positionMap.set(position, w.widgetId);
+        return { ...w, position };
+      });
 
-        return positionA - positionB;
+      // Sort adjusted widgets by position
+      adjustedWidgets.sort((a, b) => a.position - b.position);
+
+      // Reorder the panel's widgets based on the new sorted positions
+      panel.widgets.sort((a, b) => {
+        const positionA = adjustedWidgets.find(
+          (w) => w.widgetId === a.id,
+        )?.position;
+        const positionB = adjustedWidgets.find(
+          (w) => w.widgetId === b.id,
+        )?.position;
+
+        return (
+          (positionA ?? Number.MAX_SAFE_INTEGER) -
+          (positionB ?? Number.MAX_SAFE_INTEGER)
+        );
       });
     }
   }

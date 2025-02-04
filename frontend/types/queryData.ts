@@ -1,25 +1,20 @@
+export type AttributeData = {
+  type: string;
+  value: number | string;
+  metadata: Record<string, unknown>;
+};
+
 export type QueryData = {
-  attrs: QueryDataAttributes[];
-  attributes?: QueryDataAttributeValues[];
-};
-
-export type QueryDataAttributes = {
-  attrName: string;
-  types: QueryDataAttributeTypes[];
-};
-
-export type QueryDataAttributeValues = {
-  attrName: string;
-  values?: number[];
-};
-
-export type QueryDataAttributeTypes = {
-  entities: QueryDataEntities[];
-  entityType: string;
+  id: string;
+  type: string;
+  [key: string]: AttributeData | string;
 };
 
 export type QueryDataEntities = {
-  entityId: string;
-  index: string[];
-  values: (string | number)[];
+  type: string;
+  value: string | number;
+};
+
+export type QueryDataWithAttributes = {
+  [attribute: string]: AttributeData[];
 };

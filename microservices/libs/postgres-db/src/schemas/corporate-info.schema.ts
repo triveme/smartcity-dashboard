@@ -2,7 +2,10 @@ import { sql } from 'drizzle-orm';
 import { pgTable, text, uuid, boolean } from 'drizzle-orm/pg-core';
 import { logos } from './logo.schema';
 import { tenants } from './tenant.schema';
-import { corporateInfoFontFamiliesTypeEnum } from './enums.schema';
+import {
+  corporateInfoFontFamiliesTypeEnum,
+  menuArrowDirectionEnum,
+} from './enums.schema';
 import { titleBarThemeTypeEnum } from './enums.schema';
 
 export const corporateInfos = pgTable('corporate_info', {
@@ -58,6 +61,8 @@ export const corporateInfos = pgTable('corporate_info', {
   iconWithLinkFontSize: text('icon_with_link_font_size'),
   iconWithLinkIconColor: text('icon_with_link_icon_color'),
   iconWithLinkIconSize: text('icon_with_link_icon_size'),
+  isPanelHeadlineBold: boolean('is_panel_headline_bold'),
+  isWidgetHeadlineBold: boolean('is_widget_headline_bold'),
   informationTextFontColor: text('information_text_font_color'),
   informationTextFontSize: text('information_text_font_size'),
   lineChartAxisLabelFontColor: text('line_chart_axis_label_font_color'),
@@ -112,6 +117,9 @@ export const corporateInfos = pgTable('corporate_info', {
   ),
   menuActiveColor: text('menu_active_color'),
   menuActiveFontColor: text('menu_active_font_color'),
+  menuArrowDirection: menuArrowDirectionEnum('menu_arrow_direction'),
+  menuCornerColor: text('menu_corner_color'),
+  menuCornerFontColor: text('menu_corner_font_color'),
   menuFontColor: text('menu_font_color'),
   menuHoverColor: text('menu_hover_color'),
   menuLogoId: uuid('menu_logo_id').references(() => logos.id),
@@ -133,6 +141,11 @@ export const corporateInfos = pgTable('corporate_info', {
   scrollbarColor: text('scrollbar_color'),
   showHeaderLogo: boolean('show_header_logo'),
   showMenuLogo: boolean('show_menu_logo'),
+  sliderCurrentFontColor: text('slider_current_font_color'),
+  sliderMaximumFontColor: text('slider_maximum_font_color'),
+  sliderGeneralFontColor: text('slider_general_font_color'),
+  sliderCurrentColor: text('slider_current_color'),
+  sliderMaximumColor: text('slider_maximum_color'),
   stageableChartFontColor: text('stageable_chart_font_color'),
   stageableChartFontSize: text('stageable_chart_font_size'),
   stageableChartTicksFontColor: text('stageable_chart_ticks_font_color'),
@@ -140,6 +153,15 @@ export const corporateInfos = pgTable('corporate_info', {
   titleBar: titleBarThemeTypeEnum('title_bar').notNull(),
   useColorTransitionHeader: boolean('use_color_transition_header'),
   useColorTransitionMenu: boolean('use_color_transition_menu'),
+  weatherWarningBgColor: text('weather_warning_bg_color'),
+  weatherWarningHeadlineColor: text('weather_warning_headline_color'),
+  weatherInstructionsColor: text('weather_warning_instructions_color'),
+  weatherAlertDescriptionColor: text('weather_warning_descriptions_color'),
+  weatherDateColor: text('weather_warning_date_color'),
+  weatherWarningButtonBackgroundColor: text(
+    'weather_warning_button_background_color',
+  ),
+  weatherWarningButtonIconColor: text('weather_warning_button_icon_color'),
   wertFontColor: text('wert_font_color'),
   widgetHeadlineFontSize: text('widget_headline_font_size'),
   widgetSubheadlineFontSize: text('widget_subheadline_font_size'),

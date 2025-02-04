@@ -11,7 +11,12 @@ type Radial360ChartProps = {
   value: number;
   mainColor: string;
   secondaryColor: string;
+
   fontColor: string;
+  fontSize: string;
+  backgroundColor: string;
+  fillColor: string;
+  unitFontSize: string;
 };
 
 export default function Radial360Chart(
@@ -25,76 +30,86 @@ export default function Radial360Chart(
     mainColor,
     secondaryColor,
     fontColor,
+    fontSize,
+    backgroundColor,
+    fillColor,
+    unitFontSize,
   } = props;
-  const chartRef = useRef(null);
+  const chartRef = useRef<HTMLDivElement | null>(null);
   let myChart: ECharts | null = null;
 
   const initializeChart = (): void => {
-    myChart = echarts.init(chartRef.current);
+    if (chartRef.current) {
+      myChart = echarts.init(chartRef.current);
 
-    const option: EChartsOption = {
-      series: [
-        {
-          type: 'gauge',
-          startAngle: 0,
-          endAngle: 360,
-          min: minValue,
-          max: maxValue,
-          splitNumber: 1,
-          axisLine: {
-            lineStyle: {
-              width: 12,
-              color: [[1, mainColor]],
-            },
-          },
-          progress: {
-            show: true,
-            roundCap: true,
-            itemStyle: {
-              color: secondaryColor,
-            },
-          },
-          pointer: {
-            show: false,
-          },
-          axisTick: {
-            show: false,
-          },
-          splitLine: {
-            show: false,
-            length: 15,
-            lineStyle: {
-              width: 2,
-              color: mainColor,
-            },
-          },
-          axisLabel: {
-            show: false,
-            distance: 0,
-            color: fontColor,
-            fontSize: 16,
-          },
-          detail: {
-            formatter: function (params): string {
-              return `{value|${params}}\n{unit|${unit}}`;
-            },
-            color: fontColor,
-            offsetCenter: [0, '0%'],
-            rich: {
-              unit: {
-                color: fontColor,
-                fontSize: 16,
+      const option: EChartsOption = {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 0,
+            endAngle: 360,
+            min: minValue,
+            max: maxValue,
+            splitNumber: 1,
+            axisLine: {
+              lineStyle: {
+                width: 12,
+                color: [[1, backgroundColor]],
               },
             },
+            progress: {
+              show: true,
+              roundCap: true,
+              itemStyle: {
+                color: fillColor,
+              },
+            },
+            pointer: {
+              show: false,
+            },
+            axisTick: {
+              show: false,
+            },
+            splitLine: {
+              show: false,
+              length: 15,
+              lineStyle: {
+                width: 2,
+                color: mainColor,
+              },
+            },
+            axisLabel: {
+              show: false,
+              distance: 0,
+              color: fontColor,
+              fontSize: 16,
+            },
+            detail: {
+              formatter: function (params): string {
+                return `{value|${params}}\n{unit|${unit}}`;
+              },
+              color: fontColor,
+              offsetCenter: [0, '0%'],
+              rich: {
+                value: {
+                  fontSize: fontSize,
+                  color: fontColor,
+                },
+                unit: {
+                  color: fontColor,
+                  fontSize: unitFontSize,
+                },
+              },
+            },
+            radius: '80%',
+            center: ['50%', '50%'],
+            data: [{ value: value, itemStyle: { color: fontColor } }],
           },
-          radius: '80%',
-          center: ['50%', '50%'],
-          data: [{ value: value, itemStyle: { color: fontColor } }],
-        },
-      ],
-    };
+        ],
+      };
 
-    myChart.setOption(option);
+      myChart.setOption(option);
+    }
   };
 
   useEffect(() => {
@@ -116,7 +131,19 @@ export default function Radial360Chart(
         }
       };
     }
-  }, [minValue, maxValue, unit]);
+  }, [
+    minValue,
+    maxValue,
+    unit,
+    value,
+    mainColor,
+    secondaryColor,
+    fontColor,
+    fontSize,
+    backgroundColor,
+    fillColor,
+    unitFontSize,
+  ]); // Added color props as dependencies
 
   return <div className="w-full h-full" ref={chartRef} />;
 }

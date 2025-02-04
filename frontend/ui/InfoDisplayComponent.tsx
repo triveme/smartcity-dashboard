@@ -9,12 +9,15 @@ type InfoDisplayComponentProps = {
   value: string;
   icon?: string;
   iconColor?: string;
+  backgroundColor?: string;
+  fontColor?: string;
 };
 
 export default function InfoDisplayComponent(
   props: InfoDisplayComponentProps,
 ): ReactElement {
-  const { headline, value, icon, iconColor } = props;
+  const { headline, value, icon, iconColor, backgroundColor, fontColor } =
+    props;
 
   const tenant = getTenantOfPage();
   const { data } = useQuery({
@@ -25,8 +28,8 @@ export default function InfoDisplayComponent(
 
   const boxStyle = {
     borderRadius: data?.widgetBorderRadius || '8px',
-    backgroundColor: data?.widgetPrimaryColor,
-    color: data?.widgetFontColor,
+    backgroundColor: backgroundColor,
+    color: fontColor,
     borderColor: data?.widgetBorderColor || '#59647D',
   };
 

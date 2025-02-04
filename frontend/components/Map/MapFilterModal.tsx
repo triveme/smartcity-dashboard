@@ -3,69 +3,56 @@ import React, { ReactElement, CSSProperties } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
 import CheckBox from '@/ui/CheckBox';
-import { QueryDataEntities } from '@/types';
 import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
+import { QueryDataWithAttributes } from '@/types';
 
 type MapFilterModalProps = {
-  mapFilterEntities: QueryDataEntities[];
+  combinedQueryData?: QueryDataWithAttributes[];
   selectedFilters: (number | string)[];
-  onFilterChange: (newSelectedFilters: (string | number)[]) => void;
+  onFilterChange: (
+    newSelectedFilters: (string | number)[],
+    filterAttribute: string,
+  ) => void;
   menuStyle?: CSSProperties;
   onCloseModal: () => void;
   isLegendModalOpen: boolean;
   isFullscreenMap?: boolean;
+  mapNames?: string[];
+  handleMapNameFilterChange?: (mapIndex: number, checked: boolean) => void;
+  selectedDataSources?: number[];
+  isCombinedMap: boolean;
 };
 
 export default function MapFilterModal(
   props: MapFilterModalProps,
 ): ReactElement {
   const {
-    mapFilterEntities,
+    combinedQueryData,
     selectedFilters,
     onFilterChange,
     menuStyle,
     onCloseModal,
     isFullscreenMap,
+    mapNames,
+    handleMapNameFilterChange,
+    selectedDataSources,
+    isCombinedMap,
   } = props;
 
   const isMobileView = determineIsMobileView();
   const scrollRef = usePreventMapScroll();
 
-  // creates a new array with the first items of entity.values
-  const createFilterEntitiesList = (
-    entities: QueryDataEntities[],
-  ): (string | number)[] => {
-    return Array.from(
-      // removes duplicate values
-      new Set(
-        entities
-          .map((entity) =>
-            entity.values.length > 0 ? entity.values[0] : undefined,
-          )
-          .filter((value): value is string | number => value !== undefined),
-      ),
-    ).sort((a, b) => {
-      if (typeof a === 'string' && typeof b === 'string') {
-        return a.localeCompare(b);
-      } else if (typeof a === 'number' && typeof b === 'number') {
-        return a - b;
-      } else {
-        // If mixed types, convert to string for consistent comparison
-        return a.toString().localeCompare(b.toString());
-      }
-    });
-  };
-
   const handleSelectChange = (
-    filter: string | number,
+    filterValue: string | number,
     checked: boolean,
+    filterAttribute: string,
   ): void => {
     const newSelectedFilters = checked
-      ? [...selectedFilters, filter]
-      : selectedFilters.filter((f) => f !== filter);
+      ? [...selectedFilters, filterValue]
+      : selectedFilters.filter((f) => f !== filterValue);
 
-    onFilterChange(newSelectedFilters);
+    onFilterChange(newSelectedFilters, filterAttribute);
   };
 
   const getFilterModalStyle = (): CSSProperties => {
@@ -113,14 +100,72 @@ export default function MapFilterModal(
     }
   };
 
+  const renderFilter = (
+    filterAttribute: string,
+    values: { value: number | string }[],
+    selectedFilters: (number | string)[],
+    handleSelectChange: (
+      filterValue: number | string,
+      checked: boolean,
+      filterAttribute: string,
+    ) => void,
+  ): JSX.Element => (
+    <div key={`key-filter-${filterAttribute}`} className="pb-3">
+      <h3>{filterAttribute}</h3>
+      {values.map((item, index) => (
+        <div
+          key={`key-${filterAttribute}-${index}`}
+          className="flex items-center"
+        >
+          <CheckBox
+            label={item.value.toString()}
+            value={selectedFilters.includes(item.value)}
+            handleSelectChange={(checked): void =>
+              handleSelectChange(item.value, checked, filterAttribute)
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderMapNameFilter = (
+    mapNames: string[],
+    selectedDataSources: number[],
+    handleMapNameFilterChange: (mapIndex: number, checked: boolean) => void,
+  ): JSX.Element => (
+    <div className="pb-3">
+      <h3>Gruppierungen</h3>
+      {mapNames.map((name, index) => (
+        <div key={`map-name-${index}`} className="flex items-center">
+          <CheckBox
+            label={name}
+            value={selectedDataSources?.includes(index)}
+            handleSelectChange={(checked): void => {
+              handleMapNameFilterChange(index, checked);
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+
+  // Helper function to make sure touch input is being handled correctly
+  const handleTouchStart = (e: React.TouchEvent): void => {
+    e.stopPropagation();
+  };
+
   return (
     <div
       className="top-16 rounded-lg shadow-lg p-5 overflow-y-auto z-30 flex flex-col cursor-default"
       style={{
         ...menuStyle,
         ...getFilterModalStyle(),
+        touchAction: 'auto',
+        WebkitTapHighlightColor: 'transparent',
       }}
       ref={scrollRef}
+      onTouchStart={handleTouchStart}
     >
       <div>
         <div className="flex flex-row items-center justify-between mb-8">
@@ -136,27 +181,46 @@ export default function MapFilterModal(
             color={menuStyle?.color || '#FFF'}
             className="cursor-pointer"
             onClick={onCloseModal}
+            onTouchStart={onCloseModal}
           />
         </div>
 
-        {mapFilterEntities && mapFilterEntities.length > 0 && (
-          <div
-            className="flex flex-col gap-y-4 overflow-y-auto"
-            style={{ maxHeight: '80vh' }}
-          >
-            {createFilterEntitiesList(mapFilterEntities).map((filter) => (
-              <div key={`key-filter-${filter}`} className="flex items-center">
-                <CheckBox
-                  label={filter.toString()}
-                  value={selectedFilters.includes(filter)}
-                  handleSelectChange={(checked): void =>
-                    handleSelectChange(filter, checked)
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <div
+          className="flex flex-col gap-y-4 overflow-y-auto"
+          style={{ maxHeight: '80vh' }}
+        >
+          {/* Attribute filters */}
+          {!isCombinedMap &&
+            combinedQueryData &&
+            combinedQueryData.length > 0 && (
+              <>
+                {combinedQueryData?.map((filterData, index) => (
+                  <div key={`filter-group-${index}`}>
+                    {Object.entries(filterData).map(
+                      ([filterAttribute, values]) =>
+                        renderFilter(
+                          filterAttribute,
+                          values as { value: number | string }[],
+                          selectedFilters,
+                          handleSelectChange,
+                        ),
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+
+          {/* Map Name filters */}
+          {isCombinedMap && mapNames && mapNames.length > 0 && (
+            <>
+              {renderMapNameFilter(
+                mapNames,
+                selectedDataSources || [],
+                handleMapNameFilterChange || ((): void => {}), // Handle undefined for single map
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

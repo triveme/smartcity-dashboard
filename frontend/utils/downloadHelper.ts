@@ -15,6 +15,7 @@ export const downloadCSV = async (
       case 'dashboard':
         try {
           csvData = await getDashboardDownloadData(accessToken, id);
+          break;
         } catch (error) {
           console.error(
             'Dashboard-Daten konnten nicht abgerufen werden:',
@@ -29,12 +30,12 @@ export const downloadCSV = async (
       case 'widget':
         try {
           csvData = await getWidgetDownloadData(accessToken, id);
+          break;
         } catch (error) {
           console.error('Widget-Daten konnten nicht abgerufen werden:', error);
           openSnackbar('Widget-Daten konnten nicht abgerufen werden', 'error');
           return;
         }
-        break;
       default:
         console.error('Nicht unterstützter Typ für den Datenexport:', type);
         openSnackbar('Nicht unterstützter Typ für den Datenexport.', 'error');

@@ -1,4 +1,9 @@
-import { Widget, WidgetWithChildren, tabComponentTypeEnum } from '@/types';
+import {
+  Widget,
+  WidgetWithChildren,
+  tabComponentTypeEnum,
+  widgetImageSourceEnum,
+} from '@/types';
 import { WizardErrors } from '@/types/errors';
 import { validateTab } from './tabValidator';
 import { validateQueryConfig } from './queryConfigValidator';
@@ -28,6 +33,7 @@ export function validateWidgetWithChildren(
         ...validateQueryConfig(
           widgetWithChildren.queryConfig,
           widgetWithChildren.tab.componentType,
+          false,
           origin,
           widgetWithChildren.tab.componentSubType,
         ),
@@ -91,9 +97,16 @@ export function validateWidgetHeightBasedOnComponentType(
   const errorsOccured: WizardErrors = {};
   const { widget, tab } = widgetWithChildren;
 
-  if (!widget.height) {
+  if (typeof widget.height === 'string' && widget.height === '') {
     errorsOccured.widgetHeightError = 'Höhe muss ausgefüllt werden!';
     return errorsOccured;
+  }
+
+  // Skip validation if height is 0 (height 0 will be auto)
+  if (allowedWidgetHeightAuto(tab.componentType as tabComponentTypeEnum)) {
+    if (Number(widget.height) === 0) {
+      return errorsOccured;
+    }
   }
 
   const minimumWidgetHeight = getMinHeightBasedOnComponentType(
@@ -114,12 +127,28 @@ function getMinHeightBasedOnComponentType(
     tabComponentTypeEnum.diagram,
     tabComponentTypeEnum.map,
   ];
+  const mediumComponentTypes = [tabComponentTypeEnum.slider];
 
   if (largeComponentTypes.includes(tabComponentType)) {
     return 400;
-  } else {
+  } else if (mediumComponentTypes.includes(tabComponentType)) {
     return 200;
+  } else {
+    return 50;
   }
+}
+
+function allowedWidgetHeightAuto(
+  tabComponentType: tabComponentTypeEnum,
+): boolean {
+  const allowedWidgetType = [
+    tabComponentTypeEnum.information,
+    tabComponentTypeEnum.value,
+  ];
+  if (allowedWidgetType.includes(tabComponentType)) {
+    return true;
+  }
+  return false;
 }
 
 export function validateMapWidgetsAttributesSelected(
@@ -131,6 +160,17 @@ export function validateMapWidgetsAttributesSelected(
   const requiredAttributes = widgetWithChildren.queryConfig?.attributes || [];
 
   mapWidgetValues.forEach((widget) => {
+    // exit checking for map widget type image and subType URL,
+    // information and button
+    if (
+      (widget.componentType === tabComponentTypeEnum.image &&
+        widget.componentSubType === widgetImageSourceEnum.url) ||
+      widget.componentType === tabComponentTypeEnum.information ||
+      widget.componentType === 'Button'
+    ) {
+      return errorsOccured;
+    }
+
     const attr = widget.attributes;
 
     if (

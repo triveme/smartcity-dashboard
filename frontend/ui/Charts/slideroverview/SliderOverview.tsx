@@ -6,19 +6,49 @@ import { SliderWithKnobs } from './SliderWithKnobs';
 
 type SliderOverviewProps = {
   data: ChartData[];
+  currentCapacityAttribute: string;
+  maximumCapacityAttribute: string;
+
+  fontColorCurrent: string;
+  fontColorMaximum: string;
+  fontColorGeneral: string;
+  colorCurrent: string;
+  colorMaximum: string;
 };
 export default function SliderOverview(
   props: SliderOverviewProps,
 ): ReactElement {
-  const { data } = props;
+  const {
+    data,
+    currentCapacityAttribute,
+    maximumCapacityAttribute,
+    fontColorCurrent,
+    fontColorMaximum,
+    fontColorGeneral,
+    colorCurrent,
+    colorMaximum,
+  } = props;
   const sliders: SliderOverviewType[] = [];
-  for (let i = 0; i < data.length; i++) {
-    const slider: SliderOverviewType = {
-      name: data[i].name,
-      capacityCurrent: data[i].values[0][1],
-      capacityMax: data[i].values[1][1],
-    };
-    sliders.push(slider);
+
+  try {
+    for (let i = 0; i < data.length; i++) {
+      const currentCapacityIndex = data[i].values.findIndex(
+        (value) => value[0] === currentCapacityAttribute,
+      );
+      const maximumCapacityIndex = data[i].values.findIndex(
+        (value) => value[0] === maximumCapacityAttribute,
+      );
+      const slider: SliderOverviewType = {
+        name: data[i].name,
+        capacityCurrent: data[i].values[currentCapacityIndex][1],
+        capacityMax:
+          data[i].values[currentCapacityIndex][1] +
+          data[i].values[maximumCapacityIndex][1],
+      };
+      sliders.push(slider);
+    }
+  } catch (error) {
+    console.error('Error in SliderOverview', error);
   }
 
   return (
@@ -36,11 +66,11 @@ export default function SliderOverview(
                   name={obj.name}
                   currentValue={obj.capacityCurrent}
                   maximumValue={obj.capacityMax}
-                  fontColorCurrent={'#000000'}
-                  fontColorMaximum={'#FFFFFF'}
-                  fontColorGeneral={'#FFFFFF'}
-                  colorCurrent={'#DC2626'}
-                  colorMaximum={'#000000'}
+                  fontColorCurrent={fontColorCurrent}
+                  fontColorMaximum={fontColorMaximum}
+                  fontColorGeneral={fontColorGeneral}
+                  colorCurrent={colorCurrent}
+                  colorMaximum={colorMaximum}
                 />
               </div>
             );

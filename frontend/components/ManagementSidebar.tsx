@@ -9,6 +9,8 @@ type ManagementSidebarProps = {
   backgroundSecondaryColor: string;
   useColorTransitionMenu: boolean;
   sidebarItemStyle: SidebarItemStyle;
+  cornerColor: string;
+  cornerFontColor: string;
 };
 
 type BackgroundColorStyle =
@@ -23,6 +25,8 @@ export default function ManagementSidebar(
     backgroundSecondaryColor,
     useColorTransitionMenu,
     sidebarItemStyle,
+    cornerColor,
+    cornerFontColor,
   } = props;
 
   const getBgColorForMenu = (): BackgroundColorStyle => {
@@ -53,6 +57,8 @@ export default function ManagementSidebar(
       <SidebarContent
         sidebarItemStyle={sidebarItemStyle}
         useColorTransitionMenu={useColorTransitionMenu}
+        cornerColor={cornerColor}
+        cornerFontColor={cornerFontColor}
       />
       <SidebarFooter />
     </div>

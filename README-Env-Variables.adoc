@@ -24,7 +24,8 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_OIDC_CLIENT_ID` | The OIDC client ID for the frontend that is being used as a standard. | `scs-frontend`
 | `NEXT_PUBLIC_OIDC_REDIRECT_URI` | The redirect URI for OIDC authentication. | `http://localhost:3000/admin`
 | `NEXT_PUBLIC_BACKEND_URL` | The URL for the backend application. | `http://localhost:8081`
-| `ADMIN_ROLE` | The name of the "superadmin" role in Keycloak. | `scs-admin`
+| `ADMIN_ROLE` | The name of the "admin" role in Keycloak. | `scs-admin`
+| `SUPER_ADMIN_ROLE` | The name of the "superadmin" role in Keycloak. | `scs-super-admin`
 | `TRUSTED_CA` | Populated during helm installation with the trusted CA config map. |
 | `NEST_JWKS_URI` | URI to JSON Web Key Set for NestJS. | `http://localhost:8080/realms/testrealm/protocol/openid-connect/certs`
 |===
@@ -69,7 +70,7 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `MAIL_USER` | email address for host user. | `example-email@gmail.com`
 | `MAIL_PASS` | App Password secret generated from the host user's account | `1234 5678 9123 4567`
 | `DEFECT_REPORT_EMAIL` | target email to receive defect reports | `example-email2@gmail.com`
-|`DASHBOARD_SERVICE_URL`| Url of the backend to fetch logs from | 
+|`DASHBOARD_SERVICE_URL`| Url of the backend to fetch logs from |
 
 |===
 

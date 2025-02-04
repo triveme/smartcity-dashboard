@@ -48,7 +48,7 @@ export function SliderWithKnobs(props: SliderWithKnobsProps): ReactElement {
   return (
     <div className="flex w-full min-h-8 mb-1.5 items-center">
       <p
-        className="whitespace-nowrap m-0 mr-0 font-bold text-sm w-40 overflow-hidden text-ellipsis"
+        className="whitespace-nowrap m-0 mr-0 font-bold text-sm w-60 overflow-hidden text-ellipsis"
         style={{ color: fontColorGeneral }}
       >
         {name}

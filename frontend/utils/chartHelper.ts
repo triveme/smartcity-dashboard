@@ -1,0 +1,105 @@
+import { ChartData } from '@/types';
+
+export function getLabelName(text: string, index: number): string {
+  if (text) {
+    const parts = text.split('|');
+
+    if (parts.length > 1) {
+      parts[0] = `Sensor ${index + 1} `;
+    }
+    return parts.join('|');
+  }
+  return `Sensor ${index}`;
+}
+
+export function getUniqueAttributes(chartData: ChartData[]): string[] {
+  const uniqueAttributes: string[] = [];
+  for (let i = 0; i < chartData.length; i++) {
+    const tempName = chartData[i].name;
+    if (tempName) {
+      const splitName = tempName.split('|');
+      if (splitName && splitName.length && splitName.length > 0) {
+        const attribute = splitName[1];
+        if (!uniqueAttributes.includes(attribute)) {
+          uniqueAttributes.push(attribute);
+        }
+      }
+    }
+  }
+  return uniqueAttributes;
+}
+
+export const calculateLeftGrid = (
+  yAxisLabel: string,
+  legendAlignment: string,
+): number => {
+  let leftGrid = 10;
+
+  if (yAxisLabel && yAxisLabel !== '') {
+    if (legendAlignment === 'Left') {
+      leftGrid = 80;
+    } else {
+      leftGrid = 50;
+    }
+  }
+
+  return leftGrid;
+};
+
+export const calculateBottomGrid = (
+  xAxisLabel: string,
+  allowZoom = false,
+): number => {
+  let bottomGrid = 30;
+
+  if (xAxisLabel && allowZoom) bottomGrid = 80;
+  if (xAxisLabel && !allowZoom) bottomGrid = 50;
+
+  if (!xAxisLabel && allowZoom) bottomGrid = 80;
+  if (!xAxisLabel && !allowZoom) bottomGrid = 30;
+
+  return bottomGrid;
+};
+
+export const formatYAxisLabel = (label: string): string => {
+  const maxCharsPerLine = 40;
+  const words = label.split(' '); // Split label into individual words
+  const result: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    // Check if adding the word exceeds the character limit
+    if ((currentLine + word).length > maxCharsPerLine) {
+      result.push(currentLine.trim()); // Push the current line to results
+      currentLine = ''; // Start a new line
+    }
+
+    // Add the word to the current line
+    currentLine += word + ' ';
+  }
+
+  // Push the last line to the result
+  if (currentLine.trim()) {
+    result.push(currentLine.trim());
+  }
+
+  return result.join('\n'); // Combine the lines with `\n`
+};
+
+export const calculateYAxisNameGap = (data: ChartData[]): number => {
+  // Flatten all values across data arrays and find the maximum
+  const maxValue = Math.max(
+    ...data.flatMap((series) =>
+      series.values.map(([, value]) => Math.abs(value)),
+    ),
+  );
+
+  // Determine nameGap based on conditions
+  if (maxValue < 1000) {
+    return 45;
+  } else if (maxValue >= 1000 && maxValue <= 99999) {
+    return 60;
+  } else {
+    return 75;
+  }
+};

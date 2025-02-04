@@ -1,51 +1,23 @@
 'use client';
 import { ReactElement } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
 
 import DashboardIcons from '../Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
-import { PanelWithContent } from '@/types';
+import { MapModalWidget, PanelWithContent } from '@/types';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import Link from 'next/link';
 
 type DashboardGeneralInfoMessageProps = {
-  panel: PanelWithContent;
+  panel: PanelWithContent | MapModalWidget;
+  url?: string;
 };
 
 export default function JumpoffButton(
   props: DashboardGeneralInfoMessageProps,
 ): ReactElement {
-  const { panel } = props;
-  const pathname = usePathname();
-  const { push } = useRouter();
+  const { panel, url } = props;
   const tenant = getTenantOfPage();
-
-  const handleJumpoffButtonClick = (): void => {
-    const fullJumpoffUrl = getFullJumpoffUrl(pathname, panel.jumpoffUrl || '');
-    push(fullJumpoffUrl);
-  };
-
-  function getFullJumpoffUrl(originalUrl: string, newSegment: string): string {
-    // Remove trailing slash from originalUrl if present
-    const baseUrl = originalUrl.replace(/\/$/, '');
-
-    // Find the tenant in the URL
-    const tenantIndex = baseUrl.indexOf(`/${tenant}`);
-
-    // if tenant not found in the URL
-    if (tenantIndex === -1) {
-      return originalUrl;
-    }
-
-    // Get the part of the URL up to and including the tenant
-    const urlUpToTenant = baseUrl.slice(0, tenantIndex + tenant!.length + 1);
-
-    // Remove leading slash from newSegment if present
-    const cleanedSegment = newSegment.replace(/^\//, '');
-
-    // Combine the URL parts
-    return `${urlUpToTenant}/${cleanedSegment}`;
-  }
 
   const { data } = useQuery({
     queryKey: ['corporate-info'],
@@ -60,13 +32,16 @@ export default function JumpoffButton(
   };
 
   return (
-    <div>
+    <Link
+      href={url && url !== '' ? url : panel.jumpoffUrl || ''}
+      target={panel.openJumpoffLinkInNewTab ? '_blank' : '_self'}
+      rel="noopener"
+    >
       <button
-        className="p-4 h-10 w-48 rounded-lg flex justify-evenly items-center content-center transition-colors ease-in-out duration-300"
-        onClick={handleJumpoffButtonClick}
+        className="p-4 h-10 w-full rounded-lg flex justify-evenly items-center content-center transition-colors ease-in-out duration-300"
         style={jumpoffButtonStyle}
       >
-        {panel.jumpoffIcon && (
+        {panel.jumpoffIcon && panel.jumpoffIcon !== 'empty' && (
           <DashboardIcons
             iconName={panel.jumpoffIcon}
             color={jumpoffButtonStyle.color}
@@ -81,9 +56,9 @@ export default function JumpoffButton(
             marginLeft: panel.jumpoffIcon ? '0.5rem' : '',
           }}
         >
-          {panel.jumpoffLabel}
+          <div className="ml-2 hidden sm:block">{panel.jumpoffLabel}</div>
         </div>
       </button>
-    </div>
+    </Link>
   );
 }

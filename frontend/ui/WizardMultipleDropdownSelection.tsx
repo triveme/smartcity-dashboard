@@ -33,6 +33,25 @@ export default function WizardMultipleDropdownSelection(
     onSelect(newSelection);
   };
 
+  const handleSelectAll = (): void => {
+    if (currentValue.length === selectableValues.length) {
+      onSelect([]); // Deselect all
+    } else {
+      onSelect(selectableValues.map(String)); // Select all
+    }
+  };
+
+  const renderSelectedValues = (): string => {
+    const visibleValues = currentValue.slice(0, 2);
+    const remainingCount = currentValue.length - visibleValues.length;
+
+    if (remainingCount > 0) {
+      return `${visibleValues.join(', ')} und ${remainingCount} weitere...`;
+    }
+
+    return visibleValues.join(', ');
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
       if (
@@ -59,7 +78,11 @@ export default function WizardMultipleDropdownSelection(
           backgroundColor: backgroundColor,
         }}
       >
-        <span>{currentValue.join(', ')}</span>
+        <div className="flex-1">
+          <span className="block truncate">
+            {currentValue.length > 0 ? renderSelectedValues() : 'Auswählen...'}
+          </span>
+        </div>
         <DashboardIcons iconName="ChevronDown" color={iconColor} />
       </div>
       {isOpen && (
@@ -67,6 +90,23 @@ export default function WizardMultipleDropdownSelection(
           className="absolute mt-1 w-full rounded-lg border-4 max-h-60 overflow-auto z-10"
           style={{ backgroundColor: backgroundColor }}
         >
+          {/* Select All checkbox */}
+          <label className="block text-lg px-3 py-2 font-bold">
+            <input
+              type="checkbox"
+              checked={currentValue.length === selectableValues.length}
+              onChange={handleSelectAll}
+              className="form-checkbox h-4 w-4 border-0 rounded-md focus:ring-0 bg-[#59647D]"
+            />
+            <span className="ml-2">
+              {currentValue.length === selectableValues.length
+                ? 'Alle Abwählen'
+                : 'Alle Auswählen'}
+            </span>
+          </label>
+          <hr className="my-2" />
+
+          {/* Individual selectable items */}
           {selectableValues.map((value, index) => (
             <label key={index} className="block text-lg px-3 py-2">
               <input

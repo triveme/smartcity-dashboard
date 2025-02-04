@@ -30,13 +30,13 @@ export async function getWidgets(
   return fetched;
 }
 
-export async function getWidgetById(
+export async function getWidgetsByPanelId(
   accessToken: string | undefined,
   widgetId: string,
-): Promise<Widget> {
+): Promise<Widget[]> {
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/${widgetId}`,
+      `${NEXT_PUBLIC_BACKEND_URL}/widgets/panel/${widgetId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -50,13 +50,16 @@ export async function getWidgetById(
   }
 }
 
-export async function getWidgetsByPanelId(
+export async function getWidgetsByTenantAndTabComponentType(
   accessToken: string | undefined,
-  widgetId: string,
-): Promise<Widget[]> {
+  componentType: string,
+  tenant?: string | undefined,
+): Promise<WidgetWithChildren[]> {
+  const tenantParam = tenant && tenant !== '' ? `?abbreviation=${tenant}` : '';
+
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/panel/${widgetId}`,
+      `${NEXT_PUBLIC_BACKEND_URL}/widgets/tab/${componentType}${tenantParam}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -101,71 +104,6 @@ export async function getWidgetDownloadData(
   }
 }
 
-export async function postWidget(
-  accessToken: string | undefined,
-  newWidget: Widget,
-  tenant?: string | undefined,
-): Promise<Widget> {
-  const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
-  }
-
-  try {
-    const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets${tenantParam}`,
-      newWidget,
-      {
-        headers: headers,
-      },
-    );
-
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    if (axios.isAxiosError(err)) {
-      console.error('HTTP Error on postWidget:', err.response?.status);
-      console.error('Response body:', err.response?.data);
-    }
-    throw err;
-  }
-}
-
-export async function updateWidget(
-  accessToken: string | undefined,
-  updateWidget: Widget,
-): Promise<Widget> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  if (accessToken) {
-    headers['Authorization'] = `Bearer ${accessToken}`;
-  }
-
-  try {
-    const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/${updateWidget.id}`,
-      updateWidget,
-      { headers: headers },
-    );
-
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    if (axios.isAxiosError(err)) {
-      console.error('HTTP Error on updateWidget:', err.response?.status);
-      console.error('Response body:', err.response?.data);
-    }
-    throw err;
-  }
-}
-
 export async function deleteWidget(
   accessToken: string | undefined,
   widgetId: string,
@@ -191,6 +129,38 @@ export async function deleteWidget(
     console.error(err);
     if (axios.isAxiosError(err)) {
       console.error('HTTP Error on deleteWidget:', err.response?.status);
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}
+
+export async function duplicateWidget(
+  accessToken: string | undefined,
+  widgetId: string,
+  tenant?: string | undefined,
+): Promise<WidgetWithChildren> {
+  const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    const response = await axios.post(
+      `${NEXT_PUBLIC_BACKEND_URL}/widgets/duplicate/${widgetId}${tenantParam}`,
+      {},
+      { headers: headers },
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error('HTTP Error on duplicateWidget:', err.response?.status);
       console.error('Response body:', err.response?.data);
     }
     throw err;

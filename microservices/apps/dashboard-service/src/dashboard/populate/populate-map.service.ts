@@ -25,7 +25,10 @@ export class PopulateMapService {
       for (const dataObject of queryData) {
         let position: Position;
 
-        if (dataObject['location']) {
+        // Prioritize fakePosition if it exists, otherwise use location
+        if (dataObject['fakePosition']) {
+          position = dataObject['fakePosition'].value;
+        } else if (dataObject['location']) {
           position = dataObject['location'].value;
         } else if (dataObject['attributes'] && dataObject['attributes'][0]) {
           position = this.getGeoJsonFromNgsi(dataObject);
@@ -68,7 +71,16 @@ export class PopulateMapService {
     const queryData = query.queryData as object;
 
     tab.mapObject = [];
-    if (queryData && queryData['location']) {
+
+    // Prioritize fakePosition if it exists, otherwise use location
+    if (queryData && queryData['fakePosition']) {
+      const position = queryData['fakePosition'].value;
+
+      tab.mapObject.push({
+        position: position,
+        ...queryData,
+      });
+    } else if (queryData && queryData['location']) {
       const position = queryData['location'].value;
 
       tab.mapObject.push({
@@ -81,10 +93,14 @@ export class PopulateMapService {
       queryData['attributes'].length > 0
     ) {
       const locationArray = queryData['attributes'].filter(
-        (attribute) => attribute.attrName === 'location',
+        (attribute) =>
+          attribute.attrName === 'fakePosition' ||
+          attribute.attrName === 'location',
       );
-      const noLocationArray = queryData['attributes'].filter(
-        (attribute) => attribute.attrName !== 'location',
+      const dataArrayWithoutLocation = queryData['attributes'].filter(
+        (attribute) =>
+          attribute.attrName !== 'location' &&
+          attribute.attrName !== 'fakePosition',
       );
 
       if (locationArray && locationArray.length > 0) {
@@ -93,7 +109,7 @@ export class PopulateMapService {
         if (locationValues && locationValues.length > 0) {
           const mapObject = this.buildMapObjectForSingleEntity(
             locationValues,
-            noLocationArray,
+            dataArrayWithoutLocation,
           );
 
           tab.mapObject.push(mapObject);
@@ -101,17 +117,21 @@ export class PopulateMapService {
       }
     } else if (queryData && queryData['attrs']) {
       const locationArray = queryData['attrs'].filter(
-        (attribute) => attribute.attrName === 'location',
+        (attribute) =>
+          attribute.attrName === 'fakePosition' ||
+          attribute.attrName === 'location',
       );
-      const noLocationArray = queryData['attrs'].filter(
-        (attribute) => attribute.attrName !== 'location',
+      const dataArrayWithoutLocation = queryData['attrs'].filter(
+        (attribute) =>
+          attribute.attrName !== 'location' &&
+          attribute.attrName !== 'fakePosition',
       );
 
       if (this.isLocationArrayForMultipleEntitiesExisting(locationArray)) {
         let positions = this.getMultipleEntityPositions(locationArray);
         positions = this.populatePositionsWithValues(
           positions,
-          noLocationArray,
+          dataArrayWithoutLocation,
         );
 
         tab.mapObject.push(...positions);
@@ -121,7 +141,7 @@ export class PopulateMapService {
 
   private buildMapObjectForSingleEntity(
     locationValues: string[],
-    noLocationArray: object[],
+    dataArrayWithoutLocation: object[],
   ): MapObject {
     const wkbCoordinates = locationValues[locationValues.length - 1];
     const position = this.getGeoJsonFromNgsi(wkbCoordinates);
@@ -130,8 +150,11 @@ export class PopulateMapService {
       position: position,
     };
 
-    if (noLocationArray && noLocationArray.length > 0) {
-      mapObject = this.populateMapObjectWithValues(mapObject, noLocationArray);
+    if (dataArrayWithoutLocation && dataArrayWithoutLocation.length > 0) {
+      mapObject = this.populateMapObjectWithValues(
+        mapObject,
+        dataArrayWithoutLocation,
+      );
     }
 
     return mapObject;
@@ -176,13 +199,13 @@ export class PopulateMapService {
 
   private populatePositionsWithValues(
     positions: Array<MapObject>,
-    noLocationArray: object[],
+    dataArrayWithoutLocation: object[],
   ): MapObject[] {
     positions.forEach((mapObject, entityIdIndex) => {
       return this.populateMapObjectWithAttributesForEntityId(
         mapObject,
         entityIdIndex,
-        noLocationArray,
+        dataArrayWithoutLocation,
       );
     });
 
@@ -192,9 +215,9 @@ export class PopulateMapService {
   private populateMapObjectWithAttributesForEntityId(
     mapObject: MapObject,
     entityIdIndex: number,
-    noLocationArray: Array<object>,
+    dataArrayWithoutLocation: Array<object>,
   ): MapObject {
-    noLocationArray.forEach((noLocationAttribute: object) => {
+    dataArrayWithoutLocation.forEach((noLocationAttribute: object) => {
       if (
         noLocationAttribute['types'] &&
         noLocationAttribute['types'].length > 0
@@ -218,9 +241,9 @@ export class PopulateMapService {
 
   private populateMapObjectWithValues(
     mapObject: MapObject,
-    noLocationArray: object[],
+    dataArrayWithoutLocation: object[],
   ): MapObject {
-    for (const noLocationAttribute of noLocationArray) {
+    for (const noLocationAttribute of dataArrayWithoutLocation) {
       const attributeName = noLocationAttribute['attrName'];
 
       const noLocationAttributeValues = noLocationAttribute['values'];

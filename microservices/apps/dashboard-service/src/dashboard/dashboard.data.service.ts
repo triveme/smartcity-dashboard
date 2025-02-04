@@ -1,7 +1,7 @@
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { widgets } from '@app/postgres-db/schemas';
 import { Parser } from '@json2csv/plainjs';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
 import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
@@ -19,11 +19,12 @@ export class DashboardDataService {
   ) {}
 
   async downloadDashboardData(dashboardId: string): Promise<string> {
+    const allCsvData: string[] = [];
+    const errorMessages: string[] = [];
+
     try {
       const dashboardPanels =
         await this.panelRepo.getPanelsByDashboardId(dashboardId);
-
-      const allCsvData: string[] = [];
 
       for (const dashboardPanel of dashboardPanels) {
         const panelToWidgets = await this.widgetsToPanelRepo.getByPanelId(
@@ -33,73 +34,123 @@ export class DashboardDataService {
         const widgetIds = new Set(
           panelToWidgets.map((panelToWidget) => panelToWidget.widgetId),
         );
+
         const allWidgets = await Promise.all(
           Array.from(widgetIds).map(async (id) => {
             const widget = await this.db
               .select()
               .from(widgets)
               .where(eq(widgets.id, id));
+
             return widget[0];
           }),
         );
 
         for (const panelWidget of allWidgets) {
-          const queryWithAllInfos =
-            await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
-              panelWidget.id,
-            );
+          try {
+            const queryWithAllInfos =
+              await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
+                panelWidget.id,
+              );
 
-          if (!queryWithAllInfos) {
-            throw new HttpException(
-              `No query information found for widget with id: ${panelWidget.id}`,
-              HttpStatus.BAD_REQUEST,
-            );
-          }
+            if (!queryWithAllInfos) {
+              const warning = `No query information found for widget with id: ${panelWidget.id}`;
+              console.warn(warning);
+              errorMessages.push(warning);
+              // Pushing the error messages to the CSV output
+              allCsvData.push(
+                `"entityId","attrName","value","index"\n"No data found for widget with id: ${panelWidget.id}"`,
+              );
+              continue;
+            }
 
-          const queryBatch = {
-            queryIds: [queryWithAllInfos.query.id],
-            query_config: queryWithAllInfos.query_config,
-            data_source: queryWithAllInfos.data_source,
-            auth_data: queryWithAllInfos.auth_data,
-          };
-          queryBatch.query_config.aggrMode = 'none';
-          queryBatch.query_config.timeframe = 'year';
+            const queryBatch = {
+              queryIds: [queryWithAllInfos.query.id],
+              query_config: queryWithAllInfos.query_config,
+              data_source: queryWithAllInfos.data_source,
+              auth_data: queryWithAllInfos.auth_data,
+            };
 
-          const rawData =
-            await this.ngsiDataService.getDataFromDataSource(queryBatch);
+            queryBatch.query_config.aggrMode = 'none';
+            queryBatch.query_config.timeframe = 'year';
 
-          // Handle undefined rawData
-          if (!rawData || (Array.isArray(rawData) && rawData.length === 0)) {
-            throw new HttpException(
-              `No valid data returned from data source for widget with id: ${panelWidget.id}`,
-              HttpStatus.BAD_REQUEST,
-            );
-          }
+            const rawData =
+              await this.ngsiDataService.getDataFromDataSource(queryBatch);
 
-          const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
-          const flattenedData = rawDataArray.flatMap((dataItem) => {
-            const attributes = dataItem.attributes || [];
-            const indices = dataItem.index || [];
+            // Ensure rawData is an array
+            const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
 
-            return attributes.flatMap((attr) => {
-              return attr.values.map((value, i) => ({
-                entityId: dataItem.entityId,
-                attrName: attr.attrName,
-                value: value,
-                index: indices[i],
-              }));
+            const flattenedData = rawDataArray.flatMap((dataItem) => {
+              // Check for 'attrs' or 'attributes' property
+              const attributes = dataItem.attrs || dataItem.attributes;
+
+              if (!attributes) {
+                console.warn('Missing attrs/attributes in rawData item');
+                return [];
+              }
+
+              // Handling case where returned object has no 'types' field
+              return attributes.flatMap((attr) => {
+                if (!attr.types || !Array.isArray(attr.types)) {
+                  console.warn(
+                    `Missing types for attribute: ${attr.attrName}. Processing without types.`,
+                  );
+
+                  // Process without types if not available
+                  return attr.values.map((value) => ({
+                    entityId: dataItem.entityId,
+                    attrName: attr.attrName,
+                    value: value,
+                    index: null,
+                  }));
+                }
+
+                return attr.types.flatMap((type) => {
+                  return type.entities.flatMap((entity) => {
+                    const index = entity.index || [];
+                    const values = entity.values || [];
+
+                    return values.map((value, i: number) => ({
+                      entityId: entity.entityId,
+                      attrName: attr.attrName,
+                      value: value,
+                      index: index[i] || null,
+                    }));
+                  });
+                });
+              });
             });
-          });
 
-          // Convert to CSV
-          const opts = { fields: ['entityId', 'attrName', 'value', 'index'] };
-          const parser = new Parser(opts);
-          const csv = parser.parse(flattenedData);
-          allCsvData.push(csv);
+            if (flattenedData.length === 0) {
+              const warning = `No data found for widget with id: ${panelWidget.id}`;
+              console.warn(warning);
+              errorMessages.push(warning);
+              allCsvData.push(
+                `"entityId","attrName","value","index"\n"No data found for widget with id: ${panelWidget.id}"`,
+              );
+            } else {
+              const opts = {
+                fields: ['entityId', 'attrName', 'value', 'index'],
+              };
+              const parser = new Parser(opts);
+              const csv = parser.parse(flattenedData);
+              allCsvData.push(csv);
+            }
+          } catch (widgetError) {
+            const warning = `Error processing widget with id: ${panelWidget.id} - ${widgetError.message}`;
+            console.warn(warning);
+            errorMessages.push(warning);
+          }
         }
       }
 
-      return allCsvData.join('\n');
+      if (allCsvData.length === 0 && errorMessages.length > 0) {
+        const errorCsv = `Error downloading data, issues encountered:\n${errorMessages.join('\n')}`;
+        return errorCsv;
+      }
+
+      const resultCsv = allCsvData.join('\n');
+      return resultCsv;
     } catch (error) {
       console.error(
         'Error downloading data for dashboard with id:',
@@ -107,7 +158,9 @@ export class DashboardDataService {
         '\ndue to error: ',
         error,
       );
-      throw error;
+
+      const errorCsv = `Error downloading data, issues encountered:\n${error.message}`;
+      return errorCsv;
     }
   }
 }

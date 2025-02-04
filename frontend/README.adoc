@@ -29,6 +29,7 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_MULTI_TENANCY` | Variable to activate/deactivate multi tenancy. Must be a string. If "true" a systemUser and a tenant must exist for the dashboard to work. | `"true" or "false"`
 | `NEXT_PUBLIC_FRONTEND_URL` | Variable required to build certain urls within the frontend. | `http://localhost:3000`
 | `NEXT_PUBLIC_BACKEND_URL` | Connection information to the frontend-service required for API calls. | `http://localhost:8081`
+| `NEXT_PUBLIC_API_SERVICE_URL` | Connection information to the api-service required for API calls. | `http://localhost:8083`
 | `NEXT_PUBLIC_VERSION` | The version of the frontend application. | `0.2.1`
 | `NEXT_PUBLIC_BASEPATH` | The base path for the Next.js application. Must start with a slash ("/"). Default is an empty string. | `""`
 | `NEXT_PUBLIC_ASSET_PREFIX` | The prefix for the Next.js application. Must start and end with a slash ("/") and be the same as NEXT_PUBLIC_BASEPATH. Default is an empty string. | `""`

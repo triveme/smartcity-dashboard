@@ -1,6 +1,11 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
-import { ChartData, MapObject, WidgetWithContent } from '../dashboard.service';
+import {
+  ChartData,
+  MapObject,
+  WeatherWarningData,
+  WidgetWithContent,
+} from '../dashboard.service';
 import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
@@ -72,7 +77,9 @@ export class PopulateCombinedWidgetService {
   private async populateTabWithContents(
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
-    } & { mapObject: MapObject[] } & { combinedWidgets: WidgetWithContent[] },
+    } & { mapObject: MapObject[] } & {
+      weatherWarnings: WeatherWarningData[];
+    } & { combinedWidgets: WidgetWithContent[] },
   ): Promise<void> {
     if (
       tab.componentType !== 'Informationen' &&

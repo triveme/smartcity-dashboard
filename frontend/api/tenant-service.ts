@@ -20,26 +20,6 @@ export async function getTenants(
   return fetched;
 }
 
-export async function getTenantById(
-  accessToken: string | undefined,
-  tenantId: string,
-): Promise<Tenant> {
-  try {
-    const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/tenants/${tenantId}`,
-      {
-        headers: accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : undefined,
-      },
-    );
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
-
 export async function postTenant(
   accessToken: string | undefined,
   newTenant: Tenant,

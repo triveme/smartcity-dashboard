@@ -1,19 +1,21 @@
 'use client';
+import React, { ReactElement, useState } from 'react';
 
 import { PanelWithContent } from '@/types';
-import GeneralInfoMessageModal from '@/ui/GeneralInfoMessageModal';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { ReactElement, useState } from 'react';
+import GeneralInfoMessageModal from '@/ui/GeneralInfoMessageModal';
 
 type DashboardGeneralInfoMessageProps = {
   panel: PanelWithContent;
+  infoModalBackgroundColor: string;
+  infoModalFontColor: string;
 };
 
 export default function DashboardGeneralInfoMessage(
   props: DashboardGeneralInfoMessageProps,
 ): ReactElement | null {
-  const { panel } = props;
+  const { panel, infoModalBackgroundColor, infoModalFontColor } = props;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleInfoButtonClicked = (): void => {
@@ -21,7 +23,7 @@ export default function DashboardGeneralInfoMessage(
   };
 
   return (
-    <div className="justify-center items-center content-center">
+    <div className="justify-center items-center content-center h-4/6 overflow-y-auto">
       <button onClick={handleInfoButtonClicked}>
         <FontAwesomeIcon icon={faExclamationCircle} size="sm" />
       </button>
@@ -30,6 +32,8 @@ export default function DashboardGeneralInfoMessage(
         headline={'Information'}
         message={panel.generalInfo}
         onClose={(): void => setIsModalVisible(false)}
+        infoModalBackgroundColor={infoModalBackgroundColor}
+        infoModalFontColor={infoModalFontColor}
       />
     </div>
   );

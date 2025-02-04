@@ -4,6 +4,8 @@ import { Tab } from '@/types';
 import CreateDashboardElementButton from './Buttons/CreateDashboardElementButton';
 import ColorPickerComponent from './ColorPickerComponent';
 import IconSelection from './Icons/IconSelection';
+import WizardNumberfield from './WizardNumberfield';
+import WizardLabel from './WizardLabel';
 
 type StaticValuesFieldProps = {
   initialChartStaticValues: number[];
@@ -187,14 +189,14 @@ export default function StaticValuesField(
       {inputValues.map((value, index) => (
         <div key={`main-value-${index}`} className="flex flex-col gap-4 mb-4">
           <div className="flex justify-start items-center content-center gap-4">
-            <WizardTextfield
+            <WizardNumberfield
               value={value}
               onChange={(value): void => handleChangeValue(value, index)}
-              isNumeric={true}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
               error={error}
             />
+
             <ColorPickerComponent
               currentColor={initialStaticColors[index] || 'FFFFFF'}
               handleColorChange={(color): void =>
@@ -232,31 +234,89 @@ export default function StaticValuesField(
             />
           </div>
           {tickValues.map((_, index) => (
+            <div
+              key={`tick-${index}`}
+              className="flex flex-row items-center gap-4 mb-2"
+            >
+              <div className="w-64">
+                {index === 0 && <WizardLabel label="Value" />}
+                <WizardTextfield
+                  value={tickValues[index] || 0}
+                  onChange={(value): void => handleChangeTick(value, index)}
+                  isNumeric={false}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                  error={error}
+                />
+              </div>
+              <div className="w-1/2">
+                {index === 0 && <WizardLabel label="Icon" />}
+                <IconSelection
+                  activeIcon={logoValues[index] || ''}
+                  handleIconSelect={(value: string): void => {
+                    handleChangeLogo(value, index);
+                  }}
+                  iconColor={'#ffffff'}
+                  borderColor={borderColor}
+                />
+              </div>
+              <div className="w-1/2">
+                {index === 0 && <WizardLabel label="Attribut" />}
+                <WizardTextfield
+                  value={textValues[index] || ''}
+                  onChange={(value): void =>
+                    handleChangeText(value.toString(), index)
+                  }
+                  isNumeric={false}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                  error={error}
+                />
+              </div>
+              <CreateDashboardElementButton
+                label="-"
+                handleClick={(): void => handleRemoveAdditionalValue(index)}
+              />
+            </div>
+          ))}
+
+          <CreateDashboardElementButton
+            label="+ Markierungen statische Werte"
+            handleClick={handleAddAdditionalValue}
+          />
+        </>
+      )}
+
+      {type === 'value' && (
+        <>
+          <div className="flex gap-4 h-14">
+            <ColorPickerComponent
+              currentColor={iconColorValues}
+              handleColorChange={handleIconColorChange}
+              label="Schrift und Icons"
+            />
+            <ColorPickerComponent
+              currentColor={labelColorValues}
+              handleColorChange={handleLabelColorChange}
+              label="Beschreibungstext"
+            />
+          </div>
+          {tickValues.map((_, index) => (
             <div key={`tick-${index}`} className="flex flex-col gap-4 mb-4">
               <div className="flex gap-4 h-14">
                 <div className="w-64">
                   <WizardTextfield
-                    value={tickValues[index] || 'Label'}
+                    value={tickValues[index] || 0}
                     onChange={(value): void => handleChangeTick(value, index)}
-                    isNumeric={true}
+                    isNumeric={false}
                     borderColor={borderColor}
                     backgroundColor={backgroundColor}
                     error={error}
                   />
                 </div>
-                <div className="w-1/2">
-                  <IconSelection
-                    activeIcon={logoValues[index] || ''}
-                    handleIconSelect={(value: string): void => {
-                      handleChangeLogo(value, index);
-                    }}
-                    iconColor={'#ffffff'}
-                    borderColor={borderColor}
-                  />
-                </div>
-                <div className="w-1/2">
+                <div className="w-full">
                   <WizardTextfield
-                    value={textValues[index] || 'Attribut'}
+                    value={textValues[index] || 'Label'}
                     onChange={(value): void =>
                       handleChangeText(value.toString(), index)
                     }
@@ -275,7 +335,7 @@ export default function StaticValuesField(
           ))}
 
           <CreateDashboardElementButton
-            label="+ Markierungen statische Werte"
+            label="+ Label hinzufügen"
             handleClick={handleAddAdditionalValue}
           />
         </>

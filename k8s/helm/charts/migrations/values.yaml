@@ -1,5 +1,5 @@
-image:
-  repository: smartcity/migrations
-  tag: latest
-  pullPolicy: IfNotPresent
-restartPolicy: "OnFailure"
+image: repository: smartcity / migrations;
+tag: latest;
+pullPolicy: IfNotPresent;
+restartPolicy: 'OnFailure';
+data: POSTGRES_REJECT_UNAUTHORIZED: 'true';

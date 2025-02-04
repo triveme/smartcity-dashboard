@@ -1,3 +1,4 @@
+import { getMenuGroupingElementByUrl } from '@/api/menu-service';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import Header from '@/components/Header';
@@ -11,7 +12,7 @@ export default async function RootLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { tenant: string };
+  params: { tenant: string; url: string[] };
 }): Promise<JSX.Element> {
   const NEXT_PUBLIC_MULTI_TENANCY = process.env.NEXT_PUBLIC_MULTI_TENANCY;
   const tenant =
@@ -19,8 +20,22 @@ export default async function RootLayout({
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
+  let dynamicHeadline = '';
+  if (params && params.url && params.url.length > 0) {
+    const dynamicUrl = params.url[0];
+    const groupingElement = await getMenuGroupingElementByUrl(
+      dynamicUrl,
+      tenant || '',
+    );
+    if (groupingElement && groupingElement.name) {
+      dynamicHeadline = groupingElement.name;
+    } else {
+      dynamicHeadline = 'Smart Region Dashboard';
+    }
+  }
+
   return (
-    <>
+    <div className="w-full h-full overflow-x-hidden">
       <style>
         {/* dynamic scrollbar colors */}
         {`
@@ -33,28 +48,43 @@ export default async function RootLayout({
           }
           body {
             font-family: ${ciColors.fontFamily}, sans-serif;
+            background-color: ${ciColors.dashboardPrimaryColor};
           }
         `}
       </style>
-      <div className="flex h-screen">
-        <DashboardSidebar
-          useColorTransitionMenu={ciColors.useColorTransitionMenu}
-          menuPrimaryColor={ciColors.menuPrimaryColor}
-          menuSecondaryColor={ciColors.menuSecondaryColor}
-          menuFontColor={ciColors.menuFontColor}
-        />
-        <div className="flex flex-col flex-grow">
-          <Header
-            isPublic={true}
-            headerColor={ciColors.headerPrimaryColor}
-            headerSecondaryColor={ciColors.headerSecondaryColor}
-            useColorTransitionHeader={ciColors.useColorTransitionHeader}
-            fontColor={ciColors.headerFontColor}
-            showLogo={ciColors.showHeaderLogo}
+      <div className="flex h-full w-full">
+        <div className="fixed top-0 left-0 bottom-0 z-30">
+          <DashboardSidebar
+            useColorTransitionMenu={ciColors.useColorTransitionMenu}
+            menuPrimaryColor={ciColors.menuPrimaryColor}
+            menuSecondaryColor={ciColors.menuSecondaryColor}
+            menuFontColor={ciColors.menuFontColor}
+            menuCornerColor={ciColors.menuCornerColor}
+            menuCornerFontColor={ciColors.menuCornerFontColor}
+            menuArrowDirection={ciColors.menuArrowDirection}
           />
-          <div className="flex-grow relative overflow-y-auto">{children}</div>
+        </div>
+        <div className="flex flex-col flex-grow ml-0 lg:ml-64 h-full w-full">
+          <div className="fixed top-0 left-0 right-0 z-40">
+            <Header
+              isPublic={true}
+              headerColor={ciColors.headerPrimaryColor}
+              headerSecondaryColor={ciColors.headerSecondaryColor}
+              infoModalBackgroundColor={ciColors.widgetPrimaryColor}
+              infoModalFontColor={ciColors.widgetFontColor}
+              useColorTransitionHeader={ciColors.useColorTransitionHeader}
+              fontColor={ciColors.headerFontColor}
+              showLogo={ciColors.showHeaderLogo}
+              dynamicHeadline={dynamicHeadline}
+              informationTextFontColor={ciColors.informationTextFontColor}
+              informationTextFontSize={ciColors.informationTextFontSize}
+            />
+          </div>
+          <div className="flex-grow relative overflow-y-auto pt-16 h-full w-full">
+            {children}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -11,6 +11,8 @@ export enum timeframeEnum {
   day = 'day',
   week = 'week',
   month = 'month',
+  quarter = 'quarter',
+  year = 'year',
 }
 
 export enum visibilityEnum {
@@ -24,6 +26,7 @@ export enum tabComponentTypeEnum {
   diagram = 'Diagramm',
   slider = 'Slider',
   map = 'Karte',
+  weatherWarning = 'Wetterwarnungen',
   combinedComponent = 'Kombinierte Komponente',
   value = 'Wert',
   iframe = 'iFrame',
@@ -43,6 +46,7 @@ export enum tabComponentSubTypeEnum {
   measurement = 'Measurement',
   pin = 'Pin',
   parking = 'Parking',
+  combinedMap = 'Kombinierte Karte',
   square = 'Square',
   rectangle = 'Rectangle',
   circle = 'Circle',
@@ -54,10 +58,17 @@ export enum tabComponentSubTypeEnum {
   overviewSlider = 'Slider Übersicht',
 }
 
+export enum widgetImageSourceEnum {
+  default = '',
+  url = 'URL',
+  sensor = 'Sensor',
+}
+
 export enum authDataTypeEnum {
   ngsiv2 = 'ngsi-v2',
   ngsild = 'ngsi-ld',
   api = 'api',
+  staticendpoint = 'static-endpoint',
 }
 
 export enum reportThresholdTriggerTypeEnum {
@@ -84,6 +95,7 @@ export enum supportRequestTypeEnum {
 
 export enum widthTypeEnum {
   small = 4,
+  half = 6,
   middle = 8,
   large = 12,
 }
@@ -100,4 +112,31 @@ export enum fontFamilyEnum {
   Courier = 'Courier',
   Lucida = 'Lucida',
   Monaco = 'Monaco',
+}
+
+export enum chartLegendAlignmentEnum {
+  Top = 'Top',
+  Left = 'Left',
+  Right = 'Right',
+}
+
+export enum menuArrowDirectionEnum {
+  TopTop = 'Oben | Oben',
+  TopDown = 'Oben | Unten',
+  LeftLeft = 'Links | Links',
+  LeftRight = 'Links | Rechts',
+  DownDown = 'Unten | Unten',
+  DownTop = 'Unten | Oben',
+  RightRight = 'Rechts | Rechts',
+  RightLeft = 'Rechts | Links',
+}
+
+export enum combinedComponentLayoutEnum {
+  Vertical = 'Untereinander',
+  Horizontal = 'Nebeneinander',
+}
+
+export enum themeEnum {
+  Dark = 'Dark',
+  Light = 'Light',
 }

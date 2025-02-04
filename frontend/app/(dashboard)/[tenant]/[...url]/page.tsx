@@ -59,5 +59,9 @@ export default async function DashboardPage({
     accessToken,
     tenant || '',
   );
-  return <Dashboard dashboard={dashboard} tenant={tenant} />;
+  return (
+    <div className="w-full h-full">
+      <Dashboard dashboard={dashboard} tenant={tenant} />
+    </div>
+  );
 }

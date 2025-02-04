@@ -1,6 +1,10 @@
-export function roundToDecimal(value: number, decimals: number): number {
+export function roundToDecimal(value: number, decimals = 1): number {
   const factor = Math.pow(10, decimals);
   return Math.round(value * factor) / factor;
+}
+
+export function applyUserLocaleToNumber(value: number, locale: string): string {
+  return new Intl.NumberFormat(locale).format(value);
 }
 
 export function roundToDecimalIfValueHasDecimal(
@@ -38,4 +42,11 @@ export function calculateDeviationPercentage(
 
   // Calculate the deviation in percentage.
   return ((currentValue - averageValue) / averageValue) * 100;
+}
+
+export function convertToLocaleNumber(
+  value: string,
+  separator: string,
+): string {
+  return value.replace(separator === ',' ? /\./g : /,/g, separator);
 }

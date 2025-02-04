@@ -1,6 +1,6 @@
 {
   "name": "smartcity-dashboard-2.0",
-  "version": "0.0.1",
+  "version": "0.20.4",
   "description": "",
   "scripts": {
     "db:gen": "drizzle-kit generate:pg --config=./database/drizzle.config.ts",

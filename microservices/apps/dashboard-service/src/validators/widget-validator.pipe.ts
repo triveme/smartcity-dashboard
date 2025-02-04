@@ -10,8 +10,6 @@ import { Widget } from '@app/postgres-db/schemas';
 export class ValidateWidgetPipe implements PipeTransform {
   transform(widget: Widget): Partial<Widget> {
     const errorsOccured: string[] = [];
-    if (widget.height && widget.height < 200)
-      errorsOccured.push('Die Höhe muss 200 oder mehr betragen!');
     if (widget.visibility === 'protected') {
       if (widget.readRoles.length === 0)
         errorsOccured.push('Leserechte müssen ausgefüllt werden!');

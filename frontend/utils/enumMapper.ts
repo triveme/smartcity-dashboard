@@ -1,9 +1,13 @@
 import {
   aggregationEnum,
   aggregationPeriodEnum,
+  chartLegendAlignmentEnum,
+  menuArrowDirectionEnum,
   tabComponentSubTypeEnum,
+  themeEnum,
   timeframeEnum,
   visibilityEnum,
+  widgetImageSourceEnum,
   widthTypeEnum,
 } from '@/types';
 
@@ -22,6 +26,8 @@ export const timeFrameWithLive = [
   { label: 'Tag', value: timeframeEnum.day },
   { label: 'Woche', value: timeframeEnum.week },
   { label: 'Monat', value: timeframeEnum.month },
+  { label: 'Quartal', value: timeframeEnum.quarter },
+  { label: 'Jahr', value: timeframeEnum.year },
 ];
 
 export const timeFrameWithoutLive = [
@@ -29,11 +35,14 @@ export const timeFrameWithoutLive = [
   { label: 'Tag', value: timeframeEnum.day },
   { label: 'Woche', value: timeframeEnum.week },
   { label: 'Monat', value: timeframeEnum.month },
+  { label: 'Quartal', value: timeframeEnum.quarter },
+  { label: 'Jahr', value: timeframeEnum.year },
 ];
 
 export const mapComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Pin', value: tabComponentSubTypeEnum.pin },
+  { label: 'Kombinierte Karte', value: tabComponentSubTypeEnum.combinedMap },
   // { label: 'Parken', value: tabComponentSubTypeEnum.parking }, Temporarely disabled
 ];
 
@@ -81,6 +90,12 @@ export const informationComponentSubTypes = [
   { label: 'Icon mit Link', value: tabComponentSubTypeEnum.iconWithLink },
 ];
 
+export const widgetImageSources = [
+  { label: '', value: '' },
+  { label: 'URL', value: widgetImageSourceEnum.url },
+  { label: 'Sensor', value: widgetImageSourceEnum.sensor },
+];
+
 export const visibilityOptions = [
   { label: 'sichtbar', value: visibilityEnum.public },
   { label: 'geschützt', value: visibilityEnum.protected },
@@ -99,6 +114,29 @@ export const aggregationPeriods = [
 
 export const widthTypes = [
   { label: 'Klein 1/3', value: widthTypeEnum.small },
+  { label: 'Hälfte 1/2', value: widthTypeEnum.half },
   { label: 'Mittel 2/3', value: widthTypeEnum.middle },
   { label: 'Groß 3/3', value: widthTypeEnum.large },
+];
+
+export const chartLegendAlignments = [
+  { label: 'Top', value: chartLegendAlignmentEnum.Top },
+  { label: 'Right', value: chartLegendAlignmentEnum.Right },
+  // { label: 'Left', value: chartLegendAlignmentEnum.Left },
+];
+
+export const menuArrowDirections = [
+  { label: 'Oben | Unten', value: menuArrowDirectionEnum.TopDown },
+  { label: 'Oben | Oben', value: menuArrowDirectionEnum.TopTop },
+  { label: 'Unten | Oben', value: menuArrowDirectionEnum.DownTop },
+  { label: 'Unten | Unten', value: menuArrowDirectionEnum.DownDown },
+  { label: 'Links | Rechts', value: menuArrowDirectionEnum.LeftRight },
+  { label: 'Links | Links', value: menuArrowDirectionEnum.LeftLeft },
+  { label: 'Rechts | Links', value: menuArrowDirectionEnum.RightLeft },
+  { label: 'Rechts | Rechts', value: menuArrowDirectionEnum.RightRight },
+];
+
+export const themes = [
+  { label: 'Dark', value: themeEnum.Dark },
+  { label: 'Light', value: themeEnum.Light },
 ];

@@ -1,6 +1,7 @@
 import { ReactElement, ReactNode, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
+import { env } from 'next-runtime-env';
 
 import { GenericTableContentItem, TableConfig } from '@/types';
 import VisibilityDisplay from '@/ui/VisibilityDisplay';
@@ -8,6 +9,8 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { deleteGenericItemById } from '@/utils/apiHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
+import { duplicateWidget } from '@/api/widget-service';
+import { duplicateDashboard } from '@/api/dashboard-service';
 
 type GenericTableContentItemWithId<T> = GenericTableContentItem<T> & {
   id?: string;
@@ -37,14 +40,22 @@ export default function TableContent<T>(
     showSuffixText,
     isTenant = false,
   } = props;
+
   const [selectedItemId, setSelectedItemId] = useState<string>();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const { openSnackbar } = useSnackbar(); // Use the snackbar hook
+  const { openSnackbar } = useSnackbar();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isActiveTransaction, setIsActiveTransaction] = useState(false);
 
   const pathname = usePathname();
   const auth = useAuth();
-  const { push } = useRouter();
+
+  const params = useParams();
+  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
+  const tenant =
+    NEXT_PUBLIC_MULTI_TENANCY === 'true'
+      ? (params.tenant as string)
+      : undefined;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderFunctions: { [key: string]: (item: any) => ReactNode } = {
@@ -60,17 +71,26 @@ export default function TableContent<T>(
     return item[column] as ReactNode;
   };
 
-  function handleRowClick(item: GenericTableContentItemWithId<T>): void {
-    if (isTenant) return;
+  const handleRowClick = (itemId: string | undefined): void => {
+    if (isTenant || !itemId) return;
+    const itemUrl = `${pathname}/edit?id=${itemId}`;
+    window.open(itemUrl, '_self'); // Left-click behavior (same tab)
+  };
 
-    if ('id' in item && item.id !== undefined) {
-      push(`${pathname}/edit?id=${item.id}`);
-    }
-  }
+  const handleRightClick = (
+    event: React.MouseEvent,
+    itemId: string | undefined,
+  ): void => {
+    event.preventDefault(); // Prevent default context menu
+    if (isTenant || !itemId) return;
+    const itemUrl = `${pathname}/edit?id=${itemId}`;
+    window.open(itemUrl, '_blank'); // Right-click or Ctrl+Click opens in new tab
+  };
 
   const handleDeleteClick = async (): Promise<void> => {
     if (selectedItemId) {
       try {
+        setIsActiveTransaction(true);
         await deleteGenericItemById(
           auth.user?.access_token,
           selectedItemId,
@@ -81,29 +101,43 @@ export default function TableContent<T>(
       } catch (error) {
         openSnackbar('Element konnte nicht gelöscht werden.', 'error');
       }
-
       setIsDeleteModalOpen(false);
+      setIsActiveTransaction(false);
     }
   };
 
-  function handleClickDeleteIcon(
+  const handleClickDeleteIcon = (
     event: React.MouseEvent,
     itemId: string | undefined,
-  ): void {
+  ): void => {
     event.stopPropagation();
     setIsDeleteModalOpen(true);
-
-    if (itemId) {
-      setSelectedItemId(itemId);
-    }
-  }
-
-  const handleMouseEnter = (index: number): void => {
-    setHoveredIndex(index);
+    if (itemId) setSelectedItemId(itemId);
   };
 
-  const handleMouseLeave = (): void => {
-    setHoveredIndex(null);
+  const handleDuplicateClick = async (
+    event: React.MouseEvent,
+    itemId: string | undefined,
+  ): Promise<void> => {
+    event.stopPropagation();
+    if (itemId) {
+      try {
+        setIsActiveTransaction(true);
+        if (contentType === 'widget') {
+          await duplicateWidget(auth.user?.access_token, itemId, tenant);
+          openSnackbar('Widget erfolgreich dupliziert!', 'success');
+          refetchData();
+        } else if (contentType === 'dashboard') {
+          await duplicateDashboard(auth.user?.access_token, itemId, tenant);
+          openSnackbar('Dashboard erfolgreich dupliziert!', 'success');
+          refetchData();
+        }
+        setIsActiveTransaction(false);
+      } catch (error) {
+        openSnackbar('Element konnte nicht dupliziert werden.', 'error');
+        setIsActiveTransaction(false);
+      }
+    }
   };
 
   return (
@@ -117,15 +151,16 @@ export default function TableContent<T>(
           content.map((item, index) => (
             <tr
               key={`TableContent-${index}`}
-              className="border-b hover:bg-[#FABAAE] cursor-pointer"
-              onClick={(): void => handleRowClick(item)}
+              className="border-b cursor-pointer hover:bg-[#FABAAE]"
               style={{
                 backgroundColor:
                   hoveredIndex === index ? hoverColor : 'transparent',
                 borderColor: borderColor,
               }}
-              onMouseEnter={(): void => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
+              onClick={() => handleRowClick(item.id)}
+              onContextMenu={(event) => handleRightClick(event, item.id)}
+              onMouseEnter={() => setHoveredIndex(index)}
+              onMouseLeave={() => setHoveredIndex(null)}
             >
               {config.columns.map((column) => (
                 <td key={`${column.toString()}-${index}`} className="px-6 py-5">
@@ -134,12 +169,28 @@ export default function TableContent<T>(
               ))}
               <td>
                 <button
-                  className="z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg"
+                  className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
+                    isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  disabled={isActiveTransaction}
                   onClick={(event): void =>
                     handleClickDeleteIcon(event, item.id)
                   }
                 >
                   <DashboardIcons iconName="Trashcan" color="#FA4141" />
+                </button>
+              </td>
+              <td>
+                <button
+                  className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
+                    isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  disabled={isActiveTransaction}
+                  onClick={async (event): Promise<void> =>
+                    await handleDuplicateClick(event, item.id)
+                  }
+                >
+                  <DashboardIcons iconName="File" color="#4CAF50" />
                 </button>
               </td>
             </tr>
@@ -149,8 +200,8 @@ export default function TableContent<T>(
 
       {isDeleteModalOpen && (
         <DeleteConfirmationModal
-          onClose={(): void => setIsDeleteModalOpen(false)}
-          onDelete={(): Promise<void> => handleDeleteClick()}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onDelete={() => handleDeleteClick()}
           showSuffixText={showSuffixText}
         />
       )}

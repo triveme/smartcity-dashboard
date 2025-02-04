@@ -32,6 +32,8 @@ export default async function DashboardPage({
   const widget: WidgetWithContent = {
     id: widgetWithChildren.widget.id,
     name: widgetWithChildren.widget.name,
+    description: widgetWithChildren.widget.description,
+    subheadline: widgetWithChildren.widget.subheadline,
     allowShare: widgetWithChildren.widget.allowShare,
     allowDataExport: widgetWithChildren.widget.allowDataExport,
     headlineColor: widgetWithChildren.widget.headlineColor,

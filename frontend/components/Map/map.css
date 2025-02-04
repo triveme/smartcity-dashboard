@@ -66,3 +66,11 @@ z-index: 0;
   width: 257px !important;
   height: 257px !important;
 }
+
+.custom-marker-icon {
+  font-size: 12px;
+}
+.custom-icon-wrapper,
+.custom-icon-wrapper * {
+  font-size: 8px;
+}

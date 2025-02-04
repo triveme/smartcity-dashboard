@@ -9,6 +9,7 @@ config({ path: envPath }); // Load environment variables from .env file in root 
 @Injectable()
 export class AuthHelperUtility {
   readonly adminRole = process.env.ADMIN_ROLE as string;
+  readonly superAdminRole = process.env.SUPER_ADMIN_ROLE as string;
   readonly editorRoles = process.env.EDIT_ROLES
     ? JSON.parse(process.env.EDIT_ROLES)
     : ([] as string[]);
@@ -18,6 +19,14 @@ export class AuthHelperUtility {
       throw new Error('ADMIN_ROLE env var does not exist');
     } else {
       return rolesFromRequest.includes(this.adminRole);
+    }
+  }
+
+  isSuperAdmin(rolesFromRequest: string[]): boolean {
+    if (!this.superAdminRole) {
+      throw new Error('SUPER_ADMIN_ROLE env var does not exist');
+    } else {
+      return rolesFromRequest.includes(this.superAdminRole);
     }
   }
 

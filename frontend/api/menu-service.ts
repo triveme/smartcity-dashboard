@@ -35,6 +35,28 @@ export async function getMenuGroupingElements(
   }
 }
 
+export async function getMenuGroupingElementByUrl(
+  urlParam: string,
+  tenant: string,
+): Promise<GroupingElement> {
+  try {
+    const url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/url/${urlParam}?abbreviation=${tenant}`;
+    const response = await axios.get(url);
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        'HTTP Error on getMenuGroupingElementByUrl:',
+        err.response?.status,
+      );
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}
+
 export async function postMenuGroupingElement(
   accessToken: string | undefined,
   newGroup: GroupingElement,

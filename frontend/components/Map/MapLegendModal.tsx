@@ -6,10 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationPin, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
 import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
+import { localSvgIconsList } from '@/ui/Icons/LocalSvgIcons';
 
 type MapLegendModalProps = {
   mapLegendValues?: MapModalLegend[];
-  mapLegendDisclaimer?: string;
+  mapLegendDisclaimer?: string[];
   menuStyle?: CSSProperties;
   onCloseModal: () => void;
   isFilterModalOpen: boolean;
@@ -76,10 +77,17 @@ export default function MapLegendModal(
     }
   };
 
+  const isSvgIcon = (iconName: string): boolean => {
+    return localSvgIconsList.some((icon) => icon.name === iconName);
+  };
+
   return (
     <div
       className="top-16 rounded-lg shadow-lg p-5 z-30 flex flex-col cursor-default"
-      style={{ ...menuStyle, ...getLegendModalStyle() }}
+      style={{
+        ...menuStyle,
+        ...getLegendModalStyle(),
+      }}
       ref={scrollRef}
     >
       <div className="overflow-y-auto">
@@ -90,6 +98,7 @@ export default function MapLegendModal(
             color={menuStyle?.color || '#FFF'}
             className="cursor-pointer"
             onClick={onCloseModal}
+            onTouchStart={onCloseModal}
           />
         </div>
 
@@ -105,11 +114,15 @@ export default function MapLegendModal(
                         color={legend.iconBackgroundColor}
                         size="2x"
                       />
-                      <div className="absolute top-0">
+                      <div
+                        className="absolute"
+                        style={{ top: isSvgIcon(legend.icon) ? '5px' : '0px' }}
+                      >
                         <DashboardIcons
                           iconName={legend.icon}
                           color="#FFF"
                           size="sm"
+                          height="12"
                         />
                       </div>
                     </div>
@@ -122,9 +135,14 @@ export default function MapLegendModal(
         )}
       </div>
 
-      {mapLegendDisclaimer && (
+      {mapLegendDisclaimer && mapLegendDisclaimer.length > 0 && (
         <div className="mt-auto pt-2">
-          <div>Haftungsausschluss: {mapLegendDisclaimer}</div>
+          <div>Haftungsausschluss:</div>
+          <ul className="list-disc pl-5">
+            {mapLegendDisclaimer.map((disc, index) => (
+              <li key={`disclaimer${index}`}>{disc}</li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

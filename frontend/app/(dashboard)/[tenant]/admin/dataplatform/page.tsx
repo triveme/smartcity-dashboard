@@ -102,7 +102,7 @@ export default function DataPlatform(): ReactElement {
       </div>
       <Table
         tableConfig={tableConfig}
-        tableContent={data || []}
+        tableContent={data && data.length > 0 ? data : []}
         contentType="AuthData"
         refetchData={refetch}
         iconColor={corporateInfo?.dashboardFontColor || '#fff'}

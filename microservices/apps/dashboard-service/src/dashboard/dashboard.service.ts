@@ -7,6 +7,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { v4 as uuid } from 'uuid';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -34,11 +35,23 @@ import { RoleUtil } from '../../../infopin-service/src/utility/RoleUtil';
 import { DashboardRepo } from './dashboard.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
+import { NewWidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
+import { WidgetService } from '../widget/widget.service';
 
 export type ChartData = {
   name: string;
   values: [string, number][];
   color?: string;
+};
+
+export type WeatherWarningData = {
+  category: string;
+  subCategory: string;
+  severity: number;
+  instructions: string;
+  alertDescription: string;
+  validFrom: string;
+  validTo: string;
 };
 
 type Coordinate = [number, number];
@@ -54,6 +67,8 @@ export type MapObject = {
 export type TabWithContent = Tab & { query?: Query } & {
   dataModel: DataModel;
 } & { chartData: ChartData[] } & { combinedWidgets: WidgetWithContent[] } & {
+  weatherWarnings: WeatherWarningData[];
+} & {
   mapObject: MapObject[];
 };
 export type WidgetWithContent = Widget & { tabs: TabWithContent[] };
@@ -71,6 +86,7 @@ export class DashboardService {
     private readonly populateService: PopulateService,
     private readonly dashboardRepo: DashboardRepo,
     private readonly panelRepo: PanelRepo,
+    private readonly widgetService: WidgetService,
     private readonly widgetsToPanelRepo: WidgetToPanelRepo,
   ) {}
 
@@ -245,28 +261,22 @@ export class DashboardService {
     const tenant =
       await this.tenantService.getTenantByAbbreviation(abbreviation);
 
+    if (!tenant) {
+      this.logger.warn(`Tenant not found for abbreviation: ${abbreviation}`);
+      return [];
+    }
+
     const dashboardToTenantIds = await this.getDashboardToTenantIds(tenant);
-
-    const retrievedDashboards: Dashboard[] = [];
-
-    const dashboardPromises = dashboardToTenantIds.map(
-      async (dashboardToTenantId) => {
-        return await this.dashboardRepo.getById(
-          dashboardToTenantId.dashboardId,
-        );
-      },
+    const dashboardIds = dashboardToTenantIds.map(
+      (mapping) => mapping.dashboardId,
     );
 
-    const resolvedDashboards = await Promise.all(dashboardPromises);
-
-    retrievedDashboards.push(...resolvedDashboards);
-
-    if (retrievedDashboards.length === 0) {
+    if (dashboardIds.length === 0) {
       this.logger.warn('No Dashboards found for given Tenant');
       return [];
-    } else {
-      return retrievedDashboards;
     }
+
+    return await this.dashboardRepo.getByIds(dashboardIds);
   }
 
   async getDashboardsWithContentByAbbreviation(
@@ -316,6 +326,63 @@ export class DashboardService {
       await this.groupingElementService.getAll(roles, tenantFromRequest);
 
     return this.getFirstDashboardUrlForGroupingElements(groupingElements);
+  }
+
+  async getDashboardWithWidgets(
+    id: string,
+    rolesFromRequest: string[],
+  ): Promise<DashboardWithContent> {
+    const dashboard: Dashboard = await this.dashboardRepo.getById(id);
+
+    if (!dashboard) {
+      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+    }
+
+    checkAuthorizationToRead(dashboard, rolesFromRequest);
+
+    const panels: Panel[] = await this.panelRepo.getPanelsByDashboardId(
+      dashboard.id,
+    );
+
+    const panelsWithWidgets: PanelWithContent[] = await Promise.all(
+      panels.map(async (panel) => {
+        const widgets: Widget[] = await this.widgetService.getWidgetsByPanelId(
+          panel.id,
+        );
+
+        // Prepare the panel with widgets, excluding tabs/queries
+        const panelWithWidgets: PanelWithContent = {
+          ...panel,
+          widgets: widgets.map((widget) => ({
+            ...widget,
+            tabs: [], // Exclude tabs from widgets
+          })),
+        };
+
+        return panelWithWidgets;
+      }),
+    );
+
+    const dashboardWithWidgets: DashboardWithContent = {
+      ...dashboard,
+      panels: panelsWithWidgets, // Panels with associated widgets
+    };
+
+    if (rolesFromRequest.length === 0) {
+      // Hide dashboard roles
+      delete dashboardWithWidgets.readRoles;
+      delete dashboardWithWidgets.writeRoles;
+
+      // Hide widget roles
+      dashboardWithWidgets.panels.forEach((panel) => {
+        panel.widgets.forEach((widget) => {
+          delete widget.readRoles;
+          delete widget.writeRoles;
+        });
+      });
+    }
+
+    return dashboardWithWidgets;
   }
 
   async create(
@@ -371,6 +438,92 @@ export class DashboardService {
     return newDashboard;
   }
 
+  async duplicate(
+    id: string,
+    rolesFromRequest: string[],
+    tenant: string,
+  ): Promise<DashboardWithContent> {
+    const dashboardToDuplicate = await this.getDashboardWithContent(
+      id,
+      rolesFromRequest,
+      tenant,
+    );
+    const duplicatedPanels: Panel[] = [];
+
+    // Generate unique name and URL for duplicated dashboard
+    const { uniqueName, uniqueUrl } =
+      await this.dashboardRepo.generateUniqueNameAndUrl(
+        dashboardToDuplicate.name,
+        dashboardToDuplicate.url,
+      );
+
+    const duplicatedDashboard: Dashboard = {
+      ...dashboardToDuplicate,
+      id: uuid(),
+      name: uniqueName,
+      url: uniqueUrl,
+    };
+
+    const createdDashboard =
+      await this.dashboardRepo.create(duplicatedDashboard);
+
+    if (createdDashboard) {
+      await this.dashboardToTenantService.manageCreate(
+        createdDashboard.id,
+        tenant,
+      );
+    }
+
+    if (dashboardToDuplicate.panels.length > 0) {
+      // Iterate through panels and duplicate them
+      await Promise.all(
+        dashboardToDuplicate.panels.map(async (panel) => {
+          const duplicatePanel: Panel = {
+            ...panel,
+            id: uuid(),
+            name: `${panel.name} (Copy)`,
+            dashboardId: createdDashboard.id,
+          };
+
+          const createdPanel = await this.panelRepo.create(duplicatePanel);
+          duplicatedPanels.push(createdPanel);
+
+          // Duplicate widgets associated with the panel
+          const widgetToPanelsToDuplicate =
+            await this.widgetsToPanelRepo.getByPanelId(panel.id);
+
+          if (widgetToPanelsToDuplicate.length > 0) {
+            await Promise.all(
+              widgetToPanelsToDuplicate.map(async (widgetToPanel) => {
+                // Duplicate the widget
+                const duplicatedWidget = await this.widgetService.duplicate(
+                  rolesFromRequest,
+                  widgetToPanel.widgetId,
+                  tenant,
+                );
+
+                // Create a new widget-to-panel association
+                const newWidgetToPanel: NewWidgetToPanel = {
+                  position: widgetToPanel.position,
+                  panelId: createdPanel.id,
+                  widgetId: duplicatedWidget.widget.id,
+                };
+
+                await this.widgetsToPanelRepo.create(newWidgetToPanel);
+              }),
+            );
+          }
+        }),
+      );
+    }
+
+    return this.getDashboardWithContent(
+      createdDashboard.id,
+      rolesFromRequest,
+      tenant,
+    );
+  }
+
   async update(
     id: string,
     values: Partial<Dashboard>,
@@ -411,12 +564,16 @@ export class DashboardService {
 
     const dashboardToUpdate = await this.getById(id, rolesFromRequest);
     const groupingElementForDashboard =
-      await this.groupingElementService.getByUrl(dashboardToUpdate.url);
+      await this.groupingElementService.getByUrlAndTenant(
+        dashboardToUpdate.url,
+        tenant,
+      );
 
     return await this.db.transaction(async (tx) => {
       if (groupingElementForDashboard) {
         groupingElementForDashboard.url = values.url;
         groupingElementForDashboard.name = values.name;
+        groupingElementForDashboard.icon = values.icon;
 
         await this.groupingElementService.update(
           groupingElementForDashboard.id,

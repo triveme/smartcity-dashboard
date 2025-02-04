@@ -9,6 +9,8 @@ const host = process.env.POSTGRES_HOST;
 const port = process.env.POSTGRES_PORT;
 const user = process.env.POSTGRES_USER;
 const password = process.env.POSTGRES_PASSWORD;
+const rejectSelfSigned =
+  process.env.POSTGRES_REJECT_UNAUTHORIZED === 'false' ? false : true;
 const database =
   process.env.NODE_ENV !== 'test'
     ? process.env.POSTGRES_DB
@@ -17,6 +19,12 @@ const database =
 if (!host || !port || !user || !password || !database) {
   throw new Error('Missing database environment variable(s)');
 }
+
+console.log(
+  'process.env.POSTGRES_REJECT_UNAUTHORIZED: ',
+  process.env.POSTGRES_REJECT_UNAUTHORIZED,
+);
+console.log('REJECT SELF SIGNED: ', rejectSelfSigned);
 
 const pool = new Pool({
   host: host,
@@ -28,6 +36,7 @@ const pool = new Pool({
   idleTimeoutMillis: 0, // Connections will never be closed due to idleness
   keepAlive: true, // Enable TCP keep-alive to prevent idle connections from being closed
   keepAliveInitialDelayMillis: 1000, // Start sending keep-alive packets after 1 second of inactivity
+  ssl: rejectSelfSigned ? false : { rejectUnauthorized: rejectSelfSigned }, // Enable SSL and reject unauthorized connections if not secure
 });
 
 async function migrateDatabase(): Promise<void> {

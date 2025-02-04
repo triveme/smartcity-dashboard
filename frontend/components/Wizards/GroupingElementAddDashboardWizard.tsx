@@ -20,6 +20,7 @@ import { useAuth } from 'react-oidc-context';
 import { WizardErrors } from '@/types/errors';
 import { useParams } from 'next/navigation';
 import { env } from 'next-runtime-env';
+import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 
 type GroupingElementWizardProps = {
   editElement: GroupingElement | undefined;
@@ -201,6 +202,16 @@ export default function GroupingElementAddDashboardWizard(
     }
   };
 
+  const getEditDashboardUrl = (selectedDashboard: Dashboard): string => {
+    if (allDashboards.length > 0 && selectedDashboard) {
+      const dashboard = allDashboards.find(
+        (dashboard) => dashboard.url === selectedDashboard?.url,
+      );
+      return `/${tenant}/admin/pages/edit?id=${dashboard?.id}`;
+    }
+    return '';
+  };
+
   return (
     <div className="fixed inset-0 bg-[#1E1E1E] bg-opacity-70 flex flex-col justify-center items-center z-50">
       <div
@@ -239,6 +250,13 @@ export default function GroupingElementAddDashboardWizard(
                   backgroundColor={backgroundColor}
                 />
               </div>
+              <div>
+                <RedirectPageButton
+                  url={getEditDashboardUrl(selectedDashboard!)}
+                />
+              </div>
+            </div>
+            <div className="pt-4">
               <ColorPickerComponent
                 currentColor={groupFontColor || fontColor}
                 handleColorChange={setGroupFontColor}
@@ -299,7 +317,7 @@ export default function GroupingElementAddDashboardWizard(
                   <ColorPickerComponent
                     currentColor={groupBackgroundColor}
                     handleColorChange={setGroupBackgroundColor}
-                    label="Icon Farbe"
+                    label="Hoverfarbe"
                   />
                   <CheckBox
                     label={'Farbverlauf'}

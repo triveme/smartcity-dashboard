@@ -3,6 +3,7 @@ import {
   visibilityEnum,
   reportThresholdTriggerTypeEnum,
   QueryData,
+  menuArrowDirectionEnum,
 } from '.';
 
 export type Dashboard = {
@@ -38,6 +39,7 @@ export type Panel = {
   generalInfo: string;
   headlineColor: string;
   height: number;
+  icon?: string;
   info: string;
   jumpoffIcon?: string;
   jumpoffLabel?: string;
@@ -45,6 +47,7 @@ export type Panel = {
   position: number;
   showGeneralInfo: boolean;
   showJumpoffButton: boolean;
+  openJumpoffLinkInNewTab: boolean;
   width: number;
 };
 
@@ -55,6 +58,7 @@ export type PanelWithContent = {
   generalInfo: string;
   headlineColor: string;
   height: number;
+  icon?: string;
   info: string;
   jumpoffIcon?: string;
   jumpoffLabel?: string;
@@ -62,6 +66,7 @@ export type PanelWithContent = {
   position: number;
   showGeneralInfo: boolean;
   showJumpoffButton: boolean;
+  openJumpoffLinkInNewTab: boolean;
   widgets: WidgetWithContent[];
   width: number;
 };
@@ -69,6 +74,8 @@ export type PanelWithContent = {
 export type Widget = {
   id?: string;
   name: string;
+  description: string;
+  subheadline: string;
   allowDataExport: boolean;
   allowShare: boolean;
   headlineColor: string;
@@ -84,6 +91,8 @@ export type Widget = {
 export type WidgetWithContent = {
   id?: string;
   name: string;
+  description: string;
+  subheadline: string;
   allowShare: boolean;
   headlineColor: string;
   height: number;
@@ -109,6 +118,7 @@ export type MapObject = {
 };
 
 export type MapModalWidget = {
+  title?: string;
   componentType: string;
   componentSubType?: string;
   attributes: string;
@@ -118,6 +128,21 @@ export type MapModalWidget = {
   chartUnit: string;
   chartStaticValues?: number[];
   chartStaticValuesColors?: string[];
+  chartStaticValuesTexts?: string[];
+  chartStaticValuesLogos?: string[];
+  dataSource?: number;
+  imageUrl?: string;
+  textValue?: string;
+  icon?: string;
+  iconColor?: string;
+  iconText?: string;
+  iconUrl?: string;
+  showAxisLabels?: boolean;
+  jumpoffIcon?: string;
+  jumpoffLabel?: string;
+  jumpoffUrl?: string;
+  jumpoffAttribute?: string;
+  openJumpoffLinkInNewTab?: boolean;
 };
 
 export type MapModalLegend = {
@@ -128,8 +153,10 @@ export type MapModalLegend = {
 
 export type Tab = {
   id?: string;
+  chartHasAdditionalSelection?: boolean;
   chartData?: ChartData[];
   chartLabels?: string[];
+  chartLegendAlign?: string;
   chartMaximum?: number;
   chartMinimum?: number;
   chartStaticValues?: number[];
@@ -154,7 +181,10 @@ export type Tab = {
   imageSrc?: string;
   imageUpdateInterval?: number;
   imageUrl?: string;
+  imageAllowJumpoff?: boolean;
+  imageJumpoffUrl?: string;
   isStepline?: boolean;
+  isLayoutVertical?: boolean;
   labelColor?: string;
   mapActiveMarkerColor?: string;
   mapAllowFilter?: boolean;
@@ -162,8 +192,12 @@ export type Tab = {
   mapAllowPopups?: boolean;
   mapAllowScroll?: boolean;
   mapAllowZoom?: boolean;
+  mapAttributeForValueBased?: string;
+  mapFormSizeFactor?: number;
   mapDisplayMode?: string;
   mapFilterAttribute?: string;
+  mapIsFormColorValueBased?: boolean;
+  mapIsIconColorValueBased?: boolean;
   mapLatitude?: number;
   mapLegendDisclaimer?: string;
   mapLegendValues?: MapModalLegend[];
@@ -178,18 +212,26 @@ export type Tab = {
   mapShapeOption?: string;
   mapStandardZoom?: number;
   mapWidgetValues?: MapModalWidget[];
+  mapWmsUrl?: string;
+  mapWmsLayer?: string;
   queryId?: string;
+  rangeStaticValuesMin?: number[];
+  rangeStaticValuesMax?: number[];
+  rangeStaticValuesColors?: string[];
+  rangeStaticValuesLogos?: string[];
+  rangeStaticValuesLabels?: string[];
   showLegend?: boolean;
   sliderCurrentAttribute?: string;
   sliderMaximumAttribute?: string;
   textValue?: string;
   tiles?: number;
   widgetId?: string;
+  weatherWarnings?: WeatherWarningType[];
 };
 
 export type TabWithQuery = Tab & {
   query: {
-    queryData: QueryData;
+    queryData: QueryData[];
   };
 };
 
@@ -280,21 +322,93 @@ export type DataSource = {
 export type CorporateInfo = {
   id?: string;
   tenantId?: string;
+
+  barChartAxisLabelFontColor: string;
+  barChartAxisLabelSize: string;
+  barChartAxisLineColor: string;
+  barChartAxisTicksFontSize: string;
+  barChartCurrentValuesColors: string[];
+  barChartFilterColor: string;
+  barChartFilterTextColor: string;
+  barChartGridColor: string;
+  barChartLegendFontColor: string;
+  barChartLegendFontSize: string;
+  barChartTicksFontColor: string;
+
+  cancelButtonColor: string;
+  cancelHoverButtonColor: string;
+  coloredSliderArrowColor: string;
+  coloredSliderBigValueFontColor: string;
+  coloredSliderBigValueFontSize: string;
+  coloredSliderLabelFontColor: string;
+  coloredSliderLabelFontSize: string;
+  coloredSliderUnitFontSize: string;
   dashboardFontColor: string;
+  dashboardHeadlineFontSize: string;
   dashboardPrimaryColor: string;
   dashboardSecondaryColor: string;
+  degreeChart180BgColor: string;
+  degreeChart180FillColor: string;
+  degreeChart180FontColor: string;
+  degreeChart180FontSize: string;
+  degreeChart180UnitFontSize: string;
+  degreeChart360BgColor: string;
+  degreeChart360FillColor: string;
+  degreeChart360FontColor: string;
+  degreeChart360FontSize: string;
+  degreeChart360UnitFontSize: string;
   fontColor: string;
   fontFamily: string;
   headerFontColor: string;
   headerLogo?: Logo;
-  headerLogoId?: string;
+  headerLogoId?: string | null;
   headerPrimaryColor: string;
   headerSecondaryColor: string;
   headerTitleAdmin: string;
   headerTitleDashboards: string;
+  iconWithLinkFontColor: string;
+  iconWithLinkFontSize: string;
+  iconWithLinkIconColor: string;
+  iconWithLinkIconSize: string;
+  informationTextFontColor: string;
+  informationTextFontSize: string;
+  isPanelHeadlineBold: boolean;
+  isWidgetHeadlineBold: boolean;
+
+  lineChartAxisLabelFontColor: string;
+  lineChartAxisLabelSize: string;
+  lineChartAxisLineColor: string;
+  lineChartAxisTicksFontSize: string;
+  lineChartCurrentValuesColors: string[];
+  lineChartFilterColor: string;
+  lineChartFilterTextColor: string;
+  lineChartGridColor: string;
+  lineChartLegendFontColor: string;
+  lineChartLegendFontSize: string;
+  lineChartTicksFontColor: string;
+
   logo?: string;
+  measurementChartAxisLabelFontColor: string;
+  measurementChartAxisLineColor: string;
+  measurementChartAxisTicksFontColor: string;
+  measurementChartBarColor: string;
+  measurementChartBigValueFontColor: string;
+  measurementChartBigValueFontSize: string;
+  measurementChartCardsBgColor: string;
+  measurementChartCardsFontColor: string;
+  measurementChartCardsIconColors: string[];
+  measurementChartCurrentValuesColors: string[];
+  measurementChartGridColor: string;
+  measurementChartLabelFontColor: string;
+  measurementChartTopButtonBgColor: string;
+  measurementChartTopButtonFontColor: string;
+  measurementChartTopButtonHoverColor: string;
+  measurementChartTopButtonInactiveBgColor: string;
   menuActiveColor: string;
   menuActiveFontColor: string;
+  menuArrowDirection: menuArrowDirectionEnum;
+  menuCornerColor: string;
+  menuCornerFontColor: string;
   menuFontColor: string;
   menuHoverColor: string;
   menuLogo?: Logo;
@@ -305,26 +419,51 @@ export type CorporateInfo = {
   panelBorderRadius: string;
   panelBorderSize: string;
   panelFontColor: string;
+  panelHeadlineFontSize: string;
   panelPrimaryColor: string;
   panelSecondaryColor: string;
-  scrollbarBackground: string;
-  scrollbarColor: string;
+  pieChartFontColor: string;
+  pieChartFontSize: string;
+  pieChartCurrentValuesColors: string[];
   saveButtonColor: string;
   saveHoverButtonColor: string;
-  cancelButtonColor: string;
-  cancelHoverButtonColor: string;
+  scrollbarBackground: string;
+  scrollbarColor: string;
   showHeaderLogo: boolean;
   showMenuLogo: boolean;
+  sidebarLogos: SidebarLogo[];
+  sliderCurrentFontColor: string;
+  sliderMaximumFontColor: string;
+  sliderGeneralFontColor: string;
+  sliderCurrentColor: string;
+  sliderMaximumColor: string;
+  stageableChartFontColor: string;
+  stageableChartFontSize: string;
+  stageableChartTicksFontColor: string;
+  stageableChartTicksFontSize: string;
   titleBar: string;
   useColorTransitionHeader: boolean;
   useColorTransitionMenu: boolean;
+
+  weatherWarningBgColor: string;
+  weatherWarningHeadlineColor: string;
+  weatherInstructionsColor: string;
+  weatherAlertDescriptionColor: string;
+  weatherDateColor: string;
+  weatherWarningButtonBackgroundColor: string;
+  weatherWarningButtonIconColor: string;
+
+  wertFontColor: string;
+  wertFontSize: string;
+  wertUnitFontSize: string;
   widgetBorderColor: string;
   widgetBorderRadius: string;
   widgetBorderSize: string;
   widgetFontColor: string;
+  widgetHeadlineFontSize: string;
+  widgetSubheadlineFontSize: string;
   widgetPrimaryColor: string;
   widgetSecondaryColor: string;
-  sidebarLogos: SidebarLogo[];
 };
 
 export type WidgetWithChildren = {
@@ -332,6 +471,7 @@ export type WidgetWithChildren = {
   tab: Tab;
   queryConfig?: QueryConfig;
   reportConfig?: ReportConfig;
+  datasource?: DataSource;
 };
 
 export type AuthData = {
@@ -368,8 +508,15 @@ export type Mail = {
 };
 
 export type MapModalChartStyle = {
-  dashboardSecondaryColor: string;
-  dashboardFontColor: string;
+  degreeChart180BgColor: string;
+  degreeChart180FillColor: string;
+  degreeChart180FontColor: string;
+  degreeChart180FontSize: string;
+  degreeChart180UnitFontSize: string;
+  stageableChartFontColor: string;
+  stageableChartFontSize: string;
+  stageableChartTicksFontColor: string;
+  stageableChartTicksFontSize: string;
 };
 
 export type SliderOverviewType = {
@@ -384,4 +531,16 @@ export type GeneralSettings = {
   information: string;
   imprint: string;
   privacy: string;
+  allowThemeSwitching: boolean;
+  disclaimer: string;
+};
+
+export type WeatherWarningType = {
+  category: string;
+  subCategory: string;
+  severity: number;
+  instructions: string;
+  alertDescription: string;
+  validFrom: string;
+  validTo: string;
 };
