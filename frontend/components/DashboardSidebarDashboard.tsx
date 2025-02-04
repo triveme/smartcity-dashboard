@@ -99,8 +99,8 @@ export default function DashboardSidebarDashboard(
             }
           }}
         >
-          {icon && (
-            <div className="w-4 h-4 flex basis-1/5">
+          {icon && icon !== 'empty' && (
+            <div className="w-4 h-4 flex items-center basis-1/5">
               <DashboardIcons
                 iconName={icon}
                 color={menuStyle.color || 'white'}
@@ -109,7 +109,10 @@ export default function DashboardSidebarDashboard(
           )}
 
           <div className="basis-4/5">
-            <button style={{ color: menuStyle.color || 'white' }}>
+            <button
+              className="text-start"
+              style={{ color: menuStyle.color || 'white' }}
+            >
               {name}
             </button>
           </div>

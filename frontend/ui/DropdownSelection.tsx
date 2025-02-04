@@ -53,7 +53,7 @@ export default function DropdownSelection(
   return (
     <div
       className="relative p-2 rounded-lg flex"
-      style={{ background: backgroundColor }}
+      style={{ background: backgroundColor, color: data?.headerFontColor }}
     >
       <div
         className="flex cursor-pointer justify-between items-center content-center gap-2"
@@ -86,6 +86,10 @@ export default function DropdownSelection(
                     hoveredIndex === index
                       ? data?.headerPrimaryColor
                       : 'transparent',
+                  color:
+                    hoveredIndex === index
+                      ? data?.headerFontColor
+                      : data?.dashboardFontColor,
                   border: `1px solid ${data?.headerPrimaryColor}`,
                   borderRadius,
                 }}

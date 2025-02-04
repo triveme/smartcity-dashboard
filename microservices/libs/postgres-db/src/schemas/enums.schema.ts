@@ -34,6 +34,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Slider',
   'Karte',
   'Kombinierte Komponente',
+  'Wetterwarnungen',
   'Wert',
   'iFrame',
   'Bild',
@@ -103,4 +104,15 @@ export const chartLegendPlacement = pgEnum('chart_legend_placement', [
   'Left',
   'Right',
   'Top',
+]);
+
+export const menuArrowDirectionEnum = pgEnum('menu_arrow_direction_enum', [
+  'Oben | Oben',
+  'Oben | Unten',
+  'Links | Links',
+  'Links | Rechts',
+  'Unten | Unten',
+  'Unten | Oben',
+  'Rechts | Rechts',
+  'Rechts | Links',
 ]);

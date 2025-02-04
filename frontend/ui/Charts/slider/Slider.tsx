@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import { ReactElement } from 'react';
 
 interface Level {
@@ -20,6 +21,12 @@ interface SliderProps {
   labelColor: string;
   unit: string;
   value: number;
+  bigValueFontSize: string;
+  bigValueFontColor: string;
+  labelFontSize: string;
+  labelFontColor: string;
+  arrowColor: string;
+  unitFontSize: string;
 }
 
 export default function Slider(props: SliderProps): ReactElement {
@@ -32,10 +39,22 @@ export default function Slider(props: SliderProps): ReactElement {
     staticValuesLogos,
     staticValuesTexts,
     iconColor,
-    labelColor,
     unit,
     value,
+    bigValueFontSize,
+    bigValueFontColor,
+    labelFontSize,
+    labelFontColor,
+    arrowColor,
+    unitFontSize,
   } = props;
+
+  if (!staticValues || staticValues.length <= 0) {
+    return <div>ERROR</div>;
+  }
+
+  // Make sure the value never goes below or above min/max
+  const clampedValue = Math.min(Math.max(value, minValue), maxValue);
 
   // Calculate the percentage width for each static value range
   const levels: Level[] = [];
@@ -50,7 +69,8 @@ export default function Slider(props: SliderProps): ReactElement {
   });
 
   // Calculate the position of the current value on the slider
-  const valuePosition = ((value - minValue) / (maxValue - minValue)) * 100;
+  const valuePosition =
+    ((clampedValue - minValue) / (maxValue - minValue)) * 100;
 
   // Calculate positions for ticks and logos
   const ticksWithLogos = staticValuesTicks.map((tick, index) => {
@@ -64,12 +84,12 @@ export default function Slider(props: SliderProps): ReactElement {
   // Determine which staticValuesText to display based on the current value
   let displayedText = '';
   for (let i = 0; i < staticValuesTicks.length; i++) {
-    if (value < staticValuesTicks[i]) {
+    if (clampedValue < staticValuesTicks[i]) {
       displayedText = staticValuesTexts[i];
       break;
     }
   }
-  if (value >= staticValuesTicks[staticValuesTicks.length - 1]) {
+  if (clampedValue >= staticValuesTicks[staticValuesTicks.length - 1]) {
     displayedText = staticValuesTexts[staticValuesTicks.length - 1];
   }
 
@@ -86,23 +106,29 @@ export default function Slider(props: SliderProps): ReactElement {
   const gradientString = gradientStops.join(', ');
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
+    <div className="flex flex-col items-center justify-center h-full w-full overflow-hidden">
       <div className="mb-12">
         <span
-          className="text-5xl font-monospace font-bold"
-          style={{ color: iconColor }}
+          className="text-5xl"
+          style={{
+            color: bigValueFontColor,
+            fontSize: `${bigValueFontSize}px` || '48px',
+          }}
         >
-          {value}
+          {applyUserLocaleToNumber(
+            roundToDecimal(clampedValue),
+            navigator.language || 'de-DE',
+          )}
         </span>
         <span
-          className="text-2xl font-monospace font-bold ml-2"
-          style={{ color: iconColor }}
+          className="text-2xl ml-2"
+          style={{ color: bigValueFontColor, fontSize: `${unitFontSize}px` }}
         >
           {unit}
         </span>
       </div>
 
-      <div className="relative w-full max-w-sm mb-12">
+      <div className="relative w-full px-4 mb-12">
         <div
           className="relative flex h-6 border border-gray-500 rounded-full overflow-hidden"
           style={{
@@ -124,9 +150,9 @@ export default function Slider(props: SliderProps): ReactElement {
           ))}
         </div>
         <div
-          className="absolute left-0"
+          className="absolute left-0 px-4 rotate-180"
           style={{
-            left: `${valuePosition}%`,
+            left: `${valuePosition < 8 ? 8 : valuePosition > 90 ? 90 : valuePosition}%`,
             transform: 'translateX(-50%)',
             top: '-25px',
           }}
@@ -136,7 +162,7 @@ export default function Slider(props: SliderProps): ReactElement {
             width="49"
             height="49"
             viewBox="0 0 49 49"
-            transform="rotate(180)"
+            className="rotate-180"
           >
             <path
               stroke="none"
@@ -146,7 +172,7 @@ export default function Slider(props: SliderProps): ReactElement {
             ></path>
             <path
               stroke="none"
-              fill="#000000"
+              fill={arrowColor}
               d="M 20.4305 9.1081 a 3.4 3.4 90 0 1 5.889 0 l 14.511 16.6338 a 3.4 3.4 90 0 1 -2.9445 5.1 l -29.0221 0 a 3.4 3.4 90 0 1 -2.9445 -5.1"
             ></path>
           </svg>
@@ -156,9 +182,9 @@ export default function Slider(props: SliderProps): ReactElement {
           ticksWithLogos.map((tick, index) => (
             <div
               key={`${tick.position}-${tick.logo}-${index}`}
-              className="absolute flex flex-col items-center pt-1"
+              className="absolute flex flex-col items-center pt-1 px-4"
               style={{
-                left: `${tick.position}%`,
+                left: `${tick.position < 8 ? 8 : tick.position > 90 ? 90 : tick.position}%`,
                 transform: 'translateX(-50%)',
                 top: '32px',
               }}
@@ -172,7 +198,13 @@ export default function Slider(props: SliderProps): ReactElement {
           ))}
       </div>
       <div className="text-center">
-        <span className="text-2xl mt-6" style={{ color: labelColor }}>
+        <span
+          className="text-2xl mt-6"
+          style={{
+            color: labelFontColor || '#FFFFF',
+            fontSize: `${labelFontSize}px` || '24px',
+          }}
+        >
           {displayedText}
         </span>
       </div>

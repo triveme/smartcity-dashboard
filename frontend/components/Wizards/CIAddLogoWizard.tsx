@@ -17,8 +17,8 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 
 type Props = {
   corporateInfo: CorporateInfo | undefined;
-  headerLogoId: string | undefined;
-  setHeaderLogoId: Dispatch<SetStateAction<string | undefined>>;
+  headerLogoId: string | null;
+  setHeaderLogoId: Dispatch<SetStateAction<string | null>>;
   sidebarLogos: SidebarLogo[];
   setSidebarLogos: Dispatch<SetStateAction<SidebarLogo[]>>;
 };
@@ -34,7 +34,7 @@ const CIAddLogoWizard: FC<Props> = ({
   const { openSnackbar } = useSnackbar();
 
   const [selectedLogoName, setSelectedLogoName] = useState<string>('');
-  const [selectedLogoId, setSelectedLogoId] = useState<string>('');
+  const [selectedLogoId, setSelectedLogoId] = useState<string | null>('');
   const [selectedHeaderLogoName, setSelectedHeaderLogoName] =
     useState<string>('');
 
@@ -52,9 +52,23 @@ const CIAddLogoWizard: FC<Props> = ({
   });
 
   useEffect(() => {
+    if (
+      corporateInfo &&
+      corporateInfo.headerLogoId &&
+      allLogos &&
+      allLogos.length > 0
+    ) {
+      const savedHeaderLogo = allLogos.find(
+        (logo) => logo.id === corporateInfo.headerLogoId,
+      );
+      if (savedHeaderLogo) setSelectedHeaderLogoName(savedHeaderLogo.logoName);
+    }
+  }, [corporateInfo, allLogos]);
+
+  useEffect(() => {
     if (corporateInfo) {
       setSidebarLogos(corporateInfo.sidebarLogos || []);
-      setHeaderLogoId(corporateInfo.headerLogoId || undefined);
+      setHeaderLogoId(corporateInfo.headerLogoId || null);
     }
   }, [corporateInfo, setSidebarLogos, setHeaderLogoId]);
 
@@ -86,9 +100,9 @@ const CIAddLogoWizard: FC<Props> = ({
     );
     if (selectedLogo) {
       setSelectedHeaderLogoName(value.toString());
-      setHeaderLogoId(selectedLogo.id || undefined);
+      setHeaderLogoId(selectedLogo.id || null);
     } else {
-      setHeaderLogoId(undefined);
+      setHeaderLogoId(null);
       setSelectedHeaderLogoName('');
     }
   };
@@ -126,8 +140,8 @@ const CIAddLogoWizard: FC<Props> = ({
           currentValue={selectedHeaderLogoName}
           selectableValues={
             allLogos && allLogos.length > 0
-              ? ['', ...allLogos.map((logo) => logo.logoName!)]
-              : ['']
+              ? ['Kein Logo', ...allLogos.map((logo) => logo.logoName!)]
+              : ['Kein Logo']
           }
           onSelect={(value: string | number): void =>
             handleHeaderLogoSelection(value.toString())
@@ -158,8 +172,8 @@ const CIAddLogoWizard: FC<Props> = ({
           currentValue={selectedLogoName}
           selectableValues={
             allLogos && allLogos.length > 0
-              ? ['', ...allLogos.map((logo) => logo.logoName!)]
-              : ['']
+              ? ['Kein Logo', ...allLogos.map((logo) => logo.logoName!)]
+              : ['Kein Logo']
           }
           onSelect={(value: string | number): void => {
             const selectedLogo = allLogos?.find(
@@ -169,7 +183,8 @@ const CIAddLogoWizard: FC<Props> = ({
               setSelectedLogoName(value.toString());
               setSelectedLogoId(selectedLogo.id || '');
             } else {
-              setSelectedLogoId('');
+              setSelectedLogoName('');
+              setSelectedLogoId(null);
             }
           }}
           iconColor={corporateInfo?.dashboardFontColor || '#fff'}

@@ -10,6 +10,10 @@ type ColumnChartProps = {
   maxValue: number;
   valueWarning?: number;
   valueAlarm?: number;
+  barColor?: string;
+  gridColor?: string;
+  warningColor?: string;
+  alarmColor?: string;
 };
 
 export default function ColumnChart({
@@ -18,6 +22,10 @@ export default function ColumnChart({
   maxValue,
   valueWarning,
   valueAlarm,
+  barColor,
+  gridColor,
+  warningColor,
+  alarmColor,
 }: ColumnChartProps): React.ReactElement {
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +78,7 @@ export default function ColumnChart({
           splitLine: {
             show: true,
             lineStyle: {
-              color: '#e8e8e8',
+              color: gridColor || '#e8e8e8',
               type: 'dashed',
             },
           },
@@ -81,7 +89,7 @@ export default function ColumnChart({
             barWidth: '60%',
             data: [value],
             itemStyle: {
-              color: '#DE507D',
+              color: barColor,
             },
             markLine: {
               silent: true,
@@ -91,7 +99,7 @@ export default function ColumnChart({
                   yAxis: valueWarning,
                   name: 'Warnung',
                   lineStyle: {
-                    color: 'orange',
+                    color: warningColor,
                     type: 'solid',
                   },
                   label: {
@@ -105,7 +113,7 @@ export default function ColumnChart({
                   yAxis: valueAlarm,
                   name: 'Alarm',
                   lineStyle: {
-                    color: 'red',
+                    color: alarmColor,
                     type: 'solid',
                   },
                   label: {
@@ -134,7 +142,7 @@ export default function ColumnChart({
         myChart?.dispose();
       };
     }
-  }, [value, chartLabels, maxValue]);
+  }, [value, chartLabels, maxValue, barColor]);
 
   return <div className="w-full h-full" ref={chartRef} />;
 }

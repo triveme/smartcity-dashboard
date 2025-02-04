@@ -8,10 +8,12 @@ import { WizardErrors } from '@/types/errors';
 export function validateQueryConfig(
   queryConfig: QueryConfig,
   componentType: string,
+  isQueryConfig: boolean,
   origin: string,
   componentSubType?: string,
 ): WizardErrors {
   const errorsOccured: WizardErrors = {};
+
   if (
     queryConfig?.interval === undefined ||
     queryConfig?.interval === null ||
@@ -49,10 +51,14 @@ export function validateQueryConfig(
   }
 
   if (componentType === tabComponentTypeEnum.diagram) {
+    if (queryConfig?.attributes && queryConfig?.attributes.length === 0) {
+      errorsOccured.attributeError =
+        'Diagramm Widgets müssen mindestens ein Attribut haben';
+    }
     if (componentSubType === tabComponentSubTypeEnum.pieChart) {
-      if (queryConfig.attributes && !(queryConfig?.attributes.length >= 3)) {
+      if (queryConfig.attributes && !(queryConfig?.attributes.length > 0)) {
         errorsOccured.attributeError =
-          'Pie Charts benötigen mindestens 3 Attribute';
+          'Pie Charts benötigen mindestens 1 Attribut';
       }
     }
   }
@@ -64,6 +70,24 @@ export function validateQueryConfig(
     if (queryConfig?.entityIds && queryConfig?.entityIds.length != 1) {
       errorsOccured.sensorError =
         'Wert Widgets müssen einen einzelnen Sensor oder Source haben';
+    }
+  }
+  if (
+    componentType === tabComponentTypeEnum.slider &&
+    componentSubType === tabComponentSubTypeEnum.coloredSlider
+  ) {
+    if (queryConfig?.attributes && queryConfig?.attributes.length !== 1) {
+      errorsOccured.attributeError =
+        'Slider Widgets müssen ein einzelnes Attribut haben';
+    }
+  }
+  if (
+    componentType === tabComponentTypeEnum.slider &&
+    componentSubType === tabComponentSubTypeEnum.overviewSlider
+  ) {
+    if (queryConfig?.attributes && queryConfig?.attributes.length <= 1) {
+      errorsOccured.attributeError =
+        'Slider Übersicht muss jeweils ein Attribut für die Aktuelle und Maximale Auslastung haben';
     }
   }
   return errorsOccured;

@@ -105,6 +105,15 @@
         "attributes": {}
       },
       {
+        "id": "5d99b58b-5101-49bb-85d3-a6aa43134fef",
+        "name": "scs-super-admin",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "ab1bf924-24e7-4aad-9522-9cd9542035bf",
+        "attributes": {}
+      },
+      {
         "id": "6e2936c5-e242-446b-9336-8fe9842726f9",
         "name": "Super Admin",
         "description": "",

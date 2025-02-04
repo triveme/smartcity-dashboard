@@ -31,3 +31,4 @@ The link:./microservices[monorepo] contains the following microservices:
 
 * link:./microservices/apps/dashboard-service[dashboard-service]: Responsible for serving data to the frontend and handling configuration changes.
 * link:./microservices/apps/ngsi-service[ngsi-service]: Responsible for handling requests that need to be made using the NGSI API.
+* link:./microservices/apps/api-service[api-service]: Responsible for handling requests that need to be made using a city's API where an ngsi server doesn't exist.

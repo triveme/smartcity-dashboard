@@ -9,9 +9,11 @@ type Radial180ChartProps = {
   maxValue: number;
   unit: string;
   value: number;
-  mainColor: string;
-  secondaryColor: string;
   fontColor: string;
+  fontSize: string;
+  backgroundColor: string;
+  fillColor: string;
+  unitFontSize: string;
 };
 
 export default function Radial180Chart(
@@ -22,9 +24,11 @@ export default function Radial180Chart(
     maxValue,
     unit,
     value,
-    mainColor,
-    secondaryColor,
     fontColor,
+    fontSize,
+    backgroundColor,
+    fillColor,
+    unitFontSize,
   } = props;
   const chartRef = useRef(null);
   let myChart: ECharts | null = null;
@@ -44,15 +48,16 @@ export default function Radial180Chart(
           axisLine: {
             lineStyle: {
               width: 12,
-              color: [[1, mainColor]],
+              color: [[1, backgroundColor]],
             },
           },
           progress: {
             show: true,
             roundCap: true,
             itemStyle: {
-              color: secondaryColor,
+              color: fillColor,
             },
+            width: 12,
           },
           pointer: {
             show: false,
@@ -65,7 +70,6 @@ export default function Radial180Chart(
             length: 15,
             lineStyle: {
               width: 2,
-              color: mainColor,
             },
           },
           axisLabel: {
@@ -74,15 +78,16 @@ export default function Radial180Chart(
             fontSize: 16,
           },
           detail: {
-            formatter: function (params): string {
-              return `{value|${params}}\n{unit|${unit}}`;
-            },
-            color: fontColor,
+            formatter: () => `{value|${value}}\n{unitDisplay|${unit}}`,
             offsetCenter: [0, '0%'],
             rich: {
-              unit: {
-                color: '#fff',
-                fontSize: 16,
+              value: {
+                fontSize: fontSize,
+                color: fontColor,
+              },
+              unitDisplay: {
+                fontSize: unitFontSize,
+                color: fontColor,
               },
             },
           },
@@ -115,7 +120,15 @@ export default function Radial180Chart(
         }
       };
     }
-  }, [minValue, maxValue, unit]);
+  }, [
+    minValue,
+    maxValue,
+    unit,
+    fontColor,
+    fontSize,
+    backgroundColor,
+    fillColor,
+  ]);
 
   return <div className="w-full h-full" ref={chartRef} />;
 }

@@ -5,14 +5,26 @@ import WizardTextfield from '@/ui/WizardTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
 import CheckBox from '@/ui/CheckBox';
 import { WizardErrors } from '@/types/errors';
+import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
+import { menuArrowDirections, themes } from '@/utils/enumMapper';
+import { CorporateInfo, menuArrowDirectionEnum, themeEnum } from '@/types';
+import { getGeneralSettingsByTenant } from '@/api/general-settings-service';
+import { useQuery } from '@tanstack/react-query';
+import { getTenantOfPage } from '@/utils/tenantHelper';
+import Cookies from 'js-cookie';
 
 type Props = {
+  corporateInfo: CorporateInfo | undefined;
   titleBar: string;
   setTitleBar: (value: string) => void;
   headerPrimaryColor: string;
   setHeaderPrimaryColor: (color: string) => void;
   headerSecondaryColor: string;
   setHeaderSecondaryColor: (color: string) => void;
+  menuCornerColor: string;
+  setMenuCornerColor: (color: string) => void;
+  menuCornerFontColor: string;
+  setMenuCornerFontColor: (color: string) => void;
   menuPrimaryColor: string;
   setMenuPrimaryColor: (color: string) => void;
   menuSecondaryColor: string;
@@ -39,14 +51,22 @@ type Props = {
   setCancelButtonColor: (color: string) => void;
   cancelHoverButtonColor: string;
   setCancelHoverButtonColor: (color: string) => void;
+  menuArrowDirection: string;
+  setMenuArrowDirection: (direction: menuArrowDirectionEnum) => void;
   errors: WizardErrors | undefined;
   borderColor: string;
   backgroundColor: string;
+  iconColor: string;
 };
 
 export default function LayoutCiWizard({
+  corporateInfo,
   titleBar,
   setTitleBar,
+  menuCornerColor,
+  setMenuCornerColor,
+  menuCornerFontColor,
+  setMenuCornerFontColor,
   headerPrimaryColor,
   setHeaderPrimaryColor,
   headerSecondaryColor,
@@ -77,30 +97,73 @@ export default function LayoutCiWizard({
   setCancelButtonColor,
   cancelHoverButtonColor,
   setCancelHoverButtonColor,
+  menuArrowDirection,
+  setMenuArrowDirection,
   errors,
   borderColor,
   backgroundColor,
+  iconColor,
 }: Props): JSX.Element {
+  const tenant = getTenantOfPage();
+  const { data: generalSetting } = useQuery({
+    queryKey: ['generalSettings'],
+    queryFn: () => getGeneralSettingsByTenant(tenant),
+  });
+
   return (
     <div className="flex flex-col w-full pb-2 px-4 transition-opacity duration-500 opacity-100">
-      <div className="flex flex-row w-full">
-        <div className="flex flex-col w-1/2 pb-2">
-          <WizardLabel label="Titel" />
-          <WizardTextfield
-            value={titleBar ?? ''}
-            onChange={(value: string | number): void =>
-              setTitleBar(value.toString())
-            }
-            error={errors && errors.titleError}
-            borderColor={borderColor}
-            backgroundColor={backgroundColor}
-          />
-        </div>
-      </div>
-      <HorizontalDivider />
+      {!corporateInfo && (
+        <>
+          <div className="flex flex-row w-full">
+            <div className="flex flex-col w-1/2 pb-2">
+              <WizardLabel label="Thementitel" />
+              <WizardTextfield
+                value={titleBar ?? ''}
+                onChange={(value: string | number): void =>
+                  setTitleBar(value.toString())
+                }
+                error={errors && errors.titleError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          </div>
+          <HorizontalDivider />
+        </>
+      )}
+
+      {corporateInfo && generalSetting?.allowThemeSwitching && (
+        <>
+          <div className="flex flex-row w-full">
+            <div className="flex flex-col w-1/2 pb-2">
+              <WizardLabel label="Thema" />
+              <WizardDropdownSelection
+                currentValue={
+                  Cookies.get('isLightTheme') === 'true'
+                    ? themeEnum.Light
+                    : themeEnum.Dark
+                }
+                selectableValues={themes.map((option) => option.label)}
+                onSelect={(theme: string | number): void => {
+                  Cookies.set(
+                    'isLightTheme',
+                    theme === themeEnum.Light ? 'true' : 'false',
+                    { path: '/' },
+                  );
+                  window.location.reload();
+                }}
+                iconColor={iconColor}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          </div>
+          <HorizontalDivider />
+        </>
+      )}
       <div className="flex flex-col w-full pb-4">
         <WizardLabel label="Header" />
-        <div className="flex flex-wrap w-full gap-y-8">
+        <div className="flex flex-wrap w-full gap-y-8 pb-4">
           <div className="w-1/2">
             <ColorPickerComponent
               currentColor={headerPrimaryColor}
@@ -120,6 +183,22 @@ export default function LayoutCiWizard({
               label={'Farbübergang '}
               value={useColorTransitionHeader}
               handleSelectChange={setUseColorTransitionHeader}
+            />
+          </div>
+        </div>
+        <div className="flex flex-wrap w-full gap-y-8">
+          <div className="w-1/2">
+            <ColorPickerComponent
+              currentColor={menuCornerColor}
+              handleColorChange={setMenuCornerColor}
+              label="Eck Hintergrundfarbe"
+            />
+          </div>
+          <div className="w-1/2">
+            <ColorPickerComponent
+              currentColor={menuCornerFontColor}
+              handleColorChange={setMenuCornerFontColor}
+              label="Eck Textfarbe"
             />
           </div>
         </div>
@@ -168,6 +247,28 @@ export default function LayoutCiWizard({
               currentColor={menuActiveFontColor}
               handleColorChange={setMenuActiveFontColor}
               label="Aktive Schriftfarbe"
+            />
+          </div>
+          <div className="w-1/2">
+            <WizardLabel label="Pfeilrichtung" />
+            <WizardDropdownSelection
+              currentValue={
+                menuArrowDirections.find(
+                  (option) => option.value === menuArrowDirection,
+                )?.label || ''
+              }
+              selectableValues={menuArrowDirections.map(
+                (option) => option.label,
+              )}
+              onSelect={(label: string | number): void => {
+                const enumValue = menuArrowDirections.find(
+                  (option) => option.label === label,
+                )?.value;
+                setMenuArrowDirection(enumValue as menuArrowDirectionEnum);
+              }}
+              iconColor={iconColor}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
             />
           </div>
         </div>

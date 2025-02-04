@@ -18,14 +18,13 @@ const Map = dynamic(() => import('@/components/Map/Map'), {
 type DashboardPreviewProps = {
   panels: Panel[];
   handlePanelChange: (panels: Panel[]) => void;
-  refetchPanel: () => void;
-  canFetch: boolean;
   dashboardType: string;
   selectedTab: Tab | undefined;
   fontColor: string;
   iconColor: string;
   backgroundColor: string;
   borderColor: string;
+  panelHeadlineColor: string;
 };
 
 export default function DashboardPreview(
@@ -34,14 +33,13 @@ export default function DashboardPreview(
   const {
     panels,
     handlePanelChange,
-    refetchPanel,
-    canFetch,
     dashboardType,
     selectedTab,
     fontColor,
     iconColor,
     borderColor,
     backgroundColor,
+    panelHeadlineColor,
   } = props;
   const auth = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,9 +68,6 @@ export default function DashboardPreview(
   };
 
   const handlePanelWizardClosed = (): void => {
-    if (canFetch) {
-      refetchPanel();
-    }
     setIsModalOpen(false);
   };
 
@@ -153,7 +148,7 @@ export default function DashboardPreview(
 
   return (
     <div className="h-full w-full rounded-lg">
-      <div className="grid lg:grid-cols-12 md:grid-cols-6 xs:grid-cols-3 grid-flow-row gap-2">
+      <div className="grid lg:grid-cols-12 sm:grid-cols-3 grid-flow-row gap-2">
         {panels &&
           dashboardType !== 'Karte' &&
           panels.length > 0 &&
@@ -229,7 +224,21 @@ export default function DashboardPreview(
           mapShapeColor={
             selectedTab?.mapShapeColor ? selectedTab?.mapShapeColor : '#FF0000'
           }
-        ></Map>
+          mapAttributeForValueBased={
+            selectedTab?.mapAttributeForValueBased || ''
+          }
+          mapIsFormColorValueBased={
+            selectedTab?.mapIsFormColorValueBased || false
+          }
+          mapIsIconColorValueBased={
+            selectedTab?.mapIsIconColorValueBased || false
+          }
+          staticValues={selectedTab?.chartStaticValues || []}
+          staticValuesColors={selectedTab?.chartStaticValuesColors || []}
+          mapFormSizeFactor={selectedTab?.mapFormSizeFactor || 1}
+          mapWmsUrl={selectedTab?.mapWmsUrl || ''}
+          mapWmsLayer={selectedTab?.mapWmsLayer || ''}
+        />
       )}
 
       {isModalOpen && activePanel && (
@@ -243,6 +252,7 @@ export default function DashboardPreview(
           iconColor={iconColor}
           backgroundColor={backgroundColor}
           borderColor={borderColor}
+          panelHeadlineColorProp={panelHeadlineColor}
         />
       )}
 

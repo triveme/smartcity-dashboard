@@ -20,6 +20,19 @@ export class AuthService {
     refreshToken: string,
   ): Promise<TokenData> {
     try {
+      const tokenData =
+        this.tokenDataDictionary[queryBatch.query_config.dataSourceId];
+
+      // Check if the token needs to be updated
+      if (tokenData && this.doesTokenNeedToUpdate(tokenData)) {
+        this.logger.log('Token needs to be updated, refreshing token...');
+      }
+
+      if (!refreshToken) {
+        // Directly fetch the initial token if refresh token is unavailable
+        return await this.getInitialTokenData(queryBatch);
+      }
+
       const { data } = await lastValueFrom(
         this.httpService
           .post(
@@ -31,47 +44,34 @@ export class AuthService {
               refresh_token: refreshToken,
             },
             {
-              headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-              },
+              headers: { 'content-type': 'application/x-www-form-urlencoded' },
             },
           )
           .pipe(
-            catchError(async (error: AxiosError) => {
-              if (error.response) {
-                this.logger.error('Error Response Data:', error.response.data);
-              } else {
-                this.logger.error('Error Response is undefined');
-              }
-
-              return {
-                data: await this.getInitialTokenData(queryBatch),
-              };
+            catchError((error: AxiosError) => {
+              this.logger.error(
+                'Error during token refresh:',
+                error.response?.data,
+              );
+              throw error;
             }),
           ),
       );
 
-      if (data && data.access_token && data.expires_in && data.refresh_token) {
-        this.tokenDataDictionary[queryBatch.query_config.dataSourceId] = data;
-        return this.mapExternalTokenData(data);
+      if (data && data.access_token && data.expires_in) {
+        const mappedToken = this.mapExternalTokenData(data);
+        this.tokenDataDictionary[queryBatch.query_config.dataSourceId] =
+          mappedToken;
+        return mappedToken;
       } else {
         this.logger.error('Failed to map auth data for updated token response');
+        throw new Error('Token refresh response missing required fields');
       }
     } catch (error) {
-      if (isAxiosError(error)) {
-        // Handle network errors
-        this.logger.error(
-          'Updated authentication request failed:',
-          error.message,
-        );
-      } else {
-        // Handle application-level errors
-        this.logger.error(
-          'An error occurred during authentication:',
-          error.message,
-        );
-      }
-      throw error; // Rethrow the error for higher-level handling if needed
+      this.logger.warn(
+        'Token refresh failed. Falling back to fetching a new token.',
+      );
+      return await this.getInitialTokenData(queryBatch);
     }
   }
 

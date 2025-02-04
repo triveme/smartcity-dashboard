@@ -31,7 +31,14 @@ export class SanitizeTabDataPipe implements PipeTransform {
     'iconUrl',
   ];
   declaredFields: DeclarationObject = {
-    bild: ['imageUpdateInterval', 'imageUrl', 'imageSrc', ...this.commonFields],
+    bild: [
+      'imageUpdateInterval',
+      'imageUrl',
+      'imageSrc',
+      'imageAllowJumpoff',
+      'imageJumpoffUrl',
+      ...this.commonFields,
+    ],
     diagramm: [
       'chartHasAdditionalSelection',
       'chartLabels',

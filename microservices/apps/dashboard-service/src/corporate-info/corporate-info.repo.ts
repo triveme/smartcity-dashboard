@@ -61,6 +61,9 @@ export class CorporateInfoRepo {
         logo: corporateInfos.logo,
         menuActiveColor: corporateInfos.menuActiveColor,
         menuActiveFontColor: corporateInfos.menuActiveFontColor,
+        menuArrowDirection: corporateInfos.menuArrowDirection,
+        menuCornerColor: corporateInfos.menuCornerColor,
+        menuCornerFontColor: corporateInfos.menuCornerFontColor,
         menuFontColor: corporateInfos.menuFontColor,
         menuHoverColor: corporateInfos.menuHoverColor,
         menuLogo: tenantMenuLogo,
@@ -101,6 +104,9 @@ export class CorporateInfoRepo {
         iconWithLinkIconSize: corporateInfos.iconWithLinkIconSize,
         iconWithLinkIconColor: corporateInfos.iconWithLinkIconColor,
 
+        isPanelHeadlineBold: corporateInfos.isPanelHeadlineBold,
+        isWidgetHeadlineBold: corporateInfos.isWidgetHeadlineBold,
+
         degreeChart180FontSize: corporateInfos.degreeChart180FontSize,
         degreeChart180FontColor: corporateInfos.degreeChart180FontColor,
         degreeChart180BgColor: corporateInfos.degreeChart180BgColor,
@@ -112,6 +118,12 @@ export class CorporateInfoRepo {
         degreeChart360BgColor: corporateInfos.degreeChart360BgColor,
         degreeChart360FillColor: corporateInfos.degreeChart360FillColor,
         degreeChart360UnitFontSize: corporateInfos.degreeChart360UnitFontSize,
+
+        sliderCurrentFontColor: corporateInfos.sliderCurrentFontColor,
+        sliderMaximumFontColor: corporateInfos.sliderMaximumFontColor,
+        sliderGeneralFontColor: corporateInfos.sliderGeneralFontColor,
+        sliderCurrentColor: corporateInfos.sliderCurrentColor,
+        sliderMaximumColor: corporateInfos.sliderMaximumColor,
 
         stageableChartTicksFontSize: corporateInfos.stageableChartTicksFontSize,
         stageableChartTicksFontColor:
@@ -195,6 +207,17 @@ export class CorporateInfoRepo {
         wertFontSize: corporateInfos.wertFontSize,
         wertFontColor: corporateInfos.wertFontColor,
         wertUnitFontSize: corporateInfos.wertFontColor,
+
+        weatherWarningBgColor: corporateInfos.weatherWarningBgColor,
+        weatherWarningHeadlineColor: corporateInfos.weatherWarningHeadlineColor,
+        weatherInstructionsColor: corporateInfos.weatherInstructionsColor,
+        weatherAlertDescriptionColor:
+          corporateInfos.weatherAlertDescriptionColor,
+        weatherDateColor: corporateInfos.weatherDateColor,
+        weatherWarningButtonBackgroundColor:
+          corporateInfos.weatherWarningButtonBackgroundColor,
+        weatherWarningButtonIconColor:
+          corporateInfos.weatherWarningButtonIconColor,
       })
       .from(corporateInfos)
       .leftJoin(

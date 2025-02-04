@@ -132,7 +132,7 @@ const CIUploadLogoWizard: FC<Props> = () => {
   return (
     <div>
       <h2 className="text-xl font-bold mb-4"> Logo Hochladen</h2>
-      <div className="flex flex-row w-full">
+      <div className="flex flex-row w-full gap-x-4">
         <div className="flex flex-row justify-center w-full pt-4 pb-2">
           {/* Input for uploading image */}
           <input

@@ -62,8 +62,8 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
 
     if (queryConfig.componentType === 'Diagram') {
       if (queryConfig.componentSubType === 'Pie Chart') {
-        if (queryConfig.attributes && !(queryConfig?.attributes.length >= 3)) {
-          errorsOccured.push('Pie Charts benötigen mindestens 3 Attribute');
+        if (queryConfig.attributes && !(queryConfig?.attributes.length > 0)) {
+          errorsOccured.push('Pie Charts benötigen mindestens 1 Attribute');
         }
       }
     }

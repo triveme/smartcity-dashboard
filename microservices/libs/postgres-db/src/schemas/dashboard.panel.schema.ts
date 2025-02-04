@@ -17,6 +17,7 @@ export const panels = pgTable('panel', {
   generalInfo: text('general_info'),
   showGeneralInfo: boolean('show_general_info'),
   showJumpoffButton: boolean('show_jumpoff_button'),
+  openJumpoffLinkInNewTab: boolean('open_jumpoff_link_in_new_tab'),
   jumpoffLabel: text('jumpoff_label'),
   jumpoffIcon: text('jumpoff_icon'),
   jumpoffUrl: text('jumpoff_url'),

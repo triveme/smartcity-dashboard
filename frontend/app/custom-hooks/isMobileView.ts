@@ -6,7 +6,7 @@ export const determineIsMobileView = (): boolean => {
   );
 
   useEffect(() => {
-    const handleResize = (): void => setIsMobileView(window.innerWidth <= 768);
+    const handleResize = (): void => setIsMobileView(window.innerWidth <= 1024);
 
     window.addEventListener('resize', handleResize);
     handleResize(); // Initial check

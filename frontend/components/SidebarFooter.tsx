@@ -8,6 +8,8 @@ import { env } from 'next-runtime-env';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import LightDarkToggleButton from '@/ui/Buttons/LightDarkToggleButton';
+import Link from 'next/link';
+import { getGeneralSettingsByTenant } from '@/api/general-settings-service';
 
 export default function SidebarFooter(): ReactElement {
   const versionNumber = process.env.NEXT_PUBLIC_VERSION;
@@ -19,6 +21,11 @@ export default function SidebarFooter(): ReactElement {
     queryKey: ['corporate-info'],
     queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: true,
+  });
+
+  const { data: generalSetting } = useQuery({
+    queryKey: ['generalSettings'],
+    queryFn: () => getGeneralSettingsByTenant(tenant),
   });
 
   const handleThemeToggle = (): void => {
@@ -58,7 +65,7 @@ export default function SidebarFooter(): ReactElement {
           alt="Default Logo"
           height={0}
           width={0}
-          style={{ width: 'auto', height: '64px' }}
+          style={{ width: 'auto', height: '56px' }}
         />
       </div>
     );
@@ -66,32 +73,51 @@ export default function SidebarFooter(): ReactElement {
 
   return (
     <div className="flex flex-col justify-end items-center flex-grow">
-      <div className="flex text-sm p-1 flex-col items-center text-gray-100 mb-4">
+      <div className="flex text-sm px-10 flex-col items-center mb-4">
         {showMenuLogo && renderLogo()}
-        <p
-          className="underline"
-          style={{
-            color: data?.menuFontColor,
-          }}
+        <Link
+          className={`flex`}
+          href={`${generalSetting?.information}`}
+          target={'_blank'}
         >
-          Informationen
-        </p>
-        <p
-          className="underline"
-          style={{
-            color: data?.menuFontColor,
-          }}
+          <p
+            className="underline"
+            style={{
+              color: data?.menuFontColor,
+            }}
+          >
+            Informationen
+          </p>
+        </Link>
+
+        <Link
+          className={`flex`}
+          href={`${generalSetting?.imprint}`}
+          target={'_blank'}
         >
-          Impressum
-        </p>
-        <p
-          className="underline"
-          style={{
-            color: data?.menuFontColor,
-          }}
+          <p
+            className="underline"
+            style={{
+              color: data?.menuFontColor,
+            }}
+          >
+            Impressum
+          </p>
+        </Link>
+        <Link
+          className={`flex`}
+          href={`${generalSetting?.privacy}`}
+          target={'_blank'}
         >
-          Datenschutzerklärung
-        </p>
+          <p
+            className="underline"
+            style={{
+              color: data?.menuFontColor,
+            }}
+          >
+            Datenschutzerklärung
+          </p>
+        </Link>
         <p
           className="pt-2"
           style={{
@@ -100,12 +126,15 @@ export default function SidebarFooter(): ReactElement {
         >
           Version: {versionNumber}
         </p>
-        <div className="pt-2">
-          <LightDarkToggleButton
-            onToggle={handleThemeToggle}
-            menuFontColor={data?.menuFontColor}
-          />
-        </div>
+
+        {generalSetting?.allowThemeSwitching && (
+          <div className="pt-2">
+            <LightDarkToggleButton
+              onToggle={handleThemeToggle}
+              menuFontColor={data?.menuFontColor}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

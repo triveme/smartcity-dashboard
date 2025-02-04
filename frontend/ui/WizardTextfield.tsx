@@ -16,12 +16,12 @@ type TextfieldProps = {
   error?: string;
   borderColor: string;
   backgroundColor: string;
+  panelFontColor?: string;
+  panelBorderRadius?: string;
+  panelBorderSize?: string;
 };
 
-const ReactQuill = dynamic(
-  () => import('@/components/dependencies/react-quill'),
-  { ssr: false },
-);
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 export default function WizardTextfield(props: TextfieldProps): ReactElement {
   const {
@@ -33,6 +33,9 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     error,
     borderColor,
     backgroundColor,
+    panelFontColor,
+    panelBorderRadius,
+    panelBorderSize,
   } = props;
   const [content, setContent] = useState(value ? value.toString() : '');
   const [textFieldContent, setTextFieldContent] = useState(
@@ -53,18 +56,6 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
   }, []);
 
   useEffect(() => {
-    // Dynamically import Quill and configure it
-    import('quill/formats/link').then((Link) => {
-      Link.default.sanitize = (url: string): string => {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          return `https://${url}`;
-        }
-        return url;
-      };
-    });
-  }, []);
-
-  useEffect(() => {
     // Prefill values when editing
     setTextFieldContent(value ? value.toString() : '');
   }, [value]);
@@ -79,6 +70,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
     [{ header: [1, 2, 3, 4, 5, 6, false] }],
     ['link'],
+    [{ color: [] }, { background: [] }],
     [{ align: [] }],
   ];
 
@@ -93,14 +85,22 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
       // Replace the opposite separator with the locale's separator
       valueAsString = convertToLocaleNumber(valueAsString, decimalSeparator);
 
-      // Allow patterns with digits and one optional locale-specific separator
-      const validPattern = new RegExp(`^-?\\d+(\\${decimalSeparator}\\d*)?$`);
+      // Allow empty string, single minus, or valid numbers with one optional separator
+      const validPattern = new RegExp(
+        `^-?$|^-?\\d+(\\${decimalSeparator}\\d*)?$`,
+      );
 
       // Prevent updates if the pattern isn't valid
       if (!validPattern.test(valueAsString)) return;
 
       // Update internal state
       setTextFieldContent(valueAsString);
+
+      // Handle case where only a minus sign or empty string is entered
+      if (valueAsString === '-' || valueAsString === '') {
+        onChange(''); // Keep empty string for processing
+        return;
+      }
 
       // Convert to standard number format (dots) for processing
       const standardizedValue = valueAsString.replace(decimalSeparator, '.');
@@ -124,6 +124,43 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     border: '4px solid #FFEB3B',
     borderRadius: '0.5rem',
   };
+
+  // set dynamic CSS variables for quill editor
+  useEffect(() => {
+    if (panelFontColor) {
+      document.documentElement.style.setProperty(
+        '--panel-font-color',
+        panelFontColor,
+      );
+    }
+    if (panelBorderRadius) {
+      document.documentElement.style.setProperty(
+        '--panel-border-radius',
+        panelBorderRadius,
+      );
+    }
+    if (panelBorderSize) {
+      document.documentElement.style.setProperty(
+        '--panel-border-size',
+        panelBorderSize,
+      );
+    }
+    if (borderColor) {
+      document.documentElement.style.setProperty('--border-color', borderColor);
+    }
+    if (backgroundColor) {
+      document.documentElement.style.setProperty(
+        '--background-color',
+        backgroundColor,
+      );
+    }
+  }, [
+    panelFontColor,
+    panelBorderRadius,
+    panelBorderSize,
+    borderColor,
+    backgroundColor,
+  ]);
 
   return (
     <>
