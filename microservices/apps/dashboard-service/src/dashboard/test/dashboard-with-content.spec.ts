@@ -289,7 +289,7 @@ describe('DashboardServiceControllers (e2e)', () => {
     });
 
     it('/dashboards/:id?includeContent=true (GET) pie chart', async () => {
-      const query = await createQuery(db, getNGSIHistoricMultipleEntityQuery());
+      const query = await createQuery(db, getNGSILiveQuery());
       const dashboard = await createDashboardByObject(db, getDashboard());
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
@@ -310,7 +310,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       validateDashboardContent(result);
       expect(
-        result.panels[0].widgets[0].tabs[0].chartData.length,
+        result.panels[0].widgets[0].tabs[0].chartValues.length,
       ).toBeGreaterThan(0);
     });
 
@@ -404,7 +404,14 @@ describe('DashboardServiceControllers (e2e)', () => {
       );
       await createTab(
         db,
-        await getTab(db, widget.id, 'Slider', null, null, query.id),
+        await getTab(
+          db,
+          widget.id,
+          'Slider',
+          'Slider Übersicht',
+          null,
+          query.id,
+        ),
       );
 
       const response = await request(app.getHttpServer())
@@ -414,6 +421,8 @@ describe('DashboardServiceControllers (e2e)', () => {
       const result = response.body;
 
       validateDashboardContent(result);
+      console.log(query);
+      console.log(result.panels[0].widgets[0].tabs[0]);
       expect(result.panels[0].widgets[0].tabs[0].chartData).toHaveLength(1);
     });
 

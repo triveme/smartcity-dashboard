@@ -5,31 +5,6 @@ import { env } from 'next-runtime-env';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
-export async function getWidgetPanelRelations(): Promise<WidgetToPanel[]> {
-  try {
-    const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/`,
-    );
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
-export async function getWidgetPanelRelationsByPanelId(
-  panelId: string,
-): Promise<WidgetToPanel[]> {
-  try {
-    const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/${panelId}`,
-    );
-    return response.data;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  }
-}
-
 export async function postWidgetToPanelRelation(
   accessToken: string | undefined,
   widgetId: string,

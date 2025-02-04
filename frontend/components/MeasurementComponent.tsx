@@ -11,11 +11,10 @@ import {
 } from '@/utils/mathHelper';
 import ColumnChart from '@/ui/Charts/ColumnChart';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { getTenantOfPage } from '@/utils/tenantHelper';
+import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 
 type MeasurementComponentProps = {
+  preview: boolean;
   dataValues: [string, number][];
   timeValues: string[];
   valueWarning: number;
@@ -24,24 +23,62 @@ type MeasurementComponentProps = {
   unit: string;
   chartXAxisLabel?: string;
   chartYAxisLabel?: string;
-  fontColor: string;
-  axisColor: string;
+
+  bigValueFontSize: string;
+  bigValueFontColor: string;
+
+  topButtonBackgroundColor: string;
+  topButtonInactiveBackgroundColor: string;
+  topButtonHoverColor: string;
+  topButtonFontColor: string;
+
+  cardsBackgroundColor: string;
+  cardsFontColor: string;
+  cardsIconColors: string[];
+
+  barColor: string;
+  labelFontColor: string;
+  gridColor: string;
+
+  axisLineColor: string;
+  axisTicksFontColor: string;
+  axisLabelFontColor: string;
+
+  currentValuesColors: string[];
 };
 
 export default function MeasurementComponent(
   props: MeasurementComponentProps,
 ): ReactElement {
   const {
+    preview,
     dataValues,
     timeValues,
     valueWarning,
     valueAlarm,
     valueMax,
     unit,
-    chartXAxisLabel,
-    chartYAxisLabel,
-    fontColor,
-    axisColor,
+
+    bigValueFontSize,
+    bigValueFontColor,
+
+    topButtonBackgroundColor,
+    topButtonInactiveBackgroundColor,
+    topButtonHoverColor,
+    topButtonFontColor,
+
+    cardsBackgroundColor,
+    cardsFontColor,
+    cardsIconColors,
+
+    barColor,
+    labelFontColor,
+    gridColor,
+
+    axisLineColor,
+    axisTicksFontColor,
+    axisLabelFontColor,
+    currentValuesColors,
   } = props;
 
   const [dayActive, setDayActive] = useState(true);
@@ -53,14 +90,10 @@ export default function MeasurementComponent(
   const [dataWeek, setDataWeek] = useState<[string, number][]>([]);
   const [dataMonth, setDataMonth] = useState<[string, number][]>(dataValues);
 
-  const tenant = getTenantOfPage();
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
-
-  const fontStyle = data?.dashboardFontColor || '#FFF';
+  const bigValueFontStyle = bigValueFontColor || '#FFF';
+  const labelFontStyle = labelFontColor || '#FFF';
+  const parsedTicksFontSize = parseFloat(bigValueFontSize || '168'); // Default to 16px if not provided or invalid
+  const calculatedMinSize = parsedTicksFontSize * 0.595;
 
   const autoScaleFont = useAutoScaleFont({
     minSize: 12,
@@ -68,8 +101,8 @@ export default function MeasurementComponent(
     divisor: 60,
   });
   const autoScaleCurrentValueFont = useAutoScaleFont({
-    minSize: 100,
-    maxSize: 168,
+    minSize: calculatedMinSize,
+    maxSize: isNaN(parsedTicksFontSize) ? 20 : parsedTicksFontSize,
     divisor: 10,
   });
 
@@ -97,7 +130,7 @@ export default function MeasurementComponent(
 
   useEffect(() => {
     if (dataValues && dataValues.length > 0) {
-      setCurrentValue(roundToDecimal(dataValues[dataValues.length - 1][1], 2));
+      setCurrentValue(roundToDecimal(dataValues[dataValues.length - 1][1]));
 
       if (dataValues.length < 7) {
         setDataWeek([...dataValues]);
@@ -124,6 +157,10 @@ export default function MeasurementComponent(
           <IntervalButton
             text="HEUTE"
             active={dayActive}
+            backgroundColor={topButtonBackgroundColor}
+            inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            hoverColor={topButtonHoverColor}
+            fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('day')}
           />
         </div>
@@ -131,6 +168,10 @@ export default function MeasurementComponent(
           <IntervalButton
             text="WOCHE"
             active={weekActive}
+            backgroundColor={topButtonBackgroundColor}
+            inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            hoverColor={topButtonHoverColor}
+            fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('week')}
           />
         </div>
@@ -138,6 +179,10 @@ export default function MeasurementComponent(
           <IntervalButton
             text="MONAT"
             active={monthActive}
+            backgroundColor={topButtonBackgroundColor}
+            inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            hoverColor={topButtonHoverColor}
+            fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('month')}
           />
         </div>
@@ -145,7 +190,7 @@ export default function MeasurementComponent(
       <div className="flex-grow flex w-full h-full">
         <div className="w-full h-full flex flex-col justify-center items-center pl-2 pr-2">
           {dayActive && (
-            <div className="text-center" style={{ color: fontStyle }}>
+            <div className="text-center" style={{ color: bigValueFontStyle }}>
               <span
                 className="leading-none font-bold"
                 style={{
@@ -159,70 +204,125 @@ export default function MeasurementComponent(
           )}
           {weekActive && (
             <LineChart
-              labels={dataWeek.map((entry) => entry[0]) || undefined}
-              data={[{ name: 'Woche', values: dataWeek }] || undefined}
+              labels={!preview ? dataWeek.map((entry) => entry[0]) : undefined}
+              data={
+                !preview
+                  ? [{ name: 'Woche', values: dataWeek }]
+                  : [DUMMY_CHART_DATA[0]]
+              }
               staticValues={[valueWarning, valueAlarm, valueMax]}
-              staticValuesColors={['#FFA500', '#FF4500', '#00FF00']}
-              xAxisLabel={chartXAxisLabel || ''}
-              yAxisLabel={chartYAxisLabel || ''}
+              staticValuesColors={[
+                cardsIconColors[2],
+                cardsIconColors[3],
+                '#FFFFFF',
+              ]}
+              xAxisLabel={'Zeit'}
+              yAxisLabel={`Pegelstand in ${unit}` || ''}
               allowZoom={false}
               isStepline={false}
-              fontColor={fontColor}
-              axisColor={axisColor}
+              axisLabelFontColor={axisLabelFontColor}
+              axisLineColor={axisLineColor}
+              axisTicksFontColor={axisTicksFontColor}
+              legendFontSize={'11'}
+              legendFontColor="#FFFFF"
+              axisFontSize={'11'}
+              axisLabelSize={'11'}
+              currentValuesColors={currentValuesColors || []}
+              gridColor={gridColor}
+              legendAlignment="Top"
+              hasAdditionalSelection={false}
+              showTooltip={false}
             />
           )}
           {monthActive && (
             <LineChart
-              labels={dataMonth.map((entry) => entry[0]) || []}
-              data={[{ name: 'Monat', values: dataMonth }] || []}
+              labels={!preview ? dataMonth.map((entry) => entry[0]) : undefined}
+              data={
+                !preview
+                  ? [{ name: 'Monat', values: dataMonth }]
+                  : [DUMMY_CHART_DATA[0]]
+              }
               staticValues={[valueWarning, valueAlarm, valueMax]}
-              staticValuesColors={['#FFA500', '#FF4500', '#00FF00']}
-              xAxisLabel={chartXAxisLabel || ''}
-              yAxisLabel={chartYAxisLabel || ''}
+              staticValuesColors={[
+                cardsIconColors[2],
+                cardsIconColors[3],
+                '#FFFFFF',
+              ]}
+              xAxisLabel={'Zeit'}
+              yAxisLabel={`Pegelstand in ${unit}` || ''}
               allowZoom={false}
               isStepline={false}
-              fontColor={fontColor}
-              axisColor={axisColor}
+              axisLabelFontColor={axisLabelFontColor}
+              axisLineColor={axisLineColor}
+              axisTicksFontColor={axisTicksFontColor}
+              legendFontSize={'11'}
+              legendFontColor="#FFFFF"
+              axisFontSize={'11'}
+              axisLabelSize={'11'}
+              currentValuesColors={currentValuesColors}
+              gridColor={gridColor}
+              legendAlignment="Top"
+              hasAdditionalSelection={false}
+              showTooltip={false}
             />
           )}
           {dayActive && (
-            <div className="info-displays grid grid-cols-1 md:grid-cols-4 gap-4 w-full mt-4">
-              <InfoDisplayComponent
-                headline="Mittelwert"
-                value={`${averageValue.toFixed(2)} ${unit}`}
-              />
-              <InfoDisplayComponent
-                icon="ArrowTrendDown"
-                iconColor="#DE507D"
-                headline="Abweichung"
-                value={`${deviationValue.toFixed(2)} %`}
-              />
-              <InfoDisplayComponent
-                icon="Circle"
-                iconColor="#FFA500"
-                headline="Warnung"
-                value={`${valueWarning} ${unit}`}
-              />
-              <InfoDisplayComponent
-                icon="Circle"
-                iconColor="#FF4500"
-                headline="Alarm"
-                value={`${valueAlarm} ${unit}`}
-              />
+            <div className="hidden lg:block">
+              <div className="info-displays grid grid-cols-1 lg:grid-cols-4 gap-4 w-full mt-4">
+                <InfoDisplayComponent
+                  icon="Circle"
+                  headline="Mittelwert"
+                  backgroundColor={cardsBackgroundColor}
+                  fontColor={cardsFontColor}
+                  iconColor={cardsIconColors[0]}
+                  value={`${averageValue.toFixed(2)} ${unit}`}
+                />
+                <InfoDisplayComponent
+                  icon="ArrowTrendDown"
+                  backgroundColor={cardsBackgroundColor}
+                  fontColor={cardsFontColor}
+                  iconColor={cardsIconColors[1]}
+                  headline="Abweichung"
+                  value={`${deviationValue.toFixed(2)} %`}
+                />
+                <InfoDisplayComponent
+                  icon="Circle"
+                  backgroundColor={cardsBackgroundColor}
+                  fontColor={cardsFontColor}
+                  iconColor={cardsIconColors[2]}
+                  headline="Warnung"
+                  value={`${valueWarning} ${unit}`}
+                />
+                <InfoDisplayComponent
+                  icon="Circle"
+                  backgroundColor={cardsBackgroundColor}
+                  fontColor={cardsFontColor}
+                  iconColor={cardsIconColors[3]}
+                  headline="Alarm"
+                  value={`${valueAlarm} ${unit}`}
+                />
+              </div>
             </div>
           )}
         </div>
         <div className="w-1/4 flex flex-col justify-end pb-8 pr-2">
           <ColumnChart
-            value={currentValue || 50} //50 is optional for testing can be removed
-            chartLabels={[' ']} //1 is optional for testing can be removed
+            value={currentValue || 50}
+            chartLabels={[' ']}
             maxValue={valueMax}
             valueWarning={valueWarning}
             valueAlarm={valueAlarm}
+            barColor={barColor}
+            gridColor={gridColor}
+            warningColor={cardsIconColors[2]}
+            alarmColor={cardsIconColors[3]}
           />
           <div
             className="font-bold mb-2 text-center"
-            style={{ fontSize: `${autoScaleFont}px`, color: `${fontStyle}` }}
+            style={{
+              fontSize: `${autoScaleFont}px`,
+              color: `${labelFontStyle}`,
+            }}
           >
             Aktueller Stand
           </div>

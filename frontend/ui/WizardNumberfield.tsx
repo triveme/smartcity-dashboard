@@ -4,6 +4,7 @@ import { ReactElement, useState, useEffect } from 'react';
 
 import '@/components/dependencies/quill.snow.css';
 import '../app/quill.css';
+import { convertToLocaleNumber } from '@/utils/mathHelper';
 
 type NumberfieldProps = {
   value: string | number;
@@ -29,10 +30,6 @@ export default function WizardNumberfield(
   useEffect(() => {
     setTextFieldContent(value ? value.toString() : '');
   }, [value]);
-
-  const convertToLocaleNumber = (value: string, separator: string): string => {
-    return value.replace(separator === ',' ? /\./g : /,/g, separator);
-  };
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,

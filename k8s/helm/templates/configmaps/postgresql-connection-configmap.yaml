@@ -9,4 +9,5 @@ data:
   POSTGRES_DB: "scs"
   POSTGRES_HOST: {{ .Release.Name }}-postgresql
   POSTGRES_PORT: "5432"
+  POSTGRES_REJECT_UNAUTHORIZED: "true"
 {{- end }}

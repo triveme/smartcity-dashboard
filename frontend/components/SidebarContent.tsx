@@ -1,6 +1,9 @@
 'use client';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
+import { useAuth } from 'react-oidc-context';
+import { env } from 'next-runtime-env';
+import { jwtDecode } from 'jwt-decode';
 
 import SidebarItem, { SidebarItemStyle } from './SidebarItem';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -9,6 +12,8 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 type SidebarContentProps = {
   sidebarItemStyle: SidebarItemStyle;
   useColorTransitionMenu: boolean;
+  cornerColor: string;
+  cornerFontColor: string;
 };
 
 type BackgroundColorStyle =
@@ -18,7 +23,17 @@ type BackgroundColorStyle =
 export default function SidebarContent(
   props: SidebarContentProps,
 ): ReactElement {
-  const { sidebarItemStyle, useColorTransitionMenu } = props;
+  const {
+    sidebarItemStyle,
+    useColorTransitionMenu,
+    cornerColor,
+    cornerFontColor,
+  } = props;
+
+  const auth = useAuth();
+  const [roleOptions, setRoleOptions] = useState<string[]>([]);
+  const superAdminRole = env('NEXT_PUBLIC_SUPER_ADMIN_ROLE');
+
   const tenant = getTenantOfPage();
   const adminUrl = tenant ? `${tenant}/admin` : 'admin';
 
@@ -31,6 +46,15 @@ export default function SidebarContent(
           backgroundColor: sidebarItemStyle.menuPrimaryColor || '#1D2330',
         };
   };
+
+  useEffect(() => {
+    if (auth && auth.user && auth.user?.access_token) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const decoded: any = jwtDecode(auth?.user?.access_token);
+      const roles = decoded.roles || decoded.realm_access?.roles;
+      setRoleOptions(roles);
+    }
+  }, [auth]);
 
   return (
     <div
@@ -46,7 +70,7 @@ export default function SidebarContent(
       >
         <div
           className="h-16 p-3 flex justify-center items-center content-center w-full"
-          style={{ color: sidebarItemStyle.menuFontColor }}
+          style={{ color: cornerFontColor, backgroundColor: cornerColor }}
         >
           <p className="mr-auto">Adminbereich</p>
         </div>
@@ -56,12 +80,35 @@ export default function SidebarContent(
           'p-1 flex items-center flex-col justify-around space-y-1',
         )}
       >
-        <SidebarItem
-          icon="Building"
-          label="Allgemein"
-          url={`${adminUrl}/general`}
-          componentStyle={sidebarItemStyle}
-        />
+        {superAdminRole && roleOptions.includes(superAdminRole) ? (
+          <>
+            <SidebarItem
+              icon="Building"
+              label="Allgemein"
+              url={`${adminUrl}/general`}
+              componentStyle={sidebarItemStyle}
+            />
+            <SidebarItem
+              icon="Building"
+              label="Farbgestaltung"
+              url={`${adminUrl}/corporateidentity`}
+              componentStyle={sidebarItemStyle}
+            />
+            <SidebarItem
+              icon="ChartSimple"
+              label="Datenanbindung"
+              url={`${adminUrl}/dataplatform`}
+              componentStyle={sidebarItemStyle}
+            />
+            <SidebarItem
+              icon="Building"
+              label="Mandantenverwaltung"
+              url={`${adminUrl}/tenantadministration`}
+              componentStyle={sidebarItemStyle}
+            />
+            <HorizontalDivider />
+          </>
+        ) : null}
         <SidebarItem
           icon="Gear"
           label="Widgets"
@@ -70,7 +117,7 @@ export default function SidebarContent(
         />
         <SidebarItem
           icon="File"
-          label="Seiten"
+          label="Dashboardseiten"
           url={`${adminUrl}/pages`}
           componentStyle={sidebarItemStyle}
         />
@@ -78,31 +125,6 @@ export default function SidebarContent(
           icon="Menu"
           label="Menu"
           url={`${adminUrl}/menu`}
-          componentStyle={sidebarItemStyle}
-        />
-        <SidebarItem
-          icon="Building"
-          label="Farbgestaltung"
-          url={`${adminUrl}/corporateidentity`}
-          componentStyle={sidebarItemStyle}
-        />
-
-        <SidebarItem
-          icon="ChartSimple"
-          label="Datenanbindung"
-          url={`${adminUrl}/dataplatform`}
-          componentStyle={sidebarItemStyle}
-        />
-        <SidebarItem
-          icon="Building"
-          label="Mandantenverwaltung"
-          url={`${adminUrl}/tenantadministration`}
-          componentStyle={sidebarItemStyle}
-        />
-        <SidebarItem
-          icon="Envelope"
-          label="Support"
-          url={`${adminUrl}/support`}
           componentStyle={sidebarItemStyle}
         />
         <HorizontalDivider />

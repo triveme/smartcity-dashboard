@@ -48,6 +48,7 @@ export async function getTab(
     | 'Diagramm'
     | 'Slider'
     | 'Karte'
+    | 'Wetterwarnungen'
     | 'Wert'
     | 'iFrame'
     | 'Bild',
@@ -100,6 +101,7 @@ export async function getTab(
     chartStaticValuesTexts: ['dry', 'normal', 'humid'],
     childWidgets: [],
     isStepline: false,
+    isLayoutVertical: false,
     mapAllowPopups: true,
     mapAllowScroll: true,
     mapAllowZoom: true,
@@ -136,6 +138,8 @@ export async function getTab(
     imageSrc: null,
     imageUrl: null,
     imageUpdateInterval: null,
+    imageAllowJumpoff: false,
+    imageJumpoffUrl: 'http://www.samplewebsite.com',
     iFrameUrl: null,
     textValue: 'Sample Text',
     decimalPlaces: 2,
@@ -165,8 +169,8 @@ export async function getTab(
     mapWmsUrl: 'www.google.com',
     mapWmsLayer: 'SomeLayer',
     tiles: 10,
-    sliderCurrentAttribute: 'Current Attribute',
-    sliderMaximumAttribute: 'Maximum Attribute',
+    sliderCurrentAttribute: 'currentAttribute',
+    sliderMaximumAttribute: 'maximumAttribute',
   };
 }
 

@@ -11,6 +11,7 @@ import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
   NewWidget,
   Widget,
+  // widgets,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
 import { WidgetToPanelService } from '../widget-to-panel/widget-to-panel.service';
 import {
@@ -37,12 +38,19 @@ import { TabRepo } from '../tab/tab.repo';
 import { TenantRepo } from '../tenant/tenant.repo';
 import { WidgetRepo } from './widget.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
-import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
+import {
+  DataSource,
+  dataSources,
+} from '@app/postgres-db/schemas/data-source.schema';
 import { DataSourceService } from '../data-source/data-source.service';
+import { QueryBatch } from '../../../ngsi-service/src/ngsi.service';
+import { authData } from '@app/postgres-db/schemas/auth-data.schema';
+import { WidgetDataService } from './widget.data.service';
 
 export type WidgetWithChildren = {
   widget: Widget;
   tab: Tab;
+  query?: Query;
   queryConfig: QueryConfig;
   datasource: DataSource;
 };
@@ -64,6 +72,7 @@ export class WidgetService {
     private readonly tenantRepo: TenantRepo,
     private readonly widgetToTenantService: WidgetToTenantService,
     private readonly dataSourceService: DataSourceService,
+    private readonly widgetDataService: WidgetDataService,
   ) {}
 
   private readonly logger = new Logger(WidgetService.name);
@@ -128,63 +137,63 @@ export class WidgetService {
     // Apply sorting based off WidgetToPanelRelation
     const widgetToPanels =
       await this.widgetToPanelService.getByPanelId(panelId);
-    panelWidgets.sort((a, b) => {
-      const widgetToPanelA = widgetToPanels.find((w) => w.widgetId === a.id);
-      const widgetToPanelB = widgetToPanels.find((w) => w.widgetId === b.id);
 
-      const positionA = widgetToPanelA
-        ? widgetToPanelA.position
-        : Number.MAX_VALUE;
-      const positionB = widgetToPanelB
-        ? widgetToPanelB.position
-        : Number.MAX_VALUE;
-
-      return positionA - positionB;
+    // Adjust positions to ensure uniqueness
+    const positionMap = new Map<number, string>();
+    const adjustedWidgets = widgetToPanels.map((w) => {
+      let position = w.position ?? Number.MAX_SAFE_INTEGER; // Default position if none exists
+      while (positionMap.has(position)) {
+        position++; // Increment to avoid overlap
+      }
+      positionMap.set(position, w.widgetId);
+      return { ...w, position };
     });
+
+    // Sort adjusted widgets by position
+    adjustedWidgets.sort((a, b) => a.position - b.position);
+
+    // Reorder the panel widgets based on the new sorted positions
+    panelWidgets.sort((a, b) => {
+      const positionA = adjustedWidgets.find(
+        (w) => w.widgetId === a.id,
+      )?.position;
+      const positionB = adjustedWidgets.find(
+        (w) => w.widgetId === b.id,
+      )?.position;
+
+      return (
+        (positionA ?? Number.MAX_SAFE_INTEGER) -
+        (positionB ?? Number.MAX_SAFE_INTEGER)
+      );
+    });
+
     return panelWidgets;
   }
 
   async getByTenantAndTabComponentType(
     componentType: string,
-    rolesFromRequest: string[],
     tenantAbbreviation: string,
   ): Promise<WidgetWithChildren[]> {
     const tenantWidgets =
       await this.getWidgetsByTenantAbbreviation(tenantAbbreviation);
+    const tenantWidgetIds = tenantWidgets.map((widget) => widget.id);
+
+    const tabs = await this.tabRepo.getTabsByWidgetIdsAndComponentType(
+      tenantWidgetIds,
+      componentType,
+    );
+
     const widgetsWithChildren: WidgetWithChildren[] = [];
-
-    for (const widget of tenantWidgets) {
-      // Fetch the tabs associated with the widget
-      const tabs = await this.tabService.getTabsByWidgetId(widget.id);
-
-      // Filter tabs that match the componentType param
-      const matchingTabs = tabs.filter(
-        (tab) => tab.componentType === componentType,
-      );
-
-      // If there are any matching tabs, proceed
-      for (const tab of matchingTabs) {
-        const response: WidgetWithChildren = {
-          widget: widget,
-          tab: tab,
+    for (const tab of tabs) {
+      const widget = tenantWidgets.find((widget) => widget.id === tab.widgetId);
+      if (widget) {
+        widgetsWithChildren.push({
+          widget,
+          tab,
+          query: null,
           queryConfig: null,
           datasource: null,
-        };
-
-        if (this.shouldUseQueryConfig(tab)) {
-          response.queryConfig =
-            await this.queryConfigService.getQueryConfigByTabId(tab.id);
-          response.datasource = await this.dataSourceService.getById(
-            response.queryConfig.dataSourceId,
-          );
-        }
-
-        if (rolesFromRequest.length === 0) {
-          delete widget.readRoles;
-          delete widget.writeRoles;
-        }
-
-        widgetsWithChildren.push(response);
+        });
       }
     }
 
@@ -196,23 +205,26 @@ export class WidgetService {
   ): Promise<Widget[]> {
     const tenant = await this.tenantRepo.getTenantByAbbreviation(abbreviation);
 
-    if (!tenant)
+    if (!tenant) {
       throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
+    }
 
     const widgetToTenantIds = await this.db
       .select()
       .from(widgetsToTenants)
       .where(eq(widgetsToTenants.tenantId, tenant.id));
 
-    const retrievedWidgets: Widget[] = [];
+    if (!widgetToTenantIds || widgetToTenantIds.length === 0) {
+      throw new HttpException(
+        'Widgets Not Found for Tenant',
+        HttpStatus.NOT_FOUND,
+      );
+    }
 
-    const widgetPromises = widgetToTenantIds.map(async (widgetToTenantId) => {
-      return await this.widgetRepo.getById(widgetToTenantId.widgetId);
-    });
-
-    const resolvedWidgets = await Promise.all(widgetPromises);
-
-    retrievedWidgets.push(...resolvedWidgets);
+    const widgetIds = widgetToTenantIds.map(
+      (widgetToTenant) => widgetToTenant.widgetId,
+    );
+    const retrievedWidgets = await this.widgetRepo.getByIds(widgetIds);
 
     if (retrievedWidgets.length === 0) {
       this.logger.warn(
@@ -222,9 +234,8 @@ export class WidgetService {
         'Widgets Not Found for Tenant',
         HttpStatus.NOT_FOUND,
       );
-    } else {
-      return retrievedWidgets;
     }
+    return retrievedWidgets;
   }
 
   async create(
@@ -260,6 +271,116 @@ export class WidgetService {
     }
 
     return newWidget;
+  }
+
+  async duplicate(
+    rolesFromRequest: string[],
+    id: string,
+    tenant?: string,
+    transaction?: DbType,
+  ): Promise<WidgetWithChildren> {
+    const dbActor = transaction ?? this.db;
+
+    const widgetContentToDuplicate = await this.getWithChildrenById(
+      id,
+      rolesFromRequest,
+    );
+
+    const duplicatedStructure: WidgetWithChildren = {
+      widget: null,
+      tab: null,
+      query: null,
+      queryConfig: null,
+      datasource: null,
+    };
+
+    await dbActor.transaction(async (trx) => {
+      const tenantExists = tenant
+        ? await this.tenantService.existsByAbbreviation(tenant)
+        : true;
+
+      if (tenant && !tenantExists) {
+        this.logger.error(`Tenant with abbreviation ${tenant} does not exist`);
+        throw new HttpException(
+          'Tenant does not exist',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Generate a unique name for the widget
+      const uniqueWidgetName = await this.widgetRepo.generateUniqueName(
+        widgetContentToDuplicate.widget.name,
+      );
+      // Duplicate widget
+      const duplicatedWidget: Widget = {
+        ...widgetContentToDuplicate.widget,
+        id: uuid(),
+        name: uniqueWidgetName,
+      };
+      duplicatedStructure.widget = await this.widgetRepo.create(
+        duplicatedWidget,
+        trx,
+      );
+
+      if (tenantExists && tenant) {
+        await this.widgetToTenantService.manageCreate(
+          duplicatedWidget.id,
+          tenant,
+          trx,
+        );
+      }
+
+      // Duplicate the queryConfig if it exists
+      let duplicatedQueryConfig: QueryConfig | null = null;
+      if (widgetContentToDuplicate.queryConfig) {
+        duplicatedQueryConfig = {
+          ...widgetContentToDuplicate.queryConfig,
+          id: uuid(),
+        };
+        duplicatedStructure.queryConfig = await this.queryConfigRepo.create(
+          duplicatedQueryConfig,
+          trx,
+        );
+      }
+
+      // If a query associated with the queryConfig exists, duplicate it
+      let duplicatedQuery: Query | null = null;
+      if (duplicatedQueryConfig) {
+        const queryToDuplicate = await this.db
+          .select()
+          .from(queries)
+          .where(
+            eq(queries.queryConfigId, widgetContentToDuplicate.queryConfig.id),
+          )
+          .execute();
+
+        if (queryToDuplicate.length > 0) {
+          duplicatedQuery = {
+            ...queryToDuplicate[0],
+            id: uuid(),
+            queryConfigId: duplicatedQueryConfig.id,
+          };
+          duplicatedStructure.query = await this.queryRepo.create(
+            duplicatedQuery,
+            trx,
+          );
+        }
+      }
+
+      // Duplicate the tab if it exists
+      if (widgetContentToDuplicate.tab) {
+        const duplicatedTab: Tab = {
+          ...widgetContentToDuplicate.tab,
+          id: uuid(),
+          widgetId: duplicatedWidget.id,
+          // Add queryId if duplicatedQuery exists
+          ...(duplicatedQuery ? { queryId: duplicatedQuery.id } : {}),
+        };
+        duplicatedStructure.tab = await this.tabRepo.create(duplicatedTab, trx);
+      }
+    });
+
+    return duplicatedStructure;
   }
 
   async update(
@@ -378,7 +499,7 @@ export class WidgetService {
     rolesFromRequest: string[],
     tenant: string,
   ): Promise<WidgetWithChildren> {
-    payload = await this.db.transaction(async (tx) => {
+    await this.db.transaction(async (tx) => {
       const widget = payload.widget;
 
       const createdWidget = await this.create(
@@ -417,7 +538,29 @@ export class WidgetService {
       payload.tab = createdTab;
       payload.queryConfig = createdQueryConfig;
 
-      return payload;
+      if (payload.queryConfig) {
+        const payloadDataSource = await this.db
+          .select()
+          .from(dataSources)
+          .where(eq(dataSources.id, payload.queryConfig.dataSourceId));
+        payload.datasource = payloadDataSource[0];
+
+        const payloadAuthData = await this.db
+          .select()
+          .from(authData)
+          .where(eq(authData.id, payload.datasource.authDataId));
+
+        // Prepare the QueryBatch but defer its execution
+        const queryBatch: QueryBatch = {
+          queryIds: [payloadTab.queryId],
+          query_config: payload.queryConfig,
+          data_source: payload.datasource,
+          auth_data: payloadAuthData[0],
+        };
+
+        // Run initial query data retrieval asynchronously
+        this.widgetDataService.runQueryDataPopulation(queryBatch);
+      }
     });
 
     return payload;
@@ -487,6 +630,31 @@ export class WidgetService {
         };
 
         await this.queryService.update(query.id, query, tx);
+      }
+
+      // Run an initial query_data population once a widget is updated
+      if (payload.queryConfig) {
+        const payloadDataSource = await this.db
+          .select()
+          .from(dataSources)
+          .where(eq(dataSources.id, payload.queryConfig.dataSourceId));
+        payload.datasource = payloadDataSource[0];
+
+        const payloadAuthData = await this.db
+          .select()
+          .from(authData)
+          .where(eq(authData.id, payload.datasource.authDataId));
+
+        // Prepare the QueryBatch but defer its execution
+        const queryBatch: QueryBatch = {
+          queryIds: [payloadTab.queryId],
+          query_config: payload.queryConfig,
+          data_source: payload.datasource,
+          auth_data: payloadAuthData[0],
+        };
+
+        // Run initial query data retrieval asynchronously
+        this.widgetDataService.runQueryDataPopulation(queryBatch);
       }
 
       return response;

@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "0.20.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,7 +15,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@tanstack/react-query": "^5.12.2",
-    "@types/quill": "^2.0.14",
+    "@uiw/react-color": "^2.3.0",
     "axios": "^1.6.2",
     "cookies": "^0.9.1",
     "echarts": "^5.4.3",
@@ -35,7 +35,8 @@
     "react-leaflet": "^4.2.1",
     "react-leaflet-cluster": "^2.1.0",
     "react-oidc-context": "^2.3.1",
-    "react-pick-color": "^2.0.0",
+    "react-quill": "^2.0.0",
+    "sharp": "^0.33.5",
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
@@ -45,10 +46,11 @@
     "@types/leaflet.markercluster": "^1.5.4",
     "@types/lodash": "^4.17.0",
     "@types/node": "^20",
+    "@types/quill": "^2.0.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
-    "cypress": "^13.7.0",
+    "cypress": "^13.16.1",
     "eslint": "^8",
     "eslint-config-next": "14.0.0",
     "postcss": "^8",

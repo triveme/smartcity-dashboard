@@ -14,12 +14,12 @@ image:
 container:
   ports:
     - name: http
-      containerPort: 8085
+      containerPort: 8086
       protocol: TCP
   livenessProbe:
-    port: 8085
+    port: 8086
   readinessProbe:
-    port: 8085
+    port: 8086
 
 service:
   type: ClusterIP

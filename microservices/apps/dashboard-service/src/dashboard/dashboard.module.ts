@@ -43,6 +43,10 @@ import { LogoRepo } from '../logo/logo.repo';
 import { LogoService } from '../logo/logo.service';
 import { PopulateCombinedWidgetService } from './populate/populate-combined-widget.service';
 import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
+import { WidgetService } from '../widget/widget.service';
+import { TabService } from '../tab/tab.service';
+import { TabRepo } from '../tab/tab.repo';
+import { WidgetDataService } from '../widget/widget.data.service';
 
 @Module({
   imports: [HttpModule],
@@ -79,11 +83,18 @@ import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
     NgsiDataService,
     NgsiQueryService,
     WidgetRepo,
+    WidgetService,
+    TabService,
+    TabRepo,
     CorporateInfoSidebarLogosRepo,
     LogoRepo,
     LogoService,
     PopulateCombinedWidgetService,
     GeneralSettingsRepo,
+    WidgetService,
+    WidgetDataService,
+    TabService,
+    TabRepo,
   ],
   controllers: [DashboardController],
 })

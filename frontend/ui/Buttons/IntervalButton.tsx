@@ -6,13 +6,25 @@ import React, { useState } from 'react';
 type IntervalButtonProps = {
   text: string;
   active: boolean;
+  backgroundColor: string;
+  inactiveBackgroundColor: string;
+  hoverColor: string;
+  fontColor: string;
   onClick: () => void;
 };
 
 export default function IntervalButton(
   props: IntervalButtonProps,
 ): React.ReactElement {
-  const { text, active, onClick } = props;
+  const {
+    text,
+    active,
+    onClick,
+    backgroundColor,
+    inactiveBackgroundColor,
+    hoverColor,
+    fontColor,
+  } = props;
   const [isHovered, setIsHovered] = useState(false);
 
   const tenant = getTenantOfPage();
@@ -31,22 +43,22 @@ export default function IntervalButton(
   };
 
   const inactiveStyles = {
-    backgroundColor: 'transparent',
+    backgroundColor: inactiveBackgroundColor || 'transparent',
     borderColor: data?.headerSecondaryColor || '#3D4760',
-    color: data?.widgetFontColor || '#FFF',
+    color: fontColor || '#FFF',
   };
 
   const hoverStyles = {
-    backgroundColor: data?.headerSecondaryColor || '#3D4760',
+    backgroundColor: hoverColor || '#3D4760',
     borderColor: data?.headerSecondaryColor || '#3D4760',
   };
 
   const buttonStyles = active
     ? {
-        backgroundColor: data?.headerPrimaryColor || '#3D4760',
+        backgroundColor: backgroundColor || '#3D4760',
         borderColor: data?.headerSecondaryColor || '#3D4760',
         ...(isHovered && hoverStyles),
-        color: data?.headerFontColor || '#FFF',
+        color: fontColor || '#FFF',
       }
     : isHovered
       ? hoverStyles

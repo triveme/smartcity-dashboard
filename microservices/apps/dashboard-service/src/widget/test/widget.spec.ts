@@ -533,14 +533,9 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(tab).toMatchObject(resultPayload.tab);
     });
 
-    it('/widgets/with-children/:id (PATCH)', async () => {
-      const dataSource = await createDataSourceByObject(
-        db,
-        await getDataSource(undefined, db),
-      );
+    it('/widgets/with-children/:id (PATCH) without Query Config', async () => {
       const widget = await createWidgetByObject(db, getWidget([], []));
       const tab = await createTab(db, await getTab(db, widget.id));
-      const queryConfig = await createQueryConfig(db, 'ngsi-v2', dataSource.id);
 
       const updateValues = {
         widget: {
@@ -548,12 +543,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         },
         tab: {
           id: tab.id,
-          componentType: 'Karte',
-          componentSubType: 'Parking',
-        },
-        queryConfig: {
-          id: queryConfig.id,
-          fiwareService: 'etteln-dataspace',
+          componentType: 'Informationen',
         },
       };
 
@@ -565,7 +555,6 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       expect(response.body.widget).toMatchObject(updateValues.widget);
       expect(response.body.tab).toMatchObject(updateValues.tab);
-      expect(response.body.queryConfig).toMatchObject(updateValues.queryConfig);
     });
 
     it('/widgets/with-children/:id (PATCH) with image', async () => {

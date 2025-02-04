@@ -3,7 +3,7 @@
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { useParams } from 'next/navigation';
-import { GroupingElement } from '@/types';
+import { GroupingElement, menuArrowDirectionEnum } from '@/types';
 import DashboardSidebarDashboard from './DashboardSidebarDashboard';
 import '../app/globals.css';
 import { getCorporateInfosWithLogos } from '@/app/actions';
@@ -14,6 +14,7 @@ type DashboardSidebarGroupProps = {
   groupElement: GroupingElement;
   index: number;
   url: string;
+  menuArrowDirection: menuArrowDirectionEnum;
   onDashboardClick: () => void;
 };
 
@@ -24,7 +25,8 @@ type BackgroundColorStyle =
 export default function DashboardSidebarGroup(
   props: DashboardSidebarGroupProps,
 ): ReactElement {
-  const { index, groupElement, url, onDashboardClick } = props;
+  const { index, groupElement, url, menuArrowDirection, onDashboardClick } =
+    props;
   const [isOpen, setIsOpen] = useState(false);
   const params = useParams();
   const childContainerRef = useRef<HTMLDivElement>(null);
@@ -141,6 +143,37 @@ export default function DashboardSidebarGroup(
     ...(isHovered && getBgColorOnHover(groupElement)),
   };
 
+  const getDirectionArrow = (isOpen: boolean): string => {
+    switch (menuArrowDirection) {
+      case menuArrowDirectionEnum.DownDown:
+        return isOpen ? 'ChevronDown' : 'ChevronDown';
+
+      case menuArrowDirectionEnum.DownTop:
+        return isOpen ? 'ChevronDown' : 'ChevronUp';
+
+      case menuArrowDirectionEnum.TopTop:
+        return isOpen ? 'ChevronUp' : 'ChevronUp';
+
+      case menuArrowDirectionEnum.TopDown:
+        return isOpen ? 'ChevronUp' : 'ChevronDown';
+
+      case menuArrowDirectionEnum.LeftLeft:
+        return isOpen ? 'ChevronLeft' : 'ChevronLeft';
+
+      case menuArrowDirectionEnum.LeftRight:
+        return isOpen ? 'ChevronLeft' : 'ChevronRight';
+
+      case menuArrowDirectionEnum.RightRight:
+        return isOpen ? 'ChevronRight' : 'ChevronRight';
+
+      case menuArrowDirectionEnum.RightLeft:
+        return isOpen ? 'ChevronRight' : 'ChevronLeft';
+      default:
+        console.warn('Unknown menuArrowDirection', menuArrowDirection);
+        return isOpen ? 'ChevronDown' : 'ChevronUp';
+    }
+  };
+
   return (
     <div className="w-full pb-2">
       <div
@@ -163,12 +196,12 @@ export default function DashboardSidebarGroup(
           <div className="h-5 w-5 ml-auto transform">
             {isOpen ? (
               <DashboardIcons
-                iconName="ChevronDown"
+                iconName={getDirectionArrow(true)}
                 color={groupElement.fontColor}
               />
             ) : (
               <DashboardIcons
-                iconName="ChevronUp"
+                iconName={getDirectionArrow(false)}
                 color={groupElement.fontColor}
               />
             )}
@@ -213,6 +246,7 @@ export default function DashboardSidebarGroup(
                     index={index + 1}
                     url={`${url}/${element.url!}`}
                     onDashboardClick={onDashboardClick}
+                    menuArrowDirection={menuArrowDirection}
                   />
                 )}
               </div>

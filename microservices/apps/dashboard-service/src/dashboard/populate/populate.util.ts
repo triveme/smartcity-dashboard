@@ -95,6 +95,7 @@ export function reduceWidget(
         chartData: null,
         mapObject: null,
         combinedWidgets: null,
+        weatherWarnings: null,
       },
       dataModelMap,
       queryMap,
@@ -137,6 +138,7 @@ export function isSingleValueTab(
   return (
     tab.componentType === 'Wert' ||
     tab.componentType === 'Bild' ||
+    tab.componentType === 'Wetterwarnungen' ||
     (tab.componentType === 'Slider' &&
       tab.componentSubType === 'Farbiger Slider') ||
     (tab.componentType === 'Diagramm' &&
@@ -153,7 +155,7 @@ export function getGermanLabelForAttribute(attribute: string): string {
     case 'MONTHLYCONSUMPTIONSUMWATER':
       return 'Monatlicher Wasserverbrauch';
     case 'CO2':
-      return 'Kohlenstoffdioxid';
+      return 'CO2';
     case 'SOILMOISTUREEC':
       return 'Bodenfeuchtigkeit';
     case 'SOILMOISTUREVWC':
@@ -170,6 +172,20 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Bodenfeuchtigkeit 90cm';
     case 'SOILMOISTUREVWC_TIEFE_6':
       return 'Bodenfeuchtigkeit 1m';
+
+    case 'SOILMOISTUREVWC_TIEFE_10CM':
+      return 'Bodenfeuchtigkeit 10cm';
+    case 'SOILMOISTUREVWC_TIEFE_20CM':
+      return 'Bodenfeuchtigkeit 20cm';
+    case 'SOILMOISTUREVWC_TIEFE_30CM':
+      return 'Bodenfeuchtigkeit 30cm';
+    case 'SOILMOISTUREVWC_TIEFE_45CM':
+      return 'Bodenfeuchtigkeit 45cm';
+    case 'SOILMOISTUREVWC_TIEFE_60CM':
+      return 'Bodenfeuchtigkeit 60cm';
+    case 'SOILMOISTUREVWC_TIEFE_90CM':
+      return 'Bodenfeuchtigkeit 90cm';
+
     case 'SOILTEMPERATURE':
       return 'Bodentemperatur';
     case 'TOTALCONSUMPTIONSUM_GAS':
@@ -180,17 +196,110 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'CO2 Durchschnitt';
     case 'TEMPERATURE':
       return 'Temperatur';
+    case 'CURRENTLEVEL':
+      return 'Pegelstand';
     case 'CURRENT_LEVEL':
-      return 'Aktueller Pegelstand';
+      return 'Pegelstand';
     case 'DEWPOINT':
       return 'Taupunkt';
     case 'RELATIVEHUMIDITY':
       return 'Relative Luftfeuchte';
     case 'SOILTEMPERATUR':
       return 'Boden Temperatur';
-    case 'CURRENT_LEVEL':
-      return 'Aktueller Pegelstand';
+    case 'PRECIPITATION':
+      return 'Niederschlag';
+    case 'RAINRATEINTERVAL':
+      return 'Niederschlag';
+    case 'IRRADIATION':
+      return 'Sonneneinstrahlung';
+    case 'PRESSURE':
+      return 'Luftdruck';
+    case 'SOLARRADIATION':
+      return 'Solareinstrahlung';
+    case 'LIGHTNING_STRIKE_COUNT':
+      return 'Blitzeinschläge';
+    case 'LIGHTNING_STRIKE_DISTANCE':
+      return 'Blitzentfernung';
+    case 'WINDDIRECTION':
+      return 'Windrichtung';
+    case 'MAXIMUM_WINDSPEED':
+      return 'Windböe';
+    case 'WINDSPEED':
+      return 'Windgeschwindigkeit';
+    case 'TOTAL_COVERAGE':
+      return 'Bewölkung';
+    case 'MAXLVL':
+      return 'Höchster Pegelstand';
+    case 'MINLVL':
+      return 'Niedrigster Pegelstand';
+    case 'ATMOSPHERICPRESSURE':
+      return 'Luftdruck';
+    case 'VEHICLETYPE':
+      return 'Fahrzeugtyp';
+    case 'STREETNAME':
+      return 'Straßenname';
+    case 'INTENSITY':
+      return 'Auslastung';
+    case 'STATUS_ISOCCUPIEDSUM':
+      return 'Belegung';
+    case 'LIGHTNING_AVERAGE_DISTANCE':
+      return 'Blitzentfernung';
+    case 'CAR':
+      return 'PKW';
+    case 'AUTO':
+      return 'PKW';
+    case 'BIKE':
+      return 'Fahrrad';
+    case 'BICYCLE':
+      return 'Fahrrad';
+    case 'BICYCLES':
+      return 'Fahrrad';
+    case 'SCOOTER':
+      return 'Roller';
+    case 'MOTORBIKE':
+      return 'Motorrad';
+    case 'MOTORCYCLE':
+      return 'Motorrad';
+    case 'ELECTRIC_CAR':
+      return 'Elektroauto';
+    case 'ELECTRIC_BIKE':
+      return 'Elektrofahrrad';
+    case 'ELECTRIC_SCOOTER':
+      return 'Elektroroller';
+    case 'ELECTRIC_MOTORBIKE':
+      return 'Elektromotorrad';
+    case 'BUS':
+      return 'Bus';
+    case 'BUSES':
+      return 'Bus';
+    case 'TRUCK':
+      return 'LKW';
+    case 'TRUCKS':
+      return 'LKW';
+    case 'PASSANT':
+      return 'Person';
+    case 'PERSON':
+      return 'Person';
+    case 'TOTALCONSUMPTION':
+      return 'Verbrauch';
+    case 'OTHER':
+      return 'Andere';
+    case 'ANZAHL_BUS':
+      return 'Bus';
+    case 'ANZAHL_FAHRRAD':
+      return 'Fahrrad';
+    case 'ANZAHL_LKW':
+      return 'LKW';
+    case 'ANZAHL_MOTORRAD':
+      return 'Motorrad';
+    case 'ANZAHL_PERSON':
+      return 'Person';
+    case 'ANZAHL_PKW':
+      return 'PKW';
+    case 'ANZAHL_SONSTIGE':
+      return 'Sonstige';
     default:
+      console.warn(`No German label found for attribute: ${attribute}`);
       return attribute;
   }
 }

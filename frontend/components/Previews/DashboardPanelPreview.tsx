@@ -213,7 +213,7 @@ export default function DashboardPanelPreview(
             <button onClick={(): void => movePanel!(panel.id!, 'left')}>
               <DashboardIcons
                 iconName="ChevronLeft"
-                color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                color={data?.panelFontColor ?? '#FFFFFF'}
               />
             </button>
           )}
@@ -224,14 +224,14 @@ export default function DashboardPanelPreview(
             >
               <DashboardIcons
                 iconName="ChevronRight"
-                color={data?.headerPrimaryColor ?? '#FFFFFF'}
+                color={data?.panelFontColor ?? '#FFFFFF'}
               />
             </button>
           )}
           <button onClick={(): void => handleEditPanelClick(panel)}>
             <DashboardIcons
               iconName="Pen"
-              color={data?.headerPrimaryColor ?? '#FFFFFF'}
+              color={data?.panelFontColor ?? '#FFFFFF'}
             />
           </button>
           <button onClick={(): void => handleRemovePanelClick(panel)}>

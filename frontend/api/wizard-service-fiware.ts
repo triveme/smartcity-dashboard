@@ -52,7 +52,7 @@ export async function getEntityIds(
 }
 
 export async function getAttributes(
-  args: string[] | undefined,
+  args: string | undefined,
   accessToken: string | undefined,
   fiwareService: string,
   datasourceId: string,
@@ -66,7 +66,7 @@ export async function getAttributes(
       {
         headers,
         params: {
-          entityIds: args,
+          entityType: args,
         },
       },
     );

@@ -14,6 +14,9 @@ mail-service:
 infopin-service:
   enabled: false
 
+static-data-service:
+  enabled: false
+
 report-service:
   enabled: false
 

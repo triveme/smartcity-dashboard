@@ -6,8 +6,8 @@ import CIAddLogoWizard from './CIAddLogoWizard';
 
 type Props = {
   corporateInfo: CorporateInfo | undefined;
-  headerLogoId: string | undefined;
-  setHeaderLogoId: Dispatch<SetStateAction<string | undefined>>;
+  headerLogoId: string | null;
+  setHeaderLogoId: Dispatch<SetStateAction<string | null>>;
   showHeaderLogo: boolean;
   setShowHeaderLogo: (value: boolean) => void;
   showMenuLogo: boolean;

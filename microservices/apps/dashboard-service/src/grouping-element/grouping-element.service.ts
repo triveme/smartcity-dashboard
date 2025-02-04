@@ -92,6 +92,9 @@ export class GroupingElementService {
   ): Promise<GroupingElementWithChildren[]> {
     const children: GroupingElementWithChildren[] = [];
 
+    // Track used positions to ensure uniqueness
+    const positionSet = new Set<number>();
+
     for (const dbElement of dbResult) {
       const userIsAuthorizedToViewElement = this.checkDashboardRoles(
         dbElement,
@@ -102,8 +105,16 @@ export class GroupingElementService {
         dbElement.parentGroupingElementId == element.id &&
         userIsAuthorizedToViewElement
       ) {
+        // Ensure position is unique by adjusting overlapping values
+        let position = dbElement.position ?? Number.MAX_SAFE_INTEGER;
+        while (positionSet.has(position)) {
+          position++; // Increment to resolve conflicts
+        }
+        positionSet.add(position);
+
         const dbElementWithChildren: GroupingElementWithChildren = {
           ...dbElement,
+          position,
           children: [],
         };
 
@@ -117,6 +128,13 @@ export class GroupingElementService {
         children.push(dbElementWithChildren);
       }
     }
+
+    // Sort children by position to maintain order
+    children.sort(
+      (a, b) =>
+        (a.position ?? Number.MAX_SAFE_INTEGER) -
+        (b.position ?? Number.MAX_SAFE_INTEGER),
+    );
 
     return children;
   }
@@ -266,18 +284,30 @@ export class GroupingElementService {
         oldGroupingElement.parentGroupingElementId,
       );
 
-    let parentChildrenLength = childrenOfParent.length - 1;
+    // Track used positions for the new parent
+    const positionSet = new Set<number>();
+    childrenOfParent.forEach((child) => {
+      if (child.id !== oldGroupingElement.id) {
+        positionSet.add(child.position ?? Number.MAX_SAFE_INTEGER);
+      }
+    });
+
+    let parentChildrenPosition = Math.max(...Array.from(positionSet)) + 1;
 
     if (children.length > 0) {
-      children.forEach((child) => {
-        parentChildrenLength++;
+      for (const child of children) {
+        // Ensure position uniqueness
+        while (positionSet.has(parentChildrenPosition)) {
+          parentChildrenPosition++;
+        }
+        positionSet.add(parentChildrenPosition);
 
         child.parentGroupingElementId =
           oldGroupingElement.parentGroupingElementId;
-        child.position = parentChildrenLength;
+        child.position = parentChildrenPosition;
 
-        this.update(child.id, child, roles);
-      });
+        await this.update(child.id, child, roles);
+      }
     }
   }
 
@@ -287,6 +317,7 @@ export class GroupingElementService {
     roles: Array<string>,
   ): Promise<GroupingElementWithChildren[]> {
     const result: GroupingElementWithChildren[] = [];
+    const positionSet = new Set<number>(); // Track used positions for root elements
 
     for (const element of groupingElementsFromDb) {
       const userIsAuthorizedToViewGroupingElement = this.checkDashboardRoles(
@@ -298,8 +329,16 @@ export class GroupingElementService {
         element.parentGroupingElementId == null &&
         userIsAuthorizedToViewGroupingElement
       ) {
+        // Ensure unique positions for root elements
+        let position = element.position ?? Number.MAX_SAFE_INTEGER;
+        while (positionSet.has(position)) {
+          position++;
+        }
+        positionSet.add(position);
+
         const groupingElement: GroupingElementWithChildren = {
           ...element,
+          position,
           children: [],
         };
 
@@ -313,6 +352,13 @@ export class GroupingElementService {
         result.push(groupingElement);
       }
     }
+
+    // Sort root grouping elements by position
+    result.sort(
+      (a, b) =>
+        (a.position ?? Number.MAX_SAFE_INTEGER) -
+        (b.position ?? Number.MAX_SAFE_INTEGER),
+    );
 
     return result;
   }

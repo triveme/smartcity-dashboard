@@ -109,29 +109,171 @@ export default function QueryConfigWizard(
     handleQueryConfigChange({ isReporting: isSelected });
   };
 
+  const [loadingState, setLoadingState] = useState<{ [key: string]: boolean }>({
+    collections: false,
+    sources: false,
+  });
+  const toggleLoading = (key: string, isLoading: boolean): void => {
+    setLoadingState((prev) => ({ ...prev, [key]: isLoading }));
+  };
+
   const requestCollections = async (): Promise<void> => {
-    let req: string[] = [];
-    if (datasourceOrigin === 'api') {
-      req = await getCollections(
-        queryConfig?.dataSourceId,
-        auth?.user?.access_token,
-      );
-    } else {
-      if (queryConfig?.fiwareService) {
-        setSelectedCollection(queryConfig?.fiwareService);
+    toggleLoading('collections', true);
+    try {
+      let req: string[] = [];
+      if (datasourceOrigin === 'api') {
+        req = await getCollections(
+          queryConfig?.dataSourceId,
+          auth?.user?.access_token,
+        );
+      } else {
+        if (queryConfig?.fiwareService) {
+          setSelectedCollection(queryConfig?.fiwareService);
+        }
+        return;
       }
-      return;
-    }
-    if (req.length > 0) {
-      setCollections(['', ...req]);
-      if (queryConfig?.fiwareService) {
-        setSelectedCollection(queryConfig?.fiwareService);
+      if (req.length > 0) {
+        setCollections(['', ...req]);
+        if (queryConfig?.fiwareService) {
+          setSelectedCollection(queryConfig?.fiwareService);
+        } else {
+          setSelectedCollection(collections[0]);
+        }
       }
-    } else {
+    } catch (error) {
+      console.error(error);
       openSnackbar(
         'Fehler beim Abfragen von Collections. Keine Daten',
         'error',
       );
+    } finally {
+      toggleLoading('collections', false);
+    }
+  };
+
+  const requestSource = async (): Promise<void> => {
+    toggleLoading('source', true);
+    try {
+      const params: DataConfigRequestType = {
+        collection: selectedCollection,
+        apiId: queryConfig?.dataSourceId,
+        accessToken: auth?.user?.access_token,
+      };
+      let req: string[] = [];
+      if (datasourceOrigin === 'api') {
+        req = await getSourcesForCollection(params);
+      } else {
+        if (
+          queryConfig?.fiwareService &&
+          queryConfig.dataSourceId &&
+          selectedCollection
+        ) {
+          req = await getFiwareTypes(
+            auth?.user?.access_token,
+            selectedCollection,
+            queryConfig?.dataSourceId,
+          );
+        } else {
+          return;
+        }
+      }
+
+      if (req.length > 0) {
+        setSources(req);
+        if (queryConfig?.fiwareType) {
+          setSelectedSource(queryConfig?.fiwareType);
+        } else {
+          setSelectedSource(sources[0]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      openSnackbar('Fehler beim Abfragen von Sources. Keine Daten', 'error');
+    } finally {
+      toggleLoading('source', false);
+    }
+  };
+
+  const requestSensors = async (): Promise<void> => {
+    toggleLoading('sensors', true);
+    try {
+      let req: string[] = [];
+      if (datasourceOrigin === 'api') {
+        const params: DataConfigRequestType = {
+          collection: selectedCollection,
+          source: selectedSource,
+          apiId: queryConfig?.dataSourceId,
+          accessToken: auth?.user?.access_token,
+        };
+        req = await getSensorsForSource(params);
+      } else {
+        if (
+          queryConfig?.fiwareService &&
+          queryConfig.dataSourceId &&
+          selectedSource &&
+          selectedSource !== ''
+        ) {
+          req = await getEntityIds(
+            selectedSource,
+            auth?.user?.access_token,
+            queryConfig?.fiwareService,
+            queryConfig?.dataSourceId,
+          );
+        } else {
+          return;
+        }
+      }
+      setSensors(req);
+      if (req.length > 0) {
+        if (queryConfig?.entityIds) {
+          setSelectedSensors(queryConfig?.entityIds);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      openSnackbar('Fehler beim Abfragen von Sensoren. Keine Daten', 'error');
+    } finally {
+      toggleLoading('sensors', false);
+    }
+  };
+
+  const requestAttributes = async (): Promise<void> => {
+    toggleLoading('attributes', true);
+    try {
+      let req: string[] = [];
+      if (datasourceOrigin === 'api') {
+        const params: DataConfigRequestType = {
+          collection: selectedCollection,
+          source: selectedSource,
+          apiId: queryConfig?.dataSourceId,
+          accessToken: auth?.user?.access_token,
+        };
+        req = await getAttributeForSource(params);
+      } else {
+        if (
+          queryConfig?.fiwareService &&
+          queryConfig.dataSourceId &&
+          selectedSensors &&
+          selectedSensors.length > 0
+        ) {
+          req = await getAttributes(
+            selectedSource,
+            auth?.user?.access_token,
+            queryConfig?.fiwareService,
+            queryConfig?.dataSourceId,
+          );
+        } else {
+          return;
+        }
+      }
+      if (req.length > 0) {
+        setAttributes(req);
+      }
+    } catch (error) {
+      console.error(error);
+      openSnackbar('Fehler beim Abfragen von Attributen. Keine Daten', 'error');
+    } finally {
+      toggleLoading('attributes', false);
     }
   };
 
@@ -145,41 +287,6 @@ export default function QueryConfigWizard(
       setAttributes([]);
     }
   }, [selectedCollection]);
-
-  const requestSource = async (): Promise<void> => {
-    const params: DataConfigRequestType = {
-      collection: selectedCollection,
-      apiId: queryConfig?.dataSourceId,
-      accessToken: auth?.user?.access_token,
-    };
-    let req: string[] = [];
-    if (datasourceOrigin === 'api') {
-      req = await getSourcesForCollection(params);
-    } else {
-      if (
-        queryConfig?.fiwareService &&
-        queryConfig.dataSourceId &&
-        selectedCollection
-      ) {
-        req = await getFiwareTypes(
-          auth?.user?.access_token,
-          selectedCollection,
-          queryConfig?.dataSourceId,
-        );
-      } else {
-        return;
-      }
-    }
-
-    if (req.length > 0) {
-      setSources(['', ...req]);
-      if (queryConfig?.fiwareType) {
-        setSelectedSource(queryConfig?.fiwareType);
-      }
-    } else {
-      openSnackbar('Fehler beim Abfragen von Sources. Keine Daten', 'error');
-    }
-  };
 
   useEffect(() => {
     if (selectedSource) {
@@ -195,43 +302,6 @@ export default function QueryConfigWizard(
     }
   }, [selectedSource]);
 
-  const requestSensors = async (): Promise<void> => {
-    let req: string[] = [];
-    if (datasourceOrigin === 'api') {
-      const params: DataConfigRequestType = {
-        collection: selectedCollection,
-        source: selectedSource,
-        apiId: queryConfig?.dataSourceId,
-        accessToken: auth?.user?.access_token,
-      };
-      req = await getSensorsForSource(params);
-    } else {
-      if (
-        queryConfig?.fiwareService &&
-        queryConfig.dataSourceId &&
-        selectedSource &&
-        selectedSource !== ''
-      ) {
-        req = await getEntityIds(
-          selectedSource,
-          auth?.user?.access_token,
-          queryConfig?.fiwareService,
-          queryConfig?.dataSourceId,
-        );
-      } else {
-        return;
-      }
-    }
-    setSensors(['', ...req]);
-    if (req.length > 0) {
-      if (queryConfig?.entityIds) {
-        setSelectedSensors(queryConfig?.entityIds);
-      }
-    } else {
-      openSnackbar('Fehler beim Abfragen von Sensoren. Keine Daten', 'error');
-    }
-  };
-
   useEffect(() => {
     if (datasourceOrigin !== 'api') {
       if (selectedSensors && selectedSensors.length > 0) {
@@ -241,40 +311,6 @@ export default function QueryConfigWizard(
       }
     }
   }, [selectedSensors]);
-
-  const requestAttributes = async (): Promise<void> => {
-    let req: string[] = [];
-    if (datasourceOrigin === 'api') {
-      const params: DataConfigRequestType = {
-        collection: selectedCollection,
-        source: selectedSource,
-        apiId: queryConfig?.dataSourceId,
-        accessToken: auth?.user?.access_token,
-      };
-      req = await getAttributeForSource(params);
-    } else {
-      if (
-        queryConfig?.fiwareService &&
-        queryConfig.dataSourceId &&
-        selectedSensors &&
-        selectedSensors.length > 0
-      ) {
-        req = await getAttributes(
-          selectedSensors,
-          auth?.user?.access_token,
-          queryConfig?.fiwareService,
-          queryConfig?.dataSourceId,
-        );
-      } else {
-        return;
-      }
-    }
-    if (req.length > 0) {
-      setAttributes(['', ...req]);
-    } else {
-      openSnackbar('Fehler beim Abfragen von Attributen. Keine Daten', 'error');
-    }
-  };
 
   useEffect(() => {
     if (!queryConfig) {
@@ -329,6 +365,7 @@ export default function QueryConfigWizard(
                 if (origin !== 'api') {
                   if (collectionsFromDatasource) {
                     setCollections(['', ...collectionsFromDatasource]);
+                    setSelectedCollection(collectionsFromDatasource[0]);
                   }
                 }
               }}
@@ -390,6 +427,9 @@ export default function QueryConfigWizard(
                       </div>
                       <RefreshButton
                         handleClick={requestCollections}
+                        className={
+                          loadingState.collections ? 'animate-spin' : ''
+                        }
                         fontColor={iconColor}
                         hoverColor={hoverColor}
                         backgroundColor={backgroundColor}
@@ -402,7 +442,7 @@ export default function QueryConfigWizard(
                       <div className="flex-1">
                         <WizardDropdownSelection
                           currentValue={queryConfig?.fiwareType || ''}
-                          selectableValues={sources || []}
+                          selectableValues={['', ...sources]}
                           onSelect={(value: string | number): void => {
                             handleQueryConfigChange({
                               fiwareType: value.toString(),
@@ -419,6 +459,7 @@ export default function QueryConfigWizard(
                       </div>
                       <RefreshButton
                         handleClick={requestSource}
+                        className={loadingState.source ? 'animate-spin' : ''}
                         fontColor={iconColor}
                         hoverColor={hoverColor}
                         backgroundColor={backgroundColor}
@@ -433,7 +474,7 @@ export default function QueryConfigWizard(
                         <div className="flex-1">
                           <WizardDropdownSelection
                             currentValue={queryConfig?.entityIds?.[0] || ''}
-                            selectableValues={sensors}
+                            selectableValues={['', ...sensors]}
                             error={errors && errors.sensorError}
                             onSelect={(value: string | number): void => {
                               handleQueryConfigChange({
@@ -448,6 +489,7 @@ export default function QueryConfigWizard(
                         </div>
                         <RefreshButton
                           handleClick={requestSensors}
+                          className={loadingState.sensors ? 'animate-spin' : ''}
                           fontColor={iconColor}
                           hoverColor={hoverColor}
                           backgroundColor={backgroundColor}
@@ -474,6 +516,7 @@ export default function QueryConfigWizard(
                         </div>
                         <RefreshButton
                           handleClick={requestSensors}
+                          className={loadingState.sensors ? 'animate-spin' : ''}
                           fontColor={iconColor}
                           hoverColor={hoverColor}
                           backgroundColor={backgroundColor}
@@ -489,7 +532,7 @@ export default function QueryConfigWizard(
                         <div className="flex-1">
                           <WizardDropdownSelection
                             currentValue={queryConfig?.attributes[0] || ''}
-                            selectableValues={attributes}
+                            selectableValues={['', ...attributes]}
                             error={errors && errors.attributeError}
                             onSelect={(value: string | number): void => {
                               handleQueryConfigChange({
@@ -503,6 +546,9 @@ export default function QueryConfigWizard(
                         </div>
                         <RefreshButton
                           handleClick={requestAttributes}
+                          className={
+                            loadingState.attributes ? 'animate-spin' : ''
+                          }
                           fontColor={iconColor}
                           hoverColor={hoverColor}
                           backgroundColor={backgroundColor}
@@ -528,6 +574,9 @@ export default function QueryConfigWizard(
                         </div>
                         <RefreshButton
                           handleClick={requestAttributes}
+                          className={
+                            loadingState.attributes ? 'animate-spin' : ''
+                          }
                           fontColor={iconColor}
                           hoverColor={hoverColor}
                           backgroundColor={backgroundColor}
@@ -606,7 +655,6 @@ export default function QueryConfigWizard(
               )}
             </div>
           ) : (
-            // API SERVICE CONFIG
             <div>
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Collections" />
@@ -632,6 +680,7 @@ export default function QueryConfigWizard(
                   </div>
                   <RefreshButton
                     handleClick={requestCollections}
+                    className={loadingState.collections ? 'animate-spin' : ''}
                     fontColor={iconColor}
                     hoverColor={hoverColor}
                     backgroundColor={backgroundColor}
@@ -661,6 +710,7 @@ export default function QueryConfigWizard(
                   </div>
                   <RefreshButton
                     handleClick={requestSource}
+                    className={loadingState.source ? 'animate-spin' : ''}
                     fontColor={iconColor}
                     hoverColor={hoverColor}
                     backgroundColor={backgroundColor}
@@ -688,6 +738,7 @@ export default function QueryConfigWizard(
                     </div>
                     <RefreshButton
                       handleClick={requestSensors}
+                      className={loadingState.sensors ? 'animate-spin' : ''}
                       fontColor={iconColor}
                       hoverColor={hoverColor}
                       backgroundColor={backgroundColor}
@@ -713,6 +764,7 @@ export default function QueryConfigWizard(
                     </div>
                     <RefreshButton
                       handleClick={requestSensors}
+                      className={loadingState.sensors ? 'animate-spin' : ''}
                       fontColor={iconColor}
                       hoverColor={hoverColor}
                       backgroundColor={backgroundColor}
@@ -741,6 +793,7 @@ export default function QueryConfigWizard(
                     </div>
                     <RefreshButton
                       handleClick={requestAttributes}
+                      className={loadingState.attributes ? 'animate-spin' : ''}
                       fontColor={iconColor}
                       hoverColor={hoverColor}
                       backgroundColor={backgroundColor}
@@ -768,6 +821,7 @@ export default function QueryConfigWizard(
                     </div>
                     <RefreshButton
                       handleClick={requestAttributes}
+                      className={loadingState.attributes ? 'animate-spin' : ''}
                       fontColor={iconColor}
                       hoverColor={hoverColor}
                       backgroundColor={backgroundColor}

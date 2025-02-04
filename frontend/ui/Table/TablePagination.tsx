@@ -46,16 +46,18 @@ export default function TablePagination(
     backgroundColor: isPrevHovered
       ? data?.headerSecondaryColor || '#3D4760'
       : data?.headerPrimaryColor || '#3D4760',
+    color: data?.headerFontColor,
   };
 
   const nextButtonStyle = {
     backgroundColor: isNextHovered
       ? data?.headerSecondaryColor || '#3D4760'
       : data?.headerPrimaryColor || '#3D4760',
+    color: data?.headerFontColor,
   };
 
   const fontStyle = {
-    color: data?.headerFontColor || '#FFF',
+    color: data?.dashboardFontColor || '#FFF',
   };
 
   // Calculate the range of items currently displayed
@@ -76,7 +78,7 @@ export default function TablePagination(
       <div>Einträge pro Seite:</div>
       <DropdownSelection
         currentValue={viewsPerPage}
-        selectableValues={[5, 10, 20]}
+        selectableValues={[5, 10, 20, 50, 100]}
         onSelect={onViewsPerPageChange}
         iconColor={iconColor}
         backgroundColor={backgroundColor}
@@ -88,7 +90,7 @@ export default function TablePagination(
       <div>
         <div
           className="rounded-lg flex items-center"
-          style={{ background: backgroundColor }}
+          style={{ background: backgroundColor, color: data?.headerFontColor }}
         >
           {hasPreviousPage && (
             <button
