@@ -116,6 +116,32 @@ export class DataService {
           params.id = query_config.entityIds.join(',');
         }
       }
+
+      // Workaround for aggregation attributes with a name attribute included
+      if (query_config.aggrMode !== 'none' && params.attrs.includes('name')) {
+        params.attrs = params.attrs.replace('name,', '');
+        params.attrs = params.attrs.replace(',name', '');
+        const aggrParams = { ...params };
+        const nameParams = {
+          ...params,
+          aggrMethod: undefined,
+          aggrPeriod: undefined,
+          attrs: 'name',
+        };
+
+        const [aggrResponse, nameResponse] = await Promise.all([
+          axios.get(url, { headers, params: aggrParams }),
+          axios.get(url, { headers, params: nameParams }),
+        ]);
+
+        const combinedAttrs = [
+          ...aggrResponse.data.attrs,
+          ...nameResponse.data.attrs,
+        ];
+        return {
+          attrs: [...combinedAttrs],
+        };
+      }
       const response = await axios.get(url, { headers, params });
 
       return response.data;

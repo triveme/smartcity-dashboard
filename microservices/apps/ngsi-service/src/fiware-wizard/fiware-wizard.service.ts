@@ -92,6 +92,7 @@ export class FiwareWizardService {
 
       return authResponse.data.access_token;
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Failed to get authentication token',
         HttpStatus.UNAUTHORIZED,
@@ -165,6 +166,7 @@ export class FiwareWizardService {
       const types = entitiesResponse.data.map((entity) => entity.type);
       return Array.from(new Set(types));
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Failed to fetch Fiware Types',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -185,21 +187,39 @@ export class FiwareWizardService {
     );
     const url = new URL(entitiesUrl);
 
+    let allEntityIds: string[] = [];
+    let offset = 0;
+    const limit = 1000;
+
     try {
-      url.searchParams.set('limit', '1000');
-      url.searchParams.set('type', type);
-      const entitiesResponse = await lastValueFrom(
-        this.httpService.get(url.toString(), { headers }),
-      );
+      // Continue fetching entities in batches of 1000 until no more are found
+      while (true) {
+        url.searchParams.set('limit', limit.toString());
+        url.searchParams.set('offset', offset.toString());
+        if (type) url.searchParams.set('type', type);
 
-      // Filter entities by the optional fiwareType
-      const filteredEntities = type
-        ? entitiesResponse.data.filter((entity) => entity.type === type)
-        : entitiesResponse.data;
+        const entitiesResponse = await lastValueFrom(
+          this.httpService.get(url.toString(), { headers }),
+        );
 
-      // Map to extract IDs of filtered entities
-      return filteredEntities.map((entity) => entity.id);
+        const entities = type
+          ? entitiesResponse.data.filter((entity) => entity.type === type)
+          : entitiesResponse.data;
+
+        // Extract entity IDs from the current batch and add them to the result array
+        const entityIds = entities.map((entity) => entity.id);
+        allEntityIds = allEntityIds.concat(entityIds);
+
+        // If fewer than 1000 entities were returned, we've reached the last page
+        if (entityIds.length < limit) break;
+
+        // Increment the offset to fetch the next batch
+        offset += limit;
+      }
+
+      return allEntityIds;
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Failed to fetch Fiware Entity IDs',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -247,6 +267,7 @@ export class FiwareWizardService {
       // Return set of attribute strings as an array
       return Array.from(attributesSet);
     } catch (error) {
+      console.error(error);
       throw new HttpException(
         'Failed to fetch Fiware Entity Attributes',
         HttpStatus.INTERNAL_SERVER_ERROR,

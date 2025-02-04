@@ -5,15 +5,23 @@ import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardTextfield from '@/ui/WizardTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
-import IconSelection from '@/ui/Icons/IconSelection';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from 'react-oidc-context';
 import { jwtDecode } from 'jwt-decode';
 
-import { getWidgets } from '@/api/widget-service';
-import { getTabByWidgetId } from '@/api/tab-service';
+import {
+  getWidgets,
+  getWidgetsByTenantAndTabComponentType,
+} from '@/api/widget-service';
+// import { getTabByWidgetId } from '@/api/tab-service';
 import SearchableDropdown from '@/ui/SearchableDropdown';
-import { Panel, Tab, tabComponentTypeEnum, Widget } from '@/types';
+import {
+  Panel,
+  Tab,
+  tabComponentTypeEnum,
+  Widget,
+  WidgetWithChildren,
+} from '@/types';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
 import { deletePanel, postPanel } from '@/api/panel-service';
 import { postWidgetToPanelRelation } from '@/api/widgetPanelRelation-service';
@@ -24,6 +32,7 @@ import { WizardErrors } from '@/types/errors';
 import { visibilityOptions } from '@/utils/enumMapper';
 import CheckBox from '@/ui/CheckBox';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
+import IconSelection from '@/ui/Icons/IconSelection';
 
 type DashboardWizardProps = {
   dashboardName: string;
@@ -55,6 +64,8 @@ type DashboardWizardProps = {
   borderColor: string;
   backgroundColor: string;
   hoverColor: string;
+  dashboardMap?: Widget;
+  originalDashboardType?: string;
 };
 
 export default function DashboardWizard(
@@ -79,7 +90,6 @@ export default function DashboardWizard(
     setDashboardType,
     dashboardAllowDataExport,
     setDashboardAllowDataExport,
-    setSelectedTab,
     panels,
     setPanels,
     tenant,
@@ -88,6 +98,8 @@ export default function DashboardWizard(
     borderColor,
     backgroundColor,
     hoverColor,
+    dashboardMap,
+    originalDashboardType,
   } = props;
 
   // Keycloak roles
@@ -105,12 +117,24 @@ export default function DashboardWizard(
 
   const [selectedWidgetInDropdown, setSelectedWidgetInDropdown] = useState('');
   const [allWidgets, setAllWidgets] = useState<Widget[]>([]);
-  const [mapWidgets, setMapWidgets] = useState<string[]>([]);
-  const [selectedWidget, setSelectedWidget] = useState<Widget>();
-  const [tabs, setTabs] = useState<Tab[]>([]);
+  const [mapWidgets, setMapWidgets] = useState<WidgetWithChildren[]>([]);
+  const [selectedWidget, setSelectedWidget] = dashboardMap
+    ? useState<Widget>(dashboardMap)
+    : useState<Widget>();
+
   const { data: widgets } = useQuery({
     queryKey: ['widgets'],
     queryFn: () => getWidgets(auth?.user?.access_token, tenant),
+  });
+
+  const { data: widgetsWithMapType } = useQuery({
+    queryKey: ['widgetsWithMapType'],
+    queryFn: () =>
+      getWidgetsByTenantAndTabComponentType(
+        auth?.user?.access_token,
+        tabComponentTypeEnum.map,
+        tenant,
+      ),
   });
 
   useEffect(() => {
@@ -120,6 +144,12 @@ export default function DashboardWizard(
   }, [widgets]);
 
   useEffect(() => {
+    if (widgetsWithMapType) {
+      setMapWidgets(widgetsWithMapType);
+    }
+  }, [widgetsWithMapType]);
+
+  useEffect(() => {
     allWidgets.map((widget) => {
       if (widget.name === selectedWidgetInDropdown) {
         setSelectedWidget(widget);
@@ -127,52 +157,9 @@ export default function DashboardWizard(
     });
   }, [selectedWidgetInDropdown]);
 
-  // Limit widgets that have a tab.componentType === map
-  useEffect(() => {
-    const fetchTabs = async (): Promise<void> => {
-      const karteTypes: string[] = [];
-      const tabs: Tab[] = [];
-
-      for (const widget of allWidgets) {
-        if (widget.id !== undefined) {
-          try {
-            const data = await getTabByWidgetId(
-              auth?.user?.access_token,
-              widget.id,
-            );
-
-            if (data.componentType === tabComponentTypeEnum.map) {
-              tabs.push(data);
-              karteTypes.push(widget.name);
-            }
-          } catch (error) {
-            console.error(
-              `Failed to fetch tab data for widget ${widget.id}:`,
-              error,
-            );
-          }
-        }
-      }
-      setMapWidgets(karteTypes);
-      setTabs(tabs);
-    };
-
-    if (allWidgets && allWidgets.length > 0) {
-      fetchTabs();
-    }
-  }, [allWidgets, auth?.user?.access_token]);
-
-  useEffect(() => {
-    tabs.map((tab) => {
-      if (tab.widgetId === selectedWidget?.id) {
-        setSelectedTab(tab);
-      }
-    });
-  }, [selectedWidget]);
-
   const clearPanels = async (): Promise<void> => {
     try {
-      if (panels && panels.length > 0 && panels[0].name === '') {
+      if (panels && panels.length > 0) {
         for (let i = 0; i < panels.length; i++) {
           await deletePanel(auth.user?.access_token, panels[i].id!);
         }
@@ -185,8 +172,13 @@ export default function DashboardWizard(
 
   useEffect(() => {
     const fetchPanel = async (): Promise<void> => {
-      await clearPanels();
-      if (dashboardType === 'Karte') {
+      // delete previously attached panels when user changes dashboardType
+      if (dashboardType !== originalDashboardType) {
+        await clearPanels();
+      }
+      // only runs when user changes dashboardType to Karte
+      // either when creating a new dashboard or editing type from Allgemein to Karte
+      if (originalDashboardType !== 'Karte' && dashboardType === 'Karte') {
         try {
           const newPanel = await postPanel(
             auth.user?.access_token,
@@ -221,6 +213,25 @@ export default function DashboardWizard(
     };
     handleWidgetClick();
   }, [selectedWidget]);
+
+  useEffect(() => {
+    const getWidgetsWithMapType = async (): Promise<void> => {
+      let response;
+      try {
+        response = await getWidgetsByTenantAndTabComponentType(
+          auth?.user?.access_token,
+          tabComponentTypeEnum.map,
+          tenant,
+        );
+      } catch (error) {
+        console.error('Failed to get widgets with map type:', error);
+      }
+      setMapWidgets(response || []);
+    };
+    if (dashboardType === 'Karte') {
+      getWidgetsWithMapType();
+    }
+  }, [dashboardType]);
 
   return (
     <div>
@@ -322,11 +333,9 @@ export default function DashboardWizard(
       {dashboardType === 'Karte' && (
         <div className="flex flex-col w-full pb-2 z-0">
           <SearchableDropdown
-            value={selectedWidget?.name || ''}
+            value={dashboardMap?.name || ''}
             options={
-              mapWidgets && mapWidgets.length > 0
-                ? mapWidgets?.map((karteName) => karteName)
-                : []
+              mapWidgets ? mapWidgets.map((widget) => widget.widget.name) : []
             }
             onSelect={setSelectedWidgetInDropdown}
             backgroundColor={backgroundColor}
@@ -339,9 +348,9 @@ export default function DashboardWizard(
         <WizardLabel label="Icon" />
         <IconSelection
           activeIcon={dashboardIcon}
-          handleIconSelect={(value: string): void =>
-            setDashboardIcon(value.toString())
-          }
+          handleIconSelect={(value: string): void => {
+            setDashboardIcon(value.toString());
+          }}
           iconColor={iconColor}
           borderColor={borderColor}
         />

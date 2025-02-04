@@ -1,0 +1,71 @@
+== Keycloak Backend Authentication
+
+=== Setup
+Once the keycloak pod has been started and the local port forwarding is established, you can access http://localhost:8080[http://localhost:8080] to access the keycloak admin console.
+On initial startup, the credentials for the dev-admin users need to be set, i.e., the password. Select the "testrealm", go to users, select dev-admin, and in the tab credentials, set the password without it being temporary.
+Test login with the running frontend at http://localhost:3000/login[http://localhost:3000/login].
+
+=== Test Authentication without Frontend (with Postman)
+
+Postman allows us to test our API endpoints to ensure the correct responses will be sent/received from the eventual frontend client.
+A particularly useful feature of postman is its ability to act as a Keycloak login page and grant users a bearer token required for auth protected API endpoints.
+
+This can be achieved with our `smartcity-dashboard-20` docker container running and by following the steps below in Postman:
+
+* Create a new request and enter the URL path to a specific endpoint on our backend, e.g., `http://localhost:8081/dashboards?includeContent=true`.
+* Under the Authorization tab, select type "OAuth 2.0".
+* Configure New Token:
+  ** Token Name: e.g., "frontend-token"
+  ** Grant type: "Authorization Code (with PKCE)"
+  ** Auth URL: "`http://localhost:8080/realms/testrealm/protocol/openid-connect/auth`"
+  ** Access Token URL: "`http://localhost:8080/realms/testrealm/protocol/openid-connect/token`"
+  ** Client ID: "scs-frontend"
+  ** Code Challenge Method: "SHA-256"
+  ** Client Authentication: "Send as Basic Auth header"
+* Click "Get New Access Token" button.
+* This should open a browser to log into Keycloak with user credentials. (NOTE: users can be added through the Keycloak admin console).
+* Once logged in, Postman will open again and we can select "Use Token" from the popup.
+* Send a request to the API.
+
+
+== Keycloak Environment Variables Documentation
+
+The dashboard project integrates several technologies including Next.js, NestJS, Keycloak, and PostgreSQL. This documentation provides details on the required environment variables to configure and run the project successfully.
+
+[options="header"]
+|===
+| Variable | Description | Example Value
+| `NEXT_PUBLIC_OIDC_AUTHORITY` | Address information for the keycloak connection and authentication. | `http://localhost:8080/realms/testrealm`
+| `NEXT_PUBLIC_OIDC_CLIENT_ID` | Client information for the keycloak connection and authentication. | `scs-frontend`
+| `NEXT_PUBLIC_OIDC_REDIRECT_URI` | Redirect url for the keycloak connection and authentication. | `http://localhost:3000/admin`
+| `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
+| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
+| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `dashboard-super-admin`
+|===
+
+
+
+=== Keycloak In Production
+
+Configuration in-place to make Keycloak more production-ready:
+
+* Production-Realm:
+** This realm (production-realm.json) is configured for a more production-ready environment.
+** It includes a stronger password policy -  our clients need a password with at least 6 characters, 1 uppercase letter, 1 lowercase letter and a digit.
+** PLEASE NOTE: our dev-admin client on prod will have password 'Smartcity123'
+** Stricter Web Origin and Redirect URLs - Only frontends on our prod/dev/test k8s namespaces are permitted.
+
+* Production Mode:
+** Set in the values-edag-prod.yaml, is the production flag.  Setting this to true will automatically apply necessary changes to configure Keycloak for production use.
+** Automatically enabling TLS/HTTPS encryption for communication between clients and Keycloak.
+** Resources will be automatically scaled depending on server traffic.
+
+* Scalability:
+** To protect the keycloak server from an overload situation in a k8s production environment, the resourceLimit parameter can be set in the
+  values-edag-prod.yaml.  It is set here to small, which allocates 250m cpu storage to the pod and limits it to 375m.
+** If we need to adjust these values to rescale as more clients use the keycloak, all presets and their values can be found here: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
+
+* High Availability:
+** Replica pods for keycloak will be deployed in our production environment.  This will make for higher level of availability for keycloak.
+** The replicas are all wired to the same Ingress host, thanks to cookie/session affinity configuration in the values-edag-prod.yaml.
+** If one keycloak pod goes down, a replica, routed to the same Ingress host will be used instead, so the user will remain logged into the keycloak.

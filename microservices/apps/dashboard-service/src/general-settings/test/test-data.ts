@@ -12,6 +12,8 @@ export function getGeneralSetting(tenant: string): GeneralSettings {
     information: 'https://test.de/information.html',
     imprint: 'https://test.de/imprint.html',
     privacy: 'https://test.de/privacy.html',
+    allowThemeSwitching: false,
+    disclaimer: 'Test Disclaimer',
   };
 }
 

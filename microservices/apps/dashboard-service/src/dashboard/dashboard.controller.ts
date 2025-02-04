@@ -119,6 +119,17 @@ export class DashboardController {
   }
 
   @Public()
+  @Get('with-widgets/:id')
+  async getDashboardWithWidgets(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<DashboardWithContent> {
+    console.log('getDashboardWithWidgets');
+    const roles = request.roles ?? [];
+    return this.service.getDashboardWithWidgets(id, roles);
+  }
+
+  @Public()
   @Post('/')
   async create(
     @Query('tenant') tenant: string,
@@ -127,6 +138,17 @@ export class DashboardController {
   ): Promise<Dashboard> {
     const roles = request.roles ?? [];
     return this.service.create(row, roles, tenant);
+  }
+
+  @Public()
+  @Post('/duplicate/:id')
+  async duplicate(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query('tenant') tenant: string,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<DashboardWithContent> {
+    const roles = request.roles ?? [];
+    return this.service.duplicate(id, roles, tenant);
   }
 
   @Public()

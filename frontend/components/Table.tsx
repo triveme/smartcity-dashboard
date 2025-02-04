@@ -34,6 +34,7 @@ export default function Table<T>(props: TableProps<T>): ReactElement {
     showSuffixText,
     isTenant = false,
   } = props;
+
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(
     tableConfig.columns[0] as string,

@@ -5,18 +5,16 @@ import { env } from 'next-runtime-env';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
-export async function getDashboardById(
+export async function getDashboardByIdWithContent(
   accessToken: string | undefined,
   dashboardId: string,
-  includeContent?: boolean,
-): Promise<Dashboard> {
+): Promise<DashboardWithContent> {
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
-  const query = includeContent ? '?includeContent' + includeContent : '';
 
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}${query}`,
+    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}?includeContent=true`,
     {
       headers,
     },
@@ -28,7 +26,7 @@ export async function getDashboardById(
   return fetched;
 }
 
-export async function getDashboardByIdWithContent(
+export async function getDashboardByIdWithStructure(
   accessToken: string | undefined,
   dashboardId: string,
 ): Promise<DashboardWithContent> {
@@ -37,7 +35,7 @@ export async function getDashboardByIdWithContent(
     : undefined;
 
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}?includeContent=true`,
+    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/with-widgets/${dashboardId}`,
     {
       headers,
     },
@@ -174,6 +172,38 @@ export async function updateDashboard(
     console.error(err);
     if (axios.isAxiosError(err)) {
       console.error('HTTP Error on updateDashboard:', err.response?.status);
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}
+
+export async function duplicateDashboard(
+  accessToken: string | undefined,
+  dashboardId: string,
+  tenant?: string | undefined,
+): Promise<DashboardWithContent> {
+  const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    const response = await axios.post(
+      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/duplicate/${dashboardId}${tenantParam}`,
+      {},
+      { headers: headers },
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error('HTTP Error on duplicateDashboard:', err.response?.status);
       console.error('Response body:', err.response?.data);
     }
     throw err;

@@ -66,15 +66,20 @@ export default async function RootLayout({
               backgroundSecondaryColor={ciColors.menuSecondaryColor}
               useColorTransitionMenu={ciColors.useColorTransitionMenu}
               sidebarItemStyle={sidebarItemStyle}
+              cornerColor={ciColors.menuCornerColor}
+              cornerFontColor={ciColors.menuCornerFontColor}
             />
             <div className="flex flex-col flex-grow">
               <div className="fixed top-0 left-0 z-5 w-full">
                 <Header
                   headerColor={ciColors.headerPrimaryColor}
                   headerSecondaryColor={ciColors.headerSecondaryColor}
+                  infoModalBackgroundColor={ciColors.widgetPrimaryColor}
+                  infoModalFontColor={ciColors.widgetFontColor}
                   useColorTransitionHeader={ciColors.useColorTransitionHeader}
                   fontColor={ciColors.headerFontColor}
                   showLogo={ciColors.showHeaderLogo}
+                  dynamicHeadline="Smart Region Dashboard"
                 />
               </div>
               <div className="flex-grow relative mt-16">{children}</div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactElement, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useState } from 'react';
 import Cookies from 'js-cookie';
 
 import CancelButton from '@/ui/Buttons/CancelButton';
@@ -8,23 +8,17 @@ import SaveButton from '@/ui/Buttons/SaveButton';
 import PageHeadline from '@/ui/PageHeadline';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardTextfield from '@/ui/WizardTextfield';
-import {
-  GroupingElement,
-  Panel,
-  tabComponentSubTypeEnum,
-  tabComponentTypeEnum,
-} from '@/types';
+import { Panel, tabComponentSubTypeEnum, tabComponentTypeEnum } from '@/types';
 import { postPanel, updatePanel, deletePanel } from '@/api/panel-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import { widthTypes } from '@/utils/enumMapper';
 import IconSelection from '@/ui/Icons/IconSelection';
-import { getTenantOfPage } from '@/utils/tenantHelper';
-import { useQuery } from '@tanstack/react-query';
 import { WizardErrors } from '@/types/errors';
-import { getMenuGroupingElements } from '@/api/menu-service';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
+import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
+import { validateUrl } from '@/utils/validationHelper';
 
 type PanelWizardProps = {
   isCreate: boolean;
@@ -36,11 +30,7 @@ type PanelWizardProps = {
   iconColor: string;
   backgroundColor: string;
   borderColor: string;
-};
-
-type DashboardDropdown = {
-  name: string;
-  url: string;
+  panelHeadlineColorProp: string;
 };
 
 export default function PanelWizard(props: PanelWizardProps): ReactElement {
@@ -54,18 +44,20 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
     iconColor,
     borderColor,
     backgroundColor,
+    panelHeadlineColorProp,
   } = props;
 
   const cookie = Cookies.get('access_token');
   const accessToken = cookie || '';
-  const tenant = getTenantOfPage();
   const { openSnackbar } = useSnackbar();
 
   const [panelName, setPanelName] = useState(activePanel?.name || '');
   const [panelWidth, setPanelWidth] = useState<number>(activePanel?.width || 6);
+  const [panelIcon, setPanelIcon] = useState(activePanel?.icon || '');
   const [panelInfoMsg, setPanelInfoMsg] = useState(activePanel?.info || '');
-  const [panelJumpoffDashboard, setPanelJumpoffDashboard] = useState('');
-  const [panelJumpoffUrl, setPanelJumpoffUrl] = useState('');
+  const [panelJumpoffUrl, setPanelJumpoffUrl] = useState(
+    activePanel?.jumpoffUrl || '',
+  );
   const [panelPosition] = useState(activePanel?.position || panels.length);
   const [panelGeneralInfo, setPanelGeneralInfo] = useState(
     activePanel?.generalInfo || '',
@@ -76,6 +68,8 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
   const [panelShowJumpoffButton, setPanelShowJumpoffButton] = useState(
     activePanel?.showJumpoffButton || false,
   );
+  const [panelOpenJumpoffLinkInNewTab, setPanelOpenJumpoffLinkInNewTab] =
+    useState(activePanel?.openJumpoffLinkInNewTab ?? true);
   const [panelJumpoffLabel, setPanelJumpoffLabel] = useState(
     activePanel?.jumpoffLabel || '',
   );
@@ -83,67 +77,10 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
     activePanel?.jumpoffIcon || '',
   );
   const [panelHeadlinecolor, setPanelHeadlinecolor] = useState(
-    activePanel?.headlineColor || '',
+    activePanel?.headlineColor || panelHeadlineColorProp,
   );
 
   const [errors, setErrors] = useState<WizardErrors>({});
-
-  const { data: groupingElementsData, isLoading } = useQuery({
-    queryKey: ['menu'],
-    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
-  });
-
-  function createDashboardUrls(
-    groupingElements: GroupingElement[],
-    parentUrl: string = '',
-    isTopLevel: boolean = true,
-  ): DashboardDropdown[] {
-    let dashboardUrls: DashboardDropdown[] = isTopLevel
-      ? [{ name: '', url: '' }]
-      : [];
-
-    for (const element of groupingElements) {
-      if (!element.isDashboard && element.children) {
-        const currentUrl = parentUrl
-          ? `${parentUrl}/${element.url}`
-          : element.url ?? '';
-        dashboardUrls = dashboardUrls.concat(
-          createDashboardUrls(element.children, currentUrl, false),
-        );
-      } else if (element.isDashboard && element.name && element.url) {
-        dashboardUrls.push({
-          name: element.name,
-          url: `${parentUrl}/${element.url}`,
-        });
-      }
-    }
-
-    return dashboardUrls;
-  }
-
-  const dashboardDropdown = useMemo(() => {
-    if (groupingElementsData && groupingElementsData.length > 0) {
-      return createDashboardUrls(groupingElementsData);
-    }
-    return [];
-  }, [groupingElementsData]);
-
-  useEffect(() => {
-    if (dashboardDropdown.length > 0) {
-      const selectedDashboard = dashboardDropdown.find(
-        (dashboard) => dashboard.url === activePanel?.jumpoffUrl,
-      );
-      if (selectedDashboard) {
-        setPanelJumpoffDashboard(
-          `${selectedDashboard.name} | ${selectedDashboard.url}`,
-        );
-        setPanelJumpoffUrl(selectedDashboard.url);
-      } else {
-        setPanelJumpoffDashboard('');
-        setPanelJumpoffUrl('');
-      }
-    }
-  }, [dashboardDropdown, activePanel?.jumpoffUrl]);
 
   const handleSavePanelClick = async (): Promise<void> => {
     const textfieldErrorMessages: string[] = [];
@@ -158,6 +95,8 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
           'Button-Beschriftung muss ausgefüllt werden!!';
       if (!panelJumpoffUrl)
         errorsOccured.panelJumpoffUrl = 'Jumpoff-URL muss ausgefüllt werden!';
+      if (!validateUrl(panelJumpoffUrl))
+        errorsOccured.panelJumpoffUrl = 'Jumpoff-URL ist ungültig!';
     }
 
     if (Object.keys(errorsOccured).length) {
@@ -182,6 +121,7 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
         headlineColor: panelHeadlinecolor,
         height: activePanel?.height || 400,
         id: activePanel.id,
+        icon: panelIcon,
         info: panelInfoMsg,
         jumpoffIcon: panelJumpoffIcon,
         jumpoffLabel: panelJumpoffLabel,
@@ -189,6 +129,7 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
         position: panelPosition,
         showGeneralInfo: panelShowGeneralInfo,
         showJumpoffButton: panelShowJumpoffButton,
+        openJumpoffLinkInNewTab: panelOpenJumpoffLinkInNewTab,
         width: panelWidth,
       };
 
@@ -229,20 +170,24 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
         <div className="w-full h-full flex flex-col ">
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Name" />
-            <WizardTextfield
-              value={panelName}
-              onChange={(value: string | number): void =>
-                setPanelName(value.toString())
-              }
-              error={errors.nameError}
-              borderColor={borderColor}
-              backgroundColor={backgroundColor}
-            />
-            <ColorPickerComponent
-              currentColor={panelHeadlinecolor || fontColor}
-              handleColorChange={setPanelHeadlinecolor}
-              label={'Schriftfarbe des Panelnamens'}
-            />
+            <div className="flex flex-row items-center gap-4">
+              <div className="flex grow">
+                <WizardTextfield
+                  value={panelName}
+                  onChange={(value: string | number): void =>
+                    setPanelName(value.toString())
+                  }
+                  error={errors.nameError}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+              <ColorPickerComponent
+                currentColor={panelHeadlinecolor}
+                handleColorChange={setPanelHeadlinecolor}
+                label={'Schriftfarbe des Panelnamens'}
+              />
+            </div>
           </div>
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Breite" />
@@ -263,6 +208,15 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
               iconColor={iconColor}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+            />
+          </div>
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Icon" />
+            <IconSelection
+              activeIcon={panelIcon}
+              handleIconSelect={setPanelIcon}
+              iconColor={iconColor}
+              borderColor={borderColor}
             />
           </div>
           <div className="flex flex-col w-full pb-2">
@@ -332,27 +286,25 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
                 </div>
               </div>
               <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Dashboard zu Jumpoff (Dashboard-Name | URL)" />
-                {!isLoading ? (
-                  <WizardDropdownSelection
-                    currentValue={panelJumpoffDashboard}
-                    selectableValues={dashboardDropdown.map((option) =>
-                      option.name ? `${option.name} | ${option.url}` : '',
-                    )}
-                    onSelect={(value: string | number): void => {
-                      // skip the first element in the array, assign second element to selectedUrl
-                      const [, selectedUrl] = value.toString().split(' | ');
-                      setPanelJumpoffDashboard(value.toString());
-                      setPanelJumpoffUrl(selectedUrl);
-                    }}
-                    iconColor={fontColor}
-                    backgroundColor={backgroundColor}
-                    borderColor={borderColor}
-                    error={errors.panelJumpoffUrl}
-                  />
-                ) : (
-                  <div>Loading...</div>
-                )}
+                <WizardLabel label="Jumpoff-URL" />
+                <WizardUrlTextfield
+                  value={panelJumpoffUrl || 'https://'}
+                  onChange={(value: string | number): void =>
+                    setPanelJumpoffUrl(value.toString())
+                  }
+                  error={errors && errors.panelJumpoffUrl}
+                  iconColor={fontColor}
+                  borderColor={borderColor}
+                />
+              </div>
+              <div className="flex flex-col w-full pb-2">
+                <WizardSelectBox
+                  label="Link in neuem Tab öffnen"
+                  checked={panelOpenJumpoffLinkInNewTab}
+                  onChange={(value: boolean): void => {
+                    setPanelOpenJumpoffLinkInNewTab(value);
+                  }}
+                />
               </div>
             </>
           )}

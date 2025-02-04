@@ -59,13 +59,10 @@ export class WidgetController {
   @Get('/tab/:componentType')
   async getByTenantAndTabComponentType(
     @Query('abbreviation') abbreviation: string,
-    @Req() request: AuthenticatedRequest,
     @Param('componentType') componentType: string,
   ): Promise<WidgetWithChildren[]> {
-    const roles = request.roles ?? [];
     return this.service.getByTenantAndTabComponentType(
       componentType,
-      roles,
       abbreviation,
     );
   }
@@ -94,6 +91,27 @@ export class WidgetController {
     } else {
       throw new HttpException(
         'Unauthorized to create widget',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
+  @Public()
+  @Post('duplicate/:id')
+  async duplicate(
+    @Param('id') id: string,
+    @Query('tenant') tenant: string,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<WidgetWithChildren> {
+    const roles = request.roles ?? [];
+    if (
+      this.authHelperUtility.isAdmin(roles) ||
+      this.authHelperUtility.isEditor(roles)
+    ) {
+      return this.service.duplicate(roles, id, tenant, undefined);
+    } else {
+      throw new HttpException(
+        'Unauthorized to duplicate widget',
         HttpStatus.FORBIDDEN,
       );
     }

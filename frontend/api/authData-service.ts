@@ -4,22 +4,6 @@ import { env } from 'next-runtime-env';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
-export async function getAuthDatas(
-  accessToken: string | undefined,
-): Promise<AuthData[]> {
-  const headers = accessToken
-    ? { Authorization: `Bearer ${accessToken}` }
-    : undefined;
-  const fetched = await fetch(`${NEXT_PUBLIC_BACKEND_URL}/auth-datas`, {
-    headers,
-  })
-    .then((res) => res.json())
-    .catch((err) => {
-      console.error(err);
-    });
-  return fetched;
-}
-
 export async function getAuthDatasByTenant(
   accessToken: string | undefined,
   tenant: string | undefined,

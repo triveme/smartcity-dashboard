@@ -12,14 +12,20 @@ import WizardLabel from '@/ui/WizardLabel';
 import SaveButton from '@/ui/Buttons/SaveButton';
 import {
   createGeneralSettings,
-  getGeneralSettings,
+  getGeneralSettingsByTenant,
   updateGeneralSettings,
 } from '@/api/general-settings-service';
-import { GeneralSettings } from '@/types';
+import {
+  GeneralSettings,
+  tabComponentSubTypeEnum,
+  tabComponentTypeEnum,
+} from '@/types';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import { validateUrl } from '@/utils/validationHelper';
 import CancelButton from '@/ui/Buttons/CancelButton';
+import HorizontalDivider from '@/ui/HorizontalDivider';
+import WizardTextfield from '@/ui/WizardTextfield';
 
 export default function Pages(): ReactElement {
   const auth = useAuth();
@@ -41,6 +47,7 @@ export default function Pages(): ReactElement {
     queryFn: () => getCorporateInfosWithLogos(tenant),
     enabled: false,
   });
+
   //Dynamic Styling
   const dashboardStyle = {
     backgroundColor: corporateInfo?.dashboardPrimaryColor || '#2B3244',
@@ -51,6 +58,8 @@ export default function Pages(): ReactElement {
   const [informationUrl, setInformationUrl] = useState('');
   const [imprintUrl, setImprintUrl] = useState('');
   const [privacyUrl, setPrivacyUrl] = useState('');
+  const [allowThemeSwitching, setAllowThemeSwitching] = useState(false);
+  const [disclaimer, setDisclaimer] = useState('');
   const [errors, setErrors] = useState<WizardErrors>({});
   const { openSnackbar } = useSnackbar();
 
@@ -61,12 +70,13 @@ export default function Pages(): ReactElement {
       setInformationUrl(generalSettings.information);
       setImprintUrl(generalSettings.imprint);
       setPrivacyUrl(generalSettings.privacy);
+      setDisclaimer(generalSettings.disclaimer);
     }
   };
 
   const { data: generalSettings } = useQuery({
     queryKey: ['generalSettings'],
-    queryFn: () => getGeneralSettings(tenant, auth?.user?.access_token),
+    queryFn: () => getGeneralSettingsByTenant(tenant),
   });
 
   useEffect(() => {
@@ -112,6 +122,8 @@ export default function Pages(): ReactElement {
         information: informationUrl,
         imprint: imprintUrl,
         privacy: privacyUrl,
+        allowThemeSwitching: allowThemeSwitching,
+        disclaimer: disclaimer,
       };
 
       const retrievedGeneralSettings: GeneralSettings =
@@ -128,6 +140,8 @@ export default function Pages(): ReactElement {
         information: informationUrl,
         imprint: imprintUrl,
         privacy: privacyUrl,
+        allowThemeSwitching: allowThemeSwitching,
+        disclaimer: disclaimer,
       };
 
       const retrievedGeneralSettings: GeneralSettings =
@@ -189,6 +203,37 @@ export default function Pages(): ReactElement {
               borderColor={corporateInfo?.panelBorderColor ?? '#2B3244'}
             />
           </div>
+        </div>
+        <HorizontalDivider />
+        <div className="flex flex-row items-center w-full pb-2">
+          <WizardLabel label="Farbschema-Wechsel erlauben" />
+          <input
+            type="checkbox"
+            checked={allowThemeSwitching}
+            onChange={(e): void => setAllowThemeSwitching(e.target.checked)}
+            className="h-6 w-6 rounded"
+            style={{
+              color: corporateInfo?.fontColor,
+              borderColor: corporateInfo?.panelBorderColor,
+            }}
+          />
+        </div>
+        <HorizontalDivider />
+
+        <div className="flex flex-row items-center w-full pb-2">
+          <WizardTextfield
+            value={generalSettings?.disclaimer || ''}
+            onChange={(value: string | number): void =>
+              setDisclaimer(value.toString())
+            }
+            componentType={tabComponentTypeEnum.information}
+            subComponentType={tabComponentSubTypeEnum.text}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+            panelFontColor={corporateInfo?.panelFontColor}
+            panelBorderRadius={corporateInfo?.panelBorderRadius}
+            panelBorderSize={corporateInfo?.panelBorderSize}
+          />
         </div>
         <div className="flex justify-end py-4 space-x-4">
           <CancelButton closeWindow={true} onClick={handleCancelClick} />

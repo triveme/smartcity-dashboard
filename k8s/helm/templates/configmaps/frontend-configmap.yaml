@@ -19,4 +19,6 @@ data:
   NEXT_PUBLIC_MULTI_TENANCY: "true"
   NEXT_PUBLIC_MAIL_TO: {{ index .Values "frontend" "mailTo" }}
   NEXT_PUBLIC_ADMIN_ROLE: {{ index .Values "frontend" "adminRole" }}
+  NEXT_PUBLIC_SUPER_ADMIN_ROLE: {{ index .Values "frontend" "superAdminRole" }}
+  NEXT_PUBLIC_COOKIEBOT_ID: {{ index .Values "frontend" "cbid" }}
 {{- end }}

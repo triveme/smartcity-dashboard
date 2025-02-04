@@ -198,6 +198,11 @@ Using values-hcloud.yaml as an example, you can edit the Ingress hosts and each 
   ** Value: `scs-admin`
   ** Customization: This role is assigned admin privileges within the system. If you have a custom Keycloak client with different roles, replace `scs-admin` with the appropriate role name configured in your Keycloak client.
 
+* **Super Admin Role:**
+  ** Key: `dashboard-service.superAdminRole`
+  ** Value: `scs-super-admin`
+  ** Customization: This role is assigned super admin privileges within the system. If you have a custom Keycloak client with different roles, replace `scs-super-admin` with the appropriate role name configured in your Keycloak client. This role has access to certain limited areas in the admin area, i.e.: General Settings, Tenant Management, Corporate Design Setting, Dataplattform Connections.
+
 * **Edit Roles:**
   ** Key: `dashboard-service.editRoles`
   ** Value: `[ "editor", "tester", "scs-admin" ]`

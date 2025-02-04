@@ -15,7 +15,7 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 
 const tableConfig: TableConfig<Widget> = {
-  columns: ['name', 'height', 'width', 'visibility'],
+  columns: ['name', 'description', 'height', 'width', 'visibility'],
   viewsPerPage: 10,
   maxPages: 1,
 };

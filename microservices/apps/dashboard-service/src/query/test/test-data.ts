@@ -26,6 +26,8 @@ export function getNGSILiveQuery(): Query {
         },
         waterLeak: { type: 'Number', value: 0, metadata: {} },
         waterTemperature: { type: 'Number', value: 22.61, metadata: {} },
+        currentAttribute: { type: 'Number', value: 22.61, metadata: {} },
+        maximumAttribute: { type: 'Number', value: 22.61, metadata: {} },
       },
     ],
     reportData: {},

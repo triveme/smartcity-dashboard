@@ -10,6 +10,7 @@ dashboard-service:
   jwks: "https://mit-smartcity-suite-test-keycloak.container.edag/realms/testrealm/protocol/openid-connect/certs"
   frontendUrl: "https://mit-smartcity-suite-test-frontend.container.edag"
   adminRole: "scs-admin"
+  superAdminRole: "scs-super-admin"
   logRotationCron: "5 1 * * * *"
   logPath: "/logs"
   editRoles: |
@@ -123,6 +124,8 @@ frontend:
   mailTo: "smart.city@edag.com"
   mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
   adminRole: "scs-admin"
+  superAdminRole: "scs-super-admin"
+  cbid: "087006bd-3503-4017-896e-a6bebd753657"
   ingress:
     enabled: true
     tls:

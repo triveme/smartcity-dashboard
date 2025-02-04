@@ -7,7 +7,7 @@ trustedCAFile: "certificates/hcloud_ca.pem"
 migrations:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
   resources:
     requests:
@@ -36,6 +36,7 @@ dashboard-service:
   jwks: "https://keycloak.smartcity-system.de/realms/testrealm/protocol/openid-connect/certs"
   frontendUrl: "https://smartcity-system.de"
   adminRole: "scs-admin"
+  superAdminRole: "scs-super-admin"
   logRotationCron: "5 1 * * * *"
   logPath: "/logs"
   editRoles: |
@@ -58,7 +59,7 @@ dashboard-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 ngsi-service:
@@ -81,7 +82,7 @@ ngsi-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 api-service:
@@ -101,7 +102,7 @@ api-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/api-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 mail-service:
@@ -121,7 +122,7 @@ mail-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/mail-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 infopin-service:
@@ -142,7 +143,7 @@ infopin-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 
@@ -165,7 +166,7 @@ report-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/report-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 static-data-service:
@@ -186,7 +187,7 @@ static-data-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/static-data-service
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always
 
 
@@ -205,6 +206,8 @@ frontend:
   mailTo: "smart.city@edag.com"
   mapBoxToken: "pk.eyJ1Ijoic21hcnRjaXR5LWRhc2hib2FyZCIsImEiOiJjbTEwbXFvNDUwaXBiMnlxeW82d2hocW00In0.uEvv3lk8hamE9aLg7AsDxA"
   adminRole: "scs-admin"
+  superAdminRole: "scs-super-admin"
+  cbid: "087006bd-3503-4017-896e-a6bebd753657"
   ingress:
     enabled: true
     annotations:
@@ -222,5 +225,5 @@ frontend:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/frontend
-    tag: '0.18.3'
+    tag: '0.20.4'
     pullPolicy: Always

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { tenants } from './tenant.schema';
 
 export const generalSettings = pgTable('general_settings', {
@@ -10,6 +10,8 @@ export const generalSettings = pgTable('general_settings', {
   information: text('information'),
   imprint: text('imprint'),
   privacy: text('privacy'),
+  allowThemeSwitching: boolean('allow_theme_switching').default(false),
+  disclaimer: text('disclaimer'),
 });
 
 export type GeneralSettings = typeof generalSettings.$inferSelect;

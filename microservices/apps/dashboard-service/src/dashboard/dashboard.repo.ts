@@ -104,6 +104,10 @@ export class DashboardRepo {
     return dbDashboards.length > 0 ? dbDashboards[0] : null;
   }
 
+  async getByIds(ids: string[]): Promise<Dashboard[]> {
+    return this.db.select().from(dashboards).where(inArray(dashboards.id, ids));
+  }
+
   async getByUrl(url: string): Promise<Dashboard[]> {
     const dbDashboards = await this.db
       .select()
@@ -220,5 +224,32 @@ export class DashboardRepo {
       .execute();
 
     return deletedDashboard[0];
+  }
+
+  async existsByNameOrUrl(name: string, url: string): Promise<boolean> {
+    const existingDashboard = await this.db
+      .select()
+      .from(dashboards)
+      .where(or(eq(dashboards.name, name), eq(dashboards.url, url)))
+      .limit(1);
+
+    return existingDashboard.length > 0;
+  }
+
+  async generateUniqueNameAndUrl(
+    baseName: string,
+    baseUrl: string,
+  ): Promise<{ uniqueName: string; uniqueUrl: string }> {
+    let counter = 1;
+    let uniqueName = `${baseName} (Copy)`;
+    let uniqueUrl = `${baseUrl}_copy`;
+
+    while (await this.existsByNameOrUrl(uniqueName, uniqueUrl)) {
+      uniqueName = `${baseName} (Copy ${counter})`;
+      uniqueUrl = `${baseUrl}_copy_${counter}`;
+      counter++;
+    }
+
+    return { uniqueName, uniqueUrl };
   }
 }

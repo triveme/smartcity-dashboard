@@ -1,6 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
-import { ChartData, MapObject } from '../dashboard.service';
+import { ChartData, MapObject, WeatherWarningData } from '../dashboard.service';
 import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
@@ -18,10 +18,13 @@ export class PopulateValueService {
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
       mapObject: MapObject[];
+      weatherWarnings: WeatherWarningData[];
     },
   ): Promise<void> {
     if (tab.componentType === 'Bild') {
       await this.populateImageTab(tab);
+    } else if (tab.componentType === 'Wetterwarnungen') {
+      await this.populateWeatherWarnings(tab);
     } else {
       await this.populateSingleValueTab(tab);
     }
@@ -42,6 +45,38 @@ export class PopulateValueService {
 
         tab.imageSrc = queryDataMap.get('imageData');
       }
+    }
+  }
+
+  private async populateWeatherWarnings(
+    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
+      chartData: ChartData[];
+      mapObject: MapObject[];
+      weatherWarnings: WeatherWarningData[];
+    },
+  ): Promise<void> {
+    tab.weatherWarnings = [];
+
+    try {
+      const query = await this.queryService.getById(tab.queryId);
+      const queryData = query.queryData as any[];
+
+      if (Array.isArray(queryData) && queryData.length > 0) {
+        for (const data of queryData) {
+          const weatherWarning: WeatherWarningData = {
+            category: data.category.value,
+            subCategory: data.subCategory.value,
+            alertDescription: data.AlertDescription.value,
+            instructions: data.instruction.value,
+            severity: data.severity.value,
+            validFrom: data.validFrom.value,
+            validTo: data.validTo.value,
+          };
+          tab.weatherWarnings.push(weatherWarning);
+        }
+      }
+    } catch (error) {
+      console.error('Error in populateWeatherWarnings', error);
     }
   }
 
@@ -98,9 +133,17 @@ export class PopulateValueService {
     }
 
     if (attributeValue.type) {
-      if (attributeValue.type === 'Number') {
+      if (
+        attributeValue.type === 'Number' ||
+        attributeValue.type === 'number'
+      ) {
         tab.chartValues.push(attributeValue.value);
-      } else if (attributeValue.type === 'Text') {
+      } else if (
+        attributeValue.type === 'Text' ||
+        attributeValue.type === 'text' ||
+        attributeValue.type === 'DateTime' ||
+        attributeValue.type === 'datetime'
+      ) {
         tab.textValue = attributeValue.value;
       } else if (attributeValue.type === 'Property') {
         // NGSI-LD

@@ -13,6 +13,7 @@ const nextConfig = {
       fullUrl: true,
     },
   },
+  cacheMaxMemorySize: 0,
 };
 
 module.exports = nextConfig;

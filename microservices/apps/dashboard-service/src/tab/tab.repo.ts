@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -24,6 +24,37 @@ export class TabRepo {
 
   async getTabsByWidgetId(widgetId: string): Promise<Tab[]> {
     return this.db.select().from(tabs).where(eq(tabs.widgetId, widgetId));
+  }
+
+  async getTabsByWidgetIds(widgetIds: string[]): Promise<Tab[]> {
+    return this.db.select().from(tabs).where(inArray(tabs.widgetId, widgetIds));
+  }
+
+  async getTabsByWidgetIdsAndComponentType(
+    widgetIds: string[],
+    componentType: string,
+  ): Promise<Tab[]> {
+    return this.db
+      .select()
+      .from(tabs)
+      .where(
+        and(
+          inArray(tabs.widgetId, widgetIds),
+          eq(
+            tabs.componentType,
+            componentType as
+              | 'Informationen'
+              | 'Diagramm'
+              | 'Slider'
+              | 'Karte'
+              | 'Kombinierte Komponente'
+              | 'Wetterwarnungen'
+              | 'Wert'
+              | 'iFrame'
+              | 'Bild',
+          ),
+        ),
+      );
   }
 
   async create(row: NewTab, transaction?: DbType): Promise<Tab> {
