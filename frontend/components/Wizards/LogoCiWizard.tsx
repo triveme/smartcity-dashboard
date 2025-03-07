@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, JSX, SetStateAction } from 'react';
 import CheckBox from '@/ui/CheckBox';
 import { CorporateInfo, SidebarLogo } from '@/types';
 import CIUploadLogoWizard from './CIUploadLogoWizard';

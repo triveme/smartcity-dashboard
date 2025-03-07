@@ -1,14 +1,15 @@
 {
   "name": "smartcity-dashboard-2.0",
-  "version": "0.20.4",
+  "version": "0.21.3",
   "description": "",
+  "type": "module",
   "scripts": {
     "db:gen": "drizzle-kit generate:pg --config=./database/drizzle.config.ts",
     "db:custom": "drizzle-kit generate:pg --config=./database/drizzle.config.ts --custom",
     "db:degen": "drizzle-kit drop --config=./database/drizzle.config.ts",
     "db:start:dev": "docker-compose --project-name scs -f docker-compose.local.yml up postgres-dev -d",
-    "db:migrate:dev": "cross-env NODE_ENV=development ts-node ./database/migrations/migrate.ts",
-    "db:migrate:test": "cross-env NODE_ENV=test ts-node ./database/migrations/migrate.ts",
+    "db:migrate:dev": "cross-env NODE_ENV=development ts-node ./database/migrations/migrate.mjs",
+    "db:migrate:test": "cross-env NODE_ENV=test ts-node ./database/migrations/migrate.mjs",
     "db:migrate:restart": "docker build -t smartcity/migrations -f Dockerfile.migrations . && kubectl delete job smart-city-migrations -n smart-city-local && cd k8s/helm && helm upgrade smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml .",
     "sso:start": "docker-compose --project-name scs -f docker-compose.local.yml up keycloak -d",
     "infra:start": "npm run db:start:all && npm run sso:start",
@@ -30,15 +31,15 @@
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "prettier": "^3.0.3",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "prettier": "^3.0.3"
   },
   "dependencies": {
     "babel-plugin-macros": "^3.1.0",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.28.6",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [

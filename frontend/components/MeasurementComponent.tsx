@@ -8,6 +8,7 @@ import {
   roundToDecimal,
   calculateAverage,
   calculateDeviationPercentage,
+  applyUserLocaleToNumber,
 } from '@/utils/mathHelper';
 import ColumnChart from '@/ui/Charts/ColumnChart';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
@@ -197,7 +198,10 @@ export default function MeasurementComponent(
                   fontSize: `${autoScaleCurrentValueFont}px`,
                 }}
               >
-                {currentValue}
+                {applyUserLocaleToNumber(
+                  currentValue,
+                  navigator.language || 'de-DE',
+                )}
               </span>
               <span className="text-[1.5rem] leading-none">{unit}</span>
             </div>
@@ -275,7 +279,7 @@ export default function MeasurementComponent(
                   backgroundColor={cardsBackgroundColor}
                   fontColor={cardsFontColor}
                   iconColor={cardsIconColors[0]}
-                  value={`${averageValue.toFixed(2)} ${unit}`}
+                  value={`${applyUserLocaleToNumber(roundToDecimal(averageValue, 2), navigator.language || 'de-DE')} ${unit}`}
                 />
                 <InfoDisplayComponent
                   icon="ArrowTrendDown"
@@ -283,7 +287,7 @@ export default function MeasurementComponent(
                   fontColor={cardsFontColor}
                   iconColor={cardsIconColors[1]}
                   headline="Abweichung"
-                  value={`${deviationValue.toFixed(2)} %`}
+                  value={`${applyUserLocaleToNumber(roundToDecimal(deviationValue, 2), navigator.language || 'de-DE')} %`}
                 />
                 <InfoDisplayComponent
                   icon="Circle"
@@ -291,7 +295,7 @@ export default function MeasurementComponent(
                   fontColor={cardsFontColor}
                   iconColor={cardsIconColors[2]}
                   headline="Warnung"
-                  value={`${valueWarning} ${unit}`}
+                  value={`${applyUserLocaleToNumber(valueWarning, navigator.language || 'de-DE')} ${unit}`}
                 />
                 <InfoDisplayComponent
                   icon="Circle"
@@ -299,7 +303,7 @@ export default function MeasurementComponent(
                   fontColor={cardsFontColor}
                   iconColor={cardsIconColors[3]}
                   headline="Alarm"
-                  value={`${valueAlarm} ${unit}`}
+                  value={`${applyUserLocaleToNumber(valueAlarm, navigator.language || 'de-DE')} ${unit}`}
                 />
               </div>
             </div>

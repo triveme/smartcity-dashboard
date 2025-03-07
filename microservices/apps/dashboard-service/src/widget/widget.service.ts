@@ -20,7 +20,6 @@ import {
   checkRequiredRights,
 } from '@app/auth-helper/right-management/right-management.service';
 import { queries, Query } from '@app/postgres-db/schemas/query.schema';
-import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { TabService } from '../tab/tab.service';
 import {
   CreatedQueryConfig,
@@ -29,7 +28,6 @@ import {
 import { QueryService } from '../query/query.service';
 import { v4 as uuid } from 'uuid';
 import { Tab } from '@app/postgres-db/schemas/dashboard.tab.schema';
-import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
 import { TenantService } from '../tenant/tenant.service';
 import { WidgetToTenantService } from '../widget-to-tenant/widget-to-tenant.service';
 import { QueryRepo } from '../query/query.repo';
@@ -46,6 +44,14 @@ import { DataSourceService } from '../data-source/data-source.service';
 import { QueryBatch } from '../../../ngsi-service/src/ngsi.service';
 import { authData } from '@app/postgres-db/schemas/auth-data.schema';
 import { WidgetDataService } from './widget.data.service';
+import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
+import { WidgetToTenantRepo } from '../widget-to-tenant/widget-to-tenant.repo';
+import {
+  PaginatedResult,
+  PaginationMeta,
+  WidgetWithComponentTypes,
+} from './widget.model';
+import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
 
 export type WidgetWithChildren = {
   widget: Widget;
@@ -62,6 +68,7 @@ export class WidgetService {
     private readonly widgetRepo: WidgetRepo,
     private readonly widgetToPanelService: WidgetToPanelService,
     private readonly widgetToPanelRepo: WidgetToPanelRepo,
+    private readonly widgetToTenantRepo: WidgetToTenantRepo,
     private readonly tabService: TabService,
     private readonly tabRepo: TabRepo,
     private readonly queryConfigService: QueryConfigService,
@@ -235,7 +242,49 @@ export class WidgetService {
         HttpStatus.NOT_FOUND,
       );
     }
+
     return retrievedWidgets;
+  }
+
+  async getPaginatedWidgetsByTenantAbbreviation(
+    abbreviation: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<PaginatedResult<Widget>> {
+    const tenant = await this.tenantRepo.getTenantByAbbreviation(abbreviation);
+
+    if (!tenant) {
+      throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
+    }
+
+    const widgetToTenantIds =
+      await this.widgetToTenantRepo.getWidgetToTenantRelationshipByTenantId(
+        tenant.id,
+      );
+
+    // Retrieve the paginated list of widget IDs associated with the tenant
+    const totalItems = widgetToTenantIds.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const offset = (page - 1) * limit;
+    const paginatedWidgetToTenantIds = widgetToTenantIds.slice(
+      offset,
+      offset + limit,
+    );
+
+    // Retrieve each Widget by its ID (using Promise.all for efficiency)
+    const widgetPromises = paginatedWidgetToTenantIds.map((widgetToTenantId) =>
+      this.widgetRepo.getById(widgetToTenantId.widgetId),
+    );
+    const widgets = await Promise.all(widgetPromises);
+
+    const meta: PaginationMeta = {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      pageSize: limit,
+    };
+
+    return { data: widgets, meta };
   }
 
   async create(
@@ -459,6 +508,66 @@ export class WidgetService {
     }
   }
 
+  async getWithChildren(
+    rolesFromRequest: string[],
+    tenantAbbreviation: string,
+  ): Promise<WidgetWithChildren[]> {
+    const tenant =
+      await this.tenantRepo.getTenantByAbbreviation(tenantAbbreviation);
+
+    if (!tenant)
+      throw new HttpException('Tenant not found', HttpStatus.NOT_FOUND);
+
+    const widgetToTenantIds =
+      await this.widgetToTenantRepo.getWidgetToTenantRelationshipByTenantId(
+        tenant.id,
+      );
+
+    const widgetPromises = widgetToTenantIds.map(async (widgetToTenantId) => {
+      return await this.widgetRepo.getById(widgetToTenantId.widgetId);
+    });
+    const widgets = await Promise.all(widgetPromises);
+
+    if (widgets.length === 0) {
+      const errorMessage = `Widgets not found for tenant with abbreviation ${tenantAbbreviation}`;
+      this.logger.warn(errorMessage);
+      throw new HttpException(errorMessage, HttpStatus.NOT_FOUND);
+    }
+
+    const widgetsWithChildren: WidgetWithChildren[] = [];
+    for (const widget of widgets) {
+      const roleHasReadRights = checkRequiredRights(
+        widget,
+        widget.readRoles,
+        rolesFromRequest,
+      );
+      const roleHasWriteRights = checkRequiredRights(
+        widget,
+        widget.writeRoles,
+        rolesFromRequest,
+      );
+      if (!roleHasReadRights && !roleHasWriteRights) {
+        continue;
+      }
+
+      if (rolesFromRequest.length === 0) {
+        delete widget.readRoles;
+        delete widget.writeRoles;
+      }
+
+      // Fetch the tabs associated with the widget
+      const tabs = await this.tabService.getTabsByWidgetId(widget.id);
+
+      // If there are any matching tabs, proceed
+      for (const tab of tabs) {
+        const widgetResponse = await this.populateWidgetWithTab(widget, tab);
+        widgetsWithChildren.push(widgetResponse);
+      }
+    }
+
+    return widgetsWithChildren;
+  }
+
   async getWithChildrenById(
     id: string,
     rolesFromRequest: string[],
@@ -492,6 +601,25 @@ export class WidgetService {
     response.widget = widget;
 
     return response;
+  }
+
+  async getBySearchParam(
+    searchParam: string,
+    roles: string[],
+    tenantAbbreviation: string,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+    const tenant =
+      await this.tenantRepo.getTenantByAbbreviation(tenantAbbreviation);
+
+    return await this.widgetRepo.searchWidgets(
+      roles,
+      searchParam,
+      page,
+      limit,
+      tenant.id,
+    );
   }
 
   async createWithChildren(
@@ -737,5 +865,27 @@ export class WidgetService {
 
   private isImage(payloadTab: Tab): boolean {
     return payloadTab.componentType === 'Bild';
+  }
+
+  private async populateWidgetWithTab(
+    widget: Widget,
+    tab: Tab,
+  ): Promise<WidgetWithChildren> {
+    const widgetWithChildren: WidgetWithChildren = {
+      widget: widget,
+      tab: tab,
+      queryConfig: null,
+      datasource: null,
+    };
+
+    if (this.shouldUseQueryConfig(tab)) {
+      widgetWithChildren.queryConfig =
+        await this.queryConfigService.getQueryConfigByTabId(tab.id);
+      widgetWithChildren.datasource = await this.dataSourceService.getById(
+        widgetWithChildren.queryConfig.dataSourceId,
+      );
+    }
+
+    return widgetWithChildren;
   }
 }

@@ -106,6 +106,15 @@ export type WidgetWithContent = {
   tabs: Tab[];
 };
 
+export type WidgetWithComponentTypes = {
+  id: string;
+  name: string;
+  description: string;
+  visibility: string;
+  componentType: string;
+  componentSubType: string;
+};
+
 type Coordinate = [number, number];
 
 type Position = {
@@ -411,6 +420,7 @@ export type CorporateInfo = {
   menuCornerFontColor: string;
   menuFontColor: string;
   menuHoverColor: string;
+  menuHoverFontColor: string;
   menuLogo?: Logo;
   menuLogoId?: string;
   menuPrimaryColor: string;

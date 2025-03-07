@@ -37,6 +37,7 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     menuCornerFontColor: '#fff',
     menuFontColor: '#FFF',
     menuHoverColor: '#333',
+    menuHoverFontColor: '#fff',
     menuLogoId: logoId ?? null,
     menuPrimaryColor: '#333',
     menuSecondaryColor: '#333',

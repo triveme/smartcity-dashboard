@@ -501,6 +501,27 @@ describe('DashboardServiceControllers (e2e)', () => {
         db,
         await getDataSource(undefined, db),
       );
+      const tenant = await createTenantByObject(db, getTenant());
+      const widget = await createWidgetByObject(db, getWidget([], []));
+      const tab = await createTab(db, await getTab(db, widget.id));
+      await createWidgetToTenantRelation(db, widget.id, tenant.id);
+      await createQueryConfig(db, 'ngsi-v2', dataSource.id);
+
+      const response = await request(app.getHttpServer())
+        .get(`/widgets/with-children?tenant=${tenant.abbreviation}`)
+        .set('Authorization', `Bearer ${JWTToken}`)
+        .expect(200);
+
+      expect(response.body.length).toBe(1);
+      expect(response.body[0].widget).toMatchObject(widget);
+      expect(response.body[0].tab).toMatchObject(tab);
+    });
+
+    it('/widgets/with-children/:id (GET)', async () => {
+      const dataSource = await createDataSourceByObject(
+        db,
+        await getDataSource(undefined, db),
+      );
       const widget = await createWidgetByObject(db, getWidget([], []));
       const tab = await createTab(db, await getTab(db, widget.id));
       await createQueryConfig(db, 'ngsi-v2', dataSource.id);
@@ -514,7 +535,7 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(response.body.tab).toMatchObject(tab);
     });
 
-    it('/widgets/with-children (GET) without token', async () => {
+    it('/widgets/with-children/:id (GET) without token', async () => {
       const dataSource = await createDataSourceByObject(
         db,
         await getDataSource(undefined, db),

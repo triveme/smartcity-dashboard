@@ -12,15 +12,20 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { WidgetService, WidgetWithChildren } from './widget.service';
+import {
+  PaginatedResult,
+  WidgetWithChildren,
+  WidgetWithComponentTypes,
+} from './widget.model';
 import {
   NewWidget,
   Widget,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
-import { AuthHelperUtility, AuthenticatedRequest } from '@app/auth-helper';
+import { AuthenticatedRequest, AuthHelperUtility } from '@app/auth-helper';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { ValidateWidgetWithChildrenPipe } from '../validators/widgetWithChildren-validator.pipe';
 import { WidgetDataService } from './widget.data.service';
+import { WidgetService } from './widget.service';
 
 @Controller('widgets')
 export class WidgetController {
@@ -35,6 +40,36 @@ export class WidgetController {
   async getAll(@Req() request: AuthenticatedRequest): Promise<Widget[]> {
     const roles = request.roles ?? [];
     return this.service.getAll(roles);
+  }
+
+  // Endpoint for Widget search-bar
+  @Public()
+  @Get('/search')
+  async getBySearchParam(
+    @Req() request: AuthenticatedRequest,
+    @Query('abbreviation') tenantAbbreviation: string,
+    @Query('search') searchParam: string = '',
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+    const roles = request.roles ?? [];
+    return this.service.getBySearchParam(
+      searchParam,
+      roles,
+      tenantAbbreviation,
+      page,
+      limit,
+    );
+  }
+
+  @Public()
+  @Get('/with-children')
+  async getWithChildren(
+    @Query('tenant') tenantAbbreviation: string,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<WidgetWithChildren[]> {
+    const roles = request.roles ?? [];
+    return this.service.getWithChildren(roles, tenantAbbreviation);
   }
 
   @Public()

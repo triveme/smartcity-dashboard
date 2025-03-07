@@ -1,6 +1,7 @@
 import {
   Widget,
   WidgetWithChildren,
+  tabComponentSubTypeEnum,
   tabComponentTypeEnum,
   widgetImageSourceEnum,
 } from '@/types';
@@ -111,6 +112,7 @@ export function validateWidgetHeightBasedOnComponentType(
 
   const minimumWidgetHeight = getMinHeightBasedOnComponentType(
     tab.componentType as tabComponentTypeEnum,
+    tab.componentSubType as tabComponentSubTypeEnum,
   );
 
   if (widget.height < minimumWidgetHeight) {
@@ -122,6 +124,7 @@ export function validateWidgetHeightBasedOnComponentType(
 
 function getMinHeightBasedOnComponentType(
   tabComponentType: tabComponentTypeEnum,
+  tabComponentSubType: tabComponentSubTypeEnum,
 ): number {
   const largeComponentTypes = [
     tabComponentTypeEnum.diagram,
@@ -130,6 +133,12 @@ function getMinHeightBasedOnComponentType(
   const mediumComponentTypes = [tabComponentTypeEnum.slider];
 
   if (largeComponentTypes.includes(tabComponentType)) {
+    if (
+      tabComponentSubType === tabComponentSubTypeEnum.degreeChart180 ||
+      tabComponentSubType === tabComponentSubTypeEnum.degreeChart360
+    ) {
+      return 200;
+    }
     return 400;
   } else if (mediumComponentTypes.includes(tabComponentType)) {
     return 200;

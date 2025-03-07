@@ -2,6 +2,7 @@ import axios from 'axios';
 
 import { Dashboard, DashboardWithContent } from '@/types';
 import { env } from 'next-runtime-env';
+import { PaginatedResult, UserPagination } from '@/types/pagination';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
@@ -70,6 +71,42 @@ export async function getDashboards(
       ? { Authorization: `Bearer ${accessToken}` }
       : {};
 
+    // Perform the GET request with axios
+    const response = await axios.get(url, {
+      params,
+      headers,
+    });
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
+export async function searchDashboards(
+  accessToken: string | undefined,
+  tenant?: string | undefined,
+  search?: string | undefined,
+  pagination?: UserPagination,
+): Promise<PaginatedResult<Dashboard>> {
+  try {
+    const headers = accessToken
+      ? { Authorization: `Bearer ${accessToken}` }
+      : {};
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const params: any = {};
+    if (tenant && tenant !== '') {
+      params.abbreviation = tenant;
+    }
+    params.search = search;
+    if (pagination) {
+      params.page = pagination.page;
+      params.limit = pagination.limit;
+    }
+
+    const url = `${NEXT_PUBLIC_BACKEND_URL}/dashboards/search`;
     // Perform the GET request with axios
     const response = await axios.get(url, {
       params,
@@ -213,7 +250,9 @@ export async function duplicateDashboard(
 export async function deleteDashboard(
   accessToken: string | undefined,
   dashboardId: string,
+  tenant?: string | undefined,
 ): Promise<Dashboard> {
+  const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -224,7 +263,7 @@ export async function deleteDashboard(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}`,
+      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}${tenantParam}`,
       { headers: headers },
     );
 

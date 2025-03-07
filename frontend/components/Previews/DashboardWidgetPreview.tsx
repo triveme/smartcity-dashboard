@@ -15,7 +15,6 @@ import PieChart from '@/ui/Charts/PieChart';
 import LineChart from '@/ui/Charts/LineChart';
 import BarChart from '@/ui/Charts/BarChart';
 import { DashboardValues } from '@/ui/DashboardValues';
-import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import IFrameComponent from '@/ui/IFrameComponent';
 import MeasurementComponent from '../MeasurementComponent';
 import ImageComponent from '../../ui/ImageComponent';
@@ -28,31 +27,18 @@ import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
-  ssr: false,
+  // ssr: false,
 });
 
 type DashboardWidgetPreviewProps = {
   widget: Widget;
   tab: Tab;
-  widgetCount?: number;
-  moveWidget?: (widgetId: string, direction: 'left' | 'right') => void;
-  deleteRelation?: (widgetId: string) => void;
-  hideControlIcons?: boolean;
-  index?: number;
 };
 
 export default function DashboardWidgetPreview(
   props: DashboardWidgetPreviewProps,
 ): ReactElement {
-  const {
-    widget,
-    tab,
-    widgetCount,
-    moveWidget,
-    deleteRelation,
-    hideControlIcons,
-    index,
-  } = props;
+  const { widget, tab } = props;
 
   // Multi Tenancy
   const tenant = getTenantOfPage();
@@ -419,36 +405,6 @@ export default function DashboardWidgetPreview(
           {!tab.imageUrl && tab.imageSrc && (
             <ImageComponent imageBase64={tab.imageSrc} />
           )}
-        </div>
-      )}
-      {/* For wizards display only widget name and move icons*/}
-      {!hideControlIcons && !tab.componentType && (
-        <div className="w-full h-full">
-          <div className="p-2 flex justify-end gap-4">
-            {widgetCount && widgetCount > 1 && index !== 0 && (
-              <button onClick={(): void => moveWidget!(widget.id!, 'left')}>
-                <DashboardIcons
-                  iconName="ChevronLeft"
-                  color={data?.panelFontColor ?? '#FFFFFF'}
-                />
-              </button>
-            )}
-            {widgetCount && widgetCount > 1 && index !== widgetCount - 1 && (
-              <button
-                className="pl-4"
-                onClick={(): void => moveWidget!(widget.id!, 'right')}
-              >
-                <DashboardIcons
-                  iconName="ChevronRight"
-                  color={data?.panelFontColor ?? '#FFFFFF'}
-                />
-              </button>
-            )}
-            <button onClick={(): void => deleteRelation!(widget.id!)}>
-              <DashboardIcons iconName="Trashcan" color="#FA4141" />
-            </button>
-          </div>
-          <div>{widget.name}</div>
         </div>
       )}
     </div>

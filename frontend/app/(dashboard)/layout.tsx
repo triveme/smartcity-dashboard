@@ -1,4 +1,5 @@
 import { PublicEnvScript } from 'next-runtime-env';
+import { JSX } from 'react';
 
 import '../globals.css';
 import AuthenticationProvider from '@/providers/AuthenticationProvider';

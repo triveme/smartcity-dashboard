@@ -339,31 +339,34 @@ export class PopulateChartService {
     const entityId: string = queryDataMap.get('entityId');
     const index: string[] = queryDataMap.get('index');
 
-    // Loop through each attribute in entityAttributes
-    entityAttributes.forEach((attr) => {
-      const attrName = attr.attrName;
+    // Check if entityAttributes is defined and not empty
+    if (entityAttributes && entityAttributes.length > 0) {
+      // Loop through each attribute in entityAttributes
+      entityAttributes.forEach((attr) => {
+        const attrName = attr.attrName;
 
-      // Check if an entry for the attribute for the entityId already exists in tab.chartData
-      const existingEntry = tab.chartData.find(
-        (data) => data.name === `${getGermanLabelForAttribute(attrName)}`,
-      );
-
-      if (!existingEntry) {
-        // Create FiwareAttributeEntity for the current attribute
-        const attributeObject: FiwareAttributeEntity = {
-          entityId: entityId,
-          index: index,
-          values: attr.values, // Use the values specific to this attribute
-        };
-
-        // Push values to chart data
-        this.pushValuesToChartData(
-          attributeObject,
-          `${getGermanLabelForAttribute(attrName)}`,
-          tab,
+        // Check if an entry for the attribute for the entityId already exists in tab.chartData
+        const existingEntry = tab.chartData.find(
+          (data) => data.name === `${getGermanLabelForAttribute(attrName)}`,
         );
-      }
-    });
+
+        if (!existingEntry) {
+          // Create FiwareAttributeEntity for the current attribute
+          const attributeObject: FiwareAttributeEntity = {
+            entityId: entityId,
+            index: index,
+            values: attr.values, // Use the values specific to this attribute
+          };
+
+          // Push values to chart data
+          this.pushValuesToChartData(
+            attributeObject,
+            `${getGermanLabelForAttribute(attrName)}`,
+            tab,
+          );
+        }
+      });
+    }
   }
 
   private populateHistoricTabWithMultipleEntityIds(
@@ -375,7 +378,6 @@ export class PopulateChartService {
     attribute: string,
     isSingleAttribute: boolean,
   ): void {
-    console.log('populateHistoricTabWithMultipleEntityIds', attribute);
     let sensorName: string = null;
     if (attribute === 'name') return; // Skip if the attribute itself is "name"
 
