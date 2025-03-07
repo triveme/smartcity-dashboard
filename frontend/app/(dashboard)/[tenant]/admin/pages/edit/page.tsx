@@ -124,13 +124,14 @@ export default function Pages(): ReactElement {
 
   useEffect(() => {
     if (dashboardData) {
-      console.log('DASHBOARD DATA', dashboardData);
       setDashboardName(dashboardData.name || '');
       setDashboardUrl(dashboardData.url || '');
       setDashboardVisibility(dashboardData.visibility);
       setDashboardReadRoles(dashboardData.readRoles || []);
       setDashboardWriteRoles(dashboardData.writeRoles || []);
       setDashboardIcon(dashboardData.icon || '');
+      // setPanels(dashboardData.panels || []);
+      setDashboardType(dashboardData.type || '');
       setPanels(dashboardData.panels || []);
       setDashboardType(dashboardData.type || 'Allgemein');
       setDashboardAllowDataExport(dashboardData.allowDataExport || false);

@@ -346,6 +346,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       await refetchWidgets();
       router.back();
     } catch (error) {
+      console.error(error);
       openSnackbar('Speichern fehlgeschlagen.', 'error');
     }
   };
@@ -630,11 +631,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
           </div>
         </div>
         <div className="fixed top-64 right-4 max-w-[30%] w-2/5">
-          <DashboardWidgetPreview
-            widget={widget}
-            tab={tab || {}}
-            hideControlIcons={true}
-          />
+          <DashboardWidgetPreview widget={widget} tab={tab || {}} />
         </div>
       </div>
       <div className="flex justify-end space-x-2 py-4">

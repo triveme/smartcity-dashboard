@@ -7,10 +7,11 @@ export async function deleteGenericItemById(
   accessToken: string | undefined,
   id: string,
   type: string,
+  tenant?: string,
 ): Promise<void> {
   switch (type) {
     case 'dashboard':
-      await deleteDashboard(accessToken, id);
+      await deleteDashboard(accessToken, id, tenant);
       break;
     case 'widget':
       await deleteWidget(accessToken, id);

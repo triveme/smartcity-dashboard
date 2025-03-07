@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardTextfield from '@/ui/WizardTextfield';
@@ -29,8 +29,12 @@ type Props = {
   setMenuPrimaryColor: (color: string) => void;
   menuSecondaryColor: string;
   setMenuSecondaryColor: (color: string) => void;
+  menuFontColor: string;
+  setMenuFontColor: (color: string) => void;
   menuHoverColor: string;
   setMenuHoverColor: (color: string) => void;
+  menuHoverFontColor: string;
+  setMenuHoverFontColor: (color: string) => void;
   menuActiveColor: string;
   setMenuActiveColor: (color: string) => void;
   menuActiveFontColor: string;
@@ -77,8 +81,12 @@ export default function LayoutCiWizard({
   setMenuPrimaryColor,
   menuSecondaryColor,
   setMenuSecondaryColor,
+  menuFontColor,
+  setMenuFontColor,
   menuHoverColor,
   setMenuHoverColor,
+  menuHoverFontColor,
+  setMenuHoverFontColor,
   menuActiveColor,
   setMenuActiveColor,
   menuActiveFontColor,
@@ -163,30 +171,32 @@ export default function LayoutCiWizard({
       )}
       <div className="flex flex-col w-full pb-4">
         <WizardLabel label="Header" />
-        <div className="flex flex-wrap w-full gap-y-8 pb-4">
-          <div className="w-1/2">
+        <div className="flex flex-wrap w-full pb-4">
+          <div className="w-1/4">
             <ColorPickerComponent
               currentColor={headerPrimaryColor}
               handleColorChange={setHeaderPrimaryColor}
               label="Primäre Hintergrundfarbe"
             />
           </div>
-          <div className="w-1/2">
-            <ColorPickerComponent
-              currentColor={headerSecondaryColor}
-              handleColorChange={setHeaderSecondaryColor}
-              label="Sekundäre Hintergrundfarbe"
-            />
-          </div>
-          <div className="w-1/2">
+          <div className="w-1/4">
             <CheckBox
               label={'Farbübergang '}
               value={useColorTransitionHeader}
               handleSelectChange={setUseColorTransitionHeader}
             />
           </div>
+          {useColorTransitionHeader && (
+            <div className="w-1/2">
+              <ColorPickerComponent
+                currentColor={headerSecondaryColor}
+                handleColorChange={setHeaderSecondaryColor}
+                label="Sekundäre Hintergrundfarbe"
+              />
+            </div>
+          )}
         </div>
-        <div className="flex flex-wrap w-full gap-y-8">
+        <div className="flex flex-wrap w-full">
           <div className="w-1/2">
             <ColorPickerComponent
               currentColor={menuCornerColor}
@@ -206,35 +216,55 @@ export default function LayoutCiWizard({
       <HorizontalDivider />
       <div className="flex flex-col w-full">
         <WizardLabel label="Menü" />
-        <div className="flex flex-wrap w-full gap-y-8">
-          <div className="w-1/2">
+        <div className="flex flex-wrap w-full pb-4">
+          <div className="w-1/4">
             <ColorPickerComponent
               currentColor={menuPrimaryColor}
               handleColorChange={setMenuPrimaryColor}
               label="Primäre Hintergrundfarbe"
             />
           </div>
-          <div className="w-1/2">
-            <ColorPickerComponent
-              currentColor={menuSecondaryColor}
-              handleColorChange={setMenuSecondaryColor}
-              label="Sekundäre Hintergrundfarbe"
-            />
-          </div>
-          <div className="w-1/2">
+          <div className="w-1/4">
             <CheckBox
               label={'Farbübergang'}
               value={useColorTransitionMenu}
               handleSelectChange={setUseColorTransitionMenu}
             />
           </div>
-          <div className="w-1/2">
+          {useColorTransitionMenu && (
+            <div className="w-1/2">
+              <ColorPickerComponent
+                currentColor={menuSecondaryColor}
+                handleColorChange={setMenuSecondaryColor}
+                label="Sekundäre Hintergrundfarbe"
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap w-full pb-4">
+          <div className="w-1/4">
             <ColorPickerComponent
-              currentColor={menuHoverColor}
-              handleColorChange={setMenuHoverColor}
-              label="Hover-Farbe"
+              currentColor={menuFontColor}
+              handleColorChange={setMenuFontColor}
+              label="Schriftfarbe"
             />
           </div>
+          <div className="w-1/4">
+            <ColorPickerComponent
+              currentColor={menuActiveFontColor}
+              handleColorChange={setMenuActiveFontColor}
+              label="Aktive Schriftfarbe"
+            />
+          </div>
+          <div className="w-1/2">
+            <ColorPickerComponent
+              currentColor={menuHoverFontColor}
+              handleColorChange={setMenuHoverFontColor}
+              label="Hover-Schriftfarbe"
+            />
+          </div>
+        </div>
+        <div className="flex flex-wrap w-full gap-y-8">
           <div className="w-1/2">
             <ColorPickerComponent
               currentColor={menuActiveColor}
@@ -244,11 +274,12 @@ export default function LayoutCiWizard({
           </div>
           <div className="w-1/2">
             <ColorPickerComponent
-              currentColor={menuActiveFontColor}
-              handleColorChange={setMenuActiveFontColor}
-              label="Aktive Schriftfarbe"
+              currentColor={menuHoverColor}
+              handleColorChange={setMenuHoverColor}
+              label="Hover-Farbe"
             />
           </div>
+
           <div className="w-1/2">
             <WizardLabel label="Pfeilrichtung" />
             <WizardDropdownSelection

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';

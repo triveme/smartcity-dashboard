@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-import { Widget, WidgetWithChildren } from '@/types';
+import { Widget, WidgetWithChildren, WidgetWithComponentTypes } from '@/types';
 import { env } from 'next-runtime-env';
+import { PaginatedResult, UserPagination } from '@/types/pagination';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
@@ -20,14 +21,45 @@ export async function getWidgets(
     url = `${NEXT_PUBLIC_BACKEND_URL}/widgets`;
   }
 
-  const fetched = await fetch(url, {
+  return await fetch(url, {
     headers,
   })
     .then((res) => res.json())
     .catch((err) => {
       console.error(err);
     });
-  return fetched;
+}
+
+export async function searchWidgets(
+  accessToken: string | undefined,
+  tenant?: string | undefined,
+  search?: string | undefined,
+  pagination?: UserPagination,
+): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+  const headers = accessToken
+    ? { Authorization: `Bearer ${accessToken}` }
+    : undefined;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const params: any = {};
+  if (tenant && tenant !== '') {
+    params.abbreviation = tenant;
+  }
+  params.search = search;
+  if (pagination) {
+    params.page = pagination.page;
+    params.limit = pagination.limit;
+  }
+
+  const url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/search`;
+
+  try {
+    const response = await axios.get(url, { headers, params });
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
 
 export async function getWidgetsByPanelId(
@@ -133,6 +165,26 @@ export async function deleteWidget(
     }
     throw err;
   }
+}
+
+export async function getWidgetsWithChildren(
+  accessToken: string | undefined,
+  tenant?: string | undefined,
+): Promise<WidgetWithChildren[]> {
+  const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
+  const headers = accessToken
+    ? { Authorization: `Bearer ${accessToken}` }
+    : undefined;
+
+  const url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/with-children${tenantParam}`;
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    console.error(
+      `Fetching widgets with children failed with status: ${response.status}`,
+    );
+  }
+  return await response.json();
 }
 
 export async function duplicateWidget(

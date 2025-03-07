@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, JSX, SetStateAction, useEffect, useState } from 'react';
 
 import { CorporateInfo, SidebarLogo } from '@/types';
 import SaveButton from '@/ui/Buttons/SaveButton';
@@ -137,9 +137,17 @@ export default function CorporateInfoWizard({
             setMenuSecondaryColor={(color): void =>
               updateState('menuSecondaryColor', color)
             }
+            menuFontColor={state.menuFontColor}
+            setMenuFontColor={(color): void =>
+              updateState('menuFontColor', color)
+            }
             menuHoverColor={state.menuHoverColor}
             setMenuHoverColor={(color): void =>
               updateState('menuHoverColor', color)
+            }
+            menuHoverFontColor={state.menuHoverFontColor}
+            setMenuHoverFontColor={(color): void =>
+              updateState('menuHoverFontColor', color)
             }
             menuActiveColor={state.menuActiveColor}
             setMenuActiveColor={(color): void =>
@@ -681,10 +689,6 @@ export default function CorporateInfoWizard({
             headerFontColor={state.headerFontColor}
             setHeaderFontColor={(color): void =>
               updateState('headerFontColor', color)
-            }
-            menuFontColor={state.menuFontColor}
-            setMenuFontColor={(color): void =>
-              updateState('menuFontColor', color)
             }
             dashboardFontColor={state.dashboardFontColor}
             setDashboardFontColor={(color): void =>

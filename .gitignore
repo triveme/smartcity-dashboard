@@ -45,27 +45,7 @@ k8s/helm/charts/*.tgz
 k8s/helm/*.lock
 
 # Migrationfiles
-!database/migrations/generated/meta/_journal.json
-!database/migrations/generated/meta/0000_snapshot.json
-!database/migrations/generated/meta/0001_snapshot.json
-!database/migrations/generated/meta/0002_snapshot.json
-!database/migrations/generated/meta/0003_snapshot.json
-!database/migrations/generated/meta/0004_snapshot.json
-!database/migrations/generated/meta/0005_snapshot.json
-!database/migrations/generated/meta/0006_snapshot.json
-!database/migrations/generated/meta/0007_snapshot.json
-!database/migrations/generated/meta/0008_snapshot.json
-!database/migrations/generated/0000_chief_payback_0.7.2.sql
-!database/migrations/generated/0001_nifty_rictor_0.7.2_to_0.8.0.sql
-!database/migrations/generated/0002_powerful_tarantula_0.8.0_to_0.8.3.sql
-!database/migrations/generated/0003_light_saracen_0.8.3_to_0.8.8.sql
-!database/migrations/generated/0004_lively_tenebrous_0.8.8_to_0.8.10.sql
-!database/migrations/generated/0005_moaning_betty_ross_0.9.0.sql
-!database/migrations/generated/0006_short_peter_quill_0.9.1.sql
-!database/migrations/generated/0007_sour_mephisto_0.10.0.sql
-!database/migrations/generated/0008_wonderful_omega_red_0.10.1.sql
 database/migrations/generated/*
-
 
 # Ignore everything in the hcloud folder
 hcloud/*

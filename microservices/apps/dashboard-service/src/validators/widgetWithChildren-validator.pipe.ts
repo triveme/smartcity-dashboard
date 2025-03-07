@@ -1,5 +1,5 @@
 import { Injectable, PipeTransform } from '@nestjs/common';
-import { WidgetWithChildren } from '../widget/widget.service';
+import { WidgetWithChildren } from '../widget/widget.model';
 import { SanitizeTabDataPipe } from './tab-validator.pipe';
 import { ValidateWidgetPipe } from './widget-validator.pipe';
 import { SanitizeQueryConfigPipe } from './queryConfig-validator.pipe';

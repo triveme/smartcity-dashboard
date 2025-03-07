@@ -25,11 +25,7 @@ pipeline {
         DOCKERFILE_INFOPIN_SERVICE = 'Dockerfile.infopin-service'
         DOCKERFILE_STATIC_DATA_SERVICE = 'Dockerfile.static-data-service'
         DOCKERFILE_REPORT_SERVICE = 'Dockerfile.report-service'
-        USE_ULM_REGISTRY = false
-        USE_GISA_REGISTRY = false
         USE_GITHUB_REGISTRY = false
-        ULM_REGISTRY = 'gitlab-ext.exxcellent.de:4567/iot-projekte/edag/dashboard'
-        GISA_REGISTRY = 'registry.gitlab.com/gisa-group/udsp/smartcity-dashboard-v2.0'
     }
 
     agent {
@@ -90,7 +86,7 @@ pipeline {
                 }
                 dir('frontend') {
                     echo "Installing Frontend Dependencies:"
-                    sh "npm ci"
+                    sh "npm ci --force"
                 }
             }
         }
@@ -168,14 +164,8 @@ pipeline {
             script {
                 def branchName = env.BRANCH_NAME
 
-                // Set Ulm registry flag to true if the branch is "main"
-                USE_ULM_REGISTRY = (branchName == 'main')
-                println("USE_ULM_REGISTRY set to: ${USE_ULM_REGISTRY}")
-                // Set Gisa registry flag to true if the branch is "public"
-                USE_GISA_REGISTRY = (branchName == 'public')
-                println("USE_GISA_REGISTRY set to: ${USE_GISA_REGISTRY}")
-                // Set EDAG Github registry flag to true if the branch is "public"
-                USE_GITHUB_REGISTRY = (branchName == 'public')
+                // Set EDAG Github registry flag to true if the branch is "main"
+                USE_GITHUB_REGISTRY = (branchName == 'main')
                 println("USE_GITHUB_REGISTRY set to: ${USE_GITHUB_REGISTRY}")
             }
         }
@@ -227,6 +217,7 @@ pipeline {
                     }
                     dir('frontend') {
                       sh "docker build -t smartcity/frontend -f ${DOCKERFILE_FRONTEND} ."
+                      sh "docker build -t smartcity/frontend-with-basepath -f ${DOCKERFILE_FRONTEND_BASEPATH} ."
                     }
                 }
             }
@@ -246,6 +237,7 @@ pipeline {
             sh "docker tag smartcity/static-data-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/report-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${REPORT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}"
+            sh "docker tag smartcity/frontend-with-basepath ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             withCredentials([usernamePassword(credentialsId: 'smartcity-nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
               sh "docker login -u ${NEXUS_USER} -p ${NEXUS_PASS} ${NEXUS_REGISTRY}/${NEXUS_REPO}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MIGRATIONS}:${IMAGE_TAG}"
@@ -257,6 +249,7 @@ pipeline {
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${REPORT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}"
+              sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }
           }
         }
@@ -279,6 +272,7 @@ pipeline {
             sh "docker tag smartcity/static-data-service ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/report-service ${GITHUB_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
+            sh "docker tag smartcity/frontend-with-basepath ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             withCredentials([usernamePassword(credentialsId: 'smartcity-github', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PASS')]) {
               sh "docker login -u ${GITHUB_USER} -p ${GITHUB_PASS} ${GITHUB_REGISTRY}"
               sh "docker push ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
@@ -290,82 +284,11 @@ pipeline {
               sh "docker push ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
+              sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }
           }
         }
       }
-
-/* --------------------------- Ulm Specific Image Artifactory Push --------------------------*/
-
-      stage('Push Images to Ulm') {
-        when {
-            expression { USE_ULM_REGISTRY }
-        }
-        steps {
-          container('docker') {
-            sh "docker tag smartcity/migrations ${ULM_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
-            sh "docker tag smartcity/dashboard-service ${ULM_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/ngsi-service ${ULM_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/api-service ${ULM_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/mail-service ${ULM_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/infopin-service ${ULM_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/static-data-service ${ULM_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/report-service ${ULM_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/frontend ${ULM_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
-            // Build frontend with basepath - specific Ulm requirement
-            dir('frontend') {
-              sh "docker build -t smartcity/frontend-with-basepath -f ${DOCKERFILE_FRONTEND_BASEPATH} ."
-            }
-            sh "docker tag smartcity/frontend-with-basepath ${ULM_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
-            withCredentials([usernamePassword(credentialsId: 'smartcity-ulm-af', usernameVariable: 'ULM_USER', passwordVariable: 'ULM_PASS')]) {
-              sh "docker login -u ${ULM_USER} -p ${ULM_PASS} ${ULM_REGISTRY}"
-              sh "docker push ${ULM_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
-              sh "docker push ${ULM_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
-            }
-          }
-        }
-      }
-
-/* --------------------------- Gisa Specific Image Artifactory Push --------------------------*/
-
-      // stage('Push Images to Gisa') {
-      //   when {
-      //       expression { USE_GISA_REGISTRY }
-      //   }
-      //   steps {
-      //     container('docker') {
-      //       sh "docker tag smartcity/migrations ${GISA_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/dashboard-service ${GISA_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/ngsi-service ${GISA_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/api-service ${GISA_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/mail-service ${GISA_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/infopin-service ${GISA_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/static-data-service ${GISA_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/report-service ${GISA_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
-      //       sh "docker tag smartcity/frontend ${GISA_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
-      //       withCredentials([usernamePassword(credentialsId: 'smartcity-gisa-af', usernameVariable: 'GISA_USER', passwordVariable: 'GISA_PASS')]) {
-      //         sh "docker login -u ${GISA_USER} -p ${GISA_PASS} ${GISA_REGISTRY}"
-      //         sh "docker push ${GISA_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
-      //         sh "docker push ${GISA_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
-      //       }
-      //     }
-      //   }
-      // }
     }
 
     post {

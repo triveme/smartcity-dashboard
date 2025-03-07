@@ -66,6 +66,7 @@ export class CorporateInfoRepo {
         menuCornerFontColor: corporateInfos.menuCornerFontColor,
         menuFontColor: corporateInfos.menuFontColor,
         menuHoverColor: corporateInfos.menuHoverColor,
+        menuHoverFontColor: corporateInfos.menuHoverFontColor,
         menuLogo: tenantMenuLogo,
         menuLogoId: corporateInfos.menuLogoId,
         menuPrimaryColor: corporateInfos.menuPrimaryColor,

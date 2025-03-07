@@ -36,16 +36,16 @@ export default async function Dashboard(
   props: DashboardProps,
 ): Promise<ReactElement> {
   const { dashboard, tenant } = props;
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
 
   const MapWithNoSSR = nextDynamic(() => import('@/components/Map/Map'), {
-    ssr: false,
+    // ssr: false,
   });
   const CombinedMapWithNoSSR = nextDynamic(
     () => import('@/components/Map/CombinedMap'),
     {
-      ssr: false,
+      // ssr: false,
     },
   );
 

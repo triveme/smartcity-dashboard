@@ -73,8 +73,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getTab(db, widget.id, null, null, null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -99,9 +107,22 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getTab(db, widget.id, null, null, null, query.id),
       );
 
-      await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
-        .expect(403);
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
+      const response = await request(app.getHttpServer())
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
+        .expect(200);
+
+      const result = response.body;
+
+      validateDashboardContent(result);
+      expect(result.panels[0].widgets[0].tabs[0].chartData.length).toBe(0);
     });
 
     it('/dashboards?includeContent=true (GET)', async () => {
@@ -217,8 +238,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getTab(db, widget.id, 'Diagramm', 'Linien Chart', null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -243,8 +272,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getTab(db, widget.id, 'Diagramm', 'Measurement', null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -264,6 +301,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
+
       await createTab(
         db,
         await getTab(
@@ -276,8 +314,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         ),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -302,8 +348,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         await getTab(db, widget.id, 'Diagramm', 'Pie Chart', null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -335,8 +389,16 @@ describe('DashboardServiceControllers (e2e)', () => {
         ),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -354,13 +416,22 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
+
       await createTab(
         db,
         await getTab(db, widget.id, 'Diagramm', '360° Chart', null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -378,13 +449,22 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
+
       await createTab(
         db,
         await getTab(db, widget.id, 'Diagramm', '180° Chart', null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -402,6 +482,7 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
+
       await createTab(
         db,
         await getTab(
@@ -414,15 +495,21 @@ describe('DashboardServiceControllers (e2e)', () => {
         ),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
 
       validateDashboardContent(result);
-      console.log(query);
-      console.log(result.panels[0].widgets[0].tabs[0]);
       expect(result.panels[0].widgets[0].tabs[0].chartData).toHaveLength(1);
     });
 
@@ -435,13 +522,22 @@ describe('DashboardServiceControllers (e2e)', () => {
         getWidget([], []),
         panel.id,
       );
+
       await createTab(
         db,
         await getTab(db, widget.id, 'Wert', null, null, query.id),
       );
 
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
+
       const response = await request(app.getHttpServer())
-        .get('/dashboards/' + dashboard.id + '?includeContent=true')
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const result = response.body;
@@ -544,7 +640,12 @@ describe('DashboardServiceControllers (e2e)', () => {
       await createDashboardToTenant(db, dashboard.id, tenant.id);
 
       const response = await request(app.getHttpServer())
-        .get(`/dashboards/${dashboard.id}?includeContent=true`)
+        .get(
+          '/dashboards/url/' +
+            dashboard.url +
+            '?abbreviation=' +
+            tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`);
 
       const body = response.body;

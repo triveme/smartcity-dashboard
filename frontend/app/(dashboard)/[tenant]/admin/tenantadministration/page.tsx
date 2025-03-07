@@ -16,7 +16,7 @@ import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementBut
 import TenantWizard from '@/components/Wizards/TenantWizard';
 
 const tableConfig: TableConfig<Tenant> = {
-  columns: ['abbreviation'],
+  columns: [{ name: 'abbreviation', displayName: 'Bezeichnung' }],
   viewsPerPage: 10,
   maxPages: 1,
 };

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 
 import { GroupingElement } from '@/types';
@@ -40,8 +41,12 @@ export async function getMenuGroupingElementByUrl(
   tenant: string,
 ): Promise<GroupingElement> {
   try {
-    const url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/url/${urlParam}?abbreviation=${tenant}`;
-    const response = await axios.get(url);
+    const params: any = {};
+    params.abbreviation = tenant;
+    const url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/url/${urlParam}`;
+    const response = await axios.get(url, {
+      params,
+    });
 
     return response.data;
   } catch (err) {
