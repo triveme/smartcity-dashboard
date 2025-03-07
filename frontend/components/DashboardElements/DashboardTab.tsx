@@ -45,12 +45,12 @@ type DashboardTabProps = {
   isCombinedWidget?: boolean;
 };
 const MapWithNoSSR = nextDynamic(() => import('@/components/Map/Map'), {
-  ssr: false,
+  // ssr: false,
 });
 const CombinedMapWithNoSSR = nextDynamic(
   () => import('@/components/Map/CombinedMap'),
   {
-    ssr: false,
+    // ssr: false,
   },
 );
 
@@ -364,31 +364,37 @@ export default async function DashboardTab(
       {tab.componentType === tabComponentTypeEnum.slider && (
         <div className="h-full p-2 overflow-y-auto">
           {tab.componentSubType === tabComponentSubTypeEnum.coloredSlider && (
-            <Slider
-              unit={tab.chartUnit || ''}
-              minValue={tab.chartMinimum || 0}
-              maxValue={tab.chartMaximum || 100}
-              staticValues={tab.rangeStaticValuesMax || []}
-              staticValuesColors={tab.rangeStaticValuesColors || ['#808080']}
-              staticValuesTicks={tab.chartStaticValuesTicks || []}
-              staticValuesLogos={tab.chartStaticValuesLogos || []}
-              staticValuesTexts={tab.chartStaticValuesTexts || []}
-              iconColor={tab.iconColor || '#000000'}
-              labelColor={tab.labelColor || '#000000'}
-              value={
-                tab.chartValues && tab.chartValues.length > 0
-                  ? tab.chartValues[0]
-                  : 25
-              }
-              bigValueFontSize={ciColors.coloredSliderBigValueFontSize || '50'}
-              bigValueFontColor={
-                ciColors.coloredSliderBigValueFontColor || '#FFFFF'
-              }
-              labelFontSize={ciColors.coloredSliderLabelFontSize || '25'}
-              labelFontColor={ciColors.coloredSliderLabelFontColor || '#FFFFF'}
-              arrowColor={ciColors.coloredSliderArrowColor || '#FFFFF'}
-              unitFontSize={ciColors.coloredSliderUnitFontSize || '35'}
-            />
+            <div className="flex justify-center items-center px-6">
+              <Slider
+                unit={tab.chartUnit || ''}
+                minValue={tab.chartMinimum || 0}
+                maxValue={tab.chartMaximum || 100}
+                staticValues={tab.rangeStaticValuesMax || []}
+                staticValuesColors={tab.rangeStaticValuesColors || ['#808080']}
+                staticValuesTicks={tab.chartStaticValuesTicks || []}
+                staticValuesLogos={tab.chartStaticValuesLogos || []}
+                staticValuesTexts={tab.chartStaticValuesTexts || []}
+                iconColor={tab.iconColor || '#000000'}
+                labelColor={tab.labelColor || '#000000'}
+                value={
+                  tab.chartValues && tab.chartValues.length > 0
+                    ? tab.chartValues[0]
+                    : 25
+                }
+                bigValueFontSize={
+                  ciColors.coloredSliderBigValueFontSize || '50'
+                }
+                bigValueFontColor={
+                  ciColors.coloredSliderBigValueFontColor || '#FFFFF'
+                }
+                labelFontSize={ciColors.coloredSliderLabelFontSize || '25'}
+                labelFontColor={
+                  ciColors.coloredSliderLabelFontColor || '#FFFFF'
+                }
+                arrowColor={ciColors.coloredSliderArrowColor || '#FFFFF'}
+                unitFontSize={ciColors.coloredSliderUnitFontSize || '35'}
+              />
+            </div>
           )}
 
           {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (

@@ -246,6 +246,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Blitzentfernung';
     case 'CAR':
       return 'PKW';
+    case 'PKW':
+      return 'PKW';
     case 'AUTO':
       return 'PKW';
     case 'BIKE':
@@ -254,8 +256,12 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Fahrrad';
     case 'BICYCLES':
       return 'Fahrrad';
+    case 'FAHRRAD':
+      return 'Fahrrad';
     case 'SCOOTER':
       return 'Roller';
+    case 'MOTORRAD':
+      return 'Motorrad';
     case 'MOTORBIKE':
       return 'Motorrad';
     case 'MOTORCYCLE':
@@ -272,6 +278,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Bus';
     case 'BUSES':
       return 'Bus';
+    case 'LKW':
+      return 'LKW';
     case 'TRUCK':
       return 'LKW';
     case 'TRUCKS':
@@ -282,12 +290,6 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Person';
     case 'TOTALCONSUMPTION':
       return 'Verbrauch';
-    case 'OTHER':
-      return 'Andere';
-    case 'ANZAHL_BUS':
-      return 'Bus';
-    case 'ANZAHL_FAHRRAD':
-      return 'Fahrrad';
     case 'ANZAHL_LKW':
       return 'LKW';
     case 'ANZAHL_MOTORRAD':
@@ -298,6 +300,30 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'PKW';
     case 'ANZAHL_SONSTIGE':
       return 'Sonstige';
+    case 'SONSTIGE':
+      return 'Sonstige';
+    case 'ATMOSPHERICPRESSUREAVG':
+      return 'Luftdruck';
+    case 'PRECIPITATIONAVG':
+      return 'Niederschlag';
+    case 'RELATIVEHUMIDITYAVG':
+      return 'Luftfeuchte';
+    case 'TEMPERATUREAVG':
+      return 'Temperatur';
+    case 'CO':
+      return 'Kohlenstoffmonoxid';
+    case 'NO':
+      return 'Stickstoffmonoxid';
+    case 'NO2':
+      return 'Stickstoffdioxid';
+    case 'O3':
+      return 'Ozon';
+    case 'PM1':
+      return 'Feinstaub PM1';
+    case 'PM10':
+      return 'Feinstaub PM10';
+    case 'PM25':
+      return 'Feinstaub PM2,5';
     default:
       console.warn(`No German label found for attribute: ${attribute}`);
       return attribute;

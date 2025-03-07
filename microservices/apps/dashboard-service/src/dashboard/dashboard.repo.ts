@@ -1,6 +1,15 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Inject, Injectable } from '@nestjs/common';
-import { and, arrayOverlaps, asc, eq, inArray, or } from 'drizzle-orm';
+import {
+  and,
+  arrayOverlaps,
+  asc,
+  eq,
+  ilike,
+  inArray,
+  or,
+  sql,
+} from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -24,6 +33,7 @@ import {
   dataModels,
 } from '@app/postgres-db/schemas/data-model.schema';
 import { dashboardsToTenants } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
+import { PaginatedResult, PaginationMeta } from '../widget/widget.model';
 
 export type FlatDashboardData = {
   dashboard: Dashboard;
@@ -64,7 +74,18 @@ export class DashboardRepo {
       );
   }
 
-  async getDashboardWithContent(id: string): Promise<FlatDashboardData[]> {
+  async getDashboardWithContent(
+    id: string,
+    tenantId: string,
+    rolesFromRequest: string[],
+  ): Promise<FlatDashboardData[]> {
+    const tenantSubSelect = this.db
+      .select({
+        dashboardId: dashboardsToTenants.dashboardId,
+      })
+      .from(dashboardsToTenants)
+      .where(eq(dashboardsToTenants.tenantId, tenantId));
+
     return this.db
       .select()
       .from(dashboards)
@@ -74,7 +95,21 @@ export class DashboardRepo {
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
-      .where(eq(dashboards.id, id))
+      .where(
+        and(
+          eq(dashboards.id, id),
+          inArray(dashboards.id, tenantSubSelect),
+          or(
+            eq(dashboards.visibility, 'public'),
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+              : undefined,
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+              : undefined,
+          ),
+        ),
+      )
       .orderBy((data) => asc(data.panel.position));
   }
 
@@ -95,11 +130,87 @@ export class DashboardRepo {
       );
   }
 
-  async getById(id: string): Promise<Dashboard> {
+  async searchDashboards(
+    rolesFromRequest: string[],
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 10,
+    tenantId?: string,
+  ): Promise<PaginatedResult<Dashboard>> {
+    const offset = (page - 1) * pageSize;
+
+    const dashboardIdsOfTenant = this.db
+      .select({
+        dashboardId: dashboardsToTenants.dashboardId,
+      })
+      .from(dashboardsToTenants)
+      .where(eq(dashboardsToTenants.tenantId, tenantId));
+
+    const whereClause = and(
+      searchTerm
+        ? or(
+            ilike(dashboards.name, `%${searchTerm}%`),
+            ilike(dashboards.url, `%${searchTerm}%`),
+          )
+        : undefined,
+      or(
+        eq(dashboards.visibility, 'public'),
+        rolesFromRequest.length > 0
+          ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+          : undefined,
+        rolesFromRequest.length > 0
+          ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+          : undefined,
+      ),
+      inArray(dashboards.id, dashboardIdsOfTenant),
+    );
+
+    const [{ count }] = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(dashboards)
+      .where(whereClause)
+      .execute();
+
+    const totalItems = Number(count);
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    const query = this.db
+      .select()
+      .from(dashboards)
+      .where(whereClause)
+      .limit(pageSize)
+      .offset(offset)
+      .orderBy(dashboards.name);
+    const data = await query.execute();
+
+    const meta: PaginationMeta = {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
+
+    return { data, meta };
+  }
+
+  async getById(id: string, rolesFromRequest: string[]): Promise<Dashboard> {
     const dbDashboards = await this.db
       .select()
       .from(dashboards)
-      .where(eq(dashboards.id, id));
+      .where(
+        and(
+          eq(dashboards.id, id),
+          or(
+            eq(dashboards.visibility, 'public'),
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+              : undefined,
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+              : undefined,
+          ),
+        ),
+      );
 
     return dbDashboards.length > 0 ? dbDashboards[0] : null;
   }
@@ -108,11 +219,79 @@ export class DashboardRepo {
     return this.db.select().from(dashboards).where(inArray(dashboards.id, ids));
   }
 
-  async getByUrl(url: string): Promise<Dashboard[]> {
+  async getByUrl(
+    url: string,
+    rolesFromRequest: string[],
+  ): Promise<Dashboard[]> {
     const dbDashboards = await this.db
       .select()
       .from(dashboards)
-      .where(and(eq(dashboards.url, url)));
+      .where(
+        and(
+          eq(dashboards.url, url),
+          or(
+            eq(dashboards.visibility, 'public'),
+            and(
+              or(
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+                  : undefined,
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+                  : undefined,
+              ),
+            ),
+          ),
+        ),
+      );
+
+    return dbDashboards;
+  }
+
+  async getByUrlAndTenant(
+    url: string,
+    tenantId: string,
+    rolesFromRequest: string[],
+  ): Promise<FlatDashboardData[]> {
+    const tenantSubSelect = this.db
+      .select({
+        dashboardId: dashboardsToTenants.dashboardId,
+      })
+      .from(dashboardsToTenants)
+      .where(eq(dashboardsToTenants.tenantId, tenantId));
+
+    const dbDashboards = await this.db
+      .select()
+      .from(dashboards)
+      .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
+      .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
+      .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
+      .leftJoin(queries, eq(tabs.queryId, queries.id))
+      .where(
+        and(
+          eq(dashboards.url, url),
+          inArray(dashboards.id, tenantSubSelect),
+          or(
+            eq(dashboards.visibility, 'public'),
+            and(
+              or(
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+                  : undefined,
+                rolesFromRequest.length > 0
+                  ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+                  : undefined,
+              ),
+            ),
+          ),
+        ),
+      )
+      .orderBy((data) => [
+        asc(data.panel.position),
+        asc(data.widget_to_panel.position),
+      ]);
 
     return dbDashboards;
   }

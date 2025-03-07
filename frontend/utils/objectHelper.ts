@@ -106,6 +106,7 @@ export const DEFAULT_CI: CorporateInfo = {
   menuCornerFontColor: '#fff',
   menuFontColor: '#fff',
   menuHoverColor: '#2B3244',
+  menuHoverFontColor: '#2B3244',
   menuPrimaryColor: '#3D4760',
   menuSecondaryColor: '#1d2330',
   panelBorderColor: '#3D4760',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import { tabComponentSubTypeEnum, tabComponentTypeEnum } from '@/types/enums';

@@ -35,12 +35,11 @@ async function getData(
   return res.json();
 }
 
-export default async function DashboardPage({
-  params,
-}: {
-  params: { tenant: string; url: string };
+export default async function DashboardPage(props: {
+  params: Promise<{ tenant: string; url: string }>;
 }): Promise<ReactElement> {
-  const cookieStore = cookies();
+  const params = await props.params;
+  const cookieStore = await cookies();
   const cookie = cookieStore.get('access_token');
   let accessToken = cookie && cookie.value ? cookie.value : '';
 
@@ -49,9 +48,8 @@ export default async function DashboardPage({
     NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
 
   if (!accessToken) {
-    console.error('No access token found');
+    console.warn('No access token found');
     accessToken = '';
-    // redirect('/login');
   }
 
   const dashboard = await getData(

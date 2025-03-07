@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and, sql, or, arrayOverlaps, ilike } from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
@@ -11,26 +11,16 @@ import {
   widgetsToPanels,
   WidgetToPanel,
 } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
-import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
-import { Tab, tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import { tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import { dataModels } from '@app/postgres-db/schemas/data-model.schema';
+import { queries } from '@app/postgres-db/schemas/query.schema';
 import {
-  DataModel,
-  dataModels,
-} from '@app/postgres-db/schemas/data-model.schema';
-import { queries, Query } from '@app/postgres-db/schemas/query.schema';
-
-export type WidgetWithChildren = {
-  widget: Widget;
-  tab: Tab;
-  queryConfig: QueryConfig;
-};
-
-export type FlatWidgetData = {
-  widget: Widget;
-  tab: Tab;
-  data_model: DataModel;
-  query: Query;
-};
+  FlatWidgetData,
+  PaginatedResult,
+  PaginationMeta,
+  WidgetWithComponentTypes,
+} from './widget.model';
+import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
 
 @Injectable()
 export class WidgetRepo {
@@ -71,6 +61,80 @@ export class WidgetRepo {
       .from(widgets)
       .leftJoin(widgetsToPanels, eq(widgets.id, widgetsToPanels.widgetId))
       .where(eq(widgetsToPanels.panelId, panelId));
+  }
+
+  async searchWidgets(
+    rolesFromRequest: string[],
+    searchTerm?: string,
+    page: number = 1,
+    pageSize: number = 10,
+    tenantId?: string,
+  ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+    const offset = (page - 1) * pageSize;
+
+    const tenantSubQuery = tenantId
+      ? this.db
+          .select({ widgetId: widgetsToTenants.widgetId })
+          .from(widgetsToTenants)
+          .where(eq(widgetsToTenants.tenantId, tenantId))
+      : undefined;
+
+    const whereClause = and(
+      // Search condition
+      searchTerm
+        ? or(
+            ilike(widgets.name, `%${searchTerm}%`),
+            ilike(widgets.description, `%${searchTerm}%`),
+          )
+        : undefined,
+      or(
+        eq(widgets.visibility, 'public'),
+        rolesFromRequest.length > 0
+          ? arrayOverlaps(widgets.readRoles, rolesFromRequest)
+          : undefined,
+        rolesFromRequest.length > 0
+          ? arrayOverlaps(widgets.writeRoles, rolesFromRequest)
+          : undefined,
+      ),
+      // Tenant filter condition
+      tenantId ? inArray(widgets.id, tenantSubQuery) : undefined,
+    );
+
+    const [{ count }] = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(widgets)
+      .where(whereClause)
+      .execute();
+
+    const totalItems = Number(count);
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    // Get paginated results
+    const query = this.db
+      .select({
+        id: widgets.id,
+        name: widgets.name,
+        description: widgets.description,
+        visibility: widgets.visibility,
+        componentType: tabs.componentType,
+        componentSubType: tabs.componentSubType,
+      })
+      .from(widgets)
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .where(whereClause)
+      .limit(pageSize)
+      .offset(offset)
+      .orderBy(widgets.name);
+    const data = await query.execute();
+
+    const meta: PaginationMeta = {
+      totalItems,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
+
+    return { data, meta };
   }
 
   async create(row: NewWidget, transaction?: DbType): Promise<Widget> {

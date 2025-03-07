@@ -1,15 +1,13 @@
 'use client';
-
 import { ReactElement, useState, useEffect, CSSProperties } from 'react';
-import dynamic from 'next/dynamic';
-import '@/components/dependencies/quill.snow.css';
 
-import '../app/quill.css';
 import { tabComponentTypeEnum, tabComponentSubTypeEnum } from '@/types';
+import EditorComponent from '@/components/EditorComponent';
 
 type TextfieldProps = {
   value: string | number;
   onChange: (value: string | number) => void;
+  placeholderText?: string;
   componentType?: string;
   subComponentType?: string;
   isNumeric?: boolean;
@@ -21,13 +19,12 @@ type TextfieldProps = {
   panelBorderSize?: string;
 };
 
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-
 export default function WizardTextfield(props: TextfieldProps): ReactElement {
   const {
     value,
     onChange,
     componentType,
+    placeholderText,
     subComponentType,
     isNumeric = false,
     error,
@@ -37,7 +34,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     panelBorderRadius,
     panelBorderSize,
   } = props;
-  const [content, setContent] = useState(value ? value.toString() : '');
+
   const [textFieldContent, setTextFieldContent] = useState(
     value ? value.toString() : '',
   );
@@ -56,23 +53,12 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
   }, []);
 
   useEffect(() => {
-    // Prefill values when editing
     setTextFieldContent(value ? value.toString() : '');
   }, [value]);
 
   const convertToLocaleNumber = (value: string, separator: string): string => {
     return value.replace(separator === ',' ? /\./g : /,/g, separator);
   };
-
-  const customToolbar = [
-    ['bold', 'italic', 'underline'],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    ['link'],
-    [{ color: [] }, { background: [] }],
-    [{ align: [] }],
-  ];
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -112,12 +98,6 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
       setTextFieldContent(newValue); // Update internal state
       onChange(newValue); // Pass value to parent component
     }
-  };
-
-  const handleEditorChange = (newContent: string): void => {
-    setContent(newContent);
-    // const textWithoutTags = quillRef.current?.getEditor().getText() || '';
-    onChange(newContent);
   };
 
   const errorStyle: CSSProperties = {
@@ -165,16 +145,16 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
   return (
     <>
       {componentType === tabComponentTypeEnum.information ? (
-        // TODO check the quill version 2.0 when it is released
         isBrowser &&
         subComponentType === tabComponentSubTypeEnum.text && (
           <div className="block" style={error ? errorStyle : {}}>
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={handleEditorChange}
-              modules={{ toolbar: customToolbar }}
-              className="text-base h-full w-full"
+            <EditorComponent
+              value={value.toString()}
+              onChange={onChange}
+              error={error}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+              fontColor={panelFontColor || '#000'}
             />
           </div>
         )
@@ -203,6 +183,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
             onChange={(e): void => handleChange(e)}
             value={textFieldContent}
             style={{ background: backgroundColor }}
+            placeholder={placeholderText || ''}
           />
         </div>
       )}

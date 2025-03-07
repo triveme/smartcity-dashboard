@@ -67,7 +67,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
               params.value,
               navigator.language || 'de-DE',
             );
-            return `${params.name}: ${value} (${params.percent}%)`;
+            return `${params.name}: ${value}${unit} (${params.percent}%)`;
           },
         },
         series: [
@@ -84,7 +84,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
                   params.value,
                   navigator.language || 'de-DE',
                 );
-                return `${params.name}: ${value} (${params.percent}%)`;
+                return `${params.name}: ${value}${unit} (${params.percent}%)`;
               },
               color: fontColor || '#E95051',
               fontSize: fontSize || 14,

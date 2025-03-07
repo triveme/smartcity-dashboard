@@ -1,5 +1,5 @@
 'use client';
-import React, { ReactElement, CSSProperties } from 'react';
+import React, { ReactElement, CSSProperties, JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
 import CheckBox from '@/ui/CheckBox';

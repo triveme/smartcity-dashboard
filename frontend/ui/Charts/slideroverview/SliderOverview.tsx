@@ -41,9 +41,7 @@ export default function SliderOverview(
       const slider: SliderOverviewType = {
         name: data[i].name,
         capacityCurrent: data[i].values[currentCapacityIndex][1],
-        capacityMax:
-          data[i].values[currentCapacityIndex][1] +
-          data[i].values[maximumCapacityIndex][1],
+        capacityMax: data[i].values[maximumCapacityIndex][1],
       };
       sliders.push(slider);
     }
@@ -54,7 +52,13 @@ export default function SliderOverview(
   return (
     <div className="h-full p-3">
       <div className="w-full flex flex-col p-3">
-        <SliderHeader labels={[]} colors={[]} />
+        <SliderHeader
+          fontColorCurrent={fontColorCurrent}
+          fontColorMaximum={fontColorMaximum}
+          fontColorGeneral={fontColorGeneral}
+          colorCurrent={colorCurrent}
+          colorMaximum={colorMaximum}
+        />
         <div>
           {sliders.map((obj, index) => {
             return (

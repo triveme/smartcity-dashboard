@@ -21,6 +21,15 @@ export class WidgetToTenantRepo {
     return widgetToTenantsArray.length > 0 ? widgetToTenantsArray[0] : null;
   }
 
+  async getWidgetToTenantRelationshipByTenantId(
+    tenantId: string,
+  ): Promise<WidgetToTenant[]> {
+    return this.db
+      .select()
+      .from(widgetsToTenants)
+      .where(eq(widgetsToTenants.tenantId, tenantId));
+  }
+
   async updateWidgetToTenantRelationship(
     widgetId: string,
     oldTenantId: string,

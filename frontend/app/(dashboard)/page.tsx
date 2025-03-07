@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during
 export const runtime = 'edge';
 
 export default async function DashboardPageGeneral(): Promise<ReactElement> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
   // Try auto redirect for logged in users

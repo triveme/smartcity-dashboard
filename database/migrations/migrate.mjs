@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { Pool, PoolClient } from 'pg';
+import pg from 'pg';
 
 config(); // Load environment variables from .env file
 
@@ -26,21 +27,24 @@ console.log(
 );
 console.log('REJECT SELF SIGNED: ', rejectSelfSigned);
 
-const pool = new Pool({
+const poolConfig = {
   host: host,
   port: parseInt(port),
   user: user,
   password: password,
   database: database,
-  max: 10, // Adjust the maximum number of connections in the pool as needed
-  idleTimeoutMillis: 0, // Connections will never be closed due to idleness
-  keepAlive: true, // Enable TCP keep-alive to prevent idle connections from being closed
-  keepAliveInitialDelayMillis: 1000, // Start sending keep-alive packets after 1 second of inactivity
-  ssl: rejectSelfSigned ? false : { rejectUnauthorized: rejectSelfSigned }, // Enable SSL and reject unauthorized connections if not secure
-});
+  max: 10,
+  idleTimeoutMillis: 0,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 1000,
+  ssl: rejectSelfSigned ? false : { rejectUnauthorized: rejectSelfSigned },
+};
 
-async function migrateDatabase(): Promise<void> {
-  const client: PoolClient = await pool.connect();
+// Create a Pool instance
+const pool = new pg.Pool(poolConfig);
+
+async function migrateDatabase() {
+  const client = await pool.connect();
 
   try {
     console.log(`Migrating ${process.env.NODE_ENV} database on port: ${port}`);
@@ -57,13 +61,14 @@ async function migrateDatabase(): Promise<void> {
     }
     throw error;
   } finally {
-    client.release();
+    await client.release();
+    await pool.end(); // Properly close the pool
   }
 }
 
 // Calling the migrateDatabase() function asyncronously
 // Allowing the Dockerfile.migrations container to finish the migrations before exiting
-(async (): Promise<void> => {
+(async () => {
   try {
     await migrateDatabase(); // Wait for the migration to complete
     process.exit(0); // Exit with success status code

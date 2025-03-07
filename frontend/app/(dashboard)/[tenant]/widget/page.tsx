@@ -20,13 +20,12 @@ async function getData(param: string): Promise<WidgetWithChildren> {
   return res.json();
 }
 
-export default async function DashboardPage({
-  params,
-  searchParams,
-}: {
-  params: { tenant: string };
-  searchParams: { id: string };
+export default async function DashboardPage(props: {
+  params: Promise<{ tenant: string }>;
+  searchParams: Promise<{ id: string }>;
 }): Promise<ReactElement> {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const widgetWithChildren = await getData(searchParams.id || '');
 
   const widget: WidgetWithContent = {

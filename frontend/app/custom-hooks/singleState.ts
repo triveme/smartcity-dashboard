@@ -20,6 +20,7 @@ const initialWizardState: CorporateInfo = {
   menuCornerFontColor: '#fff',
   menuFontColor: '#fff',
   menuHoverColor: '#3D4760',
+  menuHoverFontColor: '#fff',
   menuPrimaryColor: '#3D4760',
   menuSecondaryColor: '#1d2330',
   useColorTransitionHeader: false,
