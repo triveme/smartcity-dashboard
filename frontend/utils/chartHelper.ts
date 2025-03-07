@@ -12,14 +12,17 @@ export function getLabelName(text: string, index: number): string {
   return `Sensor ${index}`;
 }
 
-export function getUniqueAttributes(chartData: ChartData[]): string[] {
+export function getUniqueField(
+  chartData: ChartData[],
+  isName: boolean,
+): string[] {
   const uniqueAttributes: string[] = [];
   for (let i = 0; i < chartData.length; i++) {
     const tempName = chartData[i].name;
     if (tempName) {
       const splitName = tempName.split('|');
       if (splitName && splitName.length && splitName.length > 0) {
-        const attribute = splitName[1];
+        const attribute = splitName[isName ? 0 : 1];
         if (!uniqueAttributes.includes(attribute)) {
           uniqueAttributes.push(attribute);
         }

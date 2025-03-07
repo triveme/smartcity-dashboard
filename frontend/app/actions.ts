@@ -9,7 +9,7 @@ export async function getCorporateInfosWithLogos(
 ): Promise<CorporateInfo> {
   try {
     let ciColors = DEFAULT_CI;
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     // Check the theme preference from the cookie, default to using light
     const isLightThemeCookie = cookieStore.get('isLightTheme');

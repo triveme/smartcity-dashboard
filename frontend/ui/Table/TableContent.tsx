@@ -3,7 +3,7 @@ import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
 import { env } from 'next-runtime-env';
 
-import { GenericTableContentItem, TableConfig } from '@/types';
+import { GenericTableContentItem, TableColumn } from '@/types';
 import VisibilityDisplay from '@/ui/VisibilityDisplay';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { deleteGenericItemById } from '@/utils/apiHelper';
@@ -18,7 +18,7 @@ type GenericTableContentItemWithId<T> = GenericTableContentItem<T> & {
 
 type TableContentProps<T> = {
   content: GenericTableContentItemWithId<T>[];
-  config: TableConfig<T>;
+  columns: Array<TableColumn<T>>;
   contentType: string;
   refetchData: () => void;
   borderColor: string;
@@ -32,7 +32,7 @@ export default function TableContent<T>(
 ): ReactElement {
   const {
     content,
-    config,
+    columns,
     contentType,
     refetchData,
     borderColor,
@@ -95,6 +95,7 @@ export default function TableContent<T>(
           auth.user?.access_token,
           selectedItemId,
           contentType,
+          tenant,
         );
         refetchData();
         openSnackbar('Element erfolgreich gelöscht!', 'success');
@@ -162,9 +163,12 @@ export default function TableContent<T>(
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              {config.columns.map((column) => (
-                <td key={`${column.toString()}-${index}`} className="px-6 py-5">
-                  {renderCell(item, column)}
+              {columns.map((column) => (
+                <td
+                  key={`${column.name.toString()}-${index}`}
+                  className="px-6 py-5"
+                >
+                  {renderCell(item, column.name)}
                 </td>
               ))}
               <td>

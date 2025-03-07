@@ -9,6 +9,7 @@ export type SidebarItemStyle = {
   menuPrimaryColor: string;
   menuSecondaryColor: string;
   menuHoverColor: string;
+  menuHoverFontColor: string;
   menuActiveColor: string;
   menuActiveFontColor: string;
   menuFontColor: string;
@@ -48,9 +49,12 @@ export default function SidebarItem(props: SidebarItemProps): ReactElement {
   };
 
   const getFontColor = (): string => {
-    return isActiveElement()
-      ? componentStyle.menuActiveFontColor
-      : componentStyle.menuFontColor;
+    if (isActiveElement()) {
+      return componentStyle.menuActiveFontColor;
+    } else if (isHovered) {
+      return componentStyle.menuHoverFontColor;
+    }
+    return componentStyle.menuFontColor;
   };
 
   const menuStyle = {

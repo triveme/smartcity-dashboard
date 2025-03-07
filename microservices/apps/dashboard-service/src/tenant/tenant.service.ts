@@ -265,7 +265,7 @@ export class TenantService {
 
     if (!tenantByAbbreviation) {
       throw new HttpException(
-        'No tenant found with given abbreviation.',
+        `No tenant found with given abbreviation ${abbreviation}.`,
         HttpStatus.NOT_FOUND,
       );
     }

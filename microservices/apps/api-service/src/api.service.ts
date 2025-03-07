@@ -114,7 +114,7 @@ export class ApiService {
     data,
     timeframe: Timeframe,
     aggregationMode: AggregationMode,
-    properties: string[],
+    attributes: string[],
   ): object[] {
     let aggregatedData: object[] = [];
 
@@ -125,7 +125,7 @@ export class ApiService {
         aggregatedData = this.aggregateDay(
           sensorDataMap,
           aggregationMode,
-          properties,
+          attributes,
         );
         break;
 
@@ -134,7 +134,7 @@ export class ApiService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             7,
-            properties,
+            attributes,
             aggregationMode,
           );
           aggregatedData = [...aggregatedData, ...aggregatedValues];
@@ -146,7 +146,7 @@ export class ApiService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             30,
-            properties,
+            attributes,
             aggregationMode,
           );
           aggregatedData = [...aggregatedData, ...aggregatedValues];
@@ -158,7 +158,7 @@ export class ApiService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             90,
-            properties,
+            attributes,
             aggregationMode,
           );
           aggregatedData = [...aggregatedData, ...aggregatedValues];
@@ -170,7 +170,7 @@ export class ApiService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             365,
-            properties,
+            attributes,
             aggregationMode,
           );
           aggregatedData = [...aggregatedData, ...aggregatedValues];
@@ -178,7 +178,7 @@ export class ApiService {
         break;
 
       case 'live':
-        return data;
+        return this.filterByAttribute(attributes, data);
 
       default:
         this.logger.warn(`Invalid timeframe supplied: ${timeframe}`);
@@ -186,6 +186,18 @@ export class ApiService {
     }
 
     return aggregatedData;
+  }
+
+  private filterByAttribute(attributes: string[], data: object[]): object[] {
+    return data.map((item) => {
+      const reducedItem = {};
+      for (const attribute of attributes) {
+        if (item.hasOwnProperty(attribute)) {
+          reducedItem[attribute] = item[attribute];
+        }
+      }
+      return reducedItem;
+    });
   }
 
   private aggregateDay(

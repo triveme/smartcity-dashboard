@@ -8,11 +8,10 @@ import {
 } from '@/app/actions';
 import { CorporateInfo } from '@/types';
 
-export default async function Page({
-  params,
-}: {
-  params: { tenant: string };
+export default async function Page(props: {
+  params: Promise<{ tenant: string }>;
 }): Promise<ReactElement> {
+  const params = await props.params;
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(
     params.tenant,
   );

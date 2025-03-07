@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { TabService } from './tab.service';
 import { NewTab, Tab } from '@app/postgres-db/schemas/dashboard.tab.schema';
@@ -36,6 +37,15 @@ export class TabController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<Tab[]> {
     return this.service.getTabsByWidgetId(id);
+  }
+
+  @Public()
+  @Get('component/:componentType')
+  async getByComponentType(
+    @Param('componentType') componentType: string,
+    @Query('tenant') tenant: string,
+  ): Promise<Tab[]> {
+    return this.service.getByComponentType(componentType, tenant);
   }
 
   @Public()

@@ -31,8 +31,6 @@ export default function ImageComponent(props: ImageProps): ReactElement {
     }
   };
 
-  console.log('imageBase64', imageBase64);
-  console.log('imageUrl', imageUrl);
   const ImageElement = imageBase64 ? (
     <div className="relative w-full h-full">
       <Image

@@ -1,3 +1,5 @@
+import { JSX } from 'react';
+
 import { getMenuGroupingElementByUrl } from '@/api/menu-service';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import DashboardSidebar from '@/components/DashboardSidebar';
@@ -7,13 +9,14 @@ import { CorporateInfo } from '@/types';
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
 
-export default async function RootLayout({
-  children,
-  params,
-}: {
+export default async function RootLayout(props: {
   children: React.ReactNode;
-  params: { tenant: string; url: string[] };
+  params: Promise<{ tenant: string; url: string[] }>;
 }): Promise<JSX.Element> {
+  const params = await props.params;
+
+  const { children } = props;
+
   const NEXT_PUBLIC_MULTI_TENANCY = process.env.NEXT_PUBLIC_MULTI_TENANCY;
   const tenant =
     NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;

@@ -122,6 +122,7 @@ export const corporateInfos = pgTable('corporate_info', {
   menuCornerFontColor: text('menu_corner_font_color'),
   menuFontColor: text('menu_font_color'),
   menuHoverColor: text('menu_hover_color'),
+  menuHoverFontColor: text('menu_hover_font_color'),
   menuLogoId: uuid('menu_logo_id').references(() => logos.id),
   menuPrimaryColor: text('menu_primary_color'),
   menuSecondaryColor: text('menu_secondary_color'),

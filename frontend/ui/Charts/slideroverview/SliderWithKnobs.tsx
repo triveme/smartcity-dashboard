@@ -63,7 +63,7 @@ export function SliderWithKnobs(props: SliderWithKnobsProps): ReactElement {
           <div
             className="rounded h-full flex items-center justify-center"
             style={{
-              width: `${(1 - currentValue / maximumValue) * 100}%`,
+              width: `${(currentValue / maximumValue) * 100}%`,
               transition: '1s ease',
               backgroundColor: colorCurrent,
               color: fontColorCurrent,
@@ -88,7 +88,7 @@ export function SliderWithKnobs(props: SliderWithKnobsProps): ReactElement {
           <div
             className="w-8 h-8 rounded-full flex justify-center items-center text-sm shadow-md absolute"
             style={{
-              left: `${(1 - currentValue / maximumValue) * 100}%`,
+              left: `${(currentValue / maximumValue) * 100}%`,
               marginLeft: '-1rem',
               marginTop: '-1rem',
               transition: '1s ease',
@@ -97,7 +97,7 @@ export function SliderWithKnobs(props: SliderWithKnobsProps): ReactElement {
               fontSize: '12px',
             }}
           >
-            <span>{maximumValue - currentValue}</span>
+            <span>{currentValue}</span>
           </div>
         </div>
       </div>

@@ -24,7 +24,7 @@ export default async function DashboardPanel(
   const customStyle = `${getColumnSpanSettings(panel.width)}`;
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
 
   const showPanelHeader = (): boolean => {
@@ -40,7 +40,6 @@ export default async function DashboardPanel(
     height: 'auto',
     backgroundColor: ciColors.panelPrimaryColor ?? '#3D4760',
     fontSize: '1.5rem',
-    padding: '1.5rem',
     borderRadius: ciColors.panelBorderRadius,
     borderWidth: ciColors.panelBorderSize,
     borderColor: ciColors.panelBorderColor,
@@ -49,28 +48,26 @@ export default async function DashboardPanel(
 
   return (
     <div
-      className={`flex flex-col justify-between text-lg p-6 rounded-lg ${customStyle}`}
+      className={`flex flex-col text-lg p-4 rounded-lg ${customStyle}`}
       style={panelStyle}
     >
       {showPanelHeader() && (
-        <div className="flex flex-row items-center justify-between pb-2">
-          <div className="flex flex-row items-center gap-x-4">
-            {panel.icon && (
+        <div className="flex flex-row items-center justify-between content-between gap-x-4 pb-2">
+          <div className="flex flex-row items-center">
+            <div className="w-12 min-w-12 flex justify-center">
               <DashboardIcons
-                iconName={panel.icon}
+                iconName={panel.icon || 'empty'}
                 color={panel.headlineColor || 'white'}
                 size="lg"
               />
-            )}
+            </div>
             <div className="w-full flex justify-start items-center gap-x-2">
-              <div>
-                <PageHeadline
-                  headline={panel.name}
-                  fontColor={panel.headlineColor}
-                  fontSize={ciColors.panelHeadlineFontSize}
-                  isHeadlineBold={ciColors.isPanelHeadlineBold}
-                />
-              </div>
+              <PageHeadline
+                headline={panel.name}
+                fontColor={panel.headlineColor}
+                fontSize={ciColors.panelHeadlineFontSize}
+                isHeadlineBold={ciColors.isPanelHeadlineBold}
+              />
               {isEditable ? (
                 <RedirectPageButton
                   url={`/${tenant}/admin/pages/edit?id=${dashboardId}`}

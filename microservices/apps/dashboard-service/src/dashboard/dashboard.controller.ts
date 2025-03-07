@@ -18,6 +18,7 @@ import {
 import { AuthenticatedRequest } from '@app/auth-helper';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { DashboardDataService } from './dashboard.data.service';
+import { PaginatedResult } from '../widget/widget.model';
 
 @Controller('dashboards')
 export class DashboardController {
@@ -37,6 +38,25 @@ export class DashboardController {
       return this.service.getDashboardsWithContent(roles);
     }
     return this.service.getAll(roles);
+  }
+
+  @Public()
+  @Get('/search')
+  async getBySearchParam(
+    @Query('search') searchParam: string = '',
+    @Req() request: AuthenticatedRequest,
+    @Query('abbreviation') tenantAbbreviation: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<PaginatedResult<Dashboard>> {
+    const roles = request.roles ?? [];
+    return this.service.getBySearchParam(
+      searchParam,
+      roles,
+      tenantAbbreviation,
+      page,
+      limit,
+    );
   }
 
   @Public()
@@ -63,16 +83,7 @@ export class DashboardController {
     @Query('abbreviation') abbreviation: string,
   ): Promise<Dashboard | DashboardWithContent> {
     const roles = request.roles ?? [];
-    const dashboard = await this.service.getByUrlAndTenant(
-      url,
-      roles,
-      abbreviation,
-    );
-    return this.service.getDashboardWithContent(
-      dashboard.id,
-      roles,
-      abbreviation,
-    );
+    return await this.service.getByUrlAndTenant(url, roles, abbreviation);
   }
 
   @Public()
@@ -124,7 +135,6 @@ export class DashboardController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<DashboardWithContent> {
-    console.log('getDashboardWithWidgets');
     const roles = request.roles ?? [];
     return this.service.getDashboardWithWidgets(id, roles);
   }
@@ -168,9 +178,9 @@ export class DashboardController {
   async delete(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() request: AuthenticatedRequest,
+    @Query('tenant') tenant: string,
   ): Promise<Dashboard> {
     const roles = request.roles ?? [];
-    const tenant = request.tenant ?? undefined;
     return this.service.delete(id, roles, tenant);
   }
 

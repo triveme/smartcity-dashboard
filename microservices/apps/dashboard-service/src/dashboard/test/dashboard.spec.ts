@@ -405,6 +405,8 @@ describe('DashboardServiceControllers (e2e)', () => {
     // delete
     it('/dashboards/:id (DELETE)', async () => {
       const dashboard = await createDashboardByObject(db, getDashboard());
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
         db,
@@ -414,7 +416,9 @@ describe('DashboardServiceControllers (e2e)', () => {
       await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
-        .delete('/dashboards/' + dashboard.id)
+        .delete(
+          '/dashboards/' + dashboard.id + '?tenant=' + tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`)
         .expect(200);
     });
@@ -422,6 +426,8 @@ describe('DashboardServiceControllers (e2e)', () => {
     // delete
     it('/dashboards/:id (DELETE) with not existing panel', async () => {
       const dashboard = await createDashboardByObject(db, getDashboard());
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
       const panel = await createPanelByObject(db, getPanel(dashboard.id));
       const widget = await createWidgetByObject(
         db,
@@ -431,7 +437,9 @@ describe('DashboardServiceControllers (e2e)', () => {
       await createTab(db, await getTab(db, widget.id));
 
       await request(app.getHttpServer())
-        .delete('/dashboards/' + dashboard.id)
+        .delete(
+          '/dashboards/' + dashboard.id + '?tenant=' + tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`)
         .expect(200);
     });
@@ -448,13 +456,17 @@ describe('DashboardServiceControllers (e2e)', () => {
         db,
         getDashboard('http://localhost'),
       );
+      const tenant = await createTenantByObject(db, getTenant());
+      await createDashboardToTenant(db, dashboard.id, tenant.id);
       const groupingElement = await createGroupingElementByObject(
         db,
         getGroupingElement(true),
       );
 
       await request(app.getHttpServer())
-        .delete('/dashboards/' + dashboard.id)
+        .delete(
+          '/dashboards/' + dashboard.id + '?tenant=' + tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`)
         .expect(200);
 
@@ -477,7 +489,9 @@ describe('DashboardServiceControllers (e2e)', () => {
       await createDashboardToTenant(db, dashboard.id, tenant.id);
 
       await request(app.getHttpServer())
-        .delete('/dashboards/' + dashboard.id)
+        .delete(
+          '/dashboards/' + dashboard.id + '?tenant=' + tenant.abbreviation,
+        )
         .set('Authorization', `Bearer ${JWTToken}`)
         .expect(200);
 

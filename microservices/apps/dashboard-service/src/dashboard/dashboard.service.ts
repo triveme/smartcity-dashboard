@@ -19,10 +19,7 @@ import { Tab } from '@app/postgres-db/schemas/dashboard.tab.schema';
 import { Panel } from '@app/postgres-db/schemas/dashboard.panel.schema';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
-import {
-  checkAuthorizationToRead,
-  checkAuthorizationToWrite,
-} from '@app/auth-helper/right-management/right-management.service';
+import { checkAuthorizationToWrite } from '@app/auth-helper/right-management/right-management.service';
 import { Tenant } from '@app/postgres-db/schemas/tenant.schema';
 import { DashboardToTenant } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
 import { GroupingElementService } from '../grouping-element/grouping-element.service';
@@ -32,11 +29,12 @@ import { AuthHelperUtility } from '@app/auth-helper';
 import { DashboardToTenantService } from '../dashboard-to-tenant/dashboard-to-tenant.service';
 import { PopulateService } from './populate/populate.service';
 import { RoleUtil } from '../../../infopin-service/src/utility/RoleUtil';
-import { DashboardRepo } from './dashboard.repo';
+import { DashboardRepo, FlatDashboardData } from './dashboard.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { NewWidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { WidgetService } from '../widget/widget.service';
+import { PaginatedResult } from '../widget/widget.model';
 
 export type ChartData = {
   name: string;
@@ -110,10 +108,15 @@ export class DashboardService {
     tenantFromRequest: string,
     includeData: boolean = true,
   ): Promise<DashboardWithContent> {
-    const flatDashboardData =
-      await this.dashboardRepo.getDashboardWithContent(id);
+    const tenantFromDashboard =
+      await this.tenantService.getTenantByAbbreviation(tenantFromRequest);
 
-    // Check if flatDashboardData is not empty
+    const flatDashboardData = await this.dashboardRepo.getDashboardWithContent(
+      id,
+      tenantFromDashboard.id,
+      rolesFromRequest,
+    );
+
     if (flatDashboardData.length > 0) {
       const dashboardWithContentArr =
         await this.populateService.reduceRowsToDashboardsWithContent(
@@ -122,42 +125,6 @@ export class DashboardService {
         );
       const dashboardWithContent =
         dashboardWithContentArr.length > 0 ? dashboardWithContentArr[0] : null;
-
-      if (dashboardWithContent.visibility !== 'public') {
-        const dashboardWithTenant =
-          await this.dashboardToTenantService.getDashboardToTenantRelationshipByDashboardId(
-            dashboardWithContent.id,
-          );
-        const tenantFromDashboard = await this.tenantService.getById(
-          dashboardWithTenant.tenantId,
-        );
-        if (tenantFromDashboard.abbreviation !== tenantFromRequest) {
-          throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
-        }
-      }
-
-      // Order the widgets
-      if (dashboardWithContent) {
-        checkAuthorizationToWrite(dashboardWithContent, rolesFromRequest);
-        checkAuthorizationToRead(dashboardWithContent, rolesFromRequest);
-
-        await this.populateService.sortWidgets(dashboardWithContent);
-      }
-
-      // If user is unauthenticated, exclude role properties from returned dashboard
-      if (rolesFromRequest.length === 0 && dashboardWithContent) {
-        // Hide dashboard roles
-        delete dashboardWithContent.readRoles;
-        delete dashboardWithContent.writeRoles;
-
-        // Hide widget roles
-        dashboardWithContent.panels.forEach((panel) => {
-          panel.widgets.forEach((widget) => {
-            delete widget.readRoles;
-            delete widget.writeRoles;
-          });
-        });
-      }
 
       return dashboardWithContent;
     } else {
@@ -185,74 +152,68 @@ export class DashboardService {
     }
   }
 
+  async getBySearchParam(
+    searchParam: string,
+    roles: string[],
+    tenantAbbreviation: string,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResult<Dashboard>> {
+    const tenant =
+      await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
+
+    return await this.dashboardRepo.searchDashboards(
+      roles,
+      searchParam,
+      page,
+      limit,
+      tenant.id,
+    );
+  }
+
   async getById(id: string, rolesFromRequest: string[]): Promise<Dashboard> {
-    const dashboard: Dashboard = await this.dashboardRepo.getById(id);
+    const dashboard: Dashboard = await this.dashboardRepo.getById(
+      id,
+      rolesFromRequest,
+    );
 
     if (!dashboard) {
       throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
-    } else {
-      checkAuthorizationToRead(dashboard, rolesFromRequest);
-      checkAuthorizationToWrite(dashboard, rolesFromRequest);
-
-      if (rolesFromRequest.length === 0) {
-        delete dashboard.readRoles;
-        delete dashboard.writeRoles;
-      }
-
-      return dashboard;
     }
+    return dashboard;
   }
 
   async getByUrlAndTenant(
     url: string,
     rolesFromRequest: string[],
     tenantAbbreviation: string,
-  ): Promise<Dashboard> {
-    // Fetch dashboards by URL
-    const dashboardsByUrl: Dashboard[] = await this.dashboardRepo.getByUrl(url);
-
-    // Check if any dashboards were found
-    if (dashboardsByUrl.length === 0) {
-      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
-    }
-
-    // Retrieve tenant by abbreviation
+  ): Promise<DashboardWithContent> {
     const tenant =
       await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
+
+    // Retrieve tenant by abbreviation
     if (!tenant) {
       throw new HttpException('Tenant Not Found', HttpStatus.NOT_FOUND);
     }
 
-    // Filter dashboards by tenant
-    const dashboardToTenantRelations =
-      await this.dashboardToTenantService.getDashboardToTenantRelationshipsByTenantId(
+    const dashboardsByUrl: FlatDashboardData[] =
+      await this.dashboardRepo.getByUrlAndTenant(
+        url,
         tenant.id,
+        rolesFromRequest,
       );
 
-    const dashboard = dashboardsByUrl.find((dashboard) =>
-      dashboardToTenantRelations.some(
-        (relation) => relation.dashboardId === dashboard.id,
-      ),
-    );
+    if (dashboardsByUrl.length === 0) {
+      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+    }
 
-    if (!dashboard) {
-      throw new HttpException(
-        'Dashboard Not Found for the given Tenant',
-        HttpStatus.NOT_FOUND,
+    const dashboardWithContent =
+      await this.populateService.reduceRowsToDashboardsWithContent(
+        dashboardsByUrl,
+        true,
       );
-    }
 
-    // Authorization checks
-    checkAuthorizationToRead(dashboard, rolesFromRequest);
-    checkAuthorizationToWrite(dashboard, rolesFromRequest);
-
-    // Exclude role properties for unauthenticated users
-    if (rolesFromRequest.length === 0) {
-      delete dashboard.readRoles;
-      delete dashboard.writeRoles;
-    }
-
-    return dashboard;
+    return dashboardWithContent[0];
   }
 
   async getDashboardsByTenantAbbreviation(
@@ -332,13 +293,14 @@ export class DashboardService {
     id: string,
     rolesFromRequest: string[],
   ): Promise<DashboardWithContent> {
-    const dashboard: Dashboard = await this.dashboardRepo.getById(id);
+    const dashboard: Dashboard = await this.dashboardRepo.getById(
+      id,
+      rolesFromRequest,
+    );
 
     if (!dashboard) {
       throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
     }
-
-    checkAuthorizationToRead(dashboard, rolesFromRequest);
 
     const panels: Panel[] = await this.panelRepo.getPanelsByDashboardId(
       dashboard.id,
@@ -367,20 +329,6 @@ export class DashboardService {
       ...dashboard,
       panels: panelsWithWidgets, // Panels with associated widgets
     };
-
-    if (rolesFromRequest.length === 0) {
-      // Hide dashboard roles
-      delete dashboardWithWidgets.readRoles;
-      delete dashboardWithWidgets.writeRoles;
-
-      // Hide widget roles
-      dashboardWithWidgets.panels.forEach((panel) => {
-        panel.widgets.forEach((widget) => {
-          delete widget.readRoles;
-          delete widget.writeRoles;
-        });
-      });
-    }
 
     return dashboardWithWidgets;
   }
@@ -532,7 +480,10 @@ export class DashboardService {
   ): Promise<Dashboard> {
     // Check if the URL is being updated to an already existing URL
     if (values.url) {
-      const dbDashboard = await this.dashboardRepo.getById(id);
+      const dbDashboard = await this.dashboardRepo.getById(
+        id,
+        rolesFromRequest,
+      );
 
       if (!dbDashboard) throw new NotFoundException("Dashboard wasn't found");
 

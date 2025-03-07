@@ -15,7 +15,7 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 
 const tableConfig: TableConfig<AuthData> = {
-  columns: ['name'],
+  columns: [{ name: 'name', displayName: 'Name' }],
   viewsPerPage: 10,
   maxPages: 1,
 };

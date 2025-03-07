@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import WizardLabel from '@/ui/WizardLabel';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -7,8 +7,6 @@ import FontFamilyDropdown from '@/ui/FontFamilyDropdown';
 type Props = {
   headerFontColor: string;
   setHeaderFontColor: (color: string) => void;
-  menuFontColor: string;
-  setMenuFontColor: (color: string) => void;
   dashboardFontColor: string;
   setDashboardFontColor: (color: string) => void;
   panelFontColor: string;
@@ -26,8 +24,6 @@ type Props = {
 export default function FontCiWizard({
   headerFontColor,
   setHeaderFontColor,
-  menuFontColor,
-  setMenuFontColor,
   dashboardFontColor,
   setDashboardFontColor,
   panelFontColor,
@@ -50,13 +46,6 @@ export default function FontCiWizard({
             currentColor={headerFontColor}
             handleColorChange={setHeaderFontColor}
             label="Schriftfarbe der Kopfzeile"
-          />
-        </div>
-        <div className="w-1/2">
-          <ColorPickerComponent
-            currentColor={menuFontColor}
-            handleColorChange={setMenuFontColor}
-            label="Schriftfarbe des Menüs"
           />
         </div>
       </div>

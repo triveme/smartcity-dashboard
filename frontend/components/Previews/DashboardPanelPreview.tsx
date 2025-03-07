@@ -7,7 +7,6 @@ import { useAuth } from 'react-oidc-context';
 import { Panel, Widget, WidgetToPanel } from '@/types';
 import PageHeadline from '@/ui/PageHeadline';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
-import DashboardWidgetPreview from './DashboardWidgetPreview';
 import { getWidgetsByPanelId } from '@/api/widget-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import {
@@ -18,6 +17,7 @@ import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementBut
 import WidgetSelectorModal from '../WidgetSelectorModal';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import DashboardWidgetWizardPreview from './DashboardWidgetWizardPreview';
 
 type DashboardPanelPreviewProps = {
   panel: Panel;
@@ -245,7 +245,7 @@ export default function DashboardPanelPreview(
           {widgets &&
             widgets.length > 0 &&
             widgets.map((widget: Widget, index: number) => (
-              <DashboardWidgetPreview
+              <DashboardWidgetWizardPreview
                 key={`widget-preview-${widget.id!}`}
                 index={index}
                 widget={widget}

@@ -170,38 +170,5 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/tenants' + tenant.id)
         .expect(404);
     });
-
-    // delete
-    // it('/tenants/:id (DELETE) with corporate infos and logos', async () => {
-    //   const tenant = await createTenantByObject(db, getTenant());
-
-    //   const corporateInfo1 = getCorporateInfoWithLogos();
-    //   corporateInfo1.tenantId = tenant.abbreviation;
-    //   const corporateInfo2 = getCorporateInfoWithLogos();
-    //   corporateInfo2.tenantId = tenant.abbreviation;
-
-    //   await createCorporateInfoByObject(db, corporateInfo1);
-    //   await createCorporateInfoByObject(db, corporateInfo2);
-
-    //   const logoObject = getLogo();
-    //   logoObject.tenantId = tenant.abbreviation;
-
-    //   await createLogoByObject(db, logoObject);
-
-    //   await request(app.getHttpServer())
-    //     .delete('/tenants/' + tenant.id)
-    //     .expect(200);
-
-    //   await request(app.getHttpServer())
-    //     .get('/tenants' + tenant.id)
-    //     .expect(404);
-
-    //   const corporateInfosByTenant =
-    //     await getCorporateInfosByTenantAbbreviation(db, tenant.abbreviation);
-    //   expect(corporateInfosByTenant).toHaveLength(0);
-
-    //   const logoByTenant = await getLogosByTenant(db, tenant.abbreviation);
-    //   expect(logoByTenant).toHaveLength(0);
-    // });
   });
 });

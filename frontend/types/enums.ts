@@ -132,8 +132,8 @@ export enum menuArrowDirectionEnum {
 }
 
 export enum combinedComponentLayoutEnum {
-  Vertical = 'Untereinander',
-  Horizontal = 'Nebeneinander',
+  Vertical = 'Nebeneinander',
+  Horizontal = 'Untereinander',
 }
 
 export enum themeEnum {

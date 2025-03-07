@@ -1,8 +1,9 @@
 import { ReactElement } from 'react';
 import DashboardIcons from '../Icons/DashboardIcon';
+import { TableColumn } from '@/types';
 
 type TableHeadProps<T> = {
-  columns: Array<T>;
+  columns: Array<TableColumn<T>>;
   onColumnClick?: (columnName: string) => void;
   sortColumn: string | null;
   sortDirection: 'asc' | 'desc';
@@ -27,16 +28,16 @@ export default function TableHead<T>(props: TableHeadProps<T>): ReactElement {
       <tr>
         {columns.map((column, index) => (
           <th
-            key={`TableHead-${column}-${index}`}
+            key={`TableHead-${column.name.toString()}-${index}`}
             scope="col"
             className="px-6 py-3 cursor-pointer"
-            onClick={(): void => onColumnClick?.(column as string)}
+            onClick={(): void => onColumnClick?.(column.name as string)}
           >
             <div className="inline-flex items-center">
-              {column as string}
+              {column.displayName}
               <div
                 className={`ml-1 ${
-                  sortColumn === column ? 'visible' : 'invisible'
+                  sortColumn === column.name ? 'visible' : 'invisible'
                 }`}
               >
                 {sortDirection === 'asc' ? (

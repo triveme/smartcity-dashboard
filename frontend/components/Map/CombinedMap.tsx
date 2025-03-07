@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import React, { useEffect, useState, useRef, CSSProperties } from 'react';
+import React, { useEffect, useState, useRef, CSSProperties, JSX } from 'react';
 import {
   MapContainer,
   TileLayer,
@@ -247,6 +247,34 @@ export default function CombinedMap(props: MapProps): JSX.Element {
     });
   };
 
+  const findValidWmsConfig = (): { url: string; layer: string } | null => {
+    if (
+      !mapWmsUrl ||
+      !mapWmsLayer ||
+      mapWmsUrl.length === 0 ||
+      mapWmsLayer.length === 0
+    ) {
+      return null;
+    }
+
+    // Find the first valid pair of URL and layer
+    for (let i = 0; i < mapWmsUrl.length; i++) {
+      if (
+        mapWmsUrl[i] &&
+        mapWmsLayer[i] &&
+        mapWmsUrl[i] !== '' &&
+        mapWmsLayer[i] !== ''
+      ) {
+        return {
+          url: mapWmsUrl[i],
+          layer: mapWmsLayer[i],
+        };
+      }
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     if (initialLoad) {
       setInitialLoad(false); // After the first load, set this to false to prevent refitting bounds on updates
@@ -485,27 +513,22 @@ export default function CombinedMap(props: MapProps): JSX.Element {
           doubleClickZoom={mapAllowZoom}
           dragging={mapAllowScroll}
         >
-          {/* Temporary solution to show WMS layer */}
-          {/* TODO: implement multiple WMS layers */}
-          {mapWmsUrl &&
-          mapWmsUrl.length > 0 &&
-          mapWmsUrl[0] !== '' &&
-          mapWmsLayer &&
-          mapWmsLayer.length > 0 &&
-          mapWmsLayer[0] !== '' ? (
-            <WMSTileLayer
-              url={mapWmsUrl[0] || ''}
-              layers={mapWmsLayer[0]} // Define the specific layer name
-              // format="image/png" // You can use other formats like 'image/jpeg'
-              transparent={true} // If you need transparency
-              version="1.3.0" // Ensure WMS version is set
-            />
-          ) : (
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
-              url={mapboxUrl}
-            />
-          )}
+          {((): JSX.Element => {
+            const wmsConfig = findValidWmsConfig();
+            return wmsConfig ? (
+              <WMSTileLayer
+                url={wmsConfig.url}
+                layers={wmsConfig.layer}
+                transparent={true}
+                version="1.3.0"
+              />
+            ) : (
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
+                url={mapboxUrl}
+              />
+            );
+          })()}
           <ZoomHandler onZoomChange={setMapZoom} />
           <MarkerClusterGroup
             iconCreateFunction={createClusterCustomIcon}

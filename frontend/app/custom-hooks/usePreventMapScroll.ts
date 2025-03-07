@@ -1,6 +1,6 @@
 import { useEffect, useRef, RefObject } from 'react';
 
-export function usePreventMapScroll(): RefObject<HTMLDivElement> {
+export function usePreventMapScroll(): RefObject<HTMLDivElement | null> {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -12,7 +12,7 @@ import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
-  ssr: false,
+  // ssr: false,
 });
 
 type DashboardPreviewProps = {

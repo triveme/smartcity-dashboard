@@ -37,7 +37,7 @@ export default function Table<T>(props: TableProps<T>): ReactElement {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(
-    tableConfig.columns[0] as string,
+    tableConfig.columns[0].name as string,
   );
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -107,7 +107,7 @@ export default function Table<T>(props: TableProps<T>): ReactElement {
         />
         <TableContent
           content={currentItems}
-          config={tableConfig}
+          columns={tableConfig.columns}
           contentType={contentType}
           refetchData={refetchData}
           borderColor={borderColor}

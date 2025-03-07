@@ -13,7 +13,6 @@ import {
   getWidgets,
   getWidgetsByTenantAndTabComponentType,
 } from '@/api/widget-service';
-// import { getTabByWidgetId } from '@/api/tab-service';
 import SearchableDropdown from '@/ui/SearchableDropdown';
 import {
   Panel,

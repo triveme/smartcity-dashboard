@@ -4,7 +4,7 @@ import { ReactElement, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import DashboardIcons from '../Icons/DashboardIcon';
 import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/api/corporateInfo-service';
+import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { downloadCSV } from '@/utils/downloadHelper';

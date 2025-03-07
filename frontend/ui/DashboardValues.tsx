@@ -38,6 +38,8 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
 
   let formattedValue;
 
+  console.log('VALUE: ', value);
+
   if (typeof value === 'number') {
     if (!isNaN(decimalPlaces)) {
       formattedValue = applyUserLocaleToNumber(
@@ -50,7 +52,11 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
         navigator.language || 'de-DE',
       );
     }
-  } else if (isValidDate(value)) {
+  } else if (
+    typeof value === 'string' &&
+    value.includes('-') &&
+    isValidDate(value)
+  ) {
     const date = new Date(value);
     formattedValue =
       date.getMonth() === 0 &&

@@ -5,10 +5,10 @@ import { ECharts, EChartsOption } from 'echarts';
 import { ChartData } from '@/types';
 import {
   formatYAxisLabel,
-  getUniqueAttributes,
   calculateYAxisNameGap,
   calculateLeftGrid,
   calculateBottomGrid,
+  getUniqueField,
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
@@ -73,7 +73,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
 
-  const attributes = getUniqueAttributes(data);
+  const attributes = getUniqueField(data, false);
+  const sensorNames = getUniqueField(data, true);
 
   const initializeChart = (): void => {
     if (chartRef.current) {
@@ -95,7 +96,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             type: 'line',
             symbolSize: 6,
             step: isStepline ? 'start' : undefined,
-            name: filteredData[i].name,
+            name: sensorNames[i],
             color: currentValuesColors[i % 10] || 'black',
           };
           series.push(tempSeries);
@@ -115,6 +116,9 @@ export default function LineChart(props: LineChartProps): ReactElement {
               lineStyle: {
                 color: staticValuesColors[index],
                 type: 'solid',
+              },
+              tooltip: {
+                show: false,
               },
             }))
           : [];

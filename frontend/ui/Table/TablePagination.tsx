@@ -1,9 +1,11 @@
-import { ReactElement, useState } from 'react';
+import React, { ReactElement, useState } from 'react';
 
 import DropdownSelection from '../DropdownSelection';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 type TablePaginationProps = {
   currentPage: number;
@@ -100,7 +102,7 @@ export default function TablePagination(
               onMouseLeave={(): void => setIsPrevHovered(false)}
               style={prevButtonStyle}
             >
-              {'<'}
+              <FontAwesomeIcon icon={faArrowLeft} />
             </button>
           )}
           <div className="p-2">{currentPage}</div>
@@ -112,7 +114,7 @@ export default function TablePagination(
               onMouseLeave={(): void => setIsNextHovered(false)}
               style={nextButtonStyle}
             >
-              {'>'}
+              <FontAwesomeIcon icon={faArrowRight} />
             </button>
           )}
         </div>

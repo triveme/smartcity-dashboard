@@ -28,7 +28,7 @@ export default async function DashboardWidget({
   isCombinedWidget,
 }: DashboardWidgetProps): Promise<ReactElement> {
   const customStyle = `${getColumnSpanSettings(widget.width)}`;
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
@@ -83,18 +83,18 @@ export default async function DashboardWidget({
   return (
     <div className={`pb-4 w-full h-full ${customStyle}`}>
       <div
-        className={`w-full flex flex-row content-between justify-between items-center overflow-auto hide-scrollbar ${ciColors.isWidgetHeadlineBold ? 'font-bold' : ''}`}
+        className={`w-full flex flex-row gap-x-4 items-center overflow-auto hide-scrollbar ${ciColors.isWidgetHeadlineBold ? 'font-bold' : ''}`}
         style={{ color: widgetStyle.color }}
       >
         {widget.showName ? (
           <div style={{ color: widget.headlineColor }}>
-            <div className="flex flex-row gap-x-4 items-center">
-              {widget.icon && (
+            <div className="flex flex-row items-center">
+              <div className="w-12 min-w-12 flex justify-center">
                 <DashboardIcons
                   iconName={widget.icon}
                   color={widget.headlineColor}
                 />
-              )}
+              </div>
               <div className="w-full flex justify-start items-center gap-x-2">
                 <div
                   style={{
@@ -115,7 +115,10 @@ export default async function DashboardWidget({
               </div>
             </div>
             <div
-              style={{ fontSize: ciColors.widgetSubheadlineFontSize || '14px' }}
+              className="pl-12"
+              style={{
+                fontSize: ciColors.widgetSubheadlineFontSize || '14px',
+              }}
             >
               {widget.subheadline}
             </div>

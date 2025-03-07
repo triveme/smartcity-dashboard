@@ -24,3 +24,24 @@ export async function getTabByWidgetId(
     throw err;
   }
 }
+
+export async function getTabByComponentTypeByTenant(
+  accessToken: string | undefined,
+  tenant: string,
+  componentType: string,
+): Promise<Tab> {
+  try {
+    const response = await axios.get(
+      `${NEXT_PUBLIC_BACKEND_URL}/tabs/tenant/${tenant}?type=${componentType}`,
+      {
+        headers: accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : undefined,
+      },
+    );
+    return response.data[0] || {};
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}

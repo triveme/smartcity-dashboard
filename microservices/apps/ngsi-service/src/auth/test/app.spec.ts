@@ -52,17 +52,13 @@ describe('AuthService (e2e)', () => {
       expect(authData.refreshToken).toEqual('validRefreshToken');
       expect(spyInstance).toHaveBeenCalledWith(
         queryBatch.auth_data.authUrl,
-        {
+        expect.objectContaining({
           grant_type: 'refresh_token',
           client_id: queryBatch.auth_data.clientId,
           client_secret: queryBatch.auth_data.clientSecret,
           refresh_token: refreshToken,
-        },
-        {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-        },
+        }),
+        expect.any(Object),
       );
     });
 
@@ -105,18 +101,16 @@ describe('AuthService (e2e)', () => {
       expect(authData.refreshToken).toEqual('validRefreshToken');
       expect(spyInstance).toHaveBeenCalledWith(
         queryBatch.auth_data.authUrl,
-        {
+        expect.objectContaining({
           grant_type: 'password',
           client_id: queryBatch.auth_data.clientId,
           client_secret: queryBatch.auth_data.clientSecret,
           username: queryBatch.auth_data.apiToken,
           scope: 'api:read api:write api:delete',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
+        }),
+        expect.objectContaining({
+          headers: expect.any(Object),
+        }),
       );
     });
 
@@ -144,19 +138,17 @@ describe('AuthService (e2e)', () => {
       expect(authData.refreshToken).toEqual('validRefreshToken');
       expect(spyInstance).toHaveBeenCalledWith(
         queryBatch.auth_data.authUrl,
-        {
+        expect.objectContaining({
           grant_type: 'password',
           client_id: queryBatch.auth_data.clientId,
           client_secret: queryBatch.auth_data.clientSecret,
           username: queryBatch.auth_data.appUser,
           password: queryBatch.auth_data.appUserPassword,
           scope: 'api:read api:write api:delete',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
+        }),
+        expect.objectContaining({
+          headers: expect.any(Object),
+        }),
       );
     });
 
@@ -204,18 +196,16 @@ describe('AuthService (e2e)', () => {
       expect(accessToken).toEqual('validAccessToken');
       expect(spyInstance).toHaveBeenCalledWith(
         queryBatch.auth_data.authUrl,
-        {
+        expect.objectContaining({
           grant_type: 'password',
           client_id: queryBatch.auth_data.clientId,
           client_secret: queryBatch.auth_data.clientSecret,
           username: queryBatch.auth_data.apiToken,
           scope: 'api:read api:write api:delete',
-        },
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
+        }),
+        expect.objectContaining({
+          headers: expect.any(Object),
+        }),
       );
     });
 

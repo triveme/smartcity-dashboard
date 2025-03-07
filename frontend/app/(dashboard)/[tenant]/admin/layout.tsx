@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
+import { JSX } from 'react';
 
 import Header from '@/components/Header';
 import ManagementSidebar from '@/components/ManagementSidebar';
@@ -18,13 +19,14 @@ export const metadata: Metadata = {
   description: 'Create Customizable Dashboards',
 };
 
-export default async function RootLayout({
-  children,
-  params,
-}: {
+export default async function RootLayout(props: {
   children: React.ReactNode;
-  params: { tenant: string };
+  params: Promise<{ tenant: string }>;
 }): Promise<JSX.Element> {
+  const params = await props.params;
+
+  const { children } = props;
+
   const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
   const tenant =
     NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
@@ -36,6 +38,7 @@ export default async function RootLayout({
     menuPrimaryColor: ciColors.menuPrimaryColor,
     menuSecondaryColor: ciColors.menuSecondaryColor,
     menuHoverColor: ciColors.menuHoverColor,
+    menuHoverFontColor: ciColors.menuHoverFontColor,
     menuActiveColor: ciColors.menuActiveColor,
     menuActiveFontColor: ciColors.menuActiveFontColor,
     menuFontColor: ciColors.menuFontColor,

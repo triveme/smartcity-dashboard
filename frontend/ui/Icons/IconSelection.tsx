@@ -34,8 +34,6 @@ export default function IconSelection(props: IconSelectionProps): ReactElement {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  console.log('ICONCOLOR: ', iconColor);
-
   const toggleDropdown = (): void => {
     setIsOpen(!isOpen);
     if (!isOpen) {
