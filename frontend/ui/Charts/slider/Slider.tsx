@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import { ReactElement } from 'react';
 
@@ -112,7 +113,9 @@ export default function Slider(props: SliderProps): ReactElement {
           className="text-5xl"
           style={{
             color: bigValueFontColor,
-            fontSize: `${bigValueFontSize}px` || '48px',
+            fontSize: generateResponsiveFontSize(
+              parseInt(bigValueFontSize || '48', 10),
+            ),
           }}
         >
           {applyUserLocaleToNumber(
@@ -122,7 +125,12 @@ export default function Slider(props: SliderProps): ReactElement {
         </span>
         <span
           className="text-2xl ml-2"
-          style={{ color: bigValueFontColor, fontSize: `${unitFontSize}px` }}
+          style={{
+            color: bigValueFontColor,
+            fontSize: generateResponsiveFontSize(
+              parseInt(unitFontSize || '36', 10),
+            ),
+          }}
         >
           {unit}
         </span>
@@ -202,7 +210,9 @@ export default function Slider(props: SliderProps): ReactElement {
           className="text-2xl mt-6"
           style={{
             color: labelFontColor || '#FFFFF',
-            fontSize: `${labelFontSize}px` || '24px',
+            fontSize: generateResponsiveFontSize(
+              parseInt(labelFontSize || '24', 10),
+            ),
           }}
         >
           {displayedText}

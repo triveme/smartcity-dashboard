@@ -18,6 +18,7 @@ type LineChartProps = {
   data: ChartData[];
   xAxisLabel?: string;
   yAxisLabel?: string;
+  allowImageDownload: boolean;
   allowZoom?: boolean;
   isStepline?: boolean;
   showLegend?: boolean;
@@ -45,6 +46,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     data,
     xAxisLabel,
     yAxisLabel,
+    allowImageDownload,
     allowZoom,
     isStepline,
     showLegend,
@@ -203,6 +205,18 @@ export default function LineChart(props: LineChartProps): ReactElement {
                 ? 'auto'
                 : 'center',
           right: legendAlignment === 'Right' ? 'right' : 'auto',
+        },
+        toolbox: {
+          show: allowImageDownload,
+          feature: {
+            saveAsImage: {
+              title: 'Bild Downloaden',
+              iconStyle: {
+                color: axisLabelFontColor,
+                borderColor: axisLabelFontColor,
+              },
+            },
+          },
         },
         grid: {
           left: calculateLeftGrid(yAxisLabel || '', legendAlignment),

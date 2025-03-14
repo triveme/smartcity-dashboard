@@ -213,15 +213,17 @@ export default function StaticValuesFieldRange(
                 isNumeric={true}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
+                error={error}
               />
             </div>
             <div className="basis-1/6">
               {index === 0 && <WizardLabel label="Maximum" />}
               <WizardTextfield
                 value={value.max}
-                onChange={(newValue) =>
+                onChange={(newValue: string | number): void =>
                   handleChange(index, 'max', newValue as string)
                 }
+                isNumeric={true}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
                 error={error}

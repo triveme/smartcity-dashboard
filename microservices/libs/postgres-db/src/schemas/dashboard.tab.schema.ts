@@ -22,11 +22,13 @@ export const tabs = pgTable('tab', {
   id: uuid('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
+  chartAllowImageDownload: boolean('chart_allow_image_download'),
   chartHasAdditionalSelection: boolean('chart_has_additional_selection'),
   chartLabels: text('chart_labels').array(),
   chartLegendAlign: chartLegendPlacement('chart_legend_align'),
   chartMaximum: real('chart_maximum'),
   chartMinimum: real('chart_minimum'),
+  chartPieRadius: smallint('chart_pie_radius'),
   chartStaticValues: real('chart_static_values').array(),
   chartStaticValuesColors: text('chart_static_values_colors').array(),
   chartStaticValuesTicks: real('chart_static_values_ticks').array(),
@@ -80,7 +82,9 @@ export const tabs = pgTable('tab', {
   mapStandardZoom: smallint('map_standard_zoom'),
   mapWidgetValues: json('map_widget_values'),
   mapWmsUrl: text('map_wms_url'),
+  mapCombinedWmsUrl: text('map_combined_wms_url'),
   mapWmsLayer: text('map_wms_layer'),
+  mapCombinedWmsLayer: text('map_combined_wms_layer'),
   queryId: uuid('query_id').references(() => queries.id),
   rangeStaticValuesMin: real('range_static_values_min').array(),
   rangeStaticValuesMax: real('range_static_values_max').array(),

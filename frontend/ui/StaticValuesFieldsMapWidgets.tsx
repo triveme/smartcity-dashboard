@@ -385,7 +385,7 @@ export default function StaticValuesFieldMapWidgets(
                           >
                             <div className="w-1/4">
                               {staticValueIndex === 0 && (
-                                <WizardLabel label="Value" />
+                                <WizardLabel label="Wert" />
                               )}
                               <WizardTextfield
                                 value={staticValue}
