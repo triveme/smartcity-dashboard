@@ -11,6 +11,12 @@ export default function CheckBox({
   value,
   handleSelectChange,
 }: CheckBoxProps): ReactElement {
+  const handleTouchStart = (e: React.TouchEvent): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSelectChange(!value);
+  };
+
   return (
     <label
       className="flex items-center space-x-2 cursor-pointer select-none w-fit h-full"
@@ -18,6 +24,7 @@ export default function CheckBox({
       aria-checked={value}
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && handleSelectChange(!value)}
+      onTouchStart={handleTouchStart}
     >
       <input
         type="checkbox"

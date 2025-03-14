@@ -162,6 +162,27 @@
       "when": 1741008128134,
       "tag": "0022_abnormal_dormammu_0.21.1",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1741335417554,
+      "tag": "0023_long_energizer_0.22.0",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1741686538413,
+      "tag": "0024_needy_justice_0.22.1",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1741876710551,
+      "tag": "0025_fair_crusher_hogan_0.22.3",
+      "breakpoints": true
     }
   ]
 }

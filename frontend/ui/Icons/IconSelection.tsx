@@ -102,7 +102,7 @@ export default function IconSelection(props: IconSelectionProps): ReactElement {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Suchicons..."
+            placeholder="Iconsuche..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-grow bg-transparent outline-none cursor-pointer ml-2"

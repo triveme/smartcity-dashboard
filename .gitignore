@@ -43,12 +43,16 @@ lerna-debug.log*
 # Kubernetes
 k8s/helm/charts/*.tgz
 k8s/helm/*.lock
+k8s/helm/certificates/*
 
 # Migrationfiles
 database/migrations/generated/*
 
 # Ignore everything in the hcloud folder
 hcloud/*
-# Except these custom files - everything else is terraform generated
-!hcloud/kube.tf
-!hcloud/README.adoc
+
+# Ignore VS Code settings
+.vscode/*
+
+# Keycloak
+keycloak/import/production-realm.json

@@ -14,7 +14,6 @@ import {
   combinedComponentLayoutEnum,
 } from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
-import PieChart from '@/ui/Charts/PieChart';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import StaticValuesField from '@/ui/StaticValuesFields';
 import IconSelection from '@/ui/Icons/IconSelection';
@@ -425,8 +424,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   </div>
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Number of Tiles" />
-                    <WizardTextfield
-                      value={tab?.tiles || ''}
+                    <WizardIntegerfield
+                      value={tab?.tiles || '0'}
                       onChange={(value: string | number): void =>
                         handleTabChange({ tiles: value as number })
                       }
@@ -486,7 +485,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   </div>
                   <div className="w-full flex flex-col">
                     <div className="flex w-full items-center">
-                      <div className="min-w-[200px]">
+                      <div className="min-w-[220px]">
                         <WizardLabel label="Legende anzeigen?" />
                       </div>
                       <WizardSelectBox
@@ -522,7 +521,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       )}
                     </div>
                     <div className="flex w-full items-center">
-                      <div className="min-w-[200px]">
+                      <div className="min-w-[220px]">
                         <WizardLabel label="Zusätzliche Filterung?" />
                       </div>
                       <WizardSelectBox
@@ -536,7 +535,21 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       />
                     </div>
                     <div className="flex w-full items-center">
-                      <div className="min-w-[200px]">
+                      <div className="min-w-[220px]">
+                        <WizardLabel label="Bilddownload erlauben?" />
+                      </div>
+                      <WizardSelectBox
+                        checked={tab?.chartAllowImageDownload || false}
+                        onChange={(value: boolean): void =>
+                          handleTabChange({
+                            chartAllowImageDownload: value,
+                          })
+                        }
+                        label=" Bilddownload"
+                      />
+                    </div>
+                    <div className="flex w-full items-center">
+                      <div className="min-w-[220px]">
                         <WizardLabel label="Zoomen Erlauben?" />
                       </div>
                       <WizardSelectBox
@@ -550,7 +563,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     {tab?.componentSubType ===
                       tabComponentSubTypeEnum.lineChart && (
                       <div className="flex w-full items-center">
-                        <div className="min-w-[200px]">
+                        <div className="min-w-[220px]">
                           <WizardLabel label="Stufenlinie anzeigen?" />
                         </div>
                         <WizardSelectBox
@@ -565,7 +578,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     {tab?.componentSubType ===
                       tabComponentSubTypeEnum.barChart && (
                       <div className="flex w-full items-center">
-                        <div className="min-w-[200px]">
+                        <div className="min-w-[220px]">
                           <WizardLabel label="Gestapelte Balken?" />
                         </div>
                         <WizardSelectBox
@@ -595,20 +608,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
               )}
               {tab?.componentSubType === tabComponentSubTypeEnum.pieChart && (
                 <div className="flex flex-col w-full pb-2">
-                  <PieChart
-                    labels={tab?.chartLabels || []}
-                    data={tab?.chartValues || []}
-                    fontSize={'11'}
-                    fontColor={'#fff'}
-                    currentValuesColors={[
-                      '#4CAF50',
-                      '#2196F3',
-                      '#FF9800',
-                      '#F44336',
-                      '#9C27B0',
-                    ]}
-                    unit={tab?.chartUnit || ''}
-                  />
+                  <div className="flex w-full items-center">
+                    <div className="min-w-[200px]">
+                      <WizardLabel label="Bilddownload erlauben?" />
+                    </div>
+                    <WizardSelectBox
+                      checked={tab?.chartAllowImageDownload || false}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({
+                          chartAllowImageDownload: value,
+                        })
+                      }
+                      label=" Bilddownload"
+                    />
+                  </div>
 
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Einheit" />
@@ -616,6 +629,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       value={tab?.chartUnit || ''}
                       onChange={(value: string | number): void =>
                         handleTabChange({ chartUnit: value.toString() })
+                      }
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Radius (Wert zwischen 10 und 80)" />
+                    <WizardIntegerfield
+                      value={tab?.chartPieRadius || '70'}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({
+                          chartPieRadius: value as number,
+                        })
                       }
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
@@ -1463,6 +1490,35 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label="Zoomen"
                       />
                     </div>
+                    <HorizontalDivider />
+                    <WizardLabel label="Optionale WMS Einstellungen" />
+                    <div className="w-full">
+                      <WizardLabel label="WMS Layer URL" />
+                      <WizardUrlTextfield
+                        value={tab.mapCombinedWmsUrl || 'https://'}
+                        onChange={function (value: string | number): void {
+                          handleTabChange({
+                            mapCombinedWmsUrl: value.toString(),
+                          });
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                      />
+                    </div>
+                    <div className="w-full">
+                      <WizardLabel label="WMS Layer" />
+                      <WizardUrlTextfield
+                        value={tab.mapCombinedWmsLayer || ''}
+                        onChange={function (value: string | number): void {
+                          handleTabChange({
+                            mapCombinedWmsLayer: value.toString(),
+                          });
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                      />
+                    </div>
+                    <HorizontalDivider />
                     <div className="flex flex-col w-full pt-4">
                       {combinedMapWidgetsId.map((widgetId, index) => (
                         <>
