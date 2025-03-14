@@ -3,6 +3,7 @@ import { ReactElement, useState, useEffect, CSSProperties } from 'react';
 
 import { tabComponentTypeEnum, tabComponentSubTypeEnum } from '@/types';
 import EditorComponent from '@/components/EditorComponent';
+import { convertToLocaleNumber } from '@/utils/mathHelper';
 
 type TextfieldProps = {
   value: string | number;
@@ -36,7 +37,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
   } = props;
 
   const [textFieldContent, setTextFieldContent] = useState(
-    value ? value.toString() : '',
+    value !== undefined && value !== null ? value.toString() : '',
   );
 
   const [isBrowser, setIsBrowser] = useState(false);
@@ -53,12 +54,10 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
   }, []);
 
   useEffect(() => {
-    setTextFieldContent(value ? value.toString() : '');
+    setTextFieldContent(
+      value !== undefined && value !== null ? value.toString() : '',
+    );
   }, [value]);
-
-  const convertToLocaleNumber = (value: string, separator: string): string => {
-    return value.replace(separator === ',' ? /\./g : /,/g, separator);
-  };
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -71,6 +70,19 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
       // Replace the opposite separator with the locale's separator
       valueAsString = convertToLocaleNumber(valueAsString, decimalSeparator);
 
+      // Handle case where only a minus sign or empty string is entered
+      if (
+        valueAsString === '-' ||
+        valueAsString === '' ||
+        valueAsString === '.' ||
+        valueAsString === ',' ||
+        valueAsString.endsWith(decimalSeparator)
+      ) {
+        console.log('catching special case');
+        setTextFieldContent(valueAsString);
+        return;
+      }
+
       // Allow empty string, single minus, or valid numbers with one optional separator
       const validPattern = new RegExp(
         `^-?$|^-?\\d+(\\${decimalSeparator}\\d*)?$`,
@@ -81,12 +93,6 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
 
       // Update internal state
       setTextFieldContent(valueAsString);
-
-      // Handle case where only a minus sign or empty string is entered
-      if (valueAsString === '-' || valueAsString === '') {
-        onChange(''); // Keep empty string for processing
-        return;
-      }
 
       // Convert to standard number format (dots) for processing
       const standardizedValue = valueAsString.replace(decimalSeparator, '.');

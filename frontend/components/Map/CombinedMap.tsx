@@ -75,8 +75,8 @@ type MapProps = {
   mapShapeOption?: string[];
   mapStandardZoom?: number;
   mapWidgetValues?: MapModalWidget[];
-  mapWmsUrl?: string[];
-  mapWmsLayer?: string[];
+  mapCombinedWmsUrl?: string;
+  mapCombinedWmsLayer?: string;
   mapNames?: string[];
   menuStyle?: CSSProperties;
   ciColors?: CorporateInfo;
@@ -121,8 +121,8 @@ export default function CombinedMap(props: MapProps): JSX.Element {
     mapDisplayMode,
     mapShapeColor,
     mapWidgetValues,
-    mapWmsUrl,
-    mapWmsLayer,
+    mapCombinedWmsUrl,
+    mapCombinedWmsLayer,
     mapNames,
     isFullscreenMap,
     chartStyle,
@@ -249,30 +249,17 @@ export default function CombinedMap(props: MapProps): JSX.Element {
 
   const findValidWmsConfig = (): { url: string; layer: string } | null => {
     if (
-      !mapWmsUrl ||
-      !mapWmsLayer ||
-      mapWmsUrl.length === 0 ||
-      mapWmsLayer.length === 0
+      !mapCombinedWmsUrl ||
+      !mapCombinedWmsLayer ||
+      mapCombinedWmsUrl === '' ||
+      mapCombinedWmsLayer === ''
     ) {
       return null;
     }
-
-    // Find the first valid pair of URL and layer
-    for (let i = 0; i < mapWmsUrl.length; i++) {
-      if (
-        mapWmsUrl[i] &&
-        mapWmsLayer[i] &&
-        mapWmsUrl[i] !== '' &&
-        mapWmsLayer[i] !== ''
-      ) {
-        return {
-          url: mapWmsUrl[i],
-          layer: mapWmsLayer[i],
-        };
-      }
-    }
-
-    return null;
+    return {
+      url: mapCombinedWmsUrl,
+      layer: mapCombinedWmsLayer,
+    };
   };
 
   useEffect(() => {

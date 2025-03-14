@@ -4,6 +4,7 @@ import React, { ReactElement, useEffect } from 'react';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { SizeProp } from '@fortawesome/fontawesome-svg-core';
 import Link from 'next/link';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type IconWithLinkProps = {
   icon?: string;
@@ -72,7 +73,12 @@ export default function IconWithLink(props: IconWithLinkProps): ReactElement {
             </div>
           )}
           <div
-            style={{ color: fontColor, fontSize: fontSize }}
+            style={{
+              color: fontColor,
+              fontSize: generateResponsiveFontSize(
+                parseInt(fontSize || '16', 10),
+              ),
+            }}
             className="flex-1 min-w-0 ql-editor no-border-ql-editor"
           >
             <div

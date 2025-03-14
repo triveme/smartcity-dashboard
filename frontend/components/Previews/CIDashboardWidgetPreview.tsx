@@ -284,6 +284,7 @@ export default function CIDashboardWidgetPreview(
               fontColor={pieChartFontColor}
               currentValuesColors={pieChartCurrentValuesColors}
               unit={''}
+              pieChartRadius={70}
             />
           )}
           {componentSubType === tabComponentSubTypeEnum.lineChart && (
@@ -292,6 +293,7 @@ export default function CIDashboardWidgetPreview(
               data={DUMMY_CHART_DATA}
               xAxisLabel="Months"
               yAxisLabel="Value"
+              allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
               showLegend={true}

@@ -110,12 +110,25 @@ export default function MapFilterModal(
       filterAttribute: string,
     ) => void,
   ): JSX.Element => (
-    <div key={`key-filter-${filterAttribute}`} className="pb-3">
+    <div
+      key={`key-filter-${filterAttribute}`}
+      className="pb-3"
+      onTouchStart={(e): void => e.stopPropagation()}
+    >
       <h3>{filterAttribute}</h3>
       {values.map((item, index) => (
         <div
           key={`key-${filterAttribute}-${index}`}
           className="flex items-center"
+          onTouchStart={(e): void => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleSelectChange(
+              item.value,
+              !selectedFilters.includes(item.value),
+              filterAttribute,
+            );
+          }}
         >
           <CheckBox
             label={item.value.toString()}

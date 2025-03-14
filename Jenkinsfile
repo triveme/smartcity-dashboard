@@ -5,6 +5,7 @@ pipeline {
         NEXUS_REPO = 'mobit-malaysia'
         NEXUS_PROJECT = 'scs'
         GITHUB_REGISTRY = 'docker.pkg.github.com/triveme/smartcity-dashboard'
+        NKF_REGISTRY = 'edagacr.azurecr.io'
         NGSI_SERVICE = 'ngsi-service'
         DASHBOARD_SERVICE = 'dashboard-service'
         API_SERVICE = 'api-service'
@@ -26,6 +27,7 @@ pipeline {
         DOCKERFILE_STATIC_DATA_SERVICE = 'Dockerfile.static-data-service'
         DOCKERFILE_REPORT_SERVICE = 'Dockerfile.report-service'
         USE_GITHUB_REGISTRY = false
+        USE_NKF_REGISTRY = false
     }
 
     agent {
@@ -167,6 +169,10 @@ pipeline {
                 // Set EDAG Github registry flag to true if the branch is "main"
                 USE_GITHUB_REGISTRY = (branchName == 'main')
                 println("USE_GITHUB_REGISTRY set to: ${USE_GITHUB_REGISTRY}")
+
+                // Set NKF image registry flag to true if the branch is "main"
+                USE_NKF_REGISTRY = (branchName == 'main')
+                println("USE_NKF_REGISTRY set to: ${USE_NKF_REGISTRY}")
             }
         }
       }
@@ -255,7 +261,7 @@ pipeline {
         }
       }
 
-      /* --------------------------- EDAG Github Specific Image Artifactory Push ------------------------*/
+/* --------------------------- EDAG Github Specific Image Artifactory Push ------------------------*/
 
       stage('Push Images to EDAG Github') {
         when {
@@ -285,6 +291,41 @@ pipeline {
               sh "docker push ${GITHUB_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
+            }
+          }
+        }
+      }
+
+/* --------------------------- NKF Project Specific Image Artifactory Push ------------------------*/
+
+      stage('Push Images to NKF Registry') {
+        when {
+            expression { USE_NKF_REGISTRY }
+        }
+        steps {
+          container('docker') {
+            sh "docker tag smartcity/migrations ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
+            sh "docker tag smartcity/dashboard-service ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/ngsi-service ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/api-service ${NKF_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/mail-service ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/infopin-service ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/static-data-service ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/report-service ${NKF_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/frontend ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
+            sh "docker tag smartcity/frontend-with-basepath ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
+            withCredentials([usernamePassword(credentialsId: 'smartcity-nkf-af', usernameVariable: 'NKF_USER', passwordVariable: 'NKF_PASS')]) {
+              sh "docker login -u ${NKF_USER} --password ${NKF_PASS} ${NKF_REGISTRY}"
+              sh "docker push ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }
           }
         }
