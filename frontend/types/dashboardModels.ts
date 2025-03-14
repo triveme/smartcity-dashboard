@@ -162,12 +162,14 @@ export type MapModalLegend = {
 
 export type Tab = {
   id?: string;
+  chartAllowImageDownload?: boolean;
   chartHasAdditionalSelection?: boolean;
   chartData?: ChartData[];
   chartLabels?: string[];
   chartLegendAlign?: string;
   chartMaximum?: number;
   chartMinimum?: number;
+  chartPieRadius?: number;
   chartStaticValues?: number[];
   chartStaticValuesColors?: string[];
   chartStaticValuesLogos?: string[];
@@ -222,7 +224,9 @@ export type Tab = {
   mapStandardZoom?: number;
   mapWidgetValues?: MapModalWidget[];
   mapWmsUrl?: string;
+  mapCombinedWmsUrl?: string;
   mapWmsLayer?: string;
+  mapCombinedWmsLayer?: string;
   queryId?: string;
   rangeStaticValuesMin?: number[];
   rangeStaticValuesMax?: number[];

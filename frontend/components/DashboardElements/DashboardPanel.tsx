@@ -10,6 +10,7 @@ import DashboardGeneralInfoMessage from '../DashboardGeneralInfoMessage';
 import JumpoffButton from '@/ui/Buttons/JumpoffButton';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type DashboardPanelProps = {
   panel: PanelWithContent;
@@ -65,7 +66,9 @@ export default async function DashboardPanel(
               <PageHeadline
                 headline={panel.name}
                 fontColor={panel.headlineColor}
-                fontSize={ciColors.panelHeadlineFontSize}
+                fontSize={generateResponsiveFontSize(
+                  parseInt(ciColors.panelHeadlineFontSize || '16', 10),
+                )}
                 isHeadlineBold={ciColors.isPanelHeadlineBold}
               />
               {isEditable ? (
@@ -100,7 +103,7 @@ export default async function DashboardPanel(
           ))}
       </div>
       {panel.info && (
-        <div className="text-sm">
+        <div className="mt-auto text-sm">
           <span>{panel.info}</span>
         </div>
       )}

@@ -15,6 +15,7 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
 import SmallDataExportButton from '@/ui/Buttons/SmallDataExportButton';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type DashboardWidgetProps = {
   widget: WidgetWithContent;
@@ -98,7 +99,9 @@ export default async function DashboardWidget({
               <div className="w-full flex justify-start items-center gap-x-2">
                 <div
                   style={{
-                    fontSize: ciColors.widgetHeadlineFontSize || '16px',
+                    fontSize: generateResponsiveFontSize(
+                      parseInt(ciColors.widgetHeadlineFontSize || '16', 10),
+                    ),
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}
@@ -117,7 +120,9 @@ export default async function DashboardWidget({
             <div
               className="pl-12"
               style={{
-                fontSize: ciColors.widgetSubheadlineFontSize || '14px',
+                fontSize: generateResponsiveFontSize(
+                  parseInt(ciColors.widgetSubheadlineFontSize || '14', 10),
+                ),
               }}
             >
               {widget.subheadline}

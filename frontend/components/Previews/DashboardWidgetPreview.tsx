@@ -122,6 +122,8 @@ export default function DashboardWidgetPreview(
                   '#9C27B0',
                 ]
               }
+              allowImageDownload={tab.chartAllowImageDownload || false}
+              pieChartRadius={tab.chartPieRadius || 70}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
@@ -130,6 +132,7 @@ export default function DashboardWidgetPreview(
               data={DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
               showLegend={tab.showLegend || false}
@@ -169,6 +172,7 @@ export default function DashboardWidgetPreview(
               data={DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}

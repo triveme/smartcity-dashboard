@@ -362,11 +362,9 @@ export default function QueryConfigWizard(
                 });
                 setDatasourceOrigin(origin);
                 setOrigin(origin);
-                if (origin !== 'api') {
-                  if (collectionsFromDatasource) {
-                    setCollections(['', ...collectionsFromDatasource]);
-                    setSelectedCollection(collectionsFromDatasource[0]);
-                  }
+                if (collectionsFromDatasource) {
+                  setCollections(['', ...collectionsFromDatasource]);
+                  setSelectedCollection(collectionsFromDatasource[0]);
                 }
               }}
               iconColor={iconColor}
@@ -693,7 +691,7 @@ export default function QueryConfigWizard(
                   <div className="flex-1">
                     <WizardDropdownSelection
                       currentValue={queryConfig?.fiwareType || ''}
-                      selectableValues={sources}
+                      selectableValues={['', ...sources]}
                       onSelect={(value: string | number): void => {
                         handleQueryConfigChange({
                           fiwareType: value.toString(),
@@ -724,7 +722,7 @@ export default function QueryConfigWizard(
                     <div className="flex-1">
                       <WizardDropdownSelection
                         currentValue={queryConfig?.entityIds?.[0] || ''}
-                        selectableValues={sensors}
+                        selectableValues={['', ...sensors]}
                         error={errors && errors.sensorError}
                         onSelect={(value: string | number): void => {
                           handleQueryConfigChange({
@@ -752,7 +750,7 @@ export default function QueryConfigWizard(
                     <div className="flex-1">
                       <WizardMultipleDropdownSelection
                         currentValue={queryConfig?.entityIds || []}
-                        selectableValues={sensors}
+                        selectableValues={['', ...sensors]}
                         error={errors && errors.sensorError}
                         onSelect={(value: string[]): void => {
                           handleQueryConfigChange({ entityIds: value });
@@ -779,7 +777,7 @@ export default function QueryConfigWizard(
                     <div className="flex-1">
                       <WizardDropdownSelection
                         currentValue={queryConfig?.attributes[0] || ''}
-                        selectableValues={attributes}
+                        selectableValues={['', ...attributes]}
                         error={errors && errors.attributeError}
                         onSelect={(value: string | number): void =>
                           handleQueryConfigChange({
@@ -809,7 +807,7 @@ export default function QueryConfigWizard(
                         <WizardMultipleDropdownSelection
                           currentValue={queryConfig?.attributes || []}
                           error={errors && errors.attributeError}
-                          selectableValues={attributes}
+                          selectableValues={['', ...attributes]}
                           onSelect={(value: string[]): void => {
                             handleQueryConfigChange({ attributes: value });
                           }}

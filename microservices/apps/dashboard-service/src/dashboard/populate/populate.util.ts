@@ -266,6 +266,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Motorrad';
     case 'MOTORCYCLE':
       return 'Motorrad';
+    case 'MOTORCYCLES':
+      return 'Motorrad';
     case 'ELECTRIC_CAR':
       return 'Elektroauto';
     case 'ELECTRIC_BIKE':
