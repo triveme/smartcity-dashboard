@@ -4,7 +4,6 @@ import { Tab } from '@/types';
 import CreateDashboardElementButton from './Buttons/CreateDashboardElementButton';
 import ColorPickerComponent from './ColorPickerComponent';
 import IconSelection from './Icons/IconSelection';
-import WizardNumberfield from './WizardNumberfield';
 import WizardLabel from './WizardLabel';
 
 type StaticValuesFieldProps = {
@@ -189,9 +188,12 @@ export default function StaticValuesField(
       {inputValues.map((value, index) => (
         <div key={`main-value-${index}`} className="flex flex-col gap-4 mb-4">
           <div className="flex justify-start items-center content-center gap-4">
-            <WizardNumberfield
+            <WizardTextfield
               value={value}
-              onChange={(value): void => handleChangeValue(value, index)}
+              onChange={(value: string | number): void =>
+                handleChangeValue(value, index)
+              }
+              isNumeric={true}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
               error={error}
@@ -242,8 +244,10 @@ export default function StaticValuesField(
                 {index === 0 && <WizardLabel label="Value" />}
                 <WizardTextfield
                   value={tickValues[index] || 0}
-                  onChange={(value): void => handleChangeTick(value, index)}
-                  isNumeric={false}
+                  onChange={(value: string | number): void =>
+                    handleChangeTick(value, index)
+                  }
+                  isNumeric={true}
                   borderColor={borderColor}
                   backgroundColor={backgroundColor}
                   error={error}

@@ -4,6 +4,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcons from './Icons/DashboardIcon';
 import { isValidDate } from '@/utils/validationHelper';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type DashboardValuesProps = {
   decimalPlaces: number;
@@ -37,8 +38,6 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
   const [iconColor, setIconColor] = useState<string>('');
 
   let formattedValue;
-
-  console.log('VALUE: ', value);
 
   if (typeof value === 'number') {
     if (!isNaN(decimalPlaces)) {
@@ -90,8 +89,8 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
 
   // Update the label, icon, and color whenever the value changes
   useEffect(() => {
-    if (typeof value === 'number') {
-      updateLabelIconColor(value);
+    if (typeof value === 'number' || value === '0') {
+      updateLabelIconColor(Number(value));
     } else {
       setLabel('');
       setIcon('');
@@ -106,10 +105,22 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
         style={{ color: fontColor }}
       >
         <DashboardIcons iconName={icon} color={iconColor} size="xl" />
-        <div className="text-5xl" style={{ fontSize: `${fontSize}px` }}>
+        <div
+          style={{
+            fontSize: generateResponsiveFontSize(
+              parseInt(fontSize || '14', 10),
+            ),
+          }}
+        >
           {formattedValue}
         </div>
-        <div className="text-sm" style={{ fontSize: `${unitFontSize}px` }}>
+        <div
+          style={{
+            fontSize: generateResponsiveFontSize(
+              parseInt(unitFontSize || '14', 10),
+            ),
+          }}
+        >
           {unit || ''}
         </div>
       </div>

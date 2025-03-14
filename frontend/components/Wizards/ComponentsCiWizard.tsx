@@ -1179,7 +1179,7 @@ export default function ComponentsCiWizard({
                         <div className="flex mt-2">
                           <MultipleColorPicker
                             colors={pieChartCurrentValuesColors}
-                            totalFields={5}
+                            totalFields={10}
                             label="Bar Chart Color"
                             onColorChange={
                               handlePieChartCurrentValuesColorsChange

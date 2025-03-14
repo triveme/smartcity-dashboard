@@ -26,6 +26,7 @@ import {
 } from '@/utils/combinedMapDataHelper';
 import { isTabOfTypeCombinedWidget } from '@/utils/tabTypeHelper';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type DashboardProps = {
   dashboard: DashboardWithContent;
@@ -124,7 +125,9 @@ export default async function Dashboard(
                 <PageHeadline
                   headline={dashboard.name || 'Dashboardseite'}
                   fontColor={dashboard.headlineColor}
-                  fontSize={ciColors.dashboardHeadlineFontSize}
+                  fontSize={generateResponsiveFontSize(
+                    parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
+                  )}
                 />
               </div>
               {isEditable ? (
@@ -302,8 +305,14 @@ export default async function Dashboard(
               mapWidgetValues={
                 combinedMapData?.mapWidgetValues as MapModalWidget[]
               }
-              mapWmsUrl={(combinedMapData?.mapWmsUrl as string[]) || []}
-              mapWmsLayer={(combinedMapData?.mapWmsLayer as string[]) || []}
+              mapCombinedWmsUrl={
+                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
+                  .mapCombinedWmsUrl || ''
+              }
+              mapCombinedWmsLayer={
+                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
+                  .mapCombinedWmsLayer || ''
+              }
               mapNames={(combinedMapData?.mapNames as string[]) || []}
               isFullscreenMap={true}
               chartStyle={chartStyle}

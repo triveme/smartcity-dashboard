@@ -13,6 +13,7 @@ import {
 import ColumnChart from '@/ui/Charts/ColumnChart';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
+import { generateResponsiveFontSize } from '@/utils/fontUtil';
 
 type MeasurementComponentProps = {
   preview: boolean;
@@ -93,18 +94,11 @@ export default function MeasurementComponent(
 
   const bigValueFontStyle = bigValueFontColor || '#FFF';
   const labelFontStyle = labelFontColor || '#FFF';
-  const parsedTicksFontSize = parseFloat(bigValueFontSize || '168'); // Default to 16px if not provided or invalid
-  const calculatedMinSize = parsedTicksFontSize * 0.595;
 
   const autoScaleFont = useAutoScaleFont({
     minSize: 12,
     maxSize: 14,
     divisor: 60,
-  });
-  const autoScaleCurrentValueFont = useAutoScaleFont({
-    minSize: calculatedMinSize,
-    maxSize: isNaN(parsedTicksFontSize) ? 20 : parsedTicksFontSize,
-    divisor: 10,
   });
 
   const handleIntervalClick = (interval: string): void => {
@@ -195,7 +189,9 @@ export default function MeasurementComponent(
               <span
                 className="leading-none font-bold"
                 style={{
-                  fontSize: `${autoScaleCurrentValueFont}px`,
+                  fontSize: generateResponsiveFontSize(
+                    parseInt(bigValueFontSize || '14', 10),
+                  ),
                 }}
               >
                 {applyUserLocaleToNumber(
@@ -222,6 +218,7 @@ export default function MeasurementComponent(
               ]}
               xAxisLabel={'Zeit'}
               yAxisLabel={`Pegelstand in ${unit}` || ''}
+              allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
               axisLabelFontColor={axisLabelFontColor}
@@ -254,6 +251,7 @@ export default function MeasurementComponent(
               ]}
               xAxisLabel={'Zeit'}
               yAxisLabel={`Pegelstand in ${unit}` || ''}
+              allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
               axisLabelFontColor={axisLabelFontColor}

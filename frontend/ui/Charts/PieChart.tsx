@@ -37,11 +37,22 @@ type PieChartProps = {
   fontSize: string;
   fontColor: string;
   currentValuesColors: string[];
+  allowImageDownload?: boolean;
+  pieChartRadius?: number;
 };
 
 export default function PieChart(props: PieChartProps): ReactElement {
-  const { labels, data, fontSize, fontColor, unit, currentValuesColors } =
-    props;
+  const {
+    labels,
+    data,
+    fontSize,
+    fontColor,
+    unit,
+    currentValuesColors,
+    allowImageDownload,
+    pieChartRadius,
+  } = props;
+
   const chartRef = useRef<HTMLDivElement>(null);
   let myChart: ECharts | null = null;
 
@@ -67,13 +78,17 @@ export default function PieChart(props: PieChartProps): ReactElement {
               params.value,
               navigator.language || 'de-DE',
             );
-            return `${params.name}: ${value}${unit} (${params.percent}%)`;
+            const percentValue = applyUserLocaleToNumber(
+              params.percent,
+              navigator.language || 'de-DE',
+            );
+            return `${params.name}: ${value}${unit} (${percentValue}%)`;
           },
         },
         series: [
           {
             type: 'pie',
-            radius: '70%',
+            radius: pieChartRadius ? `${pieChartRadius}%` : '70%',
             data: dataToDisplay.length ? dataToDisplay : dummyData,
             label: {
               show: true,
@@ -84,7 +99,11 @@ export default function PieChart(props: PieChartProps): ReactElement {
                   params.value,
                   navigator.language || 'de-DE',
                 );
-                return `${params.name}: ${value}${unit} (${params.percent}%)`;
+                const percentValue = applyUserLocaleToNumber(
+                  params.percent,
+                  navigator.language || 'de-DE',
+                );
+                return `${params.name}: ${value}${unit} (${percentValue}%)`;
               },
               color: fontColor || '#E95051',
               fontSize: fontSize || 14,
@@ -98,6 +117,19 @@ export default function PieChart(props: PieChartProps): ReactElement {
             },
           },
         ],
+
+        toolbox: {
+          show: allowImageDownload,
+          feature: {
+            saveAsImage: {
+              title: 'Bild Downloaden',
+              iconStyle: {
+                color: fontColor,
+                borderColor: fontColor,
+              },
+            },
+          },
+        },
       };
 
       myChart.setOption(option);

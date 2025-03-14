@@ -173,6 +173,8 @@ export default async function DashboardTab(
                 ]
               }
               unit={tab.chartUnit || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
+              pieChartRadius={tab.chartPieRadius || 70}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
@@ -181,6 +183,7 @@ export default async function DashboardTab(
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
               showLegend={tab.showLegend || false}
@@ -222,6 +225,7 @@ export default async function DashboardTab(
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
@@ -532,6 +536,8 @@ export default async function DashboardTab(
               mapWidgetValues={
                 combinedMapData?.mapWidgetValues as MapModalWidget[]
               }
+              mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
+              mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
               mapNames={(combinedMapData?.mapNames as string[]) || []}
               isFullscreenMap={false}
               chartStyle={chartStyle}

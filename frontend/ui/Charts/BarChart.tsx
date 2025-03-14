@@ -18,6 +18,7 @@ type BarChartProps = {
   data: ChartData[];
   xAxisLabel?: string;
   yAxisLabel?: string;
+  allowImageDownload?: boolean;
   allowZoom?: boolean;
   showLegend?: boolean;
   staticValues: number[];
@@ -44,6 +45,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
     data,
     xAxisLabel,
     yAxisLabel,
+    allowImageDownload,
     allowZoom,
     showLegend,
     staticValues,
@@ -203,6 +205,18 @@ export default function BarChart(props: BarChartProps): ReactElement {
                 ? 'auto'
                 : 'center',
           right: legendAlignment === 'Right' ? 'right' : 'auto',
+        },
+        toolbox: {
+          show: allowImageDownload,
+          feature: {
+            saveAsImage: {
+              title: 'Bild Downloaden',
+              iconStyle: {
+                color: fontColor,
+                borderColor: fontColor,
+              },
+            },
+          },
         },
         grid: {
           left: calculateLeftGrid(yAxisLabel || '', legendAlignment),
