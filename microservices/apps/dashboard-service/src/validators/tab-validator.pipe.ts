@@ -64,6 +64,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'sliderMaximumAttribute',
       'showLegend',
       'tiles',
+      'decimalPlaces',
       ...this.commonFields,
     ],
     iframe: ['iFrameUrl', ...this.commonFields],

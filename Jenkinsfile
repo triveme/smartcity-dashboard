@@ -13,6 +13,7 @@ pipeline {
         INFOPIN_SERVICE = 'infopin-service'
         STATIC_DATA_SERVICE = 'static-data-service'
         REPORT_SERVICE = 'report-service'
+        USI_PLATFORM_SERVICE = 'usi-platform-service'
         FRONTEND = 'frontend'
         MIGRATIONS = 'migrations'
         IMAGE_TAG = ''
@@ -26,6 +27,7 @@ pipeline {
         DOCKERFILE_INFOPIN_SERVICE = 'Dockerfile.infopin-service'
         DOCKERFILE_STATIC_DATA_SERVICE = 'Dockerfile.static-data-service'
         DOCKERFILE_REPORT_SERVICE = 'Dockerfile.report-service'
+        DOCKERFILE_USI_PLATFORM_SERVICE = 'Dockerfile.usi-platform-service'
         USE_GITHUB_REGISTRY = false
         USE_NKF_REGISTRY = false
     }
@@ -220,6 +222,7 @@ pipeline {
                       sh "docker build -t smartcity/infopin-service -f ${DOCKERFILE_INFOPIN_SERVICE} ."
                       sh "docker build -t smartcity/static-data-service -f ${DOCKERFILE_STATIC_DATA_SERVICE} ."
                       sh "docker build -t smartcity/report-service -f ${DOCKERFILE_REPORT_SERVICE} ."
+                      sh "docker build -t smartcity/usi-platform-service -f ${DOCKERFILE_USI_PLATFORM_SERVICE} ."
                     }
                     dir('frontend') {
                       sh "docker build -t smartcity/frontend -f ${DOCKERFILE_FRONTEND} ."
@@ -242,6 +245,7 @@ pipeline {
             sh "docker tag smartcity/infopin-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/report-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${REPORT_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/usi-platform-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend-with-basepath ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             withCredentials([usernamePassword(credentialsId: 'smartcity-nexus', usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
@@ -254,6 +258,7 @@ pipeline {
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${REPORT_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }
@@ -277,6 +282,7 @@ pipeline {
             sh "docker tag smartcity/infopin-service ${GITHUB_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/report-service ${GITHUB_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/usi-platform-service ${GITHUB_REGISTRY}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend-with-basepath ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             withCredentials([usernamePassword(credentialsId: 'smartcity-github', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PASS')]) {
@@ -289,6 +295,7 @@ pipeline {
               sh "docker push ${GITHUB_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${GITHUB_REGISTRY}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }
@@ -312,6 +319,7 @@ pipeline {
             sh "docker tag smartcity/infopin-service ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/report-service ${NKF_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/usi-platform-service ${NKF_REGISTRY}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend-with-basepath ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             withCredentials([usernamePassword(credentialsId: 'smartcity-nkf-af', usernameVariable: 'NKF_USER', passwordVariable: 'NKF_PASS')]) {
@@ -324,6 +332,7 @@ pipeline {
               sh "docker push ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${REPORT_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
             }

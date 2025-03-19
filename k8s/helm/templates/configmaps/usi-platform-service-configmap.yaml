@@ -1,0 +1,13 @@
+{{- if index .Values "usi-platform-service" "enabled" }}
+# Env vars specific for the dashboard-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: usi-platform-service-configmap
+data:
+  NODE_ENV: "development"
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "usi-platform-service" "frontendUrl" }}
+  USI_AUTH_URL: "https://nfk-s-auth.urbanpulse.de/auth/realms/ui/protocol/openid-connect/token"
+  USI_CLIENT_ID: "edag"
+
+{{- end }}

@@ -16,7 +16,6 @@ import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import { widthTypes } from '@/utils/enumMapper';
 import IconSelection from '@/ui/Icons/IconSelection';
 import { WizardErrors } from '@/types/errors';
-import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import { validateUrl } from '@/utils/validationHelper';
 
@@ -76,9 +75,6 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
   const [panelJumpoffIcon, setPanelJumpoffIcon] = useState(
     activePanel?.jumpoffIcon || '',
   );
-  const [panelHeadlinecolor, setPanelHeadlinecolor] = useState(
-    activePanel?.headlineColor || panelHeadlineColorProp,
-  );
 
   const [errors, setErrors] = useState<WizardErrors>({});
 
@@ -118,7 +114,7 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
       const updatedPanel: Panel = {
         name: panelName,
         generalInfo: panelGeneralInfo,
-        headlineColor: panelHeadlinecolor,
+        headlineColor: panelHeadlineColorProp,
         height: activePanel?.height || 400,
         id: activePanel.id,
         icon: panelIcon,
@@ -182,11 +178,6 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
                   backgroundColor={backgroundColor}
                 />
               </div>
-              <ColorPickerComponent
-                currentColor={panelHeadlinecolor}
-                handleColorChange={setPanelHeadlinecolor}
-                label={'Schriftfarbe des Panelnamens'}
-              />
             </div>
           </div>
           <div className="flex flex-col w-full pb-2">

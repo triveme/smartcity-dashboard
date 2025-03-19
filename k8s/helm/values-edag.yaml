@@ -197,6 +197,27 @@ static-data-service:
       memory: "512Mi"
       cpu: "200m"
 
+usi-platform-service:
+  nodeSelector:
+    location: 06-Fulda-Steinauer-Str
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: ca-issuer
+      cert-manager.io/issuer-kind: ClusterIssuer
+    ingressClassName: nginx
+  image:
+    repository: nexus.edag.de:8206/mobit-malaysia/scs/usi-platform-service
+    tag: 'latest-dev'
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
 frontend:
   nodeSelector:
     location: 06-Fulda-Steinauer-Str

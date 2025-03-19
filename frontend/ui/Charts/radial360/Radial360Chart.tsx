@@ -10,7 +10,6 @@ type Radial360ChartProps = {
   unit: string;
   value: number;
   mainColor: string;
-  secondaryColor: string;
 
   fontColor: string;
   fontSize: string;
@@ -28,13 +27,13 @@ export default function Radial360Chart(
     unit,
     value,
     mainColor,
-    secondaryColor,
     fontColor,
     fontSize,
     backgroundColor,
     fillColor,
     unitFontSize,
   } = props;
+
   const chartRef = useRef<HTMLDivElement | null>(null);
   let myChart: ECharts | null = null;
 
@@ -137,7 +136,6 @@ export default function Radial360Chart(
     unit,
     value,
     mainColor,
-    secondaryColor,
     fontColor,
     fontSize,
     backgroundColor,

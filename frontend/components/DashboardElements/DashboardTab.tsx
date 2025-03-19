@@ -149,7 +149,6 @@ export default async function DashboardTab(
                   : 25
               }
               mainColor={ciColors.dashboardSecondaryColor || '#3D4760'}
-              secondaryColor={ciColors.dashboardFontColor || '#FFF'}
               fontColor={ciColors.dashboardFontColor || '#FFF'}
               fontSize={ciColors.degreeChart360FontSize || '11'}
               backgroundColor={ciColors.degreeChart360BgColor}
@@ -217,6 +216,7 @@ export default async function DashboardTab(
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
               filterColor={ciColors.lineChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
+              decimalPlaces={tab?.decimalPlaces || 1}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
@@ -258,6 +258,7 @@ export default async function DashboardTab(
               filterColor={ciColors.barChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
               axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
+              decimalPlaces={tab?.decimalPlaces || 1}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -576,23 +577,41 @@ export default async function DashboardTab(
       {isTabOfTypeCombinedWidget(tab) &&
         tab.componentSubType !== tabComponentSubTypeEnum.combinedMap && (
           <div
-            className={`flex ${
+            className={`w-full flex flex-wrap ${
               tab.isLayoutVertical !== undefined
                 ? tab.isLayoutVertical
-                  ? 'flex-row gap-4'
-                  : 'flex-col'
-                : 'flex-col'
+                  ? 'lg:flex-row gap-4 justify-center'
+                  : 'flex-col items-center gap-4'
+                : 'flex-col items-center gap-4'
             }`}
           >
             {tab.combinedWidgets?.length > 0 &&
               tab.combinedWidgets.map(
                 (widget: WidgetWithContent, index: number) => (
-                  <DashboardWidget
+                  <div
                     key={`widget-in-panel-${widget.id}-${index}`}
-                    widget={widget}
-                    tenant={tenant}
-                    isCombinedWidget={true}
-                  />
+                    className={`${
+                      tab.isLayoutVertical
+                        ? `w-full lg:w-[${
+                            tab.combinedWidgets?.length === 2
+                              ? '49%'
+                              : tab.combinedWidgets?.length === 3
+                                ? '32%'
+                                : tab.combinedWidgets?.length === 4
+                                  ? '24%'
+                                  : tab.combinedWidgets?.length === 5
+                                    ? '19%'
+                                    : '100%'
+                          }] max-w-[200px] transition-all duration-200`
+                        : 'w-full'
+                    }`}
+                  >
+                    <DashboardWidget
+                      widget={widget}
+                      tenant={tenant}
+                      isCombinedWidget={true}
+                    />
+                  </div>
                 ),
               )}
           </div>

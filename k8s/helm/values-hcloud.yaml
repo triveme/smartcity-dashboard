@@ -7,7 +7,7 @@ trustedCAFile: "certificates/hcloud_ca.pem"
 migrations:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
   resources:
     requests:
@@ -59,7 +59,7 @@ dashboard-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 ngsi-service:
@@ -82,7 +82,7 @@ ngsi-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 api-service:
@@ -102,7 +102,7 @@ api-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/api-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 mail-service:
@@ -122,7 +122,7 @@ mail-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/mail-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 infopin-service:
@@ -143,7 +143,7 @@ infopin-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 
@@ -166,7 +166,7 @@ report-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/report-service
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
 
 static-data-service:
@@ -187,7 +187,30 @@ static-data-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/static-data-service
-    tag: '0.22.3'
+    tag: '0.23.0'
+    pullPolicy: Always
+
+
+usi-platform-service:
+  frontendUrl: "https://smartcity-system.de"
+  usiClientSecret: "5T1k3An8Foecqha2QOgxhtFmP2V9Eg8I"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    tls:
+      - hosts:
+          - usi-platform-service.smartcity-system.de
+        secretName: usi-platform-service-tls-secret
+    hosts:
+      - host: usi-platform-service.smartcity-system.de
+        paths:
+          - path: /
+            pathType: Prefix
+  image:
+    repository: ghcr.io/triveme/smartcity-dashboard/usi-platform-service
+    tag: '0.22.2'
     pullPolicy: Always
 
 
@@ -225,5 +248,5 @@ frontend:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/frontend
-    tag: '0.22.3'
+    tag: '0.23.0'
     pullPolicy: Always
