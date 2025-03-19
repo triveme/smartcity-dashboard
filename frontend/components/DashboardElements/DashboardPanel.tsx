@@ -65,7 +65,7 @@ export default async function DashboardPanel(
             <div className="w-full flex justify-start items-center gap-x-2">
               <PageHeadline
                 headline={panel.name}
-                fontColor={panel.headlineColor}
+                fontColor={ciColors.panelFontColor}
                 fontSize={generateResponsiveFontSize(
                   parseInt(ciColors.panelHeadlineFontSize || '16', 10),
                 )}

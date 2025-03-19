@@ -10,8 +10,6 @@ import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import WizardTextfield from '@/ui/WizardTextfield';
 import WizardSuffixUrlTextfield from '@/ui/WizardSuffixUrlTextfield';
 import IconSelection from '@/ui/Icons/IconSelection';
-import ColorPickerComponent from '@/ui/ColorPickerComponent';
-import CheckBox from '@/ui/CheckBox';
 import {
   postMenuGroupingElement,
   updateMenuGroupingElement,
@@ -256,13 +254,6 @@ export default function GroupingElementAddDashboardWizard(
                 />
               </div>
             </div>
-            <div className="pt-4">
-              <ColorPickerComponent
-                currentColor={groupFontColor || fontColor}
-                handleColorChange={setGroupFontColor}
-                label={'Menu Schriftfarbe'}
-              />
-            </div>
           </div>
         )}
         {elementType === 'Gruppe' && (
@@ -282,11 +273,6 @@ export default function GroupingElementAddDashboardWizard(
                       backgroundColor={backgroundColor}
                     />
                   </div>
-                  <ColorPickerComponent
-                    currentColor={groupFontColor || fontColor}
-                    handleColorChange={setGroupFontColor}
-                    label={'Menü Schriftfarbe'}
-                  />
                 </div>
               </div>
               <div className="flex flex-col w-full pb-2">
@@ -310,21 +296,6 @@ export default function GroupingElementAddDashboardWizard(
                   iconColor={iconColor}
                   borderColor={borderColor}
                 />
-              </div>
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Farbe" />
-                <div className="flex justify-start">
-                  <ColorPickerComponent
-                    currentColor={groupBackgroundColor}
-                    handleColorChange={setGroupBackgroundColor}
-                    label="Hoverfarbe"
-                  />
-                  <CheckBox
-                    label={'Farbverlauf'}
-                    value={groupIsGradient}
-                    handleSelectChange={setGroupIsGradient}
-                  />
-                </div>
               </div>
             </div>
           </div>

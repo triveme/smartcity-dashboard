@@ -460,7 +460,6 @@ export default function ComponentsCiWizard({
       tabComponentSubTypeEnum.text,
       tabComponentSubTypeEnum.iconWithLink,
     ],
-    [tabComponentTypeEnum.weatherWarning]: [],
   };
 
   const showSubTypeDropdown = selectedComponentType in subtypeMapping;
@@ -1180,7 +1179,7 @@ export default function ComponentsCiWizard({
                           <MultipleColorPicker
                             colors={pieChartCurrentValuesColors}
                             totalFields={10}
-                            label="Bar Chart Color"
+                            label="Piechart Farbe"
                             onColorChange={
                               handlePieChartCurrentValuesColorsChange
                             }

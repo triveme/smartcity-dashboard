@@ -12,14 +12,8 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 import { getMenuGroupingElements } from '@/api/menu-service';
 import { menuArrowDirectionEnum } from '@/types';
 
-type BackgroundColorStyle =
-  | { backgroundImage: string }
-  | { backgroundColor: string };
-
 type DashboardSidebarProps = {
-  useColorTransitionMenu: boolean;
   menuPrimaryColor: string;
-  menuSecondaryColor: string;
   menuFontColor: string;
   menuCornerColor: string;
   menuCornerFontColor: string;
@@ -30,9 +24,7 @@ export default function DashboardSidebar(
   props: DashboardSidebarProps,
 ): ReactElement {
   const {
-    useColorTransitionMenu,
     menuPrimaryColor,
-    menuSecondaryColor,
     menuFontColor,
     menuCornerColor,
     menuCornerFontColor,
@@ -46,15 +38,6 @@ export default function DashboardSidebar(
   // Multi Tenancy
   const tenant = getTenantOfPage();
 
-  const getBgColorForMenu = (): BackgroundColorStyle => {
-    return useColorTransitionMenu
-      ? {
-          backgroundImage: `linear-gradient(to right, ${menuPrimaryColor}, ${menuSecondaryColor})`,
-        }
-      : {
-          backgroundColor: menuPrimaryColor || '#3D4760',
-        };
-  };
   // Query Menu Structure
   const { data: groupingElements } = useQuery({
     queryKey: ['menu'],
@@ -63,7 +46,7 @@ export default function DashboardSidebar(
 
   //Dynamic Styling
   const sidebarStyle: CSSProperties = {
-    ...getBgColorForMenu(),
+    backgroundColor: menuPrimaryColor || '#3D4760',
     color: menuFontColor || '#FFFFFF',
   };
 
@@ -130,7 +113,6 @@ export default function DashboardSidebar(
                     url={element.url!}
                     elementUrl={element.url!}
                     icon={element.icon!}
-                    menuColor={element.fontColor}
                     onDashboardClick={toggleSidebar}
                   />
                 ) : (

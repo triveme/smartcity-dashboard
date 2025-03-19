@@ -69,6 +69,7 @@ export enum authDataTypeEnum {
   ngsild = 'ngsi-ld',
   api = 'api',
   staticendpoint = 'static-endpoint',
+  usi = 'usi',
 }
 
 export enum reportThresholdTriggerTypeEnum {

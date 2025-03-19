@@ -39,6 +39,7 @@ type LineChartProps = {
   filterColor?: string;
   filterTextColor?: string;
   showTooltip?: boolean;
+  decimalPlaces?: number;
 };
 
 export default function LineChart(props: LineChartProps): ReactElement {
@@ -66,6 +67,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     filterColor,
     filterTextColor,
     showTooltip = true,
+    decimalPlaces,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -197,14 +199,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             fontSize: legendFontSize,
             color: legendFontColor,
           },
-          top: legendAlignment === 'Top' ? 'top' : 'middle',
-          left:
-            legendAlignment === 'Left'
-              ? 'left'
-              : legendAlignment === 'Right'
-                ? 'auto'
-                : 'center',
-          right: legendAlignment === 'Right' ? 'right' : 'auto',
+          right: allowImageDownload ? '30' : 'auto',
         },
         toolbox: {
           show: allowImageDownload,
@@ -248,7 +243,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
           trigger: 'axis',
           valueFormatter: (value) =>
             applyUserLocaleToNumber(
-              roundToDecimal(Number(value)),
+              roundToDecimal(Number(value), decimalPlaces),
               navigator.language || 'de-DE',
             ),
         },

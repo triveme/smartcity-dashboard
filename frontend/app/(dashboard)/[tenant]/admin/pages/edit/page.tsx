@@ -263,14 +263,28 @@ export default function Pages(): ReactElement {
     }
   };
 
-  const handleCancelClick = (): void => {
+  const handleCancelClick = async (): Promise<void> => {
+    // for newly created dashboard, on cancel delete all panels
     if (!itemId) {
       if (panels.length > 0) {
-        panels.map(async (panel) => {
-          if (panel.id) {
-            await deletePanel(auth?.user?.access_token, panel.id);
-          }
-        });
+        await Promise.all(
+          panels.map(async (panel) => {
+            if (panel.id) {
+              await deletePanel(auth?.user?.access_token, panel.id);
+            }
+          }),
+        );
+      }
+    } else {
+      // for existing dashboard, on cancel delete newly created panels
+      if (panels.length > 0) {
+        await Promise.all(
+          panels.map(async (panel) => {
+            if (!panel.dashboardId && panel.id) {
+              await deletePanel(auth?.user?.access_token, panel.id);
+            }
+          }),
+        );
       }
     }
     router.back();

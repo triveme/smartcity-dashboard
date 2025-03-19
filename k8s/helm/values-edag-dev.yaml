@@ -107,6 +107,20 @@ static-data-service:
         paths:
           - path: /
             pathType: Prefix
+usi-platform-service:
+  frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
+  usiClientSecret: "5T1k3An8Foecqha2QOgxhtFmP2V9Eg8I"
+  ingress:
+    enabled: true
+    tls:
+      - hosts:
+          - mit-smartcity-suite-dev-usi-platform-service.container.edag
+        secretName: usi-platform-service-dev-tls-secret ## auto-generated unique tls
+    hosts:
+      - host: mit-smartcity-suite-dev-usi-platform-service.container.edag
+        paths:
+          - path: /
+            pathType: Prefix
 frontend:
   url: "https://mit-smartcity-suite-dev-frontend.container.edag"
   basepath: ""

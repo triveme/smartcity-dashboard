@@ -114,6 +114,20 @@ static-data-service:
       name: "trusted-ca-configmap"
   - secretRef:
       name: "postgresql-connection-secrets"
+## usi-platform-service config
+usi-platform-service:
+  enabled: true
+  envFrom:
+  - configMapRef:
+      name: "usi-platform-service-configmap"
+  - configMapRef:
+      name: "postgresql-connection-configmap"
+  - configMapRef:
+      name: "trusted-ca-configmap"
+  - secretRef:
+      name: "postgresql-connection-secrets"
+  - secretRef:
+      name: "usi-platform-service-secrets"
 ## frontend config
 frontend:
   enabled: true

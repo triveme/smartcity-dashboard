@@ -51,7 +51,6 @@ import {
   updateReportConfig,
 } from '@/api/report-service';
 import CheckBox from '@/ui/CheckBox';
-import ColorPickerComponent from '@/ui/ColorPickerComponent';
 
 type WidgetWizardProps = {
   iconColor: string;
@@ -62,6 +61,7 @@ type WidgetWizardProps = {
   panelBorderSize: string;
   hoverColor: string;
   widgetHeadlineColor: string;
+  fontColor: string;
 };
 
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
@@ -74,7 +74,9 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     panelBorderSize,
     hoverColor,
     widgetHeadlineColor,
+    fontColor,
   } = props;
+
   const paramsSearch = useSearchParams();
   const itemId = paramsSearch.get('id');
   const params = useParams();
@@ -417,13 +419,6 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                         backgroundColor={backgroundColor}
                       />
                     </div>
-                    <ColorPickerComponent
-                      currentColor={widget.headlineColor || '#FFFFFF'}
-                      handleColorChange={function (color: string): void {
-                        handleWidgetChange({ headlineColor: color });
-                      }}
-                      label={'Schriftfarbe des Widgetnamens'}
-                    />
                   </div>
                   <div className="py-2 ml-2">
                     <CheckBox
@@ -607,6 +602,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
               panelBorderSize={panelBorderSize}
               hoverColor={hoverColor}
               queryConfig={queryConfig}
+              fontColor={fontColor}
               tenant={tenant}
             />
             {widgetHasQueryConfig && (
