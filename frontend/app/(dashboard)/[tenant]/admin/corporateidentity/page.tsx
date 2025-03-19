@@ -86,7 +86,44 @@ export default function CorporateIdentity(): ReactElement {
 
   useEffect(() => {
     if (corporateInfo) {
-      updateState('dashboardFontColor', corporateInfo.dashboardFontColor);
+      // LAYOUT - HEADER
+      updateState('headerPrimaryColor', corporateInfo.headerPrimaryColor);
+      updateState(
+        'useColorTransitionHeader',
+        corporateInfo.useColorTransitionHeader,
+      );
+      updateState('headerSecondaryColor', corporateInfo.headerSecondaryColor);
+      updateState('menuCornerColor', corporateInfo.menuCornerColor);
+      updateState('menuCornerFontColor', corporateInfo.menuCornerFontColor);
+
+      // LAYOUT - MENU
+      updateState('menuPrimaryColor', corporateInfo.menuPrimaryColor);
+      updateState(
+        'useColorTransitionMenu',
+        corporateInfo.useColorTransitionMenu,
+      );
+      updateState('menuSecondaryColor', corporateInfo.menuSecondaryColor);
+      updateState('menuFontColor', corporateInfo.menuFontColor);
+      updateState('menuActiveFontColor', corporateInfo.menuActiveFontColor);
+      updateState('menuHoverFontColor', corporateInfo.menuHoverFontColor);
+      updateState('menuActiveColor', corporateInfo.menuActiveColor);
+      updateState('menuHoverColor', corporateInfo.menuHoverColor);
+      updateState('menuArrowDirection', corporateInfo.menuArrowDirection);
+
+      // MENU - SCROLLBAR
+      updateState('scrollbarColor', corporateInfo.scrollbarColor);
+      updateState('scrollbarBackground', corporateInfo.scrollbarBackground);
+
+      // MENU - BUTTONS
+      updateState('saveButtonColor', corporateInfo.saveButtonColor);
+      updateState('saveHoverButtonColor', corporateInfo.saveHoverButtonColor);
+      updateState('cancelButtonColor', corporateInfo.cancelButtonColor);
+      updateState(
+        'cancelHoverButtonColor',
+        corporateInfo.cancelHoverButtonColor,
+      );
+
+      // DASHBOARD
       updateState('dashboardPrimaryColor', corporateInfo.dashboardPrimaryColor);
       updateState(
         'dashboardSecondaryColor',
@@ -96,55 +133,22 @@ export default function CorporateIdentity(): ReactElement {
         'dashboardHeadlineFontSize',
         corporateInfo.dashboardHeadlineFontSize,
       );
-      updateState('fontColor', corporateInfo.fontColor);
-      updateState('fontFamily', corporateInfo.fontFamily);
-      updateState('headerFontColor', corporateInfo.headerFontColor);
-      updateState('headerPrimaryColor', corporateInfo.headerPrimaryColor);
-      updateState('headerSecondaryColor', corporateInfo.headerSecondaryColor);
-      updateState('headerTitleAdmin', corporateInfo.headerTitleAdmin);
-      updateState('headerTitleDashboards', corporateInfo.headerTitleDashboards);
-      updateState('menuActiveColor', corporateInfo.menuActiveColor);
-      updateState('menuActiveFontColor', corporateInfo.menuActiveFontColor);
-      updateState('menuArrowDirection', corporateInfo.menuArrowDirection);
-      updateState('menuCornerColor', corporateInfo.menuCornerColor);
-      updateState('menuCornerFontColor', corporateInfo.menuCornerFontColor);
-      updateState('menuFontColor', corporateInfo.menuFontColor);
-      updateState('menuHoverColor', corporateInfo.menuHoverColor);
-      updateState('menuPrimaryColor', corporateInfo.menuPrimaryColor);
-      updateState('menuSecondaryColor', corporateInfo.menuSecondaryColor);
-      updateState(
-        'useColorTransitionHeader',
-        corporateInfo.useColorTransitionHeader,
-      );
-      updateState(
-        'useColorTransitionMenu',
-        corporateInfo.useColorTransitionMenu,
-      );
-      updateState('panelBorderColor', corporateInfo.panelBorderColor);
-      updateState('panelBorderRadius', corporateInfo.panelBorderRadius);
-      updateState('panelBorderSize', corporateInfo.panelBorderSize);
-      updateState('panelFontColor', corporateInfo.panelFontColor);
+
+      // PANEL
       updateState('panelPrimaryColor', corporateInfo.panelPrimaryColor);
       updateState('panelSecondaryColor', corporateInfo.panelSecondaryColor);
+      updateState('panelBorderColor', corporateInfo.panelBorderColor);
+      updateState('panelBorderSize', corporateInfo.panelBorderSize);
+      updateState('panelBorderRadius', corporateInfo.panelBorderRadius);
       updateState('panelHeadlineFontSize', corporateInfo.panelHeadlineFontSize);
-      updateState('scrollbarColor', corporateInfo.scrollbarColor);
-      updateState('scrollbarBackground', corporateInfo.scrollbarBackground);
-      updateState('saveButtonColor', corporateInfo.saveButtonColor);
-      updateState('saveHoverButtonColor', corporateInfo.saveHoverButtonColor);
-      updateState('cancelButtonColor', corporateInfo.cancelButtonColor);
-      updateState(
-        'cancelHoverButtonColor',
-        corporateInfo.cancelHoverButtonColor,
-      );
-      updateState('showHeaderLogo', corporateInfo.showHeaderLogo);
-      updateState('showMenuLogo', corporateInfo.showMenuLogo);
-      updateState('titleBar', corporateInfo.titleBar);
-      updateState('widgetBorderColor', corporateInfo.widgetBorderColor);
-      updateState('widgetBorderRadius', corporateInfo.widgetBorderRadius);
-      updateState('widgetBorderSize', corporateInfo.widgetBorderSize);
-      updateState('widgetFontColor', corporateInfo.widgetFontColor);
+      updateState('isPanelHeadlineBold', corporateInfo.isPanelHeadlineBold);
+
+      // WIDGET
       updateState('widgetPrimaryColor', corporateInfo.widgetPrimaryColor);
       updateState('widgetSecondaryColor', corporateInfo.widgetSecondaryColor);
+      updateState('widgetBorderColor', corporateInfo.widgetBorderColor);
+      updateState('widgetBorderSize', corporateInfo.widgetBorderSize);
+      updateState('widgetBorderRadius', corporateInfo.widgetBorderRadius);
       updateState(
         'widgetHeadlineFontSize',
         corporateInfo.widgetHeadlineFontSize,
@@ -153,7 +157,9 @@ export default function CorporateIdentity(): ReactElement {
         'widgetSubheadlineFontSize',
         corporateInfo.widgetSubheadlineFontSize,
       );
+      updateState('isWidgetHeadlineBold', corporateInfo.isWidgetHeadlineBold);
 
+      // COMPONENT - INFO TEXT
       updateState(
         'informationTextFontSize',
         corporateInfo.informationTextFontSize,
@@ -163,14 +169,13 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.informationTextFontColor,
       );
 
+      // COMPONENT - INFO ICON WITH LINK
       updateState('iconWithLinkFontSize', corporateInfo.iconWithLinkFontSize);
       updateState('iconWithLinkFontColor', corporateInfo.iconWithLinkFontColor);
       updateState('iconWithLinkIconSize', corporateInfo.iconWithLinkIconSize);
       updateState('iconWithLinkIconColor', corporateInfo.iconWithLinkIconColor);
 
-      updateState('isPanelHeadlineBold', corporateInfo.isPanelHeadlineBold);
-      updateState('isWidgetHeadlineBold', corporateInfo.isWidgetHeadlineBold);
-
+      // COMPONENT - CHART 180
       updateState(
         'degreeChart180FontSize',
         corporateInfo.degreeChart180FontSize,
@@ -188,6 +193,8 @@ export default function CorporateIdentity(): ReactElement {
         'degreeChart180UnitFontSize',
         corporateInfo.degreeChart180UnitFontSize,
       );
+
+      // COMPONENT - CHART 360
       updateState(
         'degreeChart360FontSize',
         corporateInfo.degreeChart360FontSize,
@@ -205,6 +212,8 @@ export default function CorporateIdentity(): ReactElement {
         'degreeChart360UnitFontSize',
         corporateInfo.degreeChart360UnitFontSize,
       );
+
+      // COMPONENT - CHART STAGEABLE
       updateState(
         'stageableChartTicksFontSize',
         corporateInfo.stageableChartTicksFontSize,
@@ -222,13 +231,7 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.stageableChartFontColor,
       );
 
-      updateState('pieChartFontSize', corporateInfo.pieChartFontSize);
-      updateState('pieChartFontColor', corporateInfo.pieChartFontColor);
-      updateState(
-        'pieChartCurrentValuesColors',
-        corporateInfo.pieChartCurrentValuesColors,
-      );
-
+      // COMPONENT - CHART LINE
       updateState(
         'lineChartAxisTicksFontSize',
         corporateInfo.lineChartAxisTicksFontSize,
@@ -242,12 +245,12 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.lineChartAxisLabelFontColor,
       );
       updateState(
-        'lineChartLegendFontColor',
-        corporateInfo.lineChartLegendFontColor,
-      );
-      updateState(
         'lineChartLegendFontSize',
         corporateInfo.lineChartLegendFontSize,
+      );
+      updateState(
+        'lineChartLegendFontColor',
+        corporateInfo.lineChartLegendFontColor,
       );
       updateState(
         'lineChartTicksFontColor',
@@ -257,21 +260,34 @@ export default function CorporateIdentity(): ReactElement {
         'lineChartAxisLineColor',
         corporateInfo.lineChartAxisLineColor,
       );
+      updateState('lineChartGridColor', corporateInfo.lineChartGridColor);
+      updateState('lineChartFilterColor', corporateInfo.lineChartFilterColor);
+      updateState(
+        'lineChartFilterTextColor',
+        corporateInfo.lineChartFilterTextColor,
+      );
       updateState(
         'lineChartCurrentValuesColors',
         corporateInfo.lineChartCurrentValuesColors,
       );
-      updateState('lineChartGridColor', corporateInfo.lineChartGridColor);
-      updateState('lineChartFilterColor', corporateInfo.lineChartFilterColor);
 
+      // COMPONENT - CHART BAR
       updateState(
         'barChartAxisTicksFontSize',
         corporateInfo.barChartAxisTicksFontSize,
       );
       updateState('barChartAxisLabelSize', corporateInfo.barChartAxisLabelSize);
       updateState(
+        'barChartAxisLabelFontColor',
+        corporateInfo.barChartAxisLabelFontColor,
+      );
+      updateState(
         'barChartLegendFontSize',
         corporateInfo.barChartLegendFontSize,
+      );
+      updateState(
+        'barChartLegendFontColor',
+        corporateInfo.barChartLegendFontColor,
       );
       updateState(
         'barChartTicksFontColor',
@@ -284,7 +300,20 @@ export default function CorporateIdentity(): ReactElement {
       updateState('barChartAxisLineColor', corporateInfo.barChartAxisLineColor);
       updateState('barChartGridColor', corporateInfo.barChartGridColor);
       updateState('barChartFilterColor', corporateInfo.barChartFilterColor);
+      updateState(
+        'barChartFilterTextColor',
+        corporateInfo.barChartFilterTextColor,
+      );
 
+      // COMPONENT - CHART PIE
+      updateState('pieChartFontSize', corporateInfo.pieChartFontSize);
+      updateState('pieChartFontColor', corporateInfo.pieChartFontColor);
+      updateState(
+        'pieChartCurrentValuesColors',
+        corporateInfo.pieChartCurrentValuesColors,
+      );
+
+      // COMPONENT - CHART MEASUREMENT
       updateState(
         'measurementChartBigValueFontSize',
         corporateInfo.measurementChartBigValueFontSize,
@@ -293,7 +322,6 @@ export default function CorporateIdentity(): ReactElement {
         'measurementChartBigValueFontColor',
         corporateInfo.measurementChartBigValueFontColor,
       );
-
       updateState(
         'measurementChartTopButtonBgColor',
         corporateInfo.measurementChartTopButtonBgColor,
@@ -310,7 +338,6 @@ export default function CorporateIdentity(): ReactElement {
         'measurementChartTopButtonFontColor',
         corporateInfo.measurementChartTopButtonFontColor,
       );
-
       updateState(
         'measurementChartCardsBgColor',
         corporateInfo.measurementChartCardsBgColor,
@@ -323,7 +350,6 @@ export default function CorporateIdentity(): ReactElement {
         'measurementChartCardsIconColors',
         corporateInfo.measurementChartCardsIconColors,
       );
-
       updateState(
         'measurementChartBarColor',
         corporateInfo.measurementChartBarColor,
@@ -353,6 +379,7 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.measurementChartCurrentValuesColors,
       );
 
+      // COMPONENT - SLIDER COLORED
       updateState(
         'coloredSliderBigValueFontSize',
         corporateInfo.coloredSliderBigValueFontSize,
@@ -378,10 +405,23 @@ export default function CorporateIdentity(): ReactElement {
         corporateInfo.coloredSliderUnitFontSize,
       );
 
-      updateState('wertFontSize', corporateInfo.wertFontSize);
-      updateState('wertUnitFontSize', corporateInfo.wertUnitFontSize);
-      updateState('wertFontColor', corporateInfo.wertFontSize);
+      // COMPONENT - SLIDER OVERVIEW
+      updateState('sliderCurrentColor', corporateInfo.sliderCurrentColor);
+      updateState('sliderMaximumColor', corporateInfo.sliderMaximumColor);
+      updateState(
+        'sliderCurrentFontColor',
+        corporateInfo.sliderCurrentFontColor,
+      );
+      updateState(
+        'sliderMaximumFontColor',
+        corporateInfo.sliderMaximumFontColor,
+      );
+      updateState(
+        'sliderGeneralFontColor',
+        corporateInfo.sliderGeneralFontColor,
+      );
 
+      // COMPONENT - WEATHER WARNING
       updateState('weatherWarningBgColor', corporateInfo.weatherWarningBgColor);
       updateState(
         'weatherWarningHeadlineColor',
@@ -405,20 +445,27 @@ export default function CorporateIdentity(): ReactElement {
       );
       updateState('weatherDateColor', corporateInfo.weatherDateColor);
 
-      updateState('sliderCurrentColor', corporateInfo.sliderCurrentColor);
-      updateState('sliderMaximumColor', corporateInfo.sliderMaximumColor);
-      updateState(
-        'sliderCurrentFontColor',
-        corporateInfo.sliderCurrentFontColor,
-      );
-      updateState(
-        'sliderMaximumFontColor',
-        corporateInfo.sliderMaximumFontColor,
-      );
-      updateState(
-        'sliderGeneralFontColor',
-        corporateInfo.sliderGeneralFontColor,
-      );
+      // COMPONENT - VALUE
+      updateState('wertFontSize', corporateInfo.wertFontSize);
+      updateState('wertUnitFontSize', corporateInfo.wertUnitFontSize);
+      updateState('wertFontColor', corporateInfo.wertFontSize);
+
+      // LOGO
+      updateState('showHeaderLogo', corporateInfo.showHeaderLogo);
+      updateState('showMenuLogo', corporateInfo.showMenuLogo);
+
+      // FONTS
+      updateState('headerFontColor', corporateInfo.headerFontColor);
+      updateState('fontFamily', corporateInfo.fontFamily);
+      updateState('dashboardFontColor', corporateInfo.dashboardFontColor);
+      updateState('panelFontColor', corporateInfo.panelFontColor);
+      updateState('widgetFontColor', corporateInfo.widgetFontColor);
+      updateState('fontColor', corporateInfo.fontColor);
+
+      // STUFF
+      updateState('headerTitleAdmin', corporateInfo.headerTitleAdmin);
+      updateState('headerTitleDashboards', corporateInfo.headerTitleDashboards);
+      updateState('titleBar', corporateInfo.titleBar);
 
       setIsInitDone(true);
     }

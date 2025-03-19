@@ -1,8 +1,9 @@
 'use client';
 
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
-import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { useParams } from 'next/navigation';
+
+import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { GroupingElement, menuArrowDirectionEnum } from '@/types';
 import DashboardSidebarDashboard from './DashboardSidebarDashboard';
 import '../app/globals.css';
@@ -18,10 +19,6 @@ type DashboardSidebarGroupProps = {
   onDashboardClick: () => void;
 };
 
-type BackgroundColorStyle =
-  | { backgroundImage: string }
-  | { backgroundColor: string };
-
 export default function DashboardSidebarGroup(
   props: DashboardSidebarGroupProps,
 ): ReactElement {
@@ -32,10 +29,6 @@ export default function DashboardSidebarGroup(
   const childContainerRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
-
-  const DynamicStyles = {
-    customBgColor: groupElement.backgroundColor || '#3D4760',
-  };
   const tenant = getTenantOfPage();
 
   const { data } = useQuery({
@@ -100,32 +93,7 @@ export default function DashboardSidebarGroup(
     return () => observer.disconnect();
   }, [isOpen, groupElement.children]);
 
-  const getBgColorOnHover = (
-    groupElement: GroupingElement,
-  ): BackgroundColorStyle => {
-    return groupElement.gradient
-      ? {
-          backgroundImage: `linear-gradient(to top right, ${DynamicStyles.customBgColor}, #59647D00)`,
-        }
-      : { backgroundColor: DynamicStyles.customBgColor };
-  };
-
-  const getBgColorForActiveDropdown = (
-    groupElement: GroupingElement,
-  ): BackgroundColorStyle => {
-    return groupElement.gradient
-      ? {
-          backgroundImage: `linear-gradient(to top right, ${DynamicStyles.customBgColor}, #59647D00)`,
-        }
-      : {
-          backgroundColor: DynamicStyles.customBgColor,
-        };
-  };
-
   const determineFontColor = (): string => {
-    if (groupElement.fontColor) {
-      return groupElement.fontColor;
-    }
     if (isActiveDropdown()) {
       return data?.menuActiveFontColor ?? '#FFFFFF';
     } else {
@@ -138,9 +106,10 @@ export default function DashboardSidebarGroup(
     padding: '6px',
     cursor: 'pointer',
     color: determineFontColor(),
-    ...(isActiveDropdown() ? getBgColorForActiveDropdown(groupElement) : {}),
-    // For hover effect using dynamic color
-    ...(isHovered && getBgColorOnHover(groupElement)),
+    ...(isActiveDropdown()
+      ? { backgroundColor: data?.menuActiveColor }
+      : { backgroundColor: 'transparent' }),
+    ...(isHovered && { backgroundColor: data?.menuHoverColor }),
   };
 
   const getDirectionArrow = (isOpen: boolean): string => {
@@ -236,7 +205,6 @@ export default function DashboardSidebarGroup(
                     url={`${url}/${element.url!}`}
                     elementUrl={element.url!}
                     icon={element.icon!}
-                    menuColor={element.fontColor}
                     onDashboardClick={onDashboardClick}
                   />
                 ) : (

@@ -318,6 +318,70 @@ export default function DataPlatformWizard(
               />
             </div>
           </div>
+        ) : type === authDataTypeEnum.usi ? (
+          <div className="flex flex-col justify-start items-start content-center grow w-full">
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Client Id" />
+              <WizardTextfield
+                value={clientId}
+                onChange={(value: string | number): void =>
+                  setClientId(value.toString())
+                }
+                error={errors && errors.clientError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Client Secret" />
+              <WizardPasswordTextfield
+                value={clientSecret}
+                onChange={(value: string | number): void =>
+                  setClientSecret(value.toString())
+                }
+                error={errors && errors.clientError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+                iconColor={iconColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Auth Url" />
+              <WizardUrlTextfield
+                value={authUrl}
+                onChange={(value: string | number): void =>
+                  setAuthUrl(value.toString())
+                }
+                error={errors && errors.authUrlError}
+                iconColor={iconColor}
+                borderColor={borderColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Daten Url" />
+              <WizardUrlTextfield
+                value={liveUrl}
+                onChange={(value: string | number): void =>
+                  setLiveUrl(value.toString())
+                }
+                error={errors && errors.liveUrlError}
+                iconColor={iconColor}
+                borderColor={borderColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Eventtypes" />
+              <WizardTextfield
+                value={collections.join(',')}
+                onChange={(value: string | number): void =>
+                  handleCollectionChange(value.toString().replace(' ', ','))
+                }
+                error={errors && errors.appUserError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col justify-start items-start content-center grow w-full">
             <div className="flex flex-col w-full pb-2">

@@ -183,6 +183,13 @@
       "when": 1741876710551,
       "tag": "0025_fair_crusher_hogan_0.22.3",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1742281189106,
+      "tag": "0026_ancient_chat_0.23.0",
+      "breakpoints": true
     }
   ]
 }

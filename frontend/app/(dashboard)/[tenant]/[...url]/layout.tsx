@@ -58,9 +58,7 @@ export default async function RootLayout(props: {
       <div className="flex h-full w-full">
         <div className="fixed top-0 left-0 bottom-0 z-30">
           <DashboardSidebar
-            useColorTransitionMenu={ciColors.useColorTransitionMenu}
             menuPrimaryColor={ciColors.menuPrimaryColor}
-            menuSecondaryColor={ciColors.menuSecondaryColor}
             menuFontColor={ciColors.menuFontColor}
             menuCornerColor={ciColors.menuCornerColor}
             menuCornerFontColor={ciColors.menuCornerFontColor}

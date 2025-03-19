@@ -98,7 +98,6 @@ export default function DashboardWidgetPreview(
               unit={tab.chartUnit || ''}
               value={tab.chartValues ? tab.chartValues[0] : 25}
               mainColor={data?.dashboardPrimaryColor || '#3D4760'}
-              secondaryColor={data?.dashboardSecondaryColor || '#3D4760'}
               fontColor={data?.dashboardFontColor || '#fff'}
               fontSize={data?.degreeChart360FontSize || '11'}
               unitFontSize={data?.degreeChart360UnitFontSize || '#fff'}
@@ -164,6 +163,7 @@ export default function DashboardWidgetPreview(
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
               filterColor={data?.lineChartFilterColor || '#F1B434'}
               filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
+              decimalPlaces={tab?.decimalPlaces || 1}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
@@ -204,6 +204,7 @@ export default function DashboardWidgetPreview(
               filterColor={data?.barChartFilterColor || '#F1B434'}
               filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
               axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
+              decimalPlaces={tab?.decimalPlaces || 1}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (

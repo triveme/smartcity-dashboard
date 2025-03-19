@@ -38,6 +38,7 @@ type BarChartProps = {
   filterColor?: string;
   filterTextColor?: string;
   isStackedChart: boolean;
+  decimalPlaces?: number;
 };
 
 export default function BarChart(props: BarChartProps): ReactElement {
@@ -65,6 +66,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
     filterColor,
     filterTextColor,
     isStackedChart,
+    decimalPlaces,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -197,14 +199,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
             fontSize: legendFontSize,
             color: legendFontColor,
           },
-          top: legendAlignment === 'Top' ? 'top' : 'middle',
-          left:
-            legendAlignment === 'Left'
-              ? 'left'
-              : legendAlignment === 'Right'
-                ? 'auto'
-                : 'center',
-          right: legendAlignment === 'Right' ? 'right' : 'auto',
+          right: allowImageDownload ? '30' : 'auto',
         },
         toolbox: {
           show: allowImageDownload,
@@ -248,7 +243,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
           trigger: 'item',
           valueFormatter: (value) =>
             applyUserLocaleToNumber(
-              roundToDecimal(Number(value)),
+              roundToDecimal(Number(value), decimalPlaces),
               navigator.language || 'de-DE',
             ),
         },

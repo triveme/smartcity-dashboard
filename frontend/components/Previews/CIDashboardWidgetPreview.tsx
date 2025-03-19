@@ -268,7 +268,6 @@ export default function CIDashboardWidgetPreview(
               unit="%"
               value={75} // Static value
               mainColor="#3D4760"
-              secondaryColor="#3D4760"
               fontColor={degreeChart360FontColor}
               fontSize={degreeChart360FontSize}
               backgroundColor={degreeChart360BgColor}
