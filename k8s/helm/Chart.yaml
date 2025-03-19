@@ -55,6 +55,9 @@ dependencies:
   - name: report-service
     condition: report-service.enabled
     version: 0.1.0
+  - name: usi-platform-service
+    condition: usi-platform-service.enabled
+    version: 0.1.0
   - name: frontend
     condition: frontend.enabled
     version: 0.1.0

@@ -177,7 +177,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     )}
                     {widget.componentSubType ===
                       tabComponentSubTypeEnum.stageableChart && (
-                      <div className="flex flex-col w-full h-52">
+                      <div className="flex flex-col w-full h-60">
                         {widget.title && (
                           <h2 className="text-center font-semibold">
                             {widget.title}

@@ -63,6 +63,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'ngsi-ld',
   'api',
   'static-endpoint',
+  'usi',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [

@@ -79,6 +79,7 @@ export default function Pages(): ReactElement {
         panelBorderSize={corporateInfo?.panelBorderSize || '4px'}
         hoverColor={corporateInfo?.menuHoverColor || '#FFFFFF50'}
         widgetHeadlineColor={corporateInfo?.widgetFontColor || '#FFFFFF'}
+        fontColor={corporateInfo?.dashboardFontColor || '#fff'}
       />
     </div>
   );

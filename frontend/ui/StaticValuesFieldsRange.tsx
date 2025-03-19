@@ -22,6 +22,7 @@ type StaticValuesFieldProps = {
   iconColor: string;
   backgroundColor: string;
   borderColor: string;
+  fontColor: string;
   type?: string;
 };
 
@@ -52,6 +53,7 @@ export default function StaticValuesFieldRange(
     iconColor,
     borderColor,
     backgroundColor,
+    fontColor,
     type,
   } = props;
 
@@ -66,23 +68,23 @@ export default function StaticValuesFieldRange(
     initialStaticValuesTexts,
   );
   const [iconColorValues, setIconColorValues] = useState(
-    initialIconColor || '#ffffff',
+    initialIconColor || fontColor,
   );
   const [labelColorValues, setLabelColorValues] = useState(
-    initialLabelColor || '#000000',
+    initialLabelColor || fontColor,
   );
 
   useEffect(() => {
     const newInputValues = initialRangeStaticValuesMin.map((min, index) => ({
       min: min.toString(),
       max: (initialRangeStaticValuesMax[index] || 0).toString(),
-      color: initialRangeStaticValuesColors[index] || '#FFFFFF',
+      color: initialRangeStaticValuesColors[index] || fontColor,
       label: initialRangeStaticValuesLabels[index] || '',
       icon: initialRangeStaticValuesLogos[index] || '',
     }));
     setInputValues(newInputValues);
-    setIconColorValues(initialIconColor || '#000000');
-    setLabelColorValues(initialLabelColor || '#000000');
+    setIconColorValues(initialIconColor || fontColor);
+    setLabelColorValues(initialLabelColor || fontColor);
   }, [
     initialRangeStaticValuesMin,
     initialRangeStaticValuesMax,
@@ -108,7 +110,7 @@ export default function StaticValuesFieldRange(
     const newInputValue: InputValue = {
       min: '0',
       max: '0',
-      color: '#FFFFFF',
+      color: fontColor,
       label: '',
       icon: '',
     };
@@ -283,12 +285,12 @@ export default function StaticValuesFieldRange(
         <>
           <div className="flex gap-x-4 my-4">
             <ColorPickerComponent
-              currentColor={iconColorValues}
+              currentColor={fontColor}
               handleColorChange={handleIconColorChange}
               label="Schrift und Icons"
             />
             <ColorPickerComponent
-              currentColor={labelColorValues}
+              currentColor={fontColor}
               handleColorChange={handleLabelColorChange}
               label="Beschreibungstext"
             />
@@ -316,7 +318,7 @@ export default function StaticValuesFieldRange(
                   handleIconSelect={(value: string): void => {
                     handleChangeLogo(value, index);
                   }}
-                  iconColor={'#ffffff'}
+                  iconColor={fontColor}
                   borderColor={borderColor}
                 />
               </div>

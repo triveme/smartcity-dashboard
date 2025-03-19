@@ -124,7 +124,7 @@ export default async function Dashboard(
               <div>
                 <PageHeadline
                   headline={dashboard.name || 'Dashboardseite'}
-                  fontColor={dashboard.headlineColor}
+                  fontColor={ciColors.dashboardFontColor}
                   fontSize={generateResponsiveFontSize(
                     parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
                   )}

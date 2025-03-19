@@ -60,6 +60,7 @@ type TabWizardProps = {
   hoverColor: string;
   queryConfig: QueryConfig;
   tenant: string | undefined;
+  fontColor: string;
 };
 
 export default function TabWizard(props: TabWizardProps): ReactElement {
@@ -77,6 +78,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     hoverColor,
     queryConfig,
     tenant,
+    fontColor,
   } = props;
 
   const auth = useAuth();
@@ -92,12 +94,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   const [maxZoom, setMaxZoom] = useState(tab?.mapMaxZoom || 20);
   const [minZoom, setMinZoom] = useState(tab?.mapMinZoom || 10);
   const [standardZoom, setStandardZoom] = useState(tab?.mapStandardZoom || 15);
-  // const [selectedTopWidgetId, setSelectedTopWidgetId] = useState(
-  //   tab?.childWidgets?.[0] || '',
-  // );
-  // const [selectedBottomWidgetId, setSelectedBottomWidgetId] = useState(
-  //   tab?.childWidgets?.[1] || '',
-  // );
   const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['', '']);
   const [combinedMapWidgetsId, setCombinedMapWidgetsId] = useState<string[]>(
     tab?.childWidgets || [''],
@@ -109,8 +105,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
 
       // set widget height = 0 for Information and Value widgets
       if (
-        newTab.componentType === tabComponentTypeEnum.information ||
-        newTab.componentType === tabComponentTypeEnum.value
+        prevTab?.componentType !== tabComponentTypeEnum.information &&
+        newTab.componentType === tabComponentTypeEnum.information
       ) {
         handleWidgetChange({ height: 0 });
       }
@@ -453,6 +449,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       error={errors?.stageableColorValueError}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
+                      fontColor={fontColor}
                       type="slider"
                     />
                   </div>
@@ -478,6 +475,17 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       value={tab?.chartYAxisLabel || ''}
                       onChange={(value: string | number): void =>
                         handleTabChange({ chartYAxisLabel: value.toString() })
+                      }
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <div>
+                    <WizardLabel label="Anzahl Dezimalstellen" />
+                    <WizardIntegerfield
+                      value={tab?.decimalPlaces || 1}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({ decimalPlaces: value as number })
                       }
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
@@ -602,6 +610,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       handleTabChange={handleTabChange}
                       backgroundColor={backgroundColor}
                       borderColor={borderColor}
+                      fontColor={fontColor}
                     />
                   </div>
                 </div>
@@ -817,6 +826,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       borderColor={borderColor}
                       iconColor={iconColor}
                       backgroundColor={backgroundColor}
+                      fontColor={fontColor}
                       type="slider"
                     />
                   </div>
@@ -996,6 +1006,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   error={errors?.stageableColorValueError}
                   borderColor={borderColor}
                   backgroundColor={backgroundColor}
+                  fontColor={fontColor}
                   type="slider"
                 />
               </div>
@@ -1358,6 +1369,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                   error={errors?.stageableColorValueError}
                                   borderColor={borderColor}
                                   backgroundColor={backgroundColor}
+                                  fontColor={fontColor}
                                   type="map"
                                 />
                               </div>

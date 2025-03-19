@@ -30,6 +30,10 @@ report-service:
   ingress:
     enabled: false
 
+usi-platform-service:
+  ingress:
+    enabled: false
+
 frontend:
   ingress:
     enabled: false

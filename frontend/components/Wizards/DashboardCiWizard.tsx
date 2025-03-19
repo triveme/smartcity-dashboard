@@ -45,7 +45,7 @@ export default function DashboardCiWizard({
         </div>
         <div className="flex flex-col gap-y-6 w-1/2 px-2">
           <div>
-            <WizardLabel label="Dashboard Headline Fontsize" />
+            <WizardLabel label="Dashboard Name Schriftgröße" />
             <WizardDropdownSelection
               currentValue={dashboardHeadlineFontSize}
               selectableValues={['', ...fontSizes.map((size) => size + 'px')]}

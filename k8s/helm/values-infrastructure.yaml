@@ -20,5 +20,8 @@ static-data-service:
 report-service:
   enabled: false
 
+usi-platform-service:
+  enabled: false
+
 frontend:
   enabled: false
