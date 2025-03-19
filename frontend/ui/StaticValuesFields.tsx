@@ -18,6 +18,7 @@ type StaticValuesFieldProps = {
   handleTabChange: (update: Partial<Tab>) => void;
   backgroundColor: string;
   borderColor: string;
+  fontColor: string;
   type?: string;
 };
 
@@ -36,6 +37,7 @@ export default function StaticValuesField(
     handleTabChange,
     borderColor,
     backgroundColor,
+    fontColor,
     type,
   } = props;
 
@@ -51,12 +53,6 @@ export default function StaticValuesField(
   const [textValues, setTextValues] = useState<string[]>(
     initialStaticValuesTexts,
   );
-  const [iconColorValues, setIconColorValues] = useState(
-    initialIconColor || '#ffffff',
-  );
-  const [labelColorValues, setLabelColorValues] = useState(
-    initialLabelColor || '#000000',
-  );
   const [isEditing, setIsEditing] = useState(false);
 
   // Synchronize only if no active edits are in progress
@@ -66,8 +62,6 @@ export default function StaticValuesField(
       setTickValues(initialStaticValuesTicks.map(String));
       setLogoValues(initialStaticValuesLogos);
       setTextValues(initialStaticValuesTexts);
-      setIconColorValues(initialIconColor || '#000000');
-      setLabelColorValues(initialLabelColor || '#000000');
     }
   }, [
     initialChartStaticValues,
@@ -94,7 +88,7 @@ export default function StaticValuesField(
 
   const handleAddMainValue = (): void => {
     const newValues = [...initialChartStaticValues, 0];
-    const newColors = [...initialStaticColors, 'FFFFFF'];
+    const newColors = [...initialStaticColors, fontColor];
     handleTabChange({
       chartStaticValues: newValues,
       chartStaticValuesColors: newColors,
@@ -174,12 +168,10 @@ export default function StaticValuesField(
   };
 
   const handleIconColorChange = (color: string): void => {
-    setIconColorValues(color);
     handleTabChange({ iconColor: color });
   };
 
   const handleLabelColorChange = (color: string): void => {
-    setLabelColorValues(color);
     handleTabChange({ labelColor: color });
   };
 
@@ -200,7 +192,7 @@ export default function StaticValuesField(
             />
 
             <ColorPickerComponent
-              currentColor={initialStaticColors[index] || 'FFFFFF'}
+              currentColor={initialStaticColors[index] || fontColor}
               handleColorChange={(color): void =>
                 handleColorChange(color, index)
               }
@@ -225,12 +217,12 @@ export default function StaticValuesField(
         <>
           <div className="flex gap-4 h-14">
             <ColorPickerComponent
-              currentColor={iconColorValues}
+              currentColor={fontColor}
               handleColorChange={handleIconColorChange}
               label="Schrift und Icons"
             />
             <ColorPickerComponent
-              currentColor={labelColorValues}
+              currentColor={fontColor}
               handleColorChange={handleLabelColorChange}
               label="Beschreibungstext"
             />
@@ -260,7 +252,7 @@ export default function StaticValuesField(
                   handleIconSelect={(value: string): void => {
                     handleChangeLogo(value, index);
                   }}
-                  iconColor={'#ffffff'}
+                  iconColor={fontColor}
                   borderColor={borderColor}
                 />
               </div>
@@ -295,16 +287,17 @@ export default function StaticValuesField(
         <>
           <div className="flex gap-4 h-14">
             <ColorPickerComponent
-              currentColor={iconColorValues}
+              currentColor={fontColor}
               handleColorChange={handleIconColorChange}
               label="Schrift und Icons"
             />
             <ColorPickerComponent
-              currentColor={labelColorValues}
+              currentColor={fontColor}
               handleColorChange={handleLabelColorChange}
               label="Beschreibungstext"
             />
           </div>
+
           {tickValues.map((_, index) => (
             <div key={`tick-${index}`} className="flex flex-col gap-4 mb-4">
               <div className="flex gap-4 h-14">

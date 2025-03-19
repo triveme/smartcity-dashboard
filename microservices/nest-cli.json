@@ -80,6 +80,15 @@
         "tsConfigPath": "apps/report-service/tsconfig.app.json"
       }
     },
+    "usi-platform-service": {
+      "type": "application",
+      "root": "apps/usi-platform-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/usi-platform-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/usi-platform-service/tsconfig.app.json"
+      }
+    },
     "auth-helper": {
       "type": "library",
       "root": "libs/auth-helper",

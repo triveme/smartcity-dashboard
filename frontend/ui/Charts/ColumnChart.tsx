@@ -14,6 +14,7 @@ type ColumnChartProps = {
   gridColor?: string;
   warningColor?: string;
   alarmColor?: string;
+  axisTicksFontColor: string;
 };
 
 export default function ColumnChart({
@@ -26,6 +27,7 @@ export default function ColumnChart({
   gridColor,
   warningColor,
   alarmColor,
+  axisTicksFontColor,
 }: ColumnChartProps): React.ReactElement {
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +68,7 @@ export default function ColumnChart({
           min: 0,
           axisLine: {
             lineStyle: {
-              color: '#D9D9D9',
+              color: axisTicksFontColor,
             },
           },
           axisTick: {
@@ -93,6 +95,9 @@ export default function ColumnChart({
             },
             markLine: {
               silent: true,
+              label: {
+                show: false,
+              },
               symbol: 'none',
               data: [
                 {
@@ -102,12 +107,6 @@ export default function ColumnChart({
                     color: warningColor,
                     type: 'solid',
                   },
-                  label: {
-                    show: true,
-                    color: 'white',
-                    position: 'insideMiddleTop',
-                    formatter: 'Warnung',
-                  },
                 },
                 {
                   yAxis: valueAlarm,
@@ -115,12 +114,6 @@ export default function ColumnChart({
                   lineStyle: {
                     color: alarmColor,
                     type: 'solid',
-                  },
-                  label: {
-                    show: true,
-                    color: 'white',
-                    position: 'insideMiddleTop',
-                    formatter: 'Alarm',
                   },
                 },
               ],

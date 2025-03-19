@@ -318,6 +318,7 @@ export default function MeasurementComponent(
             gridColor={gridColor}
             warningColor={cardsIconColors[2]}
             alarmColor={cardsIconColors[3]}
+            axisTicksFontColor={axisTicksFontColor}
           />
           <div
             className="font-bold mb-2 text-center"

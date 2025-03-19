@@ -88,12 +88,12 @@ export default async function DashboardWidget({
         style={{ color: widgetStyle.color }}
       >
         {widget.showName ? (
-          <div style={{ color: widget.headlineColor }}>
+          <div style={{ color: ciColors.widgetFontColor }}>
             <div className="flex flex-row items-center">
               <div className="w-12 min-w-12 flex justify-center">
                 <DashboardIcons
                   iconName={widget.icon}
-                  color={widget.headlineColor}
+                  color={ciColors.widgetFontColor}
                 />
               </div>
               <div className="w-full flex justify-start items-center gap-x-2">
