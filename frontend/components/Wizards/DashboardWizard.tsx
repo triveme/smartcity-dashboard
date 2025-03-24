@@ -50,6 +50,8 @@ type DashboardWizardProps = {
   setDashboardIcon: (icon: string) => void;
   dashboardType: string;
   setDashboardType: (type: string) => void;
+  dashboardAllowShare: boolean;
+  setDashboardAllowShare: (type: boolean) => void;
   dashboardAllowDataExport: boolean;
   setDashboardAllowDataExport: (type: boolean) => void;
   selectedTab: Tab | undefined;
@@ -87,6 +89,8 @@ export default function DashboardWizard(
     setDashboardIcon,
     dashboardType,
     setDashboardType,
+    dashboardAllowShare,
+    setDashboardAllowShare,
     dashboardAllowDataExport,
     setDashboardAllowDataExport,
     panels,
@@ -352,6 +356,13 @@ export default function DashboardWizard(
           }}
           iconColor={iconColor}
           borderColor={borderColor}
+        />
+      </div>
+      <div className="flex flex-col w-full py-2">
+        <CheckBox
+          label="Teilen des Dashboards zulassen"
+          value={dashboardAllowShare}
+          handleSelectChange={setDashboardAllowShare}
         />
       </div>
       <div className="flex flex-col w-full py-2">

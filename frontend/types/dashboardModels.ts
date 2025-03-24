@@ -10,6 +10,7 @@ export type Dashboard = {
   id?: string | null;
   name: string | null;
   allowDataExport?: boolean;
+  allowShare?: boolean;
   headlineColor?: string;
   icon: string | null;
   readRoles: string[] | null;
@@ -22,6 +23,7 @@ export type DashboardWithContent = {
   id?: string | null;
   name: string | null;
   allowDataExport: boolean;
+  allowShare: boolean;
   headlineColor?: string;
   icon: string | null;
   panels: PanelWithContent[];
@@ -140,6 +142,7 @@ export type MapModalWidget = {
   chartStaticValuesTexts?: string[];
   chartStaticValuesLogos?: string[];
   dataSource?: number;
+  decimalPlaces?: number;
   imageUrl?: string;
   textValue?: string;
   icon?: string;
@@ -163,6 +166,8 @@ export type MapModalLegend = {
 export type Tab = {
   id?: string;
   chartAllowImageDownload?: boolean;
+  chartDateRepresentation?: string;
+  chartHasAutomaticZoom?: boolean;
   chartHasAdditionalSelection?: boolean;
   chartData?: ChartData[];
   chartLabels?: string[];

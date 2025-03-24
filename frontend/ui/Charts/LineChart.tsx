@@ -9,11 +9,15 @@ import {
   calculateLeftGrid,
   calculateBottomGrid,
   getUniqueField,
+  calculateMinYAxisValue,
+  calculateMaxYAxisValue,
+  getChartDateFormatter,
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 
 type LineChartProps = {
+  chartDateRepresentation?: string | 'Default';
   labels: string[] | undefined;
   data: ChartData[];
   xAxisLabel?: string;
@@ -21,6 +25,7 @@ type LineChartProps = {
   allowImageDownload: boolean;
   allowZoom?: boolean;
   isStepline?: boolean;
+  chartHasAutomaticZoom?: boolean;
   showLegend?: boolean;
   staticValues: number[];
   staticValuesColors: string[];
@@ -44,6 +49,7 @@ type LineChartProps = {
 
 export default function LineChart(props: LineChartProps): ReactElement {
   const {
+    chartDateRepresentation,
     data,
     xAxisLabel,
     yAxisLabel,
@@ -54,6 +60,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     staticValues,
     staticValuesColors,
     axisLabelFontColor,
+    chartHasAutomaticZoom,
     currentValuesColors,
     gridColor,
     axisTicksFontColor,
@@ -149,6 +156,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             color: axisTicksFontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
+            formatter: getChartDateFormatter(chartDateRepresentation),
           },
           axisTick: {
             show: false,
@@ -190,6 +198,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
               type: 'dashed',
             },
           },
+          min: chartHasAutomaticZoom
+            ? calculateMinYAxisValue(data, decimalPlaces)
+            : undefined,
+          max: chartHasAutomaticZoom
+            ? calculateMaxYAxisValue(data, decimalPlaces)
+            : undefined,
         },
         legend: {
           type: 'scroll',

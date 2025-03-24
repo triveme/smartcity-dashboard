@@ -113,6 +113,8 @@ export default async function DashboardWidget({
                   <RedirectPageButton
                     url={`/${tenant}/admin/widgets/edit?id=${widget?.id}`}
                     isShortStyle={true}
+                    headerPrimaryColor={ciColors.headerPrimaryColor}
+                    headerFontColor={ciColors.headerFontColor}
                   />
                 ) : null}
               </div>
@@ -135,16 +137,28 @@ export default async function DashboardWidget({
               <RedirectPageButton
                 url={`/${tenant}/admin/widgets/edit?id=${widget?.id}`}
                 isShortStyle={true}
+                headerPrimaryColor={ciColors.headerPrimaryColor}
+                headerFontColor={ciColors.headerFontColor}
               />
             ) : null}
           </>
         )}
         <div className="sm:flex hidden text-sm flex-row space-x-2 items-center">
           {widget.allowDataExport && (
-            <SmallDataExportButton id={widget.id || ''} type="widget" />
+            <SmallDataExportButton
+              id={widget.id || ''}
+              type="widget"
+              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+              widgetFontColor={ciColors?.widgetFontColor}
+            />
           )}
           {widget.allowShare && (
-            <ShareLinkButton type="widget" id={widget.id || ''} />
+            <ShareLinkButton
+              type="widget"
+              id={widget.id || ''}
+              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+              widgetFontColor={ciColors?.widgetFontColor}
+            />
           )}
         </div>
       </div>

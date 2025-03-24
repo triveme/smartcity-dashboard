@@ -15,7 +15,6 @@ dashboard-service:
   logPath: "/logs"
   editRoles: |
     [ "editor", "tester", "scs-admin" ]
-  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
   ingress:
     enabled: true
     tls:
@@ -29,7 +28,6 @@ dashboard-service:
             pathType: Prefix
 ngsi-service:
   jwks: "https://mit-smartcity-suite-dev-keycloak.container.edag/realms/testrealm/protocol/openid-connect/certs"
-  passwordEncryptKey: "2e9004df001ba6b4ea0fb7333f5cf9e0a3970275e192adead6e54185feeb9096"
   frontendUrl: "https://mit-smartcity-suite-dev-frontend.container.edag"
   ingress:
     enabled: true
@@ -109,7 +107,6 @@ static-data-service:
             pathType: Prefix
 usi-platform-service:
   frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
-  usiClientSecret: "5T1k3An8Foecqha2QOgxhtFmP2V9Eg8I"
   ingress:
     enabled: true
     tls:
@@ -134,7 +131,6 @@ frontend:
   ngsiServiceUrl: "https://mit-smartcity-suite-dev-ngsi-service.container.edag"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"
-  mapBoxToken: "pk.eyJ1IjoibWFoYW1tYWRyOTUiLCJhIjoiY2twa3o2b3AxMDY3ZjJwbzF3cTlibXZhdSJ9.lmN1DVkoOlZP8wLREwMp2w"
   adminRole: "scs-admin"
   superAdminRole: "scs-super-admin"
   cbid: "087006bd-3503-4017-896e-a6bebd753657"

@@ -1,6 +1,7 @@
 import {
   aggregationEnum,
   aggregationPeriodEnum,
+  chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
   menuArrowDirectionEnum,
   tabComponentSubTypeEnum,
@@ -76,6 +77,15 @@ export const chartComponentSubTypes = [
   { label: 'Liniendiagramm', value: tabComponentSubTypeEnum.lineChart },
   { label: 'Balkendiagramm', value: tabComponentSubTypeEnum.barChart },
   { label: 'Messung', value: tabComponentSubTypeEnum.measurement },
+];
+
+export const chartDateRepresentation = [
+  { label: 'Standard', value: chartDateRepresentaionEnum.default },
+  { label: 'nur Jahr', value: chartDateRepresentaionEnum.onlyJear },
+  {
+    label: 'nur Monat (Jahr beim Jahreswechsel)',
+    value: chartDateRepresentaionEnum.onlyMonth,
+  },
 ];
 
 export const sliderComponentSubTypes = [

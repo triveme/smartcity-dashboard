@@ -518,6 +518,9 @@ export default function CorporateInfoWizard({
             setMeasurementChartTopButtonInactiveBgColor={(value): void =>
               updateState('measurementChartTopButtonInactiveBgColor', value)
             }
+            measurementChartTopButtonhHeaderSecondaryColor={
+              state.headerSecondaryColor
+            }
             measurementChartTopButtonHoverColor={
               state.measurementChartTopButtonHoverColor
             }

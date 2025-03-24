@@ -69,7 +69,11 @@ export class DashboardController {
     const roles = request.roles ?? [];
     const tenant = request.tenant ?? undefined;
     if (includeContent === 'true') {
-      return this.service.getDashboardWithContent(id, roles, tenant);
+      if (tenant && tenant !== '') {
+        return this.service.getDashboardWithContent(id, roles, tenant);
+      } else {
+        return this.service.getDashboardWithContentById(id, roles);
+      }
     }
 
     return this.service.getById(id, roles);
