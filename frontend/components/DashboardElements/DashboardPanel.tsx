@@ -75,12 +75,20 @@ export default async function DashboardPanel(
                 <RedirectPageButton
                   url={`/${tenant}/admin/pages/edit?id=${dashboardId}`}
                   isShortStyle={true}
+                  headerPrimaryColor={ciColors.headerPrimaryColor}
+                  headerFontColor={ciColors.headerFontColor}
                 />
               ) : null}
             </div>
           </div>
           <div className="sm:flex flex-row items-center gap-x-4 hidden">
-            {panel.showJumpoffButton && <JumpoffButton panel={panel} />}
+            {panel.showJumpoffButton && (
+              <JumpoffButton
+                panel={panel}
+                headerPrimaryColor={ciColors.headerPrimaryColor}
+                headerFontColor={ciColors.headerFontColor}
+              />
+            )}
             {panel.showGeneralInfo && (
               <DashboardGeneralInfoMessage
                 panel={panel}

@@ -52,6 +52,8 @@ export default function TableContent<T>(
 
   const params = useParams();
   const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
+  const BASEPATH = env('NEXT_PUBLIC_BASEPATH');
+  const basepathRedirect = BASEPATH ? `${BASEPATH}/` : '';
   const tenant =
     NEXT_PUBLIC_MULTI_TENANCY === 'true'
       ? (params.tenant as string)
@@ -73,7 +75,7 @@ export default function TableContent<T>(
 
   const handleRowClick = (itemId: string | undefined): void => {
     if (isTenant || !itemId) return;
-    const itemUrl = `${pathname}/edit?id=${itemId}`;
+    const itemUrl = `${basepathRedirect}${pathname}/edit?id=${itemId}`;
     window.open(itemUrl, '_self'); // Left-click behavior (same tab)
   };
 
@@ -83,7 +85,7 @@ export default function TableContent<T>(
   ): void => {
     event.preventDefault(); // Prevent default context menu
     if (isTenant || !itemId) return;
-    const itemUrl = `${pathname}/edit?id=${itemId}`;
+    const itemUrl = `${basepathRedirect}${pathname}/edit?id=${itemId}`;
     window.open(itemUrl, '_blank'); // Right-click or Ctrl+Click opens in new tab
   };
 

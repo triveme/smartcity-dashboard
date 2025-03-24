@@ -2,32 +2,23 @@
 import { ReactElement } from 'react';
 
 import DashboardIcons from '../Icons/DashboardIcon';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
 import { MapModalWidget, PanelWithContent } from '@/types';
-import { getTenantOfPage } from '@/utils/tenantHelper';
 import Link from 'next/link';
 
 type DashboardGeneralInfoMessageProps = {
   panel: PanelWithContent | MapModalWidget;
   url?: string;
+  headerPrimaryColor?: string;
+  headerFontColor?: string;
 };
 
 export default function JumpoffButton(
   props: DashboardGeneralInfoMessageProps,
 ): ReactElement {
-  const { panel, url } = props;
-  const tenant = getTenantOfPage();
-
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
-
+  const { panel, url, headerPrimaryColor, headerFontColor } = props;
   const jumpoffButtonStyle = {
-    backgroundColor: data?.headerPrimaryColor || '#2B3244',
-    color: data?.headerFontColor || 'FFF',
+    backgroundColor: headerPrimaryColor || '#2B3244',
+    color: headerFontColor || 'FFF',
     fontSize: '1rem',
   };
 

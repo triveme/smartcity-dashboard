@@ -2,9 +2,6 @@
 
 import { ReactElement, useState, CSSProperties } from 'react';
 import DashboardIcons from '../Icons/DashboardIcon';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { getTenantOfPage } from '@/utils/tenantHelper';
 import React from 'react';
 import { useAuth } from 'react-oidc-context';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
@@ -14,27 +11,22 @@ type DataExportButtonProps = {
   id: string;
   type: string;
   menuStyle?: CSSProperties;
+  headerFontColor?: string;
+  headerPrimaryColor?: string;
 };
 
 export default function DataExportButton(
   props: DataExportButtonProps,
 ): ReactElement {
-  const { id, type, menuStyle } = props;
+  const { id, type, menuStyle, headerFontColor, headerPrimaryColor } = props;
   const auth = useAuth();
   const accessToken = auth.user?.access_token || '';
-  const tenant = getTenantOfPage();
   const { openSnackbar } = useSnackbar();
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
-
   const downloadButtonStyle = {
-    backgroundColor: data?.headerPrimaryColor || '#2B3244',
-    color: data?.headerFontColor || 'FFF',
+    backgroundColor: headerPrimaryColor || '#2B3244',
+    color: headerFontColor || 'FFF',
     fontSize: '1rem',
   };
 
