@@ -14,6 +14,7 @@ import { widgets } from './dashboard.widget.schema';
 import { dataModels } from './data-model.schema';
 import {
   chartLegendPlacement,
+  chartDateRepresentationEnum,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
 } from './enums.schema';
@@ -23,6 +24,10 @@ export const tabs = pgTable('tab', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   chartAllowImageDownload: boolean('chart_allow_image_download'),
+  chartDateRepresentation: chartDateRepresentationEnum(
+    'chart_date_representation',
+  ),
+  chartHasAutomaticZoom: boolean('chart_has_automatic_zoom'),
   chartHasAdditionalSelection: boolean('chart_has_additional_selection'),
   chartLabels: text('chart_labels').array(),
   chartLegendAlign: chartLegendPlacement('chart_legend_align'),

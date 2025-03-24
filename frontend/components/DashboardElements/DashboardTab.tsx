@@ -178,6 +178,9 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
               labels={tab.chartLabels}
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
@@ -216,11 +219,15 @@ export default async function DashboardTab(
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
               filterColor={ciColors.lineChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
-              decimalPlaces={tab?.decimalPlaces || 1}
+              decimalPlaces={tab?.decimalPlaces || 0}
+              chartHasAutomaticZoom={tab?.chartHasAutomaticZoom || false}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
               labels={tab.chartLabels}
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
@@ -258,7 +265,7 @@ export default async function DashboardTab(
               filterColor={ciColors.barChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
               axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
-              decimalPlaces={tab?.decimalPlaces || 1}
+              decimalPlaces={tab?.decimalPlaces || 0}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -301,6 +308,9 @@ export default async function DashboardTab(
               }
               topButtonInactiveBackgroundColor={
                 ciColors.measurementChartTopButtonInactiveBgColor || '#BDC3C7'
+              }
+              topButtonHeaderSecondaryColor={
+                ciColors.headerSecondaryColor || '#3D4760'
               }
               topButtonHoverColor={
                 ciColors.measurementChartTopButtonHoverColor || '#1ABC9C'

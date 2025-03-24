@@ -32,6 +32,7 @@ type MeasurementComponentProps = {
   topButtonBackgroundColor: string;
   topButtonInactiveBackgroundColor: string;
   topButtonHoverColor: string;
+  topButtonHeaderSecondaryColor: string;
   topButtonFontColor: string;
 
   cardsBackgroundColor: string;
@@ -66,6 +67,7 @@ export default function MeasurementComponent(
 
     topButtonBackgroundColor,
     topButtonInactiveBackgroundColor,
+    topButtonHeaderSecondaryColor,
     topButtonHoverColor,
     topButtonFontColor,
 
@@ -154,6 +156,7 @@ export default function MeasurementComponent(
             active={dayActive}
             backgroundColor={topButtonBackgroundColor}
             inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            headerSecondaryColor={topButtonHeaderSecondaryColor}
             hoverColor={topButtonHoverColor}
             fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('day')}
@@ -165,6 +168,7 @@ export default function MeasurementComponent(
             active={weekActive}
             backgroundColor={topButtonBackgroundColor}
             inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            headerSecondaryColor={topButtonHeaderSecondaryColor}
             hoverColor={topButtonHoverColor}
             fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('week')}
@@ -176,6 +180,7 @@ export default function MeasurementComponent(
             active={monthActive}
             backgroundColor={topButtonBackgroundColor}
             inactiveBackgroundColor={topButtonInactiveBackgroundColor}
+            headerSecondaryColor={topButtonHeaderSecondaryColor}
             hoverColor={topButtonHoverColor}
             fontColor={topButtonFontColor}
             onClick={(): void => handleIntervalClick('month')}

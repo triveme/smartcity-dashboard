@@ -1,8 +1,6 @@
 'use client';
 
 import { ReactElement, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
 import { faShareNodes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { getTenantOfPage } from '@/utils/tenantHelper';
@@ -11,21 +9,17 @@ import ShareLinkModal from '../ShareLinkModal';
 type ShareLinkButtonProps = {
   type: string;
   id: string;
+  widgetPrimaryColor?: string;
+  widgetFontColor?: string;
 };
 
 export default function ShareLinkButton(
   props: ShareLinkButtonProps,
 ): ReactElement {
-  const { type, id } = props;
+  const { type, id, widgetPrimaryColor, widgetFontColor } = props;
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [sharingUrl, setSharingUrl] = useState('');
   const tenant = getTenantOfPage();
-
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
 
   const handleShareClick = (): void => {
     const sharingUrl = generateShareLink();
@@ -43,8 +37,8 @@ export default function ShareLinkButton(
   };
 
   const widgetStyle = {
-    backgroundColor: data?.widgetPrimaryColor ?? '#3D4760',
-    color: data?.widgetFontColor || '#FFF',
+    backgroundColor: widgetPrimaryColor ?? '#3D4760',
+    color: widgetFontColor || '#FFF',
   };
 
   return (

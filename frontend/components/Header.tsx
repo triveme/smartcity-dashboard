@@ -285,7 +285,7 @@ export default function Header(props: HeaderProps): ReactElement {
                     <FontAwesomeIcon icon={faCircleUser} size="lg" />
                     {dropdownOpen && (
                       <div
-                        className="fixed mt-2 right-6 bg-white shadow-md rounded px-4 py-2"
+                        className="fixed mt-2 right-6 bg-white shadow-md rounded px-4 py-2 z-30"
                         onClick={handleUserIconClick} // Directly invoke login on click
                       >
                         <button className="text-black">Login</button>

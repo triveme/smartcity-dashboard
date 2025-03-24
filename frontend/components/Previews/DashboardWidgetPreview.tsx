@@ -24,7 +24,7 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
-import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
+import { DUMMY_CHART_DATA, DUMMY_CHART_DATA_YEAR } from '@/utils/objectHelper';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -127,8 +127,16 @@ export default function DashboardWidgetPreview(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
               labels={undefined}
-              data={DUMMY_CHART_DATA}
+              chartHasAutomaticZoom={tab.chartHasAutomaticZoom}
+              data={
+                tab?.chartDateRepresentation !== 'Default'
+                  ? DUMMY_CHART_DATA_YEAR
+                  : DUMMY_CHART_DATA
+              }
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
@@ -163,13 +171,20 @@ export default function DashboardWidgetPreview(
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
               filterColor={data?.lineChartFilterColor || '#F1B434'}
               filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
-              decimalPlaces={tab?.decimalPlaces || 1}
+              decimalPlaces={tab?.decimalPlaces || 0}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
               labels={undefined}
-              data={DUMMY_CHART_DATA}
+              data={
+                tab?.chartDateRepresentation !== 'Default'
+                  ? DUMMY_CHART_DATA_YEAR
+                  : DUMMY_CHART_DATA
+              }
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
@@ -204,7 +219,7 @@ export default function DashboardWidgetPreview(
               filterColor={data?.barChartFilterColor || '#F1B434'}
               filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
               axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
-              decimalPlaces={tab?.decimalPlaces || 1}
+              decimalPlaces={tab?.decimalPlaces || 0}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -227,6 +242,9 @@ export default function DashboardWidgetPreview(
               }
               topButtonInactiveBackgroundColor={
                 data?.measurementChartTopButtonBgColor || '#fffff'
+              }
+              topButtonHeaderSecondaryColor={
+                data?.headerSecondaryColor || '#3D4760'
               }
               topButtonHoverColor={
                 data?.measurementChartTopButtonHoverColor || '#fffff'

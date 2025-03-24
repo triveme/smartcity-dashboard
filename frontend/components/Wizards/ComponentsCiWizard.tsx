@@ -114,6 +114,7 @@ type Props = {
   setMeasurementChartTopButtonBgColor: (color: string) => void;
   measurementChartTopButtonInactiveBgColor: string;
   setMeasurementChartTopButtonInactiveBgColor: (color: string) => void;
+  measurementChartTopButtonhHeaderSecondaryColor: string;
   measurementChartTopButtonHoverColor: string;
   setMeasurementChartTopButtonHoverColor: (color: string) => void;
   measurementChartTopButtonFontColor: string;
@@ -305,6 +306,7 @@ export default function ComponentsCiWizard({
   setMeasurementChartTopButtonBgColor,
   measurementChartTopButtonInactiveBgColor,
   setMeasurementChartTopButtonInactiveBgColor,
+  measurementChartTopButtonhHeaderSecondaryColor,
   measurementChartTopButtonHoverColor,
   setMeasurementChartTopButtonHoverColor,
   measurementChartTopButtonFontColor,
@@ -1584,6 +1586,9 @@ export default function ComponentsCiWizard({
               }
               measurementChartTopButtonInactiveBgColor={
                 measurementChartTopButtonInactiveBgColor
+              }
+              measurementChartTopButtonhHeaderSecondaryColor={
+                measurementChartTopButtonhHeaderSecondaryColor
               }
               measurementChartTopButtonHoverColor={
                 measurementChartTopButtonHoverColor

@@ -55,6 +55,7 @@ export default function Pages(): ReactElement {
   const [dashboardWriteRoles, setDashboardWriteRoles] = useState<string[]>([]);
   const [dashboardIcon, setDashboardIcon] = useState('');
   const [dashboardType, setDashboardType] = useState('');
+  const [dashboardAllowShare, setDashboardAllowShare] = useState(false);
   const [dashboardAllowDataExport, setDashboardAllowDataExport] =
     useState(false);
   const [canFetch, setCanFetch] = useState(false);
@@ -134,6 +135,7 @@ export default function Pages(): ReactElement {
       setDashboardType(dashboardData.type || '');
       setPanels(dashboardData.panels || []);
       setDashboardType(dashboardData.type || 'Allgemein');
+      setDashboardAllowShare(dashboardData.allowShare || false);
       setDashboardAllowDataExport(dashboardData.allowDataExport || false);
       if (dashboardData.headlineColor) {
         setDashboardFontColor(dashboardData.headlineColor);
@@ -166,6 +168,7 @@ export default function Pages(): ReactElement {
       writeRoles: dashboardWriteRoles,
       id: itemId || undefined,
       type: dashboardType,
+      allowShare: dashboardAllowShare,
       allowDataExport: dashboardAllowDataExport,
     };
 
@@ -360,6 +363,8 @@ export default function Pages(): ReactElement {
             setDashboardUrl={setDashboardUrl}
             dashboardType={dashboardType || 'Allgemein'}
             setDashboardType={setDashboardType}
+            dashboardAllowShare={dashboardAllowShare}
+            setDashboardAllowShare={setDashboardAllowShare}
             dashboardAllowDataExport={dashboardAllowDataExport}
             setDashboardAllowDataExport={setDashboardAllowDataExport}
             selectedTab={selectedTab}

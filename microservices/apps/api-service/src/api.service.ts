@@ -97,9 +97,14 @@ export class ApiService {
             queryConfig.aggrMode,
             queryConfig.attributes,
           );
+
+          // Transform data to match our required data model
+          const transformedData = this.transformToTargetModel(aggregatedData);
+
+          // Write into the database
           await this.queryService.setQueryDataOfBatch(
             queryBatch,
-            aggregatedData,
+            transformedData,
           );
         }
       });
@@ -108,6 +113,39 @@ export class ApiService {
       // to the data sources and update all the queries in parallel)
       await Promise.all(updates);
     }
+  }
+
+  private transformToTargetModel(data: any[]): any[] {
+    // Group data by `id`
+    const groupedData = data.reduce(
+      (acc, item) => {
+        if (!acc[item.id]) {
+          acc[item.id] = [];
+        }
+        acc[item.id].push(item);
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    );
+
+    // Transform each group into the target structure
+    return Object.keys(groupedData).map((id) => {
+      const entityRecords = groupedData[id];
+
+      // Extract all attribute names dynamically (excluding `id` and `timestamp`)
+      const attributeNames = Object.keys(entityRecords[0]).filter(
+        (key) => key !== 'id' && key !== 'timestamp',
+      );
+
+      return {
+        entityId: `${id}`,
+        attributes: attributeNames.map((attr) => ({
+          attrName: attr,
+          values: entityRecords.map((item) => item[attr]),
+        })),
+        index: entityRecords.map((item) => item.timestamp),
+      };
+    });
   }
 
   private aggregateData(

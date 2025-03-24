@@ -25,6 +25,7 @@ import RefreshButton from './Buttons/RefreshButton';
 import WizardUrlTextfield from './WizardUrlTextfield';
 import IconSelection from './Icons/IconSelection';
 import WizardSelectBox from '@/ui/WizardSelectBox';
+import WizardIntegerfield from './WizardIntegerfield';
 
 type StaticValuesFieldProps = {
   errors?: WizardErrors;
@@ -362,6 +363,29 @@ export default function StaticValuesFieldMapWidgets(
                                   ? {
                                       ...widget,
                                       chartUnit: newValue.toString(),
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="Dezimalstellen" />
+                        <WizardIntegerfield
+                          value={value?.decimalPlaces || ''}
+                          onChange={(newValue: string | number): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      decimalPlaces: newValue as number,
                                     }
                                   : widget,
                             );
