@@ -27,6 +27,7 @@ import {
 import { isTabOfTypeCombinedWidget } from '@/utils/tabTypeHelper';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
+import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
 
 type DashboardProps = {
   dashboard: DashboardWithContent;
@@ -130,15 +131,30 @@ export default async function Dashboard(
                   )}
                 />
               </div>
+              {dashboard.allowShare ? (
+                <ShareLinkButton
+                  type="dashboard"
+                  id={dashboard.id || ''}
+                  widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+                  widgetFontColor={ciColors?.widgetFontColor}
+                />
+              ) : null}
               {isEditable ? (
                 <RedirectPageButton
                   url={`/${tenant}/admin/pages/edit?id=${dashboard?.id}`}
                   isShortStyle={true}
+                  headerPrimaryColor={ciColors.headerPrimaryColor}
+                  headerFontColor={ciColors.headerFontColor}
                 />
               ) : null}
             </div>
             {dashboard.allowDataExport && (
-              <DataExportButton id={dashboard.id || ''} type="dashboard" />
+              <DataExportButton
+                id={dashboard.id || ''}
+                type="dashboard"
+                headerPrimaryColor={ciColors?.headerPrimaryColor}
+                headerFontColor={ciColors?.headerFontColor}
+              />
             )}
           </div>
 
@@ -266,6 +282,8 @@ export default async function Dashboard(
               mapWmsUrl={tab.mapWmsUrl || ''}
               mapWmsLayer={tab.mapWmsLayer || ''}
               ciColors={ciColors}
+              allowShare={dashboard.allowShare}
+              dashboardId={dashboard.id || ''}
               // both dashboard and widget have to allowDataExport
               allowDataExport={
                 dashboard.allowDataExport &&
@@ -318,6 +336,8 @@ export default async function Dashboard(
               chartStyle={chartStyle}
               menuStyle={menuStyle}
               ciColors={ciColors}
+              allowShare={dashboard.allowShare}
+              dashboardId={dashboard.id || ''}
               allowDataExport={
                 dashboard.allowDataExport &&
                 dashboard.panels?.[0].widgets?.[0].allowDataExport

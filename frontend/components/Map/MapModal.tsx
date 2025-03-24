@@ -88,7 +88,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
     <>
       <div
         key={`map-modal-${selectedMarker.title}`}
-        className="fixed top-16 right-0 w-full lg:w-72 h-[calc(100%-4rem)] shadow-lg p-5 overflow-y-auto z-50"
+        className="fixed top-16 right-0 w-full lg:w-72 h-[calc(100%-4rem)] shadow-lg p-5 overflow-y-auto z-30"
         style={menuStyle}
       >
         {/* Modal header */}
@@ -116,7 +116,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           </h2>
                         )}
                         <DashboardValues
-                          decimalPlaces={0}
+                          decimalPlaces={widget.decimalPlaces || 0}
                           value={
                             selectedMarker.details[widget.attributes]?.value ||
                             '0'
@@ -237,7 +237,11 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     {widget.componentType === 'Button' &&
                       widget.componentSubType === 'jumpoff-url' && (
                         <div className="w-12 sm:w-48">
-                          <JumpoffButton panel={widget} />
+                          <JumpoffButton
+                            panel={widget}
+                            headerPrimaryColor={ciColors?.headerPrimaryColor}
+                            headerFontColor={ciColors?.headerFontColor}
+                          />
                         </div>
                       )}
 
@@ -250,6 +254,8 @@ export default function MapModal(props: MapModalProps): ReactElement {
                               selectedMarker.details[widget.jumpoffAttribute!]
                                 ?.value
                             }
+                            headerPrimaryColor={ciColors?.headerPrimaryColor}
+                            headerFontColor={ciColors?.headerFontColor}
                           />
                         </div>
                       )}

@@ -58,6 +58,12 @@ export enum tabComponentSubTypeEnum {
   overviewSlider = 'Slider Übersicht',
 }
 
+export enum chartDateRepresentaionEnum {
+  default = 'Default',
+  onlyJear = 'Only Year',
+  onlyMonth = 'Only Month',
+}
+
 export enum widgetImageSourceEnum {
   default = '',
   url = 'URL',

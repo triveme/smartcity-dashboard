@@ -20,6 +20,7 @@ export function getDashboard(url?: string): Dashboard {
     url: url,
     visibility: 'public',
     allowDataExport: false,
+    allowShare: false,
     writeRoles: ['scs-admin'],
   };
 }

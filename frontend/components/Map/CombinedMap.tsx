@@ -47,6 +47,7 @@ import {
 import { convertToLocaleNumber, roundToDecimal } from '@/utils/mathHelper';
 import { localSvgIconsList } from '@/ui/Icons/LocalSvgIcons';
 import DataExportButton from '@/ui/Buttons/DataExportButton';
+import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
 
 type MapProps = {
   chartStyle?: MapModalChartStyle;
@@ -80,6 +81,8 @@ type MapProps = {
   mapNames?: string[];
   menuStyle?: CSSProperties;
   ciColors?: CorporateInfo;
+  allowShare?: boolean;
+  dashboardId?: string;
   allowDataExport?: boolean;
   widgetDownloadId?: string;
 };
@@ -128,6 +131,8 @@ export default function CombinedMap(props: MapProps): JSX.Element {
     chartStyle,
     menuStyle,
     ciColors,
+    allowShare,
+    dashboardId,
     allowDataExport,
     widgetDownloadId,
   } = props;
@@ -731,12 +736,27 @@ export default function CombinedMap(props: MapProps): JSX.Element {
                 />
               </div>
             )}
+            {allowShare ? (
+              <div
+                className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                style={menuStyle}
+              >
+                <ShareLinkButton
+                  type="dashboard"
+                  id={dashboardId || ''}
+                  widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+                  widgetFontColor={ciColors?.widgetFontColor}
+                />{' '}
+              </div>
+            ) : null}
             {allowDataExport && (
               <div className="shadow-lg">
                 <DataExportButton
                   id={widgetDownloadId || ''}
                   type="widget"
                   menuStyle={{ ...menuStyle, fontWeight: 'bold' }}
+                  headerPrimaryColor={ciColors?.headerPrimaryColor}
+                  headerFontColor={ciColors?.headerFontColor}
                 />
               </div>
             )}

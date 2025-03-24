@@ -9,11 +9,13 @@ import {
   calculateLeftGrid,
   calculateBottomGrid,
   getUniqueField,
+  getChartDateFormatter,
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 
 type BarChartProps = {
+  chartDateRepresentation?: string | 'Default';
   labels: string[] | undefined;
   data: ChartData[];
   xAxisLabel?: string;
@@ -43,6 +45,7 @@ type BarChartProps = {
 
 export default function BarChart(props: BarChartProps): ReactElement {
   const {
+    chartDateRepresentation,
     data,
     xAxisLabel,
     yAxisLabel,
@@ -149,6 +152,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
             color: fontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
+            formatter: getChartDateFormatter(chartDateRepresentation),
           },
           axisTick: {
             show: false,

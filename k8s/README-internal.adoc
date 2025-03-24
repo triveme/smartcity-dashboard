@@ -173,7 +173,7 @@ Performs a fresh installation of the helm charts with passed values.yaml file(s)
 
 [source,bash]
 ----
-helm install smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml .
+helm install smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml -f secrets.yaml .
 ----
 
 === Uninstall helm chart
@@ -189,7 +189,7 @@ Performs an update of the specified charts if there is already an existing deplo
 
 [source,bash]
 ----
-helm upgrade smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml .
+helm upgrade smart-city --namespace mit-smartcity-suite-dev -f values.yaml -f values-edag.yaml -f values-edag-dev.yaml -f secrets.yaml .
 ----
 
 == Deploy to test namespace
@@ -203,7 +203,7 @@ Performs a fresh installation of the helm charts with passed values.yaml file(s)
 
 [source,bash]
 ----
-helm install smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml .
+helm install smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml -f secrets.yaml .
 ----
 
 === Uninstall helm chart
@@ -219,7 +219,7 @@ Performs an update of the specified charts if there is already an existing deplo
 
 [source,bash]
 ----
-helm upgrade smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml .
+helm upgrade smart-city --namespace mit-smartcity-suite-test -f values.yaml -f values-edag.yaml -f values-edag-test.yaml -f secrets.yaml .
 ----
 
 == Deploy to prod namespace
@@ -233,7 +233,7 @@ Performs a fresh installation of the helm charts with passed values.yaml file(s)
 
 [source,bash]
 ----
-helm install smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml .
+helm install smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml -f secrets.yaml .
 ----
 
 === Uninstall helm chart
@@ -249,7 +249,7 @@ Performs an update of the specified charts if there is already an existing deplo
 
 [source,bash]
 ----
-helm upgrade smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml .
+helm upgrade smart-city --namespace mit-smartcity-suite-prod -f values.yaml -f values-edag.yaml -f values-edag-prod.yaml -f secrets.yaml .
 ----
 
 
@@ -266,7 +266,7 @@ Performs a fresh installation of the helm charts with passed values.yaml file(s)
 
 [source,bash]
 ----
-helm install smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml .
+helm install smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml -f secrets.yaml .
 ----
 
 === Uninstall helm chart
@@ -282,11 +282,15 @@ Performs an update of the specified charts if there is already an existing deplo
 
 [source,bash]
 ----
-helm upgrade smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml .
+helm upgrade smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml -f secrets.yaml .
 ----
 
 
 == Additional Pod Info
+
+=== Secrets yaml
+
+* During a helm installation, we append a "-f secrets.yaml", this file shall not be pushed to our open source repo as it contains confidential client tokens, the frontend MapBoxToken and backend password encrypt keys.
 
 === Migrations Pod - automatic database migrations
 

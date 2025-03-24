@@ -74,6 +74,39 @@ export class DashboardRepo {
       );
   }
 
+  async getDashboardWithContentById(
+    id: string,
+    rolesFromRequest: string[],
+  ): Promise<FlatDashboardData[]> {
+    return this.db
+      .select()
+      .from(dashboards)
+      .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
+      .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
+      .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
+      .leftJoin(queries, eq(tabs.queryId, queries.id))
+      .where(
+        and(
+          eq(dashboards.id, id),
+          or(
+            eq(dashboards.visibility, 'public'),
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+              : undefined,
+            rolesFromRequest.length > 0
+              ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+              : undefined,
+          ),
+        ),
+      )
+      .orderBy((data) => [
+        asc(data.panel.position),
+        asc(data.widget_to_panel.position),
+      ]);
+  }
+
   async getDashboardWithContent(
     id: string,
     tenantId: string,
@@ -110,7 +143,10 @@ export class DashboardRepo {
           ),
         ),
       )
-      .orderBy((data) => asc(data.panel.position));
+      .orderBy((data) => [
+        asc(data.panel.position),
+        asc(data.widget_to_panel.position),
+      ]);
   }
 
   async getAll(rolesFromRequest: string[]): Promise<Dashboard[]> {
