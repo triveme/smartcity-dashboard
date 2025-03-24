@@ -86,6 +86,8 @@ export async function getTab(
     componentType: componentType,
     componentSubType: componentSubType,
     chartAllowImageDownload: false,
+    chartDateRepresentation: 'Default',
+    chartHasAutomaticZoom: false,
     chartHasAdditionalSelection: false,
     chartMinimum: 0,
     chartMaximum: 100,

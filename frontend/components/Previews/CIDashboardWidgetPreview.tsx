@@ -76,6 +76,7 @@ type CIDashboardWidgetPreviewProps = {
   measurementChartBigValueFontColor: string;
   measurementChartTopButtonBgColor: string;
   measurementChartTopButtonInactiveBgColor: string;
+  measurementChartTopButtonhHeaderSecondaryColor: string;
   measurementChartTopButtonHoverColor: string;
   measurementChartTopButtonFontColor: string;
   measurementChartCardsBgColor: string;
@@ -174,6 +175,7 @@ export default function CIDashboardWidgetPreview(
 
     measurementChartTopButtonBgColor,
     measurementChartTopButtonInactiveBgColor,
+    measurementChartTopButtonhHeaderSecondaryColor,
     measurementChartTopButtonHoverColor,
     measurementChartTopButtonFontColor,
 
@@ -388,6 +390,9 @@ export default function CIDashboardWidgetPreview(
               }
               topButtonInactiveBackgroundColor={
                 measurementChartTopButtonInactiveBgColor || '#fffff'
+              }
+              topButtonHeaderSecondaryColor={
+                measurementChartTopButtonhHeaderSecondaryColor || '#fffff'
               }
               topButtonHoverColor={
                 measurementChartTopButtonHoverColor || '#fffff'

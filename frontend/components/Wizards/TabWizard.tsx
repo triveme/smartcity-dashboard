@@ -22,6 +22,7 @@ import CollapseButton from '@/ui/Buttons/CollapseButton';
 import { WizardErrors } from '@/types/errors';
 import {
   chartComponentSubTypes,
+  chartDateRepresentation,
   mapDisplayModes,
   mapComponentShapeOptions,
   mapComponentSubTypes,
@@ -483,13 +484,41 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   <div>
                     <WizardLabel label="Anzahl Dezimalstellen" />
                     <WizardIntegerfield
-                      value={tab?.decimalPlaces || 1}
+                      value={tab?.decimalPlaces || '0'}
                       onChange={(value: string | number): void =>
                         handleTabChange({ decimalPlaces: value as number })
                       }
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
                     />
+                  </div>
+                  <div className="flex w-full items-center">
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Format Datumsanzeige xAchse" />
+                      <WizardDropdownSelection
+                        currentValue={
+                          chartDateRepresentation.find(
+                            (option) =>
+                              option.value === tab?.chartDateRepresentation,
+                          )?.label || ''
+                        }
+                        selectableValues={chartDateRepresentation.map(
+                          (option) => option.label,
+                        )}
+                        onSelect={(label: string | number): void => {
+                          const enumValue = chartDateRepresentation.find(
+                            (option) => option.label === label,
+                          )?.value;
+                          handleTabChange({
+                            chartDateRepresentation: enumValue,
+                          });
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                        error={errors?.chartDateRepresentationError}
+                      />
+                    </div>
                   </div>
                   <div className="w-full flex flex-col">
                     <div className="flex w-full items-center">
@@ -570,18 +599,32 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     </div>
                     {tab?.componentSubType ===
                       tabComponentSubTypeEnum.lineChart && (
-                      <div className="flex w-full items-center">
-                        <div className="min-w-[220px]">
-                          <WizardLabel label="Stufenlinie anzeigen?" />
+                      <>
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Stufenlinie anzeigen?" />
+                          </div>
+                          <WizardSelectBox
+                            checked={tab?.isStepline || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ isStepline: value })
+                            }
+                            label=" Stufenlinie"
+                          />
                         </div>
-                        <WizardSelectBox
-                          checked={tab?.isStepline || false}
-                          onChange={(value: boolean): void =>
-                            handleTabChange({ isStepline: value })
-                          }
-                          label=" Stufenlinie"
-                        />
-                      </div>
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Automatischer Zoom der Achseneinteilung" />
+                          </div>
+                          <WizardSelectBox
+                            checked={tab?.chartHasAutomaticZoom || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ chartHasAutomaticZoom: value })
+                            }
+                            label="Automatischer Zoom"
+                          />
+                        </div>
+                      </>
                     )}
                     {tab?.componentSubType ===
                       tabComponentSubTypeEnum.barChart && (

@@ -11,6 +11,7 @@ export const dashboards = pgTable('dashboard', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text('name'),
+  allowShare: boolean('allow_share'),
   allowDataExport: boolean('allow_data_export'),
   headlineColor: text('headline_color'),
   icon: text('icon'),

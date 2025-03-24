@@ -106,3 +106,69 @@ export const calculateYAxisNameGap = (data: ChartData[]): number => {
     return 75;
   }
 };
+
+export const calculateMaxYAxisValue = (
+  data: ChartData[],
+  decimalPlaces: number | undefined,
+): number => {
+  let maxValue = Math.max(
+    ...data.flatMap((series) => series.values.map(([, value]) => value)),
+  );
+  const factor = Math.pow(10, decimalPlaces ? decimalPlaces : 0);
+  maxValue = maxValue * factor;
+  if (maxValue < 0) {
+    maxValue = Math.floor(maxValue * 0.9);
+  } else {
+    maxValue = Math.floor(maxValue * 1.1);
+  }
+  maxValue = maxValue / factor;
+  return maxValue;
+};
+
+export const calculateMinYAxisValue = (
+  data: ChartData[],
+  decimalPlaces: number | undefined,
+): number => {
+  let minValue = Math.min(
+    ...data.flatMap((series) => series.values.map(([, value]) => value)),
+  );
+  const factor = Math.pow(10, decimalPlaces ? decimalPlaces : 0);
+  minValue = minValue * factor;
+  if (minValue < 0) {
+    minValue = Math.floor(minValue * 1.1);
+  } else {
+    minValue = Math.floor(minValue * 0.9);
+  }
+  minValue = minValue / factor;
+  return minValue;
+};
+
+export const getChartDateFormatter = (
+  representation: string | undefined,
+): { year: string; month: string; day: string } | undefined => {
+  if (representation === undefined) return undefined;
+
+  switch (representation) {
+    case 'Default':
+      return {
+        year: '{yearStyle|{yyyy}}',
+        month: '{monthStyle|{MMM}}',
+        day: '{dd}.{M}.',
+      };
+    case 'Only Year':
+      return {
+        year: '{yearStyle|{yyyy}}',
+        month: '',
+        day: '',
+      };
+    case 'Only Month':
+      return {
+        // displays Months and also the Year on first Month of the new year
+        year: '{yearStyle|{yyyy}}\n{monthStyle|{MMM}}',
+        month: '{monthStyle|{MMM}}',
+        day: '',
+      };
+    default:
+      return undefined;
+  }
+};

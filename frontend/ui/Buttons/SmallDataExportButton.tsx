@@ -3,34 +3,26 @@
 import { ReactElement, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 import DashboardIcons from '../Icons/DashboardIcon';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { getTenantOfPage } from '@/utils/tenantHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { downloadCSV } from '@/utils/downloadHelper';
 
 type SmallDataExportButtonProps = {
   id: string;
   type: string;
+  widgetPrimaryColor?: string;
+  widgetFontColor?: string;
 };
 
 export default function SmallDataExportButton(
   props: SmallDataExportButtonProps,
 ): ReactElement {
-  const { id, type } = props;
-  const tenant = getTenantOfPage();
+  const { id, type, widgetPrimaryColor, widgetFontColor } = props;
   const { openSnackbar } = useSnackbar();
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
-
   const widgetStyle = {
-    backgroundColor: data?.widgetPrimaryColor ?? '#3D4760',
-    color: data?.widgetFontColor || '#FFF',
+    backgroundColor: widgetPrimaryColor ?? '#3D4760',
+    color: widgetFontColor || '#FFF',
   };
 
   const auth = useAuth();

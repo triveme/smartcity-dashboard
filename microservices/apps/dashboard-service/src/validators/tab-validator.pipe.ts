@@ -19,6 +19,7 @@ type DeclarationObject = {
 @Injectable()
 export class SanitizeTabDataPipe implements PipeTransform {
   commonFields: string[] = [
+    'chartDateRepresentation',
     'componentType',
     'componentSubType',
     'id',
@@ -41,6 +42,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
     ],
     diagramm: [
       'chartAllowImageDownload',
+      'chartHasAutomaticZoom',
       'chartHasAdditionalSelection',
       'chartLabels',
       'chartLegendAlign',

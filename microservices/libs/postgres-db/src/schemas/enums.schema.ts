@@ -57,6 +57,12 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Slider Übersicht',
 ]);
 
+export const chartDateRepresentationEnum = pgEnum('chart_date_representation', [
+  'Default',
+  'Only Year',
+  'Only Month',
+]);
+
 export const authDataTypeEnum = pgEnum('auth_data_type', [
   'ngsi',
   'ngsi-v2',

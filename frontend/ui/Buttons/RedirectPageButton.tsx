@@ -2,31 +2,28 @@
 import { ReactElement } from 'react';
 
 import DashboardIcons from '../Icons/DashboardIcon';
-import { useQuery } from '@tanstack/react-query';
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { getTenantOfPage } from '@/utils/tenantHelper';
 import Link from 'next/link';
 
 type RedirectPageButtonProps = {
   url: string;
   isShortStyle?: boolean;
+  headerPrimaryColor?: string;
+  headerFontColor?: string;
 };
 
 export default function RedirectPageButton(
   props: RedirectPageButtonProps,
 ): ReactElement {
-  const { url, isShortStyle = false } = props;
-  const tenant = getTenantOfPage();
-
-  const { data } = useQuery({
-    queryKey: ['corporate-info'],
-    queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
-  });
+  const {
+    url,
+    isShortStyle = false,
+    headerPrimaryColor,
+    headerFontColor,
+  } = props;
 
   const jumpoffButtonStyle = {
-    backgroundColor: data?.headerPrimaryColor || '#3D4760',
-    color: data?.headerFontColor || '#FFF',
+    backgroundColor: headerPrimaryColor || '#3D4760',
+    color: headerFontColor || '#FFF',
     fontSize: '1rem',
   };
 

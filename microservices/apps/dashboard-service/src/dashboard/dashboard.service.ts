@@ -102,6 +102,32 @@ export class DashboardService {
     );
   }
 
+  async getDashboardWithContentById(
+    id: string,
+    rolesFromRequest: string[],
+    includeData: boolean = true,
+  ): Promise<DashboardWithContent> {
+    const flatDashboardData =
+      await this.dashboardRepo.getDashboardWithContentById(
+        id,
+        rolesFromRequest,
+      );
+
+    if (flatDashboardData.length > 0) {
+      const dashboardWithContentArr =
+        await this.populateService.reduceRowsToDashboardsWithContent(
+          flatDashboardData,
+          includeData,
+        );
+      const dashboardWithContent =
+        dashboardWithContentArr.length > 0 ? dashboardWithContentArr[0] : null;
+
+      return dashboardWithContent;
+    } else {
+      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+    }
+  }
+
   async getDashboardWithContent(
     id: string,
     rolesFromRequest: string[],
