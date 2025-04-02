@@ -16,6 +16,15 @@ import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import PaginatedTable from '@/components/PaginatedTable';
 import WizardTextfield from '@/ui/WizardTextfield';
+import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
+import WizardLabel from '@/ui/WizardLabel';
+import { tabComponentTypeEnum } from '@/types';
+import {
+  chartComponentSubTypes,
+  informationComponentSubTypes,
+  mapComponentSubTypes,
+  sliderComponentSubTypes,
+} from '@/utils/enumMapper';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const tableColumns: Array<TableColumn<WidgetWithComponentTypes>> = [
@@ -50,7 +59,21 @@ export default function Widgets(): ReactElement {
     limit: parseInt(searchParams.get('limit') || '10', 10),
   });
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [componentTypeSearch, setComponentTypeSearch] = useState(
+    searchParams.get('component') || '',
+  );
+  const [componentSubTypeSearch, setComponentSubTypeSearch] = useState(
+    searchParams.get('type') || '',
+  );
 
+  const subComponentTypeMapping: {
+    [key: string]: { label: string; value: string }[];
+  } = {
+    Informationen: informationComponentSubTypes,
+    Diagramm: chartComponentSubTypes,
+    Slider: sliderComponentSubTypes,
+    Karte: mapComponentSubTypes,
+  };
   // Update URL search params whenever pagination state changes
   useEffect(() => {
     const params = new URLSearchParams();
@@ -59,8 +82,20 @@ export default function Widgets(): ReactElement {
     if (search !== '') {
       params.set('search', search);
     }
+    if (componentTypeSearch !== '') {
+      params.set('component', componentTypeSearch);
+    }
+    if (componentSubTypeSearch !== '-----' && componentSubTypeSearch !== '') {
+      params.set('type', componentSubTypeSearch);
+    }
     router.replace(`?${params.toString()}`);
-  }, [userPagination, search, router]);
+  }, [
+    userPagination,
+    search,
+    router,
+    componentTypeSearch,
+    componentSubTypeSearch,
+  ]);
 
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
@@ -96,9 +131,32 @@ export default function Widgets(): ReactElement {
     isPending,
     isSuccess,
   } = useQuery({
-    queryKey: ['widgets', userPagination, search],
+    queryKey: [
+      'widgets',
+      userPagination,
+      search,
+      componentTypeSearch,
+      componentSubTypeSearch,
+    ],
     queryFn: () =>
-      searchWidgets(auth?.user?.access_token, tenant, search, userPagination),
+      searchWidgets(
+        auth?.user?.access_token,
+        tenant,
+        search,
+        componentTypeSearch,
+        componentSubTypeSearch === '-----' ? '' : componentSubTypeSearch,
+        userPagination,
+      ),
+    select: (result) => ({
+      ...result,
+      data: result.data.map((item) => ({
+        ...item,
+        componentSubType:
+          subComponentTypeMapping[componentTypeSearch]?.find(
+            (option) => option.value === item.componentSubType,
+          )?.label || '',
+      })),
+    }),
   });
 
   // Use useEffect for handling the snackbar
@@ -115,6 +173,10 @@ export default function Widgets(): ReactElement {
       </div>
     );
   }
+  const handleComponentTypeChange = (newType: string): void => {
+    setComponentTypeSearch(newType);
+    setComponentSubTypeSearch('');
+  };
 
   return (
     <div style={dashboardStyle} className="h-full p-10 overflow-y-auto">
@@ -122,14 +184,54 @@ export default function Widgets(): ReactElement {
         <PageHeadline headline="Widgets" fontColor={dashboardStyle.color} />
         <CreateButton />
       </div>
-      <div className="w-full pb-4">
-        <WizardTextfield
-          value={search}
-          onChange={(value): void => setSearch(value.toString())}
-          placeholderText={'Suche'}
-          borderColor={corporateInfo?.widgetBorderColor || '#2B3244'}
-          backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
-        />
+      <div className="flex w-full pb-4 items-end gap-4">
+        <div className="w-2/3">
+          <WizardTextfield
+            value={search}
+            onChange={(value): void => setSearch(value.toString())}
+            placeholderText={'Suche'}
+            borderColor={corporateInfo?.widgetBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          />
+        </div>
+        <div className="w-1/6">
+          <WizardLabel label="Komponente" />
+          <WizardDropdownSelection
+            currentValue={componentTypeSearch || ''}
+            selectableValues={Object.values(tabComponentTypeEnum)}
+            onSelect={(value): void =>
+              handleComponentTypeChange(value.toString())
+            }
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          />
+        </div>
+        <div className="w-1/6">
+          <WizardLabel label="Typ" />
+          <WizardDropdownSelection
+            currentValue={
+              subComponentTypeMapping[componentTypeSearch]?.find(
+                (option) => option.value === componentSubTypeSearch,
+              )?.label || ''
+            }
+            selectableValues={
+              subComponentTypeMapping[componentTypeSearch]?.map(
+                (option) => option.label,
+              ) || ['', '-----']
+            }
+            onSelect={(label: string | number): void => {
+              const enumValue =
+                subComponentTypeMapping[componentTypeSearch]?.find(
+                  (option) => option.label === label,
+                )?.value || '';
+              setComponentSubTypeSearch(enumValue.toString());
+            }}
+            iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          />
+        </div>
       </div>
       {isPending ? (
         <div className="flex justify-center text-2xl">

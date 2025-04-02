@@ -96,6 +96,8 @@ export default function DashboardSidebarGroup(
   const determineFontColor = (): string => {
     if (isActiveDropdown()) {
       return data?.menuActiveFontColor ?? '#FFFFFF';
+    } else if (isHovered) {
+      return data?.menuHoverFontColor ?? '#FFF';
     } else {
       return data?.menuFontColor ?? '#000000';
     }
@@ -156,7 +158,7 @@ export default function DashboardSidebarGroup(
           {groupElement.icon && (
             <DashboardIcons
               iconName={groupElement.icon}
-              color={groupElement.fontColor}
+              color={menuStyle.color}
             />
           )}
         </div>

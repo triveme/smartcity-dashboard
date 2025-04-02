@@ -26,6 +26,7 @@ import WizardUrlTextfield from './WizardUrlTextfield';
 import IconSelection from './Icons/IconSelection';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import WizardIntegerfield from './WizardIntegerfield';
+import IconButton from './Buttons/IconButton';
 
 type StaticValuesFieldProps = {
   errors?: WizardErrors;
@@ -86,6 +87,24 @@ export default function StaticValuesFieldMapWidgets(
     } finally {
       toggleLoading('attributes', false);
     }
+  };
+
+  const changeWidgetOrder = (widget: MapModalWidget, isUp: boolean): void => {
+    const widgetPos = mapWidgetValues.findIndex(
+      (element) => element === widget,
+    );
+    const arr: MapModalWidget[] = [...mapWidgetValues];
+    if (isUp) {
+      const temp: MapModalWidget = arr[widgetPos - 1];
+      arr[widgetPos - 1] = widget;
+      arr[widgetPos] = temp;
+    } else {
+      const temp: MapModalWidget = arr[widgetPos + 1];
+      arr[widgetPos + 1] = widget;
+      arr[widgetPos] = temp;
+    }
+    handleTabChange({ mapWidgetValues: arr });
+    setMapWidgetValues(arr);
   };
 
   useEffect((): void => {
@@ -173,7 +192,7 @@ export default function StaticValuesFieldMapWidgets(
         return (
           <>
             <div
-              className={`flex flex-row justify-between ${value.componentType === tabComponentTypeEnum.diagram ? 'items-center' : 'items-end'}`}
+              className={'flex flex-row justify-between items-end'}
               key={index}
             >
               <div
@@ -1049,7 +1068,7 @@ export default function StaticValuesFieldMapWidgets(
                 {/* static values for stageable chart */}
                 {value.componentSubType ===
                   tabComponentSubTypeEnum.stageableChart && (
-                  <div>
+                  <div className="gap-x-2 pb-4">
                     <div className="w-full pb-4">
                       <WizardSelectBox
                         checked={value?.showAxisLabels !== false}
@@ -1192,10 +1211,28 @@ export default function StaticValuesFieldMapWidgets(
                   </div>
                 )}
               </div>
-              <CreateDashboardElementButton
-                label="-"
-                handleClick={(): void => handleRemoveMapWidgetValue(index)}
-              />
+              <div className="flex gap-2 items-center pb-4">
+                {index !== 0 && (
+                  <IconButton
+                    iconName="ChevronUp"
+                    handleClick={(): void =>
+                      changeWidgetOrder(mapWidgetValues[index], true)
+                    }
+                  />
+                )}
+                {index !== mapWidgetValues.length - 1 && (
+                  <IconButton
+                    iconName="ChevronDown"
+                    handleClick={(): void =>
+                      changeWidgetOrder(mapWidgetValues[index], false)
+                    }
+                  />
+                )}
+                <CreateDashboardElementButton
+                  label="-"
+                  handleClick={(): void => handleRemoveMapWidgetValue(index)}
+                />
+              </div>
             </div>
             {/* divider between each widget static value */}
             {mapWidgetValues.length !== index + 1 && (

@@ -154,6 +154,8 @@ export default async function Dashboard(
                 type="dashboard"
                 headerPrimaryColor={ciColors?.headerPrimaryColor}
                 headerFontColor={ciColors?.headerFontColor}
+                panelFontColor={ciColors?.panelFontColor}
+                widgetFontColor={ciColors?.widgetFontColor}
               />
             )}
           </div>

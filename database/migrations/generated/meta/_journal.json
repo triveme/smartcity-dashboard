@@ -197,6 +197,13 @@
       "when": 1742563849416,
       "tag": "0027_fine_terror_0.23.1",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1743500906228,
+      "tag": "0028_bouncy_frightful_four_0.24.0",
+      "breakpoints": true
     }
   ]
 }

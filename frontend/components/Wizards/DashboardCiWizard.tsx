@@ -3,6 +3,8 @@ import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import { fontSizes } from '@/utils/objectHelper';
+import HorizontalDivider from '@/ui/HorizontalDivider';
+import WizardTextfield from '@/ui/WizardTextfield';
 
 type Props = {
   dashboardPrimaryColor: string;
@@ -11,6 +13,10 @@ type Props = {
   setDashboardSecondaryColor: (color: string) => void;
   dashboardHeadlineFontSize: string;
   setDashboardHeadlineFontSize: (fontSize: string) => void;
+  dashboardInformationTextFontColor: string;
+  setDashboardInformationTextFontColor: (fontColor: string) => void;
+  dashboardInformationTextFontSize: string;
+  setDashboardInformationTextFontSize: (fontSize: string) => void;
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
@@ -23,6 +29,10 @@ export default function DashboardCiWizard({
   setDashboardSecondaryColor,
   dashboardHeadlineFontSize,
   setDashboardHeadlineFontSize,
+  dashboardInformationTextFontColor,
+  setDashboardInformationTextFontColor,
+  dashboardInformationTextFontSize,
+  setDashboardInformationTextFontSize,
   iconColor,
   borderColor,
   backgroundColor,
@@ -55,6 +65,34 @@ export default function DashboardCiWizard({
               iconColor={iconColor}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+            />
+          </div>
+        </div>
+      </div>
+      <HorizontalDivider />
+      <WizardLabel label="Dashboard Informationstext" />
+      <div className="flex-col">
+        <div className="flex flex-row">
+          <div className="flex flex-row w-1/2">
+            <div className="flex w-1/3">
+              <WizardLabel label="Schriftgröße" />
+            </div>
+            <div className="flex w-2/3">
+              <WizardTextfield
+                value={dashboardInformationTextFontSize}
+                onChange={(value): void => {
+                  setDashboardInformationTextFontSize(value.toString());
+                }}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          </div>
+          <div className="flex w-1/2 ml-4 mt-2">
+            <ColorPickerComponent
+              currentColor={dashboardInformationTextFontColor}
+              handleColorChange={setDashboardInformationTextFontColor}
+              label="Schriftfarbe"
             />
           </div>
         </div>

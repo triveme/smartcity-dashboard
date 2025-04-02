@@ -34,6 +34,8 @@ export async function searchWidgets(
   accessToken: string | undefined,
   tenant?: string | undefined,
   search?: string | undefined,
+  componentType?: string | undefined,
+  componentSubType?: string | undefined,
   pagination?: UserPagination,
 ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
   const headers = accessToken
@@ -46,6 +48,8 @@ export async function searchWidgets(
     params.abbreviation = tenant;
   }
   params.search = search;
+  params.component = componentType;
+  params.type = componentSubType;
   if (pagination) {
     params.page = pagination.page;
     params.limit = pagination.limit;

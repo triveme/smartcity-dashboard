@@ -174,6 +174,22 @@ export class DataService {
           ).toISOString();
           params.end = now.toISOString();
           break;
+        case 'quarter':
+          params.start = new Date(
+            now.getFullYear(),
+            now.getMonth() - 3,
+            now.getDate(),
+          ).toISOString();
+          params.end = now.toISOString();
+          break;
+        case 'year':
+          params.start = new Date(
+            now.getFullYear() - 1,
+            now.getMonth(),
+            now.getDate(),
+          ).toISOString();
+          params.end = now.toISOString();
+          break;
         default:
           params = {
             count: 1,

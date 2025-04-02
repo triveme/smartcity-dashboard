@@ -12,6 +12,7 @@ import {
   calculateMinYAxisValue,
   calculateMaxYAxisValue,
   getChartDateFormatter,
+  getChartDateRichText,
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
@@ -156,7 +157,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
             color: axisTicksFontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
-            formatter: getChartDateFormatter(chartDateRepresentation),
+            formatter: chartDateRepresentation
+              ? getChartDateFormatter(chartDateRepresentation)
+              : undefined,
+            rich: chartDateRepresentation
+              ? getChartDateRichText(chartDateRepresentation)
+              : undefined,
           },
           axisTick: {
             show: false,
