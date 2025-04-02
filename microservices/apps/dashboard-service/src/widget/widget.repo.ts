@@ -18,9 +18,15 @@ import {
   FlatWidgetData,
   PaginatedResult,
   PaginationMeta,
+  TabComponentType,
+  TabSubComponentType,
   WidgetWithComponentTypes,
 } from './widget.model';
 import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
+import {
+  tabComponentSubTypeEnum,
+  tabComponentTypeEnum,
+} from '@app/postgres-db/schemas/enums.schema';
 
 @Injectable()
 export class WidgetRepo {
@@ -66,6 +72,8 @@ export class WidgetRepo {
   async searchWidgets(
     rolesFromRequest: string[],
     searchTerm?: string,
+    componentType?: string,
+    componentSubType?: string,
     page: number = 1,
     pageSize: number = 10,
     tenantId?: string,
@@ -96,6 +104,17 @@ export class WidgetRepo {
           ? arrayOverlaps(widgets.writeRoles, rolesFromRequest)
           : undefined,
       ),
+      and(
+        componentType &&
+          Object.values(tabComponentTypeEnum)[1].includes(componentType)
+          ? eq(tabs.componentType, componentType as TabComponentType)
+          : undefined,
+        componentSubType &&
+          Object.values(tabComponentSubTypeEnum)[1].includes(componentSubType)
+          ? eq(tabs.componentSubType, componentSubType as TabSubComponentType)
+          : undefined,
+      ),
+
       // Tenant filter condition
       tenantId ? inArray(widgets.id, tenantSubQuery) : undefined,
     );
@@ -103,6 +122,7 @@ export class WidgetRepo {
     const [{ count }] = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(widgets)
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .where(whereClause)
       .execute();
 

@@ -64,6 +64,8 @@ export default function DashboardSidebarDashboard(
   const determineFontColor = (child: string): string => {
     if (isActiveChild(child)) {
       return data?.menuActiveFontColor ?? '#FFFFFF';
+    } else if (isHovered) {
+      return data?.menuHoverFontColor ?? '#FFF';
     } else {
       return data?.menuFontColor ?? '#000000';
     }
