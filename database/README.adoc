@@ -3,7 +3,7 @@ We use https://www.postgresql.org/[PostgreSQL] via https://orm.drizzle.team/docs
 
 == Local Setup
 
-To start the database, follow the infrastructure setup for kubernetes/rancher link:../k8s/README.md[here].
+To start the database, follow the infrastructure setup for kubernetes/rancher link:../k8s/README-external.adoc[external] or link:../k8s/README-internal.adoc[internal].
 
 == Migrations
 

@@ -180,8 +180,8 @@ export default function StageableChart(
     fontColor,
     fontSize,
     ticksFontColor,
-    ticksFontSize,
     showAxisLabels,
+    autoScaleAxisLabelFont,
   ]);
 
   return (

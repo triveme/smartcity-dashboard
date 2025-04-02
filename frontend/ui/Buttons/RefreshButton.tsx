@@ -38,7 +38,7 @@ export default function RefreshButton(props: RefreshButtonProps): ReactElement {
   return (
     <div>
       <button
-        className="p-2 h-16 w-16 rounded-lg flex justify-evenly items-center align-middle content-center transition-colors ease-in-out duration-300"
+        className="p-2 h-14 w-16 rounded-lg flex justify-evenly items-center align-middle content-center transition-colors ease-in-out duration-300"
         onClick={handleClick}
         style={buttonStyle}
         onMouseEnter={handleMouseEnter}

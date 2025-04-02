@@ -757,6 +757,8 @@ export default function CombinedMap(props: MapProps): JSX.Element {
                   menuStyle={{ ...menuStyle, fontWeight: 'bold' }}
                   headerPrimaryColor={ciColors?.headerPrimaryColor}
                   headerFontColor={ciColors?.headerFontColor}
+                  panelFontColor={ciColors?.panelFontColor}
+                  widgetFontColor={ciColors?.widgetFontColor}
                 />
               </div>
             )}
