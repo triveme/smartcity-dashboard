@@ -4,7 +4,7 @@
 
 To run the application locally, make sure all the prerequisites are installed (Rancher Desktop, Node.js (v.20.13.0), PgAdmin/DBeaver, K9S) and then install the dependencies for all packages (`npm install` in root, frontend, microservices).
 
-Afterwards you can continue the setup with kubernetes link:./k8s/README.md[here].
+Afterwards you can continue the setup with kubernetes link:./k8s/README.adoc[here].
 
 == Single Sign On
 
@@ -12,7 +12,7 @@ We use https://www.keycloak.org/[Keycloak] as our Single Sign On (SSO) provider.
 
 For local development, the SSO can be accessed at http://localhost:8080/[http://localhost:8080/].
 
-You can find more information about the Auth link:./keycloak/README.md[here].
+You can find more information about the Auth link:./keycloak/README.adoc[here].
 
 == Database
 
@@ -20,8 +20,8 @@ Locally, we run a https://www.postgresql.org/[PostgreSQL] database via kubernete
 
 Before you can develop or test locally, you will need to setup the database and run the migrations:
 
-* link:./database/README.md#local-setup[Local Setup]
-* link:./database/README.md#migrations#migrations[Migrations]
+* link:./database/README.adoc#local-setup[Local Setup]
+* link:./database/README.adoc#migrations#migrations[Migrations]
 
 == Microservices (backend)
 

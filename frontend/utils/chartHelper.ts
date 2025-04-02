@@ -1,4 +1,5 @@
 import { ChartData } from '@/types';
+import { Dictionary } from 'lodash';
 
 export function getLabelName(text: string, index: number): string {
   if (text) {
@@ -143,17 +144,57 @@ export const calculateMinYAxisValue = (
   return minValue;
 };
 
-export const getChartDateFormatter = (
-  representation: string | undefined,
-): { year: string; month: string; day: string } | undefined => {
-  if (representation === undefined) return undefined;
+export const getChartDateRichText = (
+  representation: string,
+): Dictionary<object> | undefined => {
+  switch (representation) {
+    case 'Default':
+      return {
+        yearStyle: {
+          fontWeight: 'bold',
+          fontSize: 15,
+        },
+        monthStyle: {
+          fontWeight: 'bold',
+          fontSize: 13,
+          padding: [0, 0, 0, 10],
+        },
+        dayStyle: {
+          fontSize: 13,
+        },
+        hourStyle: {
+          fontSize: 10,
+        },
+        secondStyle: {
+          fontSize: 9,
+        },
+      };
 
+    /* If the representation not known, deactivate the richtext formatter */
+    default:
+      return undefined;
+  }
+};
+
+export const getChartDateFormatter = (
+  representation: string,
+):
+  | {
+      year: string;
+      month: string;
+      day: string;
+      hour?: string;
+      second?: string;
+    }
+  | undefined => {
   switch (representation) {
     case 'Default':
       return {
         year: '{yearStyle|{yyyy}}',
         month: '{monthStyle|{MMM}}',
-        day: '{dd}.{M}.',
+        day: '{dayStyle|{dd}.{M}.}',
+        hour: '{hourStyle|{HH}:{mm}}',
+        second: '{secondStyle|{mm}:{ss}}',
       };
     case 'Only Year':
       return {
@@ -168,6 +209,8 @@ export const getChartDateFormatter = (
         month: '{monthStyle|{MMM}}',
         day: '',
       };
+
+    /* If the representation not known, deactivate the date formatter */
     default:
       return undefined;
   }

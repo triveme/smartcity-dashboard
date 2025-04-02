@@ -95,10 +95,12 @@ export class PopulateMapService {
       const locationArray = queryData['attributes'].filter(
         (attribute) =>
           attribute.attrName === 'fakePosition' ||
-          attribute.attrName === 'location',
+          attribute.attrName === 'location' ||
+          attribute.attrName === 'position',
       );
       const dataArrayWithoutLocation = queryData['attributes'].filter(
         (attribute) =>
+          attribute.attrName !== 'position' &&
           attribute.attrName !== 'location' &&
           attribute.attrName !== 'fakePosition',
       );
@@ -119,10 +121,12 @@ export class PopulateMapService {
       const locationArray = queryData['attrs'].filter(
         (attribute) =>
           attribute.attrName === 'fakePosition' ||
-          attribute.attrName === 'location',
+          attribute.attrName === 'location' ||
+          attribute.attrName === 'position',
       );
       const dataArrayWithoutLocation = queryData['attrs'].filter(
         (attribute) =>
+          attribute.attrName !== 'position' &&
           attribute.attrName !== 'location' &&
           attribute.attrName !== 'fakePosition',
       );
@@ -140,11 +144,32 @@ export class PopulateMapService {
   }
 
   private buildMapObjectForSingleEntity(
-    locationValues: string[],
+    locationValues: any[],
     dataArrayWithoutLocation: object[],
   ): MapObject {
-    const wkbCoordinates = locationValues[locationValues.length - 1];
-    const position = this.getGeoJsonFromNgsi(wkbCoordinates);
+    let position: Position;
+    const lastValue = locationValues[locationValues.length - 1];
+
+    if (typeof lastValue === 'string') {
+      position = this.getGeoJsonFromNgsi(lastValue);
+    } else if (
+      typeof lastValue === 'object' &&
+      lastValue.type &&
+      lastValue.coordinates
+    ) {
+      position = lastValue;
+    } else {
+      try {
+        const parsedValue =
+          typeof lastValue === 'string' ? JSON.parse(lastValue) : lastValue;
+        if (parsedValue.type && parsedValue.coordinates) {
+          position = parsedValue;
+        }
+      } catch (e) {
+        console.error('Failed to parse position value:', lastValue);
+        position = null;
+      }
+    }
 
     let mapObject: MapObject = {
       position: position,
@@ -176,21 +201,34 @@ export class PopulateMapService {
       });
   }
 
-  private getGeoJsonFromNgsi(wkbCoordinates: string): Position {
-    if (wkbCoordinates) {
-      const wkbBuffer = Buffer.from(wkbCoordinates, 'hex');
-      const coordinates = wkx.Geometry.parse(wkbBuffer);
+  private getGeoJsonFromNgsi(wkbCoordinates: any): Position {
+    if (
+      typeof wkbCoordinates === 'object' &&
+      wkbCoordinates !== null &&
+      wkbCoordinates.type &&
+      wkbCoordinates.coordinates
+    ) {
+      return wkbCoordinates;
+    }
 
-      if (coordinates) {
-        const geoJsonCoordinates = coordinates.toGeoJSON();
+    if (wkbCoordinates && typeof wkbCoordinates === 'string') {
+      try {
+        const wkbBuffer = Buffer.from(wkbCoordinates, 'hex');
+        const coordinates = wkx.Geometry.parse(wkbBuffer);
 
-        return {
-          type: 'Point',
-          coordinates: [
-            geoJsonCoordinates['coordinates'][1],
-            geoJsonCoordinates['coordinates'][0],
-          ],
-        };
+        if (coordinates) {
+          const geoJsonCoordinates = coordinates.toGeoJSON();
+
+          return {
+            type: 'Point',
+            coordinates: [
+              geoJsonCoordinates['coordinates'][1],
+              geoJsonCoordinates['coordinates'][0],
+            ],
+          };
+        }
+      } catch (error) {
+        console.error('Error parsing WKB coordinates:', error);
       }
     }
 

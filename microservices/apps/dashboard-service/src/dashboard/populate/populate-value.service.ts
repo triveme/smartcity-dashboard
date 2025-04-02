@@ -125,33 +125,79 @@ export class PopulateValueService {
     queryData: object,
     attribute: string,
   ): void {
-    const queryDataMap = new Map(Object.entries(queryData));
-    const attributeValue = queryDataMap.get(attribute);
+    // Orchideo Data Structure
+    if (
+      'entityId' in queryData &&
+      'attributes' in queryData &&
+      'index' in queryData
+    ) {
+      const attributes = queryData['attributes'] as Array<{
+        attrName: string;
+        values: any[];
+      }>;
+      const matchingAttribute = attributes.find(
+        (attr) => attr.attrName === attribute,
+      );
 
-    if (!attributeValue) {
-      return;
-    }
+      if (matchingAttribute) {
+        const latestValue =
+          matchingAttribute.values[matchingAttribute.values.length - 1];
 
-    if (attributeValue.type) {
-      if (
-        attributeValue.type === 'Number' ||
-        attributeValue.type === 'number'
-      ) {
-        tab.chartValues.push(attributeValue.value);
-      } else if (
-        attributeValue.type === 'Text' ||
-        attributeValue.type === 'text' ||
-        attributeValue.type === 'DateTime' ||
-        attributeValue.type === 'datetime'
-      ) {
-        tab.textValue = attributeValue.value;
-      } else if (attributeValue.type === 'Property') {
-        // NGSI-LD
-        tab.textValue = attributeValue.value;
-        tab.chartValues.push(attributeValue.value);
+        if (typeof latestValue === 'number') {
+          tab.chartValues.push(latestValue);
+        } else if (
+          typeof latestValue === 'string' ||
+          typeof latestValue === 'boolean'
+        ) {
+          tab.textValue = String(latestValue);
+
+          const numValue = parseFloat(latestValue as string);
+          if (!isNaN(numValue)) {
+            tab.chartValues.push(numValue);
+          }
+        } else if (latestValue !== null && typeof latestValue === 'object') {
+          if ('value' in latestValue) {
+            if (typeof latestValue.value === 'number') {
+              tab.chartValues.push(latestValue.value);
+            } else {
+              tab.textValue = String(latestValue.value);
+            }
+          }
+        }
+      } else {
+        console.warn('No Data found for attribute:', attribute);
       }
     } else {
-      tab.chartValues.push(attributeValue);
+      // NGSI Data Structure
+      const queryDataMap = new Map(Object.entries(queryData));
+      const attributeValue = queryDataMap.get(attribute);
+
+      if (!attributeValue) {
+        console.warn('No Data found for attribute:', attribute);
+        return;
+      }
+
+      if (attributeValue.type) {
+        if (
+          attributeValue.type === 'Number' ||
+          attributeValue.type === 'number'
+        ) {
+          tab.chartValues.push(attributeValue.value);
+        } else if (
+          attributeValue.type === 'Text' ||
+          attributeValue.type === 'text' ||
+          attributeValue.type === 'DateTime' ||
+          attributeValue.type === 'datetime'
+        ) {
+          tab.textValue = attributeValue.value;
+        } else if (attributeValue.type === 'Property') {
+          // NGSI-LD
+          tab.textValue = attributeValue.value;
+          tab.chartValues.push(attributeValue.value);
+        }
+      } else {
+        tab.chartValues.push(attributeValue);
+      }
     }
   }
 }

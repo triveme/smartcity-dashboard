@@ -3,6 +3,11 @@ import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { Query } from '@app/postgres-db/schemas/query.schema';
+import { PgEnum } from 'drizzle-orm/pg-core';
+import {
+  tabComponentSubTypeEnum,
+  tabComponentTypeEnum,
+} from '@app/postgres-db/schemas/enums.schema';
 
 export type WidgetWithChildren = {
   widget: Widget;
@@ -38,3 +43,9 @@ export type PaginationMeta = {
   currentPage: number;
   pageSize: number;
 };
+
+export type TabComponentType =
+  typeof tabComponentTypeEnum extends PgEnum<infer T> ? T[number] : never;
+
+export type TabSubComponentType =
+  typeof tabComponentSubTypeEnum extends PgEnum<infer T> ? T[number] : never;

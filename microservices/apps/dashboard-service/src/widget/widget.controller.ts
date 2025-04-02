@@ -49,12 +49,16 @@ export class WidgetController {
     @Req() request: AuthenticatedRequest,
     @Query('abbreviation') tenantAbbreviation: string,
     @Query('search') searchParam: string = '',
+    @Query('component') componentType: string = '',
+    @Query('type') componentSubType: string = '',
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
   ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
     const roles = request.roles ?? [];
     return this.service.getBySearchParam(
       searchParam,
+      componentType,
+      componentSubType,
       roles,
       tenantAbbreviation,
       page,

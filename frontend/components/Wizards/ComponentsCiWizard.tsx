@@ -197,9 +197,7 @@ type Props = {
 export default function ComponentsCiWizard({
   // Information
   informationTextFontSize,
-  setInformationTextFontSize,
   informationTextFontColor,
-  setInformationTextFontColor,
   iconWithLinkFontSize,
   setIconWithLinkFontSize,
   iconWithLinkFontColor,
@@ -459,7 +457,6 @@ export default function ComponentsCiWizard({
     ],
     [tabComponentTypeEnum.information]: [
       '',
-      tabComponentSubTypeEnum.text,
       tabComponentSubTypeEnum.iconWithLink,
     ],
   };
@@ -1329,34 +1326,6 @@ export default function ComponentsCiWizard({
             )}
             {selectedComponentType === tabComponentTypeEnum.information && (
               <div className="flex-1">
-                {selectedComponentSubType === tabComponentSubTypeEnum.text && (
-                  <div className="flex-col">
-                    <div className="flex flex-row">
-                      <div className="flex flex-row w-1/2">
-                        <div className="flex w-1/3">
-                          <WizardLabel label="Schriftgröße" />
-                        </div>
-                        <div className="flex w-2/3">
-                          <WizardTextfield
-                            value={informationTextFontSize}
-                            onChange={(value): void => {
-                              setInformationTextFontSize(value.toString());
-                            }}
-                            borderColor={borderColor}
-                            backgroundColor={backgroundColor}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex w-1/2 ml-4 mt-2">
-                        <ColorPickerComponent
-                          currentColor={informationTextFontColor}
-                          handleColorChange={setInformationTextFontColor}
-                          label="Schriftfarbe"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
                 {selectedComponentSubType ===
                   tabComponentSubTypeEnum.iconWithLink && (
                   <div className="flex-col">

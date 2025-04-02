@@ -161,6 +161,86 @@ export class DataService {
     }
   }
 
+  async downloadDataFromDataSource(
+    queryBatch: QueryBatch,
+  ): Promise<object | Array<object>> {
+    const { queryIds, query_config, data_source, auth_data } = queryBatch;
+
+    try {
+      let url: string;
+      let headers;
+      const access_token =
+        await this.authService.getAccessTokenByQuery(queryBatch);
+
+      if (!access_token) {
+        console.error(
+          `Could not get access token for data source with id: ${data_source.id}`,
+        );
+        return;
+      }
+
+      url =
+        query_config.entityIds.length === 1
+          ? `${auth_data.timeSeriesUrl}${query_config.entityIds}`
+          : auth_data.timeSeriesUrl;
+
+      if (auth_data.type === 'ngsi-v2') {
+        headers = {
+          'Fiware-Service': query_config.fiwareService,
+          'Fiware-ServicePath': query_config.fiwareServicePath,
+          Authorization: `Bearer ${access_token}`,
+        };
+      } else if (auth_data.type === 'ngsi-ld') {
+        headers = {
+          'NGSILD-Tenant': query_config.fiwareService,
+          Authorization: `Bearer ${access_token}`,
+        };
+      } else {
+        console.warn('Unknown auth-data type');
+      }
+      const params = {
+        type: query_config.fiwareType,
+        fromDate: this.getFromDate('year'),
+        toDate: new Date(Date.now()),
+        attrs: query_config.attributes.join(','),
+        id: query_config.entityIds.join(','),
+      };
+      url = url.replace('entities/', 'attrs');
+
+      // Workaround for aggregation attributes with a name attribute included
+      if (params.attrs.includes('name')) {
+        params.attrs = params.attrs.replace('name,', '');
+        params.attrs = params.attrs.replace('name,', '');
+        params.attrs = params.attrs.replace('name', '');
+        const aggrParams = { ...params };
+
+        const [aggrResponse] = await Promise.all([
+          axios.get(url, { headers, params: aggrParams }),
+        ]);
+
+        const combinedAttrs = [...aggrResponse.data.attrs];
+        return {
+          attrs: [...combinedAttrs],
+        };
+      }
+      const response = await axios.get(url, { headers, params });
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        'Could not get data for queries with ids:',
+        queryIds,
+        '\nfrom query_config:',
+        query_config.id,
+        '\nfrom data_source:',
+        data_source.id,
+        '\nfrom auth_data:',
+        auth_data.id,
+        '\ndue to error:',
+        error && error.data ? error.data : error,
+      );
+    }
+  }
   async getImageFromSource(
     tabQueryWithAllInfos: TabQueryWithAllInfos,
   ): Promise<string> {
