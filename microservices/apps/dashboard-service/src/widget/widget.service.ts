@@ -605,6 +605,8 @@ export class WidgetService {
 
   async getBySearchParam(
     searchParam: string,
+    componentType: string,
+    componentSubType: string,
     roles: string[],
     tenantAbbreviation: string,
     page: number,
@@ -616,6 +618,8 @@ export class WidgetService {
     return await this.widgetRepo.searchWidgets(
       roles,
       searchParam,
+      componentType,
+      componentSubType,
       page,
       limit,
       tenant.id,

@@ -75,7 +75,7 @@ export class DashboardDataService {
             queryBatch.query_config.timeframe = 'year';
 
             const rawData =
-              await this.ngsiDataService.getDataFromDataSource(queryBatch);
+              await this.ngsiDataService.downloadDataFromDataSource(queryBatch);
 
             // Ensure rawData is an array
             const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
@@ -89,8 +89,8 @@ export class DashboardDataService {
                 return [];
               }
 
-              // Handling case where returned object has no 'types' field
               return attributes.flatMap((attr) => {
+                // Handling case where returned object has no 'types' field
                 if (!attr.types || !Array.isArray(attr.types)) {
                   console.warn(
                     `Missing types for attribute: ${attr.attrName}. Processing without types.`,

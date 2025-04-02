@@ -216,6 +216,18 @@ export default function CorporateInfoWizard({
             iconColor={corporateInfo?.dashboardFontColor || '#fff'}
             borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+            dashboardInformationTextFontColor={
+              corporateInfo?.informationTextFontColor || '#FFFFFF'
+            }
+            dashboardInformationTextFontSize={
+              corporateInfo?.informationTextFontSize || '11px'
+            }
+            setDashboardInformationTextFontColor={(fontColor): void =>
+              updateState('informationTextFontColor', fontColor)
+            }
+            setDashboardInformationTextFontSize={(fontSize): void =>
+              updateState('informationTextFontSize', fontSize)
+            }
           />
         )}
         {activeTab === 'Panel' && (

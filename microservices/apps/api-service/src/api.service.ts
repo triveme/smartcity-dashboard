@@ -89,19 +89,24 @@ export class ApiService {
       ).map(async (queryBatch) => {
         const newData =
           await this.dataService.getDataFromDataSource(queryBatch);
+
         if (newData) {
           const queryConfig = queryBatch.query_config;
-          const aggregatedData = this.aggregateData(
+
+          const filteredData = this.filterByAttribute(
+            queryConfig.attributes,
             newData,
+          );
+
+          const aggregatedData = this.aggregateData(
+            filteredData,
             queryConfig.timeframe,
             queryConfig.aggrMode,
             queryConfig.attributes,
           );
 
-          // Transform data to match our required data model
           const transformedData = this.transformToTargetModel(aggregatedData);
 
-          // Write into the database
           await this.queryService.setQueryDataOfBatch(
             queryBatch,
             transformedData,
@@ -115,21 +120,42 @@ export class ApiService {
     }
   }
 
-  private transformToTargetModel(data: any[]): any[] {
+  private filterByAttribute(attributes: string[], data: object[]): object[] {
+    return data.map((item) => {
+      const reducedItem = {};
+      // Always keep id and timestamp
+      reducedItem['id'] = item['id'];
+      reducedItem['timestamp'] = item['timestamp'];
+
+      for (const attribute of attributes) {
+        if (item.hasOwnProperty(attribute)) {
+          reducedItem[attribute] = item[attribute];
+        }
+      }
+      return reducedItem;
+    });
+  }
+
+  private transformToTargetModel(data: any[]): any {
     // Group data by `id`
     const groupedData = data.reduce(
       (acc, item) => {
-        if (!acc[item.id]) {
-          acc[item.id] = [];
+        if (item && item.id) {
+          if (!acc[item.id]) {
+            acc[item.id] = [];
+          }
+          acc[item.id].push(item);
         }
-        acc[item.id].push(item);
         return acc;
       },
       {} as Record<string, any[]>,
     );
 
-    // Transform each group into the target structure
-    return Object.keys(groupedData).map((id) => {
+    const entityIds = Object.keys(groupedData);
+
+    // SINGLE ENTITY
+    if (entityIds.length === 1) {
+      const id = entityIds[0];
       const entityRecords = groupedData[id];
 
       // Extract all attribute names dynamically (excluding `id` and `timestamp`)
@@ -145,7 +171,33 @@ export class ApiService {
         })),
         index: entityRecords.map((item) => item.timestamp),
       };
+    }
+
+    // MULTIPLE ENTITIES
+    const allAttributeNames = new Set<string>();
+    Object.values(groupedData).forEach((records) => {
+      Object.keys(records[0])
+        .filter((key) => key !== 'id' && key !== 'timestamp')
+        .forEach((attr) => allAttributeNames.add(attr));
     });
+
+    return {
+      attrs: Array.from(allAttributeNames).map((attrName) => ({
+        attrName,
+        types: [
+          {
+            entities: entityIds.map((entityId) => {
+              const records = groupedData[entityId];
+              return {
+                entityId,
+                index: records.map((item) => item.timestamp),
+                values: records.map((item) => item[attrName] || null),
+              };
+            }),
+          },
+        ],
+      })),
+    };
   }
 
   private aggregateData(
@@ -156,15 +208,23 @@ export class ApiService {
   ): object[] {
     let aggregatedData: object[] = [];
 
+    if (aggregationMode === 'none') {
+      return data;
+    }
+
     const sensorDataMap = this.buildSensorDataMap(data);
 
     switch (timeframe) {
       case 'day':
-        aggregatedData = this.aggregateDay(
-          sensorDataMap,
-          aggregationMode,
-          attributes,
-        );
+        for (const sensorValues of sensorDataMap.values()) {
+          const aggregatedValues = this.aggregateTimeframe(
+            sensorValues,
+            1,
+            attributes,
+            aggregationMode,
+          );
+          aggregatedData = [...aggregatedData, ...aggregatedValues];
+        }
         break;
 
       case 'week':
@@ -226,59 +286,6 @@ export class ApiService {
     return aggregatedData;
   }
 
-  private filterByAttribute(attributes: string[], data: object[]): object[] {
-    return data.map((item) => {
-      const reducedItem = {};
-      for (const attribute of attributes) {
-        if (item.hasOwnProperty(attribute)) {
-          reducedItem[attribute] = item[attribute];
-        }
-      }
-      return reducedItem;
-    });
-  }
-
-  private aggregateDay(
-    sensorDataMap: Map<string, any>,
-    aggregationMode: AggregationMode,
-    properties: string[],
-  ): object[] {
-    const aggregatedValues: object[] = [];
-
-    for (let i = 0; i < 24; i++) {
-      for (const sensorValues of sensorDataMap.values()) {
-        const values = sensorValues.filter(
-          (entry) => new Date(entry.timestamp).getUTCHours() === i,
-        );
-
-        if (aggregationMode === 'none') {
-          const dayValues = this.getDayValuesWithoutAggregation(values);
-
-          aggregatedValues.push(...dayValues);
-          continue;
-        }
-        aggregatedValues.push(
-          this.startValueAggregation(values, properties, aggregationMode),
-        );
-      }
-    }
-
-    return aggregatedValues;
-  }
-
-  private getDayValuesWithoutAggregation(values: any[]): object[] {
-    const now: Date = new Date();
-    const before24Hours: Date = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-    return values
-      .filter((value) => {
-        const timestamp = new Date(value.timestamp);
-
-        return timestamp > before24Hours;
-      })
-      .sort((value1, value2) => (value1.timestamp > value2.timestamp ? -1 : 1));
-  }
-
   private aggregateTimeframe(
     data,
     aggregationDays: number,
@@ -289,14 +296,6 @@ export class ApiService {
     const endTimestamp = new Date(data[0].timestamp);
     const startTimestamp = new Date(endTimestamp);
     startTimestamp.setDate(endTimestamp.getDate() - aggregationDays);
-
-    if (aggregationMode === 'none') {
-      const noneAggregatedTimeframeValues =
-        this.getNoneAggregatedTimeframeValues(aggregationDays, data);
-      aggregatedValues.push(...noneAggregatedTimeframeValues);
-
-      return aggregatedValues;
-    }
 
     for (
       let i = startTimestamp.getTime();
@@ -319,36 +318,19 @@ export class ApiService {
     return aggregatedValues;
   }
 
-  private getNoneAggregatedTimeframeValues(
-    aggregationDays: number,
-    values: any[],
-  ): object[] {
-    const now: Date = new Date();
-    const beforeDays: Date = new Date(
-      now.getTime() - aggregationDays * 24 * 60 * 60 * 1000,
-    );
-
-    return values
-      .filter((value) => {
-        const timestamp = new Date(value.timestamp);
-        return timestamp > beforeDays;
-      })
-      .sort((value1, value2) => (value1.timestamp > value2.timestamp ? 1 : -1));
-  }
-
   private startValueAggregation(
     values,
-    properties: string[],
+    attributes: string[],
     aggregationMode: AggregationMode,
   ): object {
     if (values.length > 0) {
       const lastEntry = values[0];
       const aggregatedEntry = { ...lastEntry };
 
-      properties.forEach((property) => {
-        const propertyValues = values.map((entry) => entry[property]);
-        aggregatedEntry[property] = this.aggregateValues(
-          propertyValues,
+      attributes.forEach((attribute) => {
+        const attributeValue = values.map((entry) => entry[attribute]);
+        aggregatedEntry[attribute] = this.aggregateValues(
+          attributeValue,
           aggregationMode,
         );
       });

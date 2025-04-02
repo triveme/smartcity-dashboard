@@ -1,0 +1,3294 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "id": "706fe8e3-e61e-479d-9a63-0c8ff0142bd6",
+  "prevId": "7f74f4d5-59ed-4b52-a732-386e7f3357da",
+  "tables": {
+    "auth_data": {
+      "name": "auth_data",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_abbreviation": {
+          "name": "tenant_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_token": {
+          "name": "api_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "api_url": {
+          "name": "api_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "app_user": {
+          "name": "app_user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "app_user_password": {
+          "name": "app_user_password",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "auth_url": {
+          "name": "auth_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_secret": {
+          "name": "client_secret",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "collections": {
+          "name": "collections",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fiware_services": {
+          "name": "fiware_services",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "live_url": {
+          "name": "live_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time_series_url": {
+          "name": "time_series_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "auth_data_type",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'api'"
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "auth_data_tenant_abbreviation_tenant_abbreviation_fk": {
+          "name": "auth_data_tenant_abbreviation_tenant_abbreviation_fk",
+          "tableFrom": "auth_data",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "climate_project": {
+      "name": "climate_project",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "costs_in_cents": {
+          "name": "costs_in_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "img_path": {
+          "name": "img_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "locationText": {
+          "name": "locationText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timeHorizon": {
+          "name": "timeHorizon",
+          "type": "time_horizon_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "responsible": {
+          "name": "responsible",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "corporate_info_sidebar_logos": {
+      "name": "corporate_info_sidebar_logos",
+      "schema": "",
+      "columns": {
+        "corporate_info_id": {
+          "name": "corporate_info_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_id": {
+          "name": "logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "corporate_info_sidebar_logos_corporate_info_id_corporate_info_id_fk": {
+          "name": "corporate_info_sidebar_logos_corporate_info_id_corporate_info_id_fk",
+          "tableFrom": "corporate_info_sidebar_logos",
+          "tableTo": "corporate_info",
+          "columnsFrom": [
+            "corporate_info_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "corporate_info_sidebar_logos_logo_id_logo_id_fk": {
+          "name": "corporate_info_sidebar_logos_logo_id_logo_id_fk",
+          "tableFrom": "corporate_info_sidebar_logos",
+          "tableTo": "logo",
+          "columnsFrom": [
+            "logo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "corporate_info_sidebar_logos_corporate_info_id_logo_id": {
+          "name": "corporate_info_sidebar_logos_corporate_info_id_logo_id",
+          "columns": [
+            "corporate_info_id",
+            "logo_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "corporate_info": {
+      "name": "corporate_info",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_axis_label_size": {
+          "name": "bar_chart_axis_label_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_axis_label_color": {
+          "name": "bar_chart_axis_label_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_axis_label_font_color": {
+          "name": "bar_chart_axis_label_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_axis_line_color": {
+          "name": "bar_chart_axis_line_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_axis_ticks_font_size": {
+          "name": "bar_chart_axis_ticks_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_current_values_colors": {
+          "name": "bar_chart_current_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_filter_color": {
+          "name": "bar_chart_filter_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_filter_text_color": {
+          "name": "bar_chart_filter_text_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_grid_color": {
+          "name": "bar_chart_grid_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_legend_font_size": {
+          "name": "bar_chart_legend_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_legend_font_color": {
+          "name": "bar_chart_legend_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bar_chart_ticks_font_color": {
+          "name": "bar_chart_ticks_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancel_button_color": {
+          "name": "cancel_button_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cancel_hover_button_color": {
+          "name": "cancel_hover_button_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_arrow_color": {
+          "name": "colored_slider_arrow_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_big_value_font_color": {
+          "name": "colored_slider_big_value_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_big_value_font_size": {
+          "name": "colored_slider_big_value_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_label_font_color": {
+          "name": "colored_slider_label_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_label_font_size": {
+          "name": "colored_slider_label_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "colored_slider_unit_font_size": {
+          "name": "colored_slider_unit_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_font_color": {
+          "name": "dashboard_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_primary_color": {
+          "name": "dashboard_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_secondary_color": {
+          "name": "dashboard_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dashboard_headline_font_size": {
+          "name": "dashboard_headline_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_180_bg_color": {
+          "name": "degree_chart_180_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_180_fill_color": {
+          "name": "degree_chart_180_fill_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_180_font_color": {
+          "name": "degree_chart_180_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_180_font_size": {
+          "name": "degree_chart_180_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_180_unit_font_size": {
+          "name": "degree_chart_180_unit_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_360_bg_color": {
+          "name": "degree_chart_360_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_360_fill_color": {
+          "name": "degree_chart_360_fill_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_360_font_color": {
+          "name": "degree_chart_360_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_360_font_size": {
+          "name": "degree_chart_360_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "degree_chart_360_unit_font_size": {
+          "name": "degree_chart_360_unit_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "font_color": {
+          "name": "font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "font_family": {
+          "name": "font_family",
+          "type": "corporate_info_font_families_type",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "header_font_color": {
+          "name": "header_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_logo_id": {
+          "name": "header_logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_primary_color": {
+          "name": "header_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_secondary_color": {
+          "name": "header_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_title_admin": {
+          "name": "header_title_admin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_title_dashboards": {
+          "name": "header_title_dashboards",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_with_link_font_color": {
+          "name": "icon_with_link_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_with_link_font_size": {
+          "name": "icon_with_link_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_with_link_icon_color": {
+          "name": "icon_with_link_icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_with_link_icon_size": {
+          "name": "icon_with_link_icon_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_panel_headline_bold": {
+          "name": "is_panel_headline_bold",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_widget_headline_bold": {
+          "name": "is_widget_headline_bold",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "information_text_font_color": {
+          "name": "information_text_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "information_text_font_size": {
+          "name": "information_text_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_axis_label_font_color": {
+          "name": "line_chart_axis_label_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_axis_label_size": {
+          "name": "line_chart_axis_label_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_axis_line_color": {
+          "name": "line_chart_axis_line_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_axis_ticks_font_size": {
+          "name": "line_chart_axis_ticks_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_current_values_colors": {
+          "name": "line_chart_current_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_filter_color": {
+          "name": "line_chart_filter_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_filter_text_color": {
+          "name": "line_chart_filter_text_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_grid_color": {
+          "name": "line_chart_grid_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_legend_font_size": {
+          "name": "line_chart_legend_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_legend_font_color": {
+          "name": "line_chart_legend_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "line_chart_ticks_font_color": {
+          "name": "line_chart_ticks_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_axis_label_font_color": {
+          "name": "measurement_chart_axis_label_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_axis_line_color": {
+          "name": "measurement_chart_axis_line_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_axis_ticks_font_color": {
+          "name": "measurement_chart_axis_ticks_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_bar_color": {
+          "name": "measurement_chart_bar_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_big_value_font_color": {
+          "name": "measurement_chart_big_value_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_big_value_font_size": {
+          "name": "measurement_chart_big_value_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_cards_bg_color": {
+          "name": "measurement_chart_cards_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_cards_font_color": {
+          "name": "measurement_chart_cards_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_cards_icon_colors": {
+          "name": "measurement_chart_cards_icon_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_current_values_colors": {
+          "name": "measurement_chart_current_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_grid_color": {
+          "name": "measurement_chart_grid_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_label_font_color": {
+          "name": "measurement_chart_label_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_top_button_bg_color": {
+          "name": "measurement_chart_top_button_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_top_button_font_color": {
+          "name": "measurement_chart_top_button_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_top_button_hover_color": {
+          "name": "measurement_chart_top_button_hover_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measurement_chart_top_button_inactive_bg_color": {
+          "name": "measurement_chart_top_button_inactive_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_active_color": {
+          "name": "menu_active_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_active_font_color": {
+          "name": "menu_active_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_arrow_direction": {
+          "name": "menu_arrow_direction",
+          "type": "menu_arrow_direction_enum",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_corner_color": {
+          "name": "menu_corner_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_corner_font_color": {
+          "name": "menu_corner_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_font_color": {
+          "name": "menu_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_hover_color": {
+          "name": "menu_hover_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_hover_font_color": {
+          "name": "menu_hover_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_logo_id": {
+          "name": "menu_logo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_primary_color": {
+          "name": "menu_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "menu_secondary_color": {
+          "name": "menu_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_color": {
+          "name": "panel_border_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_radius": {
+          "name": "panel_border_radius",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_border_size": {
+          "name": "panel_border_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_font_color": {
+          "name": "panel_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_headline_font_size": {
+          "name": "panel_headline_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_primary_color": {
+          "name": "panel_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_secondary_color": {
+          "name": "panel_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pie_chart_font_color": {
+          "name": "pie_chart_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pie_chart_font_size": {
+          "name": "pie_chart_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pie_chart_current_values_colors": {
+          "name": "pie_chart_current_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "save_button_color": {
+          "name": "save_button_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "save_hover_button_color": {
+          "name": "save_hover_button_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrollbar_background": {
+          "name": "scrollbar_background",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scrollbar_color": {
+          "name": "scrollbar_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_header_logo": {
+          "name": "show_header_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_menu_logo": {
+          "name": "show_menu_logo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_current_font_color": {
+          "name": "slider_current_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_maximum_font_color": {
+          "name": "slider_maximum_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_general_font_color": {
+          "name": "slider_general_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_current_color": {
+          "name": "slider_current_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_maximum_color": {
+          "name": "slider_maximum_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stageable_chart_font_color": {
+          "name": "stageable_chart_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stageable_chart_font_size": {
+          "name": "stageable_chart_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stageable_chart_ticks_font_color": {
+          "name": "stageable_chart_ticks_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stageable_chart_ticks_font_size": {
+          "name": "stageable_chart_ticks_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title_bar": {
+          "name": "title_bar",
+          "type": "title_bar_theme",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "use_color_transition_header": {
+          "name": "use_color_transition_header",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "use_color_transition_menu": {
+          "name": "use_color_transition_menu",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_bg_color": {
+          "name": "weather_warning_bg_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_headline_color": {
+          "name": "weather_warning_headline_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_instructions_color": {
+          "name": "weather_warning_instructions_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_descriptions_color": {
+          "name": "weather_warning_descriptions_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_date_color": {
+          "name": "weather_warning_date_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_button_background_color": {
+          "name": "weather_warning_button_background_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weather_warning_button_icon_color": {
+          "name": "weather_warning_button_icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wert_font_color": {
+          "name": "wert_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_headline_font_size": {
+          "name": "widget_headline_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_subheadline_font_size": {
+          "name": "widget_subheadline_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wert_font_size": {
+          "name": "wert_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wert_unit_font_size": {
+          "name": "wert_unit_font_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_color": {
+          "name": "widget_border_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_radius": {
+          "name": "widget_border_radius",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_border_size": {
+          "name": "widget_border_size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_font_color": {
+          "name": "widget_font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_primary_color": {
+          "name": "widget_primary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_secondary_color": {
+          "name": "widget_secondary_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "corporate_info_tenant_id_tenant_abbreviation_fk": {
+          "name": "corporate_info_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        },
+        "corporate_info_header_logo_id_logo_id_fk": {
+          "name": "corporate_info_header_logo_id_logo_id_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "logo",
+          "columnsFrom": [
+            "header_logo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "corporate_info_menu_logo_id_logo_id_fk": {
+          "name": "corporate_info_menu_logo_id_logo_id_fk",
+          "tableFrom": "corporate_info",
+          "tableTo": "logo",
+          "columnsFrom": [
+            "menu_logo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "dashboard_to_tenant": {
+      "name": "dashboard_to_tenant",
+      "schema": "",
+      "columns": {
+        "dashboard_id": {
+          "name": "dashboard_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dashboard_to_tenant_dashboard_id_dashboard_id_fk": {
+          "name": "dashboard_to_tenant_dashboard_id_dashboard_id_fk",
+          "tableFrom": "dashboard_to_tenant",
+          "tableTo": "dashboard",
+          "columnsFrom": [
+            "dashboard_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "dashboard_to_tenant_tenant_id_tenant_id_fk": {
+          "name": "dashboard_to_tenant_tenant_id_tenant_id_fk",
+          "tableFrom": "dashboard_to_tenant",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "dashboard_to_tenant_dashboard_id_tenant_id": {
+          "name": "dashboard_to_tenant_dashboard_id_tenant_id",
+          "columns": [
+            "dashboard_id",
+            "tenant_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "grouping_element": {
+      "name": "grouping_element",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "background_color": {
+          "name": "background_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "font_color": {
+          "name": "font_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gradient": {
+          "name": "gradient",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_dashboard": {
+          "name": "is_dashboard",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_abbreviation": {
+          "name": "tenant_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_grouping_element_id": {
+          "name": "parent_grouping_element_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "grouping_element_tenant_abbreviation_tenant_abbreviation_fk": {
+          "name": "grouping_element_tenant_abbreviation_tenant_abbreviation_fk",
+          "tableFrom": "grouping_element",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_abbreviation"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "grouping_element_parent_grouping_element_id_grouping_element_id_fk": {
+          "name": "grouping_element_parent_grouping_element_id_grouping_element_id_fk",
+          "tableFrom": "grouping_element",
+          "tableTo": "grouping_element",
+          "columnsFrom": [
+            "parent_grouping_element_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "panel": {
+      "name": "panel",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "dashboard_id": {
+          "name": "dashboard_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "headline_color": {
+          "name": "headline_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "info_msg": {
+          "name": "info_msg",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "general_info": {
+          "name": "general_info",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_general_info": {
+          "name": "show_general_info",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_jumpoff_button": {
+          "name": "show_jumpoff_button",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "open_jumpoff_link_in_new_tab": {
+          "name": "open_jumpoff_link_in_new_tab",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jumpoff_label": {
+          "name": "jumpoff_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jumpoff_icon": {
+          "name": "jumpoff_icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "jumpoff_url": {
+          "name": "jumpoff_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "panel_dashboard_id_dashboard_id_fk": {
+          "name": "panel_dashboard_id_dashboard_id_fk",
+          "tableFrom": "panel",
+          "tableTo": "dashboard",
+          "columnsFrom": [
+            "dashboard_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "dashboard": {
+      "name": "dashboard",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "allow_data_export": {
+          "name": "allow_data_export",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "headline_color": {
+          "name": "headline_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tab": {
+      "name": "tab",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "chart_allow_image_download": {
+          "name": "chart_allow_image_download",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_date_representation": {
+          "name": "chart_date_representation",
+          "type": "chart_date_representation",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_has_automatic_zoom": {
+          "name": "chart_has_automatic_zoom",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_has_additional_selection": {
+          "name": "chart_has_additional_selection",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_labels": {
+          "name": "chart_labels",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_legend_align": {
+          "name": "chart_legend_align",
+          "type": "chart_legend_placement",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_maximum": {
+          "name": "chart_maximum",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_minimum": {
+          "name": "chart_minimum",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_pie_radius": {
+          "name": "chart_pie_radius",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values": {
+          "name": "chart_static_values",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values_colors": {
+          "name": "chart_static_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values_ticks": {
+          "name": "chart_static_values_ticks",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values_logos": {
+          "name": "chart_static_values_logos",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_static_values_texts": {
+          "name": "chart_static_values_texts",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_unit": {
+          "name": "chart_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_values": {
+          "name": "chart_values",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_x_axis_label": {
+          "name": "chart_x_axis_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "chart_y_axis_label": {
+          "name": "chart_y_axis_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "child_widgets": {
+          "name": "child_widgets",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "component_sub_type": {
+          "name": "component_sub_type",
+          "type": "tab_component_sub_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "component_type": {
+          "name": "component_type",
+          "type": "tab_component_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_model_id": {
+          "name": "data_model_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "decimal_places": {
+          "name": "decimal_places",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_color": {
+          "name": "icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_text": {
+          "name": "icon_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon_url": {
+          "name": "icon_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "label_color": {
+          "name": "label_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "iframe_url": {
+          "name": "iframe_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_src": {
+          "name": "image_src",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_update_interval": {
+          "name": "image_update_interval",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_allow_jumpoff": {
+          "name": "image_allow_jumpoff",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_jumpoff_url": {
+          "name": "image_jumpoff_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_stepline": {
+          "name": "is_stepline",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_layout_vertical": {
+          "name": "is_layout_vertical",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_active_marker_color": {
+          "name": "map_active_marker_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_filter": {
+          "name": "map_allow_filter",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_legend": {
+          "name": "map_allow_legend",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_popups": {
+          "name": "map_allow_popups",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_scroll": {
+          "name": "map_allow_scroll",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_allow_zoom": {
+          "name": "map_allow_zoom",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_attribute_for_value_based": {
+          "name": "map_attribute_for_value_based",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_form_size_factor": {
+          "name": "map_form_size_factor",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_display_mode": {
+          "name": "map_display_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_filter_attribute": {
+          "name": "map_filter_attribute",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_is_form_color_value_based": {
+          "name": "map_is_form_color_value_based",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_is_icon_color_value_based": {
+          "name": "map_is_icon_color_value_based",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_latitude": {
+          "name": "map_latitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_legend_disclaimer": {
+          "name": "map_legend_disclaimer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_legend_values": {
+          "name": "map_legend_values",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_longtitude": {
+          "name": "map_longtitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_color": {
+          "name": "map_marker_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_icon": {
+          "name": "map_marker_icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_marker_icon_color": {
+          "name": "map_marker_icon_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_max_zoom": {
+          "name": "map_max_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_min_zoom": {
+          "name": "map_min_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_shape_color": {
+          "name": "map_shape_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_shape_option": {
+          "name": "map_shape_option",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_standard_zoom": {
+          "name": "map_standard_zoom",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_widget_values": {
+          "name": "map_widget_values",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_wms_url": {
+          "name": "map_wms_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_combined_wms_url": {
+          "name": "map_combined_wms_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_wms_layer": {
+          "name": "map_wms_layer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "map_combined_wms_layer": {
+          "name": "map_combined_wms_layer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query_id": {
+          "name": "query_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "range_static_values_min": {
+          "name": "range_static_values_min",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "range_static_values_max": {
+          "name": "range_static_values_max",
+          "type": "real[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "range_static_values_colors": {
+          "name": "range_static_values_colors",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "range_static_values_logos": {
+          "name": "range_static_values_logos",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "range_static_values_labels": {
+          "name": "range_static_values_labels",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_legend": {
+          "name": "show_legend",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_current_attribute": {
+          "name": "slider_current_attribute",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slider_maximum_attribute": {
+          "name": "slider_maximum_attribute",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text_value": {
+          "name": "text_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiles": {
+          "name": "tiles",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tab_data_model_id_data_model_id_fk": {
+          "name": "tab_data_model_id_data_model_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "data_model",
+          "columnsFrom": [
+            "data_model_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tab_query_id_query_id_fk": {
+          "name": "tab_query_id_query_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "query",
+          "columnsFrom": [
+            "query_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "tab_widget_id_widget_id_fk": {
+          "name": "tab_widget_id_widget_id_fk",
+          "tableFrom": "tab",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "widget_to_panel": {
+      "name": "widget_to_panel",
+      "schema": "",
+      "columns": {
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "panel_id": {
+          "name": "panel_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position": {
+          "name": "position",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "widget_to_panel_widget_id_widget_id_fk": {
+          "name": "widget_to_panel_widget_id_widget_id_fk",
+          "tableFrom": "widget_to_panel",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "widget_to_panel_panel_id_panel_id_fk": {
+          "name": "widget_to_panel_panel_id_panel_id_fk",
+          "tableFrom": "widget_to_panel",
+          "tableTo": "panel",
+          "columnsFrom": [
+            "panel_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "widget_to_panel_widget_id_panel_id": {
+          "name": "widget_to_panel_widget_id_panel_id",
+          "columns": [
+            "widget_id",
+            "panel_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "widget": {
+      "name": "widget",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "show_name": {
+          "name": "show_name",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subheadline": {
+          "name": "subheadline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width": {
+          "name": "width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "headline_color": {
+          "name": "headline_color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "icon": {
+          "name": "icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "allow_share": {
+          "name": "allow_share",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "allow_data_export": {
+          "name": "allow_data_export",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "data_model": {
+      "name": "data_model",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "model": {
+          "name": "model",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "data_source": {
+      "name": "data_source",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "auth_data_id": {
+          "name": "auth_data_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "collections": {
+          "name": "collections",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin": {
+          "name": "origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "data_source_auth_data_id_auth_data_id_fk": {
+          "name": "data_source_auth_data_id_auth_data_id_fk",
+          "tableFrom": "data_source",
+          "tableTo": "auth_data",
+          "columnsFrom": [
+            "auth_data_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "defect": {
+      "name": "defect",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "imgPath": {
+          "name": "imgPath",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mail": {
+          "name": "mail",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "general_settings": {
+      "name": "general_settings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant": {
+          "name": "tenant",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "information": {
+          "name": "information",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imprint": {
+          "name": "imprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "privacy": {
+          "name": "privacy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "allow_theme_switching": {
+          "name": "allow_theme_switching",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "disclaimer": {
+          "name": "disclaimer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "general_settings_tenant_tenant_abbreviation_fk": {
+          "name": "general_settings_tenant_tenant_abbreviation_fk",
+          "tableFrom": "general_settings",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "logo": {
+      "name": "logo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo": {
+          "name": "logo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_height": {
+          "name": "logo_height",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_width": {
+          "name": "logo_width",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_name": {
+          "name": "logo_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "format": {
+          "name": "format",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size": {
+          "name": "size",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "logo_tenant_id_tenant_abbreviation_fk": {
+          "name": "logo_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "logo",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "query_config": {
+      "name": "query_config",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "data_source_id": {
+          "name": "data_source_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "interval": {
+          "name": "interval",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_service": {
+          "name": "fiware_service",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_service_path": {
+          "name": "fiware_service_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fiware_type": {
+          "name": "fiware_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_ids": {
+          "name": "entity_ids",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attributes": {
+          "name": "attributes",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aggr_mode": {
+          "name": "aggr_mode",
+          "type": "aggregation",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timeframe": {
+          "name": "timeframe",
+          "type": "timeframe",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aggr_period": {
+          "name": "aggr_period",
+          "type": "aggregation_period",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_reporting": {
+          "name": "is_reporting",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "query_config_data_source_id_data_source_id_fk": {
+          "name": "query_config_data_source_id_data_source_id_fk",
+          "tableFrom": "query_config",
+          "tableTo": "data_source",
+          "columnsFrom": [
+            "data_source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "query_config_tenant_id_tenant_abbreviation_fk": {
+          "name": "query_config_tenant_id_tenant_abbreviation_fk",
+          "tableFrom": "query_config",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "abbreviation"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "query": {
+      "name": "query",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "query_config_id": {
+          "name": "query_config_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query_data": {
+          "name": "query_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "report_data": {
+          "name": "report_data",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "update_message": {
+          "name": "update_message",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "query_query_config_id_query_config_id_fk": {
+          "name": "query_query_config_id_query_config_id_fk",
+          "tableFrom": "query",
+          "tableTo": "query_config",
+          "columnsFrom": [
+            "query_config_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "report": {
+      "name": "report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "costs_in_cents": {
+          "name": "costs_in_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "location": {
+          "name": "location",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "img_path": {
+          "name": "img_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_at": {
+          "name": "start_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "end_at": {
+          "name": "end_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "contactPerson": {
+          "name": "contactPerson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "county": {
+          "name": "county",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "adminComment": {
+          "name": "adminComment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lastModifiedBy": {
+          "name": "lastModifiedBy",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "redirection": {
+          "name": "redirection",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "referenceNumber": {
+          "name": "referenceNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "visibility",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "read_roles": {
+          "name": "read_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_roles": {
+          "name": "write_roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "sensor_report": {
+      "name": "sensor_report",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "query_id": {
+          "name": "query_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_name": {
+          "name": "property_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threshold": {
+          "name": "threshold",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "trigger": {
+          "name": "trigger",
+          "type": "threshold_trigger_type",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recipients": {
+          "name": "recipients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mail_text": {
+          "name": "mail_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (6)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sensor_report_query_id_query_id_fk": {
+          "name": "sensor_report_query_id_query_id_fk",
+          "tableFrom": "sensor_report",
+          "tableTo": "query",
+          "columnsFrom": [
+            "query_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "tenant": {
+      "name": "tenant",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tenant_abbreviation_unique": {
+          "name": "tenant_abbreviation_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "abbreviation"
+          ]
+        }
+      }
+    },
+    "system_user": {
+      "name": "system_user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tenant_abbreviation": {
+          "name": "tenant_abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "system_user_tenant_abbreviation_unique": {
+          "name": "system_user_tenant_abbreviation_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "tenant_abbreviation"
+          ]
+        }
+      }
+    },
+    "widget_to_tenant": {
+      "name": "widget_to_tenant",
+      "schema": "",
+      "columns": {
+        "widget_id": {
+          "name": "widget_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "widget_to_tenant_widget_id_widget_id_fk": {
+          "name": "widget_to_tenant_widget_id_widget_id_fk",
+          "tableFrom": "widget_to_tenant",
+          "tableTo": "widget",
+          "columnsFrom": [
+            "widget_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "widget_to_tenant_tenant_id_tenant_id_fk": {
+          "name": "widget_to_tenant_tenant_id_tenant_id_fk",
+          "tableFrom": "widget_to_tenant",
+          "tableTo": "tenant",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "widget_to_tenant_widget_id_tenant_id": {
+          "name": "widget_to_tenant_widget_id_tenant_id",
+          "columns": [
+            "widget_id",
+            "tenant_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "visibility": {
+      "name": "visibility",
+      "values": {
+        "public": "public",
+        "protected": "protected",
+        "invisible": "invisible"
+      }
+    },
+    "aggregation": {
+      "name": "aggregation",
+      "values": {
+        "avg": "avg",
+        "min": "min",
+        "max": "max",
+        "sum": "sum",
+        "none": "none"
+      }
+    },
+    "aggregation_period": {
+      "name": "aggregation_period",
+      "values": {
+        "second": "second",
+        "minute": "minute",
+        "hour": "hour",
+        "day": "day",
+        "week": "week",
+        "month": "month",
+        "year": "year"
+      }
+    },
+    "auth_data_type": {
+      "name": "auth_data_type",
+      "values": {
+        "ngsi": "ngsi",
+        "ngsi-v2": "ngsi-v2",
+        "ngsi-ld": "ngsi-ld",
+        "api": "api",
+        "static-endpoint": "static-endpoint",
+        "usi": "usi"
+      }
+    },
+    "chart_date_representation": {
+      "name": "chart_date_representation",
+      "values": {
+        "Default": "Default",
+        "Only Year": "Only Year",
+        "Only Month": "Only Month"
+      }
+    },
+    "chart_legend_placement": {
+      "name": "chart_legend_placement",
+      "values": {
+        "Left": "Left",
+        "Right": "Right",
+        "Top": "Top"
+      }
+    },
+    "corporate_info_font_families_type": {
+      "name": "corporate_info_font_families_type",
+      "values": {
+        "Helvetica": "Helvetica",
+        "Arial": "Arial",
+        "Verdana": "Verdana",
+        "Tahoma": "Tahoma",
+        "Gill Sans": "Gill Sans",
+        "Times New Roman": "Times New Roman",
+        "Georgia": "Georgia",
+        "Palatino": "Palatino",
+        "Courier": "Courier",
+        "Lucida": "Lucida",
+        "Monaco": "Monaco"
+      }
+    },
+    "menu_arrow_direction_enum": {
+      "name": "menu_arrow_direction_enum",
+      "values": {
+        "Oben | Oben": "Oben | Oben",
+        "Oben | Unten": "Oben | Unten",
+        "Links | Links": "Links | Links",
+        "Links | Rechts": "Links | Rechts",
+        "Unten | Unten": "Unten | Unten",
+        "Unten | Oben": "Unten | Oben",
+        "Rechts | Rechts": "Rechts | Rechts",
+        "Rechts | Links": "Rechts | Links"
+      }
+    },
+    "threshold_trigger_type": {
+      "name": "threshold_trigger_type",
+      "values": {
+        "exceeding": "exceeding",
+        "falls below": "falls below",
+        "equals": "equals"
+      }
+    },
+    "tab_component_sub_type": {
+      "name": "tab_component_sub_type",
+      "values": {
+        "Text": "Text",
+        "Icon mit Link": "Icon mit Link",
+        "180° Chart": "180° Chart",
+        "360° Chart": "360° Chart",
+        "Stageable Chart": "Stageable Chart",
+        "Pie Chart": "Pie Chart",
+        "Linien Chart": "Linien Chart",
+        "Balken Chart": "Balken Chart",
+        "Measurement": "Measurement",
+        "Pin": "Pin",
+        "Parking": "Parking",
+        "Kombinierte Karte": "Kombinierte Karte",
+        "Farbiger Slider": "Farbiger Slider",
+        "Slider Übersicht": "Slider Übersicht"
+      }
+    },
+    "tab_component_type": {
+      "name": "tab_component_type",
+      "values": {
+        "Informationen": "Informationen",
+        "Diagramm": "Diagramm",
+        "Slider": "Slider",
+        "Karte": "Karte",
+        "Kombinierte Komponente": "Kombinierte Komponente",
+        "Wetterwarnungen": "Wetterwarnungen",
+        "Wert": "Wert",
+        "iFrame": "iFrame",
+        "Bild": "Bild"
+      }
+    },
+    "time_horizon_type": {
+      "name": "time_horizon_type",
+      "values": {
+        "shortterm": "shortterm",
+        "midterm": "midterm",
+        "longterm": "longterm",
+        "archive": "archive"
+      }
+    },
+    "timeframe": {
+      "name": "timeframe",
+      "values": {
+        "live": "live",
+        "hour": "hour",
+        "day": "day",
+        "week": "week",
+        "month": "month",
+        "quarter": "quarter",
+        "year": "year"
+      }
+    },
+    "title_bar_theme": {
+      "name": "title_bar_theme",
+      "values": {
+        "Dark": "Dark",
+        "Light": "Light"
+      }
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
