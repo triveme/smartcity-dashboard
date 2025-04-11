@@ -1,4 +1,4 @@
-{{- if or (index .Values "dashboard-service" "enabled") (index .Values "api-service" "enabled") (index .Values "ngsi-service" "enabled") (index .Values "migrations" "enabled")}}
+{{- if or (index .Values "dashboard-service" "enabled") (index .Values "orchideo-connect-service" "enabled") (index .Values "ngsi-service" "enabled") (index .Values "migrations" "enabled")}}
 # Env vars specific for establishing connection between microservice and postgresql db
 apiVersion: v1
 kind: ConfigMap

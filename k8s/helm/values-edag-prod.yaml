@@ -45,16 +45,16 @@ ngsi-service:
         paths:
           - path: /
             pathType: Prefix
-api-service:
+orchideo-connect-service:
   frontendUrl: "https://mit-smartcity-suite-frontend.container.edag"
   ingress:
     enabled: true
     tls:
       - hosts:
-          - mit-smartcity-suite-api-service.container.edag
-        secretName: api-service-tls-secret ## auto-generated unique tls
+          - mit-smartcity-suite-orchideo-connect-service.container.edag
+        secretName: orchideo-connect-service-tls-secret ## auto-generated unique tls
     hosts:
-      - host: mit-smartcity-suite-api-service.container.edag
+      - host: mit-smartcity-suite-orchideo-connect-service.container.edag
         paths:
           - path: /
             pathType: Prefix
@@ -134,7 +134,7 @@ frontend:
     redirectUri: "https://mit-smartcity-suite-frontend.container.edag"
     clientId: scs-frontend
   backendUrl: "https://mit-smartcity-suite-dashboard-service.container.edag"
-  apiServiceUrl: "https://mit-smartcity-suite-api-service.container.edag"
+  orchideoConnectServiceUrl: "https://mit-smartcity-suite-orchideo-connect-service.container.edag"
   ngsiServiceUrl: "https://mit-smartcity-suite-ngsi-service.container.edag"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"

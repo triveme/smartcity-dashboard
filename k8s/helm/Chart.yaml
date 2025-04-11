@@ -40,8 +40,8 @@ dependencies:
   - name: ngsi-service
     condition: ngsi-service.enabled
     version: 0.1.0
-  - name: api-service
-    condition: api-service.enabled
+  - name: orchideo-connect-service
+    condition: orchideo-connect-service.enabled
     version: 0.1.0
   - name: mail-service
     condition: mail-service.enabled

@@ -19,7 +19,6 @@ import {
   getTenant,
 } from './test-data';
 import { Client } from 'pg';
-import { edagTemplate } from '../../corporate-info/corporate-info.template';
 import { getCorporateInfosByTenantAbbreviation } from '../../corporate-info/test/test-data';
 
 describe('DashboardServiceControllers (e2e)', () => {
@@ -65,14 +64,6 @@ describe('DashboardServiceControllers (e2e)', () => {
         .expect(201);
 
       expect(response.body).toMatchObject(tenant);
-
-      const ciResponse = await request(app.getHttpServer())
-        .get(`/corporate-infos/tenant/${response.body.abbreviation}`)
-        .expect(200);
-      expect(ciResponse.body[0]).toMatchObject({
-        ...edagTemplate,
-        tenantId: response.body.abbreviation,
-      });
 
       const corporateInfosByTenant =
         await getCorporateInfosByTenantAbbreviation(db, tenant.abbreviation);

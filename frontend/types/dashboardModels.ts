@@ -185,6 +185,9 @@ export type Tab = {
   chartXAxisLabel?: string;
   chartYAxisLabel?: string;
   childWidgets?: string[];
+  chartYAxisScale?: number;
+  chartYAxisScaleChartMinValue?: number;
+  chartYAxisScaleChartMaxValue?: number;
   componentSubType?: string;
   componentType?: string;
   dataModelId?: string;
@@ -238,6 +241,7 @@ export type Tab = {
   rangeStaticValuesColors?: string[];
   rangeStaticValuesLogos?: string[];
   rangeStaticValuesLabels?: string[];
+  setYAxisInterval?: boolean;
   showLegend?: boolean;
   sliderCurrentAttribute?: string;
   sliderMaximumAttribute?: string;
@@ -510,6 +514,7 @@ export type AuthData = {
   timeSeriesUrl: string;
   type: authDataTypeEnum;
   visibility?: visibilityEnum;
+  grantType?: string;
   readRoles?: string[];
   writeRoles?: string[];
 };

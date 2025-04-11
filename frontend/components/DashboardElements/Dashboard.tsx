@@ -135,8 +135,8 @@ export default async function Dashboard(
                 <ShareLinkButton
                   type="dashboard"
                   id={dashboard.id || ''}
-                  widgetPrimaryColor={ciColors?.widgetPrimaryColor}
-                  widgetFontColor={ciColors?.widgetFontColor}
+                  widgetPrimaryColor={ciColors?.dashboardPrimaryColor}
+                  widgetFontColor={ciColors?.dashboardFontColor}
                 />
               ) : null}
               {isEditable ? (

@@ -22,6 +22,7 @@ export function getAuthDataValue(
     timeSeriesUrl: 'https://localhost/timeSeries',
     fiwareServices: ['etteln_dataspace', 'edag'],
     apiUrl: 'https://localhost/api',
+    grantType: 'password',
     createdAt: undefined,
     updatedAt: undefined,
     readRoles: ['scs-admin'],

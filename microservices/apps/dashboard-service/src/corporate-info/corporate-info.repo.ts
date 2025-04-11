@@ -8,7 +8,6 @@ import {
   NewCorporateInfo,
 } from '@app/postgres-db/schemas/corporate-info.schema';
 import { alias } from 'drizzle-orm/pg-core';
-import { edagTemplate } from './corporate-info.template';
 import { Logo, logos } from '@app/postgres-db/schemas/logo.schema';
 import {
   CorporateInfoSidebarLogo,
@@ -42,184 +41,7 @@ export class CorporateInfoRepo {
     const ciSidebarLogo = alias(corporateInfoSidebarLogos, 'sidebarLogo');
 
     const corporateInfosWithLogos = await this.db
-      .select({
-        id: corporateInfos.id,
-        tenantId: corporateInfos.tenantId,
-        dashboardFontColor: corporateInfos.dashboardFontColor,
-        dashboardPrimaryColor: corporateInfos.dashboardPrimaryColor,
-        dashboardSecondaryColor: corporateInfos.dashboardSecondaryColor,
-        dashboardHeadlineFontSize: corporateInfos.dashboardHeadlineFontSize,
-        fontFamily: corporateInfos.fontFamily,
-        fontColor: corporateInfos.fontColor,
-        headerFontColor: corporateInfos.headerFontColor,
-        headerLogo: tenantHeaderLogo,
-        headerLogoId: corporateInfos.headerLogoId,
-        headerPrimaryColor: corporateInfos.headerPrimaryColor,
-        headerSecondaryColor: corporateInfos.headerSecondaryColor,
-        headerTitleAdmin: corporateInfos.headerTitleAdmin,
-        headerTitleDashboards: corporateInfos.headerTitleDashboards,
-        logo: corporateInfos.logo,
-        menuActiveColor: corporateInfos.menuActiveColor,
-        menuActiveFontColor: corporateInfos.menuActiveFontColor,
-        menuArrowDirection: corporateInfos.menuArrowDirection,
-        menuCornerColor: corporateInfos.menuCornerColor,
-        menuCornerFontColor: corporateInfos.menuCornerFontColor,
-        menuFontColor: corporateInfos.menuFontColor,
-        menuHoverColor: corporateInfos.menuHoverColor,
-        menuHoverFontColor: corporateInfos.menuHoverFontColor,
-        menuLogo: tenantMenuLogo,
-        menuLogoId: corporateInfos.menuLogoId,
-        menuPrimaryColor: corporateInfos.menuPrimaryColor,
-        menuSecondaryColor: corporateInfos.menuSecondaryColor,
-        panelBorderColor: corporateInfos.panelBorderColor,
-        panelBorderRadius: corporateInfos.panelBorderRadius,
-        panelBorderSize: corporateInfos.panelBorderSize,
-        panelFontColor: corporateInfos.panelFontColor,
-        panelHeadlineFontSize: corporateInfos.panelHeadlineFontSize,
-        panelPrimaryColor: corporateInfos.panelPrimaryColor,
-        panelSecondaryColor: corporateInfos.panelSecondaryColor,
-        scrollbarBackground: corporateInfos.scrollbarBackground,
-        scrollbarColor: corporateInfos.scrollbarColor,
-        saveButtonColor: corporateInfos.saveButtonColor,
-        saveHoverButtonColor: corporateInfos.saveHoverButtonColor,
-        cancelButtonColor: corporateInfos.saveButtonColor,
-        cancelHoverButtonColor: corporateInfos.saveHoverButtonColor,
-        showHeaderLogo: corporateInfos.showHeaderLogo,
-        showMenuLogo: corporateInfos.showMenuLogo,
-        titleBar: corporateInfos.titleBar,
-        useColorTransitionHeader: corporateInfos.useColorTransitionHeader,
-        useColorTransitionMenu: corporateInfos.useColorTransitionMenu,
-        widgetBorderColor: corporateInfos.widgetBorderColor,
-        widgetBorderRadius: corporateInfos.widgetBorderRadius,
-        widgetBorderSize: corporateInfos.widgetBorderSize,
-        widgetFontColor: corporateInfos.widgetFontColor,
-        widgetHeadlineFontSize: corporateInfos.widgetHeadlineFontSize,
-        widgetSubheadlineFontSize: corporateInfos.widgetSubheadlineFontSize,
-        widgetPrimaryColor: corporateInfos.widgetPrimaryColor,
-        widgetSecondaryColor: corporateInfos.widgetSecondaryColor,
-        informationTextFontSize: corporateInfos.informationTextFontSize,
-        informationTextFontColor: corporateInfos.informationTextFontColor,
-
-        iconWithLinkFontSize: corporateInfos.iconWithLinkFontSize,
-        iconWithLinkFontColor: corporateInfos.iconWithLinkFontColor,
-        iconWithLinkIconSize: corporateInfos.iconWithLinkIconSize,
-        iconWithLinkIconColor: corporateInfos.iconWithLinkIconColor,
-
-        isPanelHeadlineBold: corporateInfos.isPanelHeadlineBold,
-        isWidgetHeadlineBold: corporateInfos.isWidgetHeadlineBold,
-
-        degreeChart180FontSize: corporateInfos.degreeChart180FontSize,
-        degreeChart180FontColor: corporateInfos.degreeChart180FontColor,
-        degreeChart180BgColor: corporateInfos.degreeChart180BgColor,
-        degreeChart180FillColor: corporateInfos.degreeChart180FillColor,
-        degreeChart180UnitFontSize: corporateInfos.degreeChart180UnitFontSize,
-
-        degreeChart360FontSize: corporateInfos.degreeChart360FontSize,
-        degreeChart360FontColor: corporateInfos.degreeChart360FontColor,
-        degreeChart360BgColor: corporateInfos.degreeChart360BgColor,
-        degreeChart360FillColor: corporateInfos.degreeChart360FillColor,
-        degreeChart360UnitFontSize: corporateInfos.degreeChart360UnitFontSize,
-
-        sliderCurrentFontColor: corporateInfos.sliderCurrentFontColor,
-        sliderMaximumFontColor: corporateInfos.sliderMaximumFontColor,
-        sliderGeneralFontColor: corporateInfos.sliderGeneralFontColor,
-        sliderCurrentColor: corporateInfos.sliderCurrentColor,
-        sliderMaximumColor: corporateInfos.sliderMaximumColor,
-
-        stageableChartTicksFontSize: corporateInfos.stageableChartTicksFontSize,
-        stageableChartTicksFontColor:
-          corporateInfos.stageableChartTicksFontColor,
-        stageableChartFontSize: corporateInfos.stageableChartFontSize,
-        stageableChartFontColor: corporateInfos.stageableChartFontColor,
-
-        pieChartFontSize: corporateInfos.pieChartFontSize,
-        pieChartFontColor: corporateInfos.pieChartFontColor,
-        pieChartCurrentValuesColors: corporateInfos.pieChartCurrentValuesColors,
-
-        lineChartAxisTicksFontSize: corporateInfos.lineChartAxisTicksFontSize,
-        lineChartAxisLabelSize: corporateInfos.lineChartAxisLabelSize,
-        lineChartAxisLabelFontColor: corporateInfos.lineChartAxisLabelFontColor,
-        lineChartLegendFontSize: corporateInfos.lineChartLegendFontSize,
-        lineChartLegendFontColor: corporateInfos.lineChartLegendFontColor,
-        lineChartTicksFontColor: corporateInfos.lineChartTicksFontColor,
-        lineChartAxisLineColor: corporateInfos.lineChartAxisLineColor,
-        lineChartCurrentValuesColors:
-          corporateInfos.lineChartCurrentValuesColors,
-        lineChartGridColor: corporateInfos.lineChartGridColor,
-        lineChartFilterColor: corporateInfos.lineChartFilterColor,
-        lineChartFilterTextColor: corporateInfos.lineChartFilterTextColor,
-
-        barChartAxisTicksFontSize: corporateInfos.barChartAxisTicksFontSize,
-        barChartAxisLabelSize: corporateInfos.barChartAxisLabelSize,
-        barChartAxisLabelColor: corporateInfos.barChartAxisLabelColor,
-        barChartAxisLabelFontColor: corporateInfos.barChartAxisLabelFontColor,
-        barChartLegendFontSize: corporateInfos.barChartLegendFontSize,
-        barChartLegendFontColor: corporateInfos.barChartLegendFontColor,
-        barChartTicksFontColor: corporateInfos.barChartTicksFontColor,
-        barChartAxisLineColor: corporateInfos.barChartAxisLineColor,
-        barChartCurrentValuesColors: corporateInfos.barChartCurrentValuesColors,
-        barChartGridColor: corporateInfos.barChartGridColor,
-        barChartFilterColor: corporateInfos.barChartFilterColor,
-        barChartFilterTextColor: corporateInfos.barChartFilterTextColor,
-
-        measurementChartBigValueFontSize:
-          corporateInfos.measurementChartBigValueFontSize,
-        measurementChartBigValueFontColor:
-          corporateInfos.measurementChartBigValueFontColor,
-
-        measurementChartTopButtonBgColor:
-          corporateInfos.measurementChartTopButtonBgColor,
-        measurementChartTopButtonInactiveBgColor:
-          corporateInfos.measurementChartTopButtonInactiveBgColor,
-        measurementChartTopButtonHoverColor:
-          corporateInfos.measurementChartTopButtonHoverColor,
-        measurementChartTopButtonFontColor:
-          corporateInfos.measurementChartTopButtonFontColor,
-
-        measurementChartCardsBgColor:
-          corporateInfos.measurementChartCardsBgColor,
-        measurementChartCardsFontColor:
-          corporateInfos.measurementChartCardsFontColor,
-        measurementChartCardsIconColors:
-          corporateInfos.measurementChartCardsIconColors,
-
-        measurementChartBarColor: corporateInfos.measurementChartBarColor,
-        measurementChartLabelFontColor:
-          corporateInfos.measurementChartLabelFontColor,
-        measurementChartGridColor: corporateInfos.measurementChartGridColor,
-        measurementChartAxisLineColor:
-          corporateInfos.measurementChartAxisLineColor,
-        measurementChartAxisTicksFontColor:
-          corporateInfos.measurementChartAxisTicksFontColor,
-        measurementChartAxisLabelFontColor:
-          corporateInfos.measurementChartAxisLabelFontColor,
-        measurementChartCurrentValuesColors:
-          corporateInfos.measurementChartCurrentValuesColors,
-
-        coloredSliderBigValueFontSize:
-          corporateInfos.coloredSliderBigValueFontSize,
-        coloredSliderBigValueFontColor:
-          corporateInfos.coloredSliderBigValueFontColor,
-        coloredSliderLabelFontSize: corporateInfos.coloredSliderLabelFontSize,
-        coloredSliderLabelFontColor: corporateInfos.coloredSliderLabelFontColor,
-        coloredSliderArrowColor: corporateInfos.coloredSliderArrowColor,
-        coloredSliderUnitFontSize: corporateInfos.coloredSliderUnitFontSize,
-
-        wertFontSize: corporateInfos.wertFontSize,
-        wertFontColor: corporateInfos.wertFontColor,
-        wertUnitFontSize: corporateInfos.wertFontColor,
-
-        weatherWarningBgColor: corporateInfos.weatherWarningBgColor,
-        weatherWarningHeadlineColor: corporateInfos.weatherWarningHeadlineColor,
-        weatherInstructionsColor: corporateInfos.weatherInstructionsColor,
-        weatherAlertDescriptionColor:
-          corporateInfos.weatherAlertDescriptionColor,
-        weatherDateColor: corporateInfos.weatherDateColor,
-        weatherWarningButtonBackgroundColor:
-          corporateInfos.weatherWarningButtonBackgroundColor,
-        weatherWarningButtonIconColor:
-          corporateInfos.weatherWarningButtonIconColor,
-      })
+      .select()
       .from(corporateInfos)
       .leftJoin(
         tenantHeaderLogo,
@@ -235,7 +57,9 @@ export class CorporateInfoRepo {
       );
 
     return corporateInfosWithLogos.map((info) => ({
-      ...info,
+      ...info.corporate_info,
+      headerLogo: info.headerLogo || null,
+      menuLogo: info.menuLogo || null,
       sidebarLogos: [],
     }));
   }
@@ -388,7 +212,6 @@ export class CorporateInfoRepo {
   ): Promise<CorporateInfo> {
     const dbActor = transaction === undefined ? this.db : transaction;
 
-    row = { ...edagTemplate, ...row };
     const result = await dbActor.insert(corporateInfos).values(row).returning();
     const createdCorporateInfo = result.length > 0 ? result[0] : null;
 

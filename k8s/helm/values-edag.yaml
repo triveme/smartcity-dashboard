@@ -92,7 +92,7 @@ ngsi-service:
       memory: "512Mi"
       cpu: "200m"
 
-api-service:
+orchideo-connect-service:
   nodeSelector:
     location: 06-Fulda-Steinauer-Str
   ingress:
@@ -102,7 +102,7 @@ api-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/api-service
+    repository: nexus.edag.de:8206/mobit-malaysia/scs/orchideo-connect-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:

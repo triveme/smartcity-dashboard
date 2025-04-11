@@ -27,7 +27,7 @@ export function validateQueryConfig(
     errorsOccured.fiwareServiceError =
       'Fiware-Dienst-/Sammlungsfeld ist erforderlich';
   }
-  if (!queryConfig?.fiwareType) {
+  if (origin !== 'usi' && queryConfig?.fiwareType) {
     errorsOccured.fiwareTypeError = 'Fiware-Typ ist erforderlich';
   }
   if (!queryConfig?.aggrMode) {
