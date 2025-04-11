@@ -3,7 +3,7 @@ import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
   QueryBatch,
   QueryWithAllInfos,
-} from '../../../api-service/src/api.service';
+} from '../../../orchideo-connect-service/src/api.service';
 import { queries, Query } from '@app/postgres-db/schemas/query.schema';
 import { queryConfigs } from '@app/postgres-db/schemas/query-config.schema';
 import { eq, inArray } from 'drizzle-orm';

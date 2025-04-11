@@ -51,7 +51,8 @@ export async function getTab(
     | 'Wetterwarnungen'
     | 'Wert'
     | 'iFrame'
-    | 'Bild',
+    | 'Bild'
+    | 'Kombinierte Komponente',
   componentSubType?:
     | 'Text'
     | 'Icon mit Link'
@@ -97,6 +98,9 @@ export async function getTab(
     chartLegendAlign: 'Top',
     chartXAxisLabel: 'Month',
     chartYAxisLabel: 'Percentage',
+    chartYAxisScale: 1,
+    chartYAxisScaleChartMinValue: 1,
+    chartYAxisScaleChartMaxValue: 10,
     chartPieRadius: 70,
     chartStaticValues: [25, 75],
     chartStaticValuesColors: ['red', 'green'],
@@ -138,6 +142,7 @@ export async function getTab(
     iconText: 'Sample Icon Text',
     iconUrl: 'http://www.samplewebsite.com',
     labelColor: 'grey',
+    setYAxisInterval: false,
     showLegend: false,
     imageSrc: null,
     imageUrl: null,

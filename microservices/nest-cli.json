@@ -44,13 +44,13 @@
         "tsConfigPath": "apps/infopin-service/tsconfig.app.json"
       }
     },
-    "api-service": {
+    "orchideo-connect-service": {
       "type": "application",
-      "root": "apps/api-service",
+      "root": "apps/orchideo-connect-service",
       "entryFile": "main",
-      "sourceRoot": "apps/api-service/src",
+      "sourceRoot": "apps/orchideo-connect-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api-service/tsconfig.app.json"
+        "tsConfigPath": "apps/orchideo-connect-service/tsconfig.app.json"
       }
     },
     "static-data-service": {

@@ -42,12 +42,12 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `POSTGRES_PORT` | The port on which the PostgreSQL server is running. | `5432`
 |===
 
-== API Service Variables
+== Orchideo Connect Service Variables
 
 [options="header"]
 |===
 | Variable | Description | Example Value
-| `NEXT_PUBLIC_API_SERVICE_URL` | Base URL for an external api. | `http://external-api.com/api/v1/`
+| `NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL` | Base URL for an orchideo connect dataplatform. | `http://external-api.com/api/v1/`
 |===
 
 == Dashboard Logging Variables

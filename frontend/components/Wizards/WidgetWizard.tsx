@@ -35,7 +35,7 @@ import CancelButton from '@/ui/Buttons/CancelButton';
 import SaveButton from '@/ui/Buttons/SaveButton';
 import TabWizard from './TabWizard';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
-import QueryConfigWizard from './QueryConfigWizard';
+import QueryConfigWizard from './QueryConfigWizard/QueryConfigWizard';
 import {
   EMPTY_QUERY_CONFIG,
   EMPTY_REPORT_CONFIG,

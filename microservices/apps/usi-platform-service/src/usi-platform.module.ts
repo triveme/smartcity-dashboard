@@ -5,10 +5,11 @@ import { HttpModule } from '@nestjs/axios';
 import { AuthModule } from './auth/auth.module';
 import { UsiPlaformService } from './usi-platform.service';
 import { UsiPlatformController } from './usi-platform.controller';
+import { QueryConfigService } from './query-config/query-config.service';
 
 @Module({
   imports: [AuthModule, HttpModule, PostgresDbModule],
-  providers: [UsiPlaformService, AuthService],
+  providers: [UsiPlaformService, AuthService, QueryConfigService],
   controllers: [UsiPlatformController],
 })
 export class UsiPlatformModule {}
