@@ -1,4 +1,4 @@
-= Readme for the api-service microservice
+= Readme for the orchideo-connect-service microservice
 
 == Description
 

@@ -62,12 +62,12 @@ ngsi-service:
         name: "postgresql-connection-configmap"
     - secretRef:
         name: "postgresql-connection-secrets"
-## api-service config
-api-service:
+## orchideo-connect-service config
+orchideo-connect-service:
   enabled: true
   envFrom:
   - configMapRef:
-      name: "api-service-configmap"
+      name: "orchideo-connect-service-configmap"
   - configMapRef:
       name: "postgresql-connection-configmap"
   - secretRef:

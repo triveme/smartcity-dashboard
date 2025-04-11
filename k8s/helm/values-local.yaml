@@ -9,7 +9,7 @@ ngsi-service:
   ingress:
     enabled: false
 
-api-service:
+orchideo-connect-service:
   ingress:
     enabled: false
   frontendUrl: "http://localhost:3000"

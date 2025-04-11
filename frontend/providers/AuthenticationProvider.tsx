@@ -3,7 +3,7 @@
 import React, { ReactElement } from 'react';
 import { AuthProvider, AuthProviderProps } from 'react-oidc-context';
 import { env } from 'next-runtime-env';
-import { WebStorageStateStore } from 'oidc-client-ts';
+import { WebStorageStateStore, User } from 'oidc-client-ts';
 
 import AuthWrapper from './AuthWrapper'; // Make sure the path is correct
 
@@ -15,6 +15,7 @@ export default function AuthenticationProvider({
   const OIDC_AUTHORITY = env('NEXT_PUBLIC_OIDC_AUTHORITY');
   const OIDC_CLIENT_ID = env('NEXT_PUBLIC_OIDC_CLIENT_ID');
   const OIDC_REDIRECT_URI = env('NEXT_PUBLIC_OIDC_REDIRECT_URI');
+  const NEXT_PUBLIC_BASEPATH = env('NEXT_PUBLIC_BASEPATH');
 
   if (!OIDC_AUTHORITY) {
     throw new Error('NEXT_PUBLIC_OIDC_AUTHORITY is not set');
@@ -38,8 +39,23 @@ export default function AuthenticationProvider({
     });
   }
 
-  function onSigninCallback(): void {
-    window.location.href = '/';
+  function onSigninCallback(user: User | void): void {
+    const state = user?.state as string;
+
+    if (state) {
+      // Redirect to the original path before login
+      if (NEXT_PUBLIC_BASEPATH && NEXT_PUBLIC_BASEPATH !== '') {
+        window.location.href = `${NEXT_PUBLIC_BASEPATH}${state}`;
+      } else {
+        window.location.href = state;
+      }
+    } else {
+      if (NEXT_PUBLIC_BASEPATH && NEXT_PUBLIC_BASEPATH !== '') {
+        window.location.href = `${NEXT_PUBLIC_BASEPATH}/`;
+      } else {
+        window.location.href = '/';
+      }
+    }
   }
 
   return (

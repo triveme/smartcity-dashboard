@@ -28,7 +28,6 @@ import {
   mapComponentSubTypes,
   informationComponentSubTypes,
   sliderComponentSubTypes,
-  chartLegendAlignments,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -481,16 +480,18 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       backgroundColor={backgroundColor}
                     />
                   </div>
-                  <div>
-                    <WizardLabel label="Anzahl Dezimalstellen" />
-                    <WizardIntegerfield
-                      value={tab?.decimalPlaces || '0'}
-                      onChange={(value: string | number): void =>
-                        handleTabChange({ decimalPlaces: value as number })
-                      }
-                      borderColor={borderColor}
-                      backgroundColor={backgroundColor}
-                    />
+                  <div className="flex flex-col w-full pb-2">
+                    <div>
+                      <WizardLabel label="Anzahl Dezimalstellen" />
+                      <WizardIntegerfield
+                        value={tab?.decimalPlaces || '0'}
+                        onChange={(value: string | number): void =>
+                          handleTabChange({ decimalPlaces: value as number })
+                        }
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
                   </div>
                   <div className="flex w-full items-center">
                     <div className="flex flex-col w-full pb-2">
@@ -527,12 +528,16 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       </div>
                       <WizardSelectBox
                         checked={tab?.showLegend || false}
-                        onChange={(value: boolean): void =>
-                          handleTabChange({ showLegend: value })
-                        }
+                        onChange={(value: boolean): void => {
+                          handleTabChange({ showLegend: value });
+                          handleTabChange({
+                            chartLegendAlign: 'Top',
+                          }); /* prefill dropdown for alignment */
+                        }}
                         label=" Legende"
                       />
-                      {tab.showLegend && (
+                      {/* it doesn't make sense to show a dropdown menu with one option already selected */}
+                      {/* {tab.showLegend && (
                         <div className="flex-grow">
                           <WizardDropdownSelection
                             currentValue={
@@ -555,7 +560,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             backgroundColor={backgroundColor}
                           />
                         </div>
-                      )}
+                      )} */}
                     </div>
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
@@ -641,6 +646,66 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         />
                       </div>
                     )}
+                    <div className="flex w-full items-center">
+                      <div className="min-w-[220px]">
+                        <WizardLabel label="Y-Achsen Interval setzen?" />
+                      </div>
+                      <WizardSelectBox
+                        checked={tab?.setYAxisInterval || false}
+                        onChange={(value: boolean): void =>
+                          handleTabChange({ setYAxisInterval: value })
+                        }
+                        label=" Interval"
+                      />
+                    </div>
+                    <div className="flex flex-col w-full pb-2">
+                      {tab.setYAxisInterval && (
+                        <>
+                          <div className="flex-grow">
+                            <WizardLabel label="Skalierung y-Achse (Werte von 0.1 bis 1000 möglich, 0 für Automatische Skallierung)." />
+                            <WizardTextfield
+                              isNumeric={true}
+                              value={tab?.chartYAxisScale || '0'}
+                              onChange={(value: string | number): void =>
+                                handleTabChange({
+                                  chartYAxisScale: value as number,
+                                })
+                              }
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
+                          </div>
+                          <div className="flex-grow">
+                            <WizardLabel label="Minimalwert Skala der yAchse" />
+                            <WizardTextfield
+                              isNumeric={true}
+                              value={tab?.chartYAxisScaleChartMinValue || '0'}
+                              onChange={(value: string | number): void =>
+                                handleTabChange({
+                                  chartYAxisScaleChartMinValue: value as number,
+                                })
+                              }
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
+                          </div>
+                          <div className="flex-grow">
+                            <WizardLabel label="Maximalwert Skala der yAchse" />
+                            <WizardTextfield
+                              isNumeric={true}
+                              value={tab?.chartYAxisScaleChartMaxValue || '100'}
+                              onChange={(value: string | number): void =>
+                                handleTabChange({
+                                  chartYAxisScaleChartMaxValue: value as number,
+                                })
+                              }
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <HorizontalDivider />
                   <div className="flex flex-col w-full pb-2 gap-4">

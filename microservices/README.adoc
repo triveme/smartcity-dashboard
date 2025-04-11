@@ -52,7 +52,7 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NODE_ENV` | Node environment setting (development, production, etc.). | `development`
 | `NEXT_PUBLIC_VERSION` | The version of the application used in the pipeline to tag the images. | `0.2.1`
 | `NEXT_PUBLIC_FRONTEND_URL` | Variable required for CORS settings to accept communication from the frontend. | `http://localhost:3000`
-| `API_SERVICE_URL` | Connection information to the external api required for API calls. | `http://external-api.com/api/v1`
+| `ORCHIDEO_CONNECT_SERVICE_URL` | Connection information to the external orchideo connect dataplatform required for API calls. | `http://external-api.com/api/v1`
 | `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
 | `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
 | `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `dashboard-super-admin`

@@ -1,6 +1,7 @@
 import {
   aggregationEnum,
   aggregationPeriodEnum,
+  authDataTypeEnum,
   chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
   menuArrowDirectionEnum,
@@ -131,7 +132,6 @@ export const widthTypes = [
 
 export const chartLegendAlignments = [
   { label: 'Top', value: chartLegendAlignmentEnum.Top },
-  { label: 'Right', value: chartLegendAlignmentEnum.Right },
   // { label: 'Left', value: chartLegendAlignmentEnum.Left },
 ];
 
@@ -149,4 +149,12 @@ export const menuArrowDirections = [
 export const themes = [
   { label: 'Dark', value: themeEnum.Dark },
   { label: 'Light', value: themeEnum.Light },
+];
+
+export const dataPlatformTypes = [
+  { label: 'NGSIv2', value: authDataTypeEnum.ngsiv2 },
+  { label: 'NGSIld', value: authDataTypeEnum.ngsild },
+  { label: 'Orchideo Connect', value: authDataTypeEnum.api },
+  { label: 'Statischer Endpunkt', value: authDataTypeEnum.staticendpoint },
+  { label: 'Urban Institute', value: authDataTypeEnum.usi },
 ];

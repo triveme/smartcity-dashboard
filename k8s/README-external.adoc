@@ -220,9 +220,9 @@ Using values-hcloud.yaml as an example, you can edit the Ingress hosts and each 
 
 ==== 5. API Service
 * **Ingress Host:**
-  ** Key: `api-service.ingress.hosts.host`
-  ** Value: `api-service.smartcity-system.de`
-  ** Customization: Update this to point to your domain, e.g., `api-service.yourdomain.com`.
+  ** Key: `orchideo-connect-service.ingress.hosts.host`
+  ** Value: `orchideo-connect-service.smartcity-system.de`
+  ** Customization: Update this to point to your domain, e.g., `orchideo-connect-service.yourdomain.com`.
 
 ==== 6. Mail Service
 * **Ingress Host:**
@@ -252,9 +252,9 @@ Using values-hcloud.yaml as an example, you can edit the Ingress hosts and each 
   ** Customization: This URL should point to your Dashboard Service ingress host. Update it to, e.g., `https://dashboard-service.yourdomain.com`.
 
 * **API Service URL:**
-  ** Key: `frontend.apiServiceUrl`
-  ** Value: `https://api-service.smartcity-system.de`
-  ** Customization: This URL should point to your API Service ingress host. Update it to, e.g., `https://api-service.yourdomain.com`.
+  ** Key: `frontend.orchideoConnectServiceUrl`
+  ** Value: `https://orchideo-connect-service.smartcity-system.de`
+  ** Customization: This URL should point to your API Service ingress host. Update it to, e.g., `https://orchideo-connect-service.yourdomain.com`.
 
 * **Ingress Host:**
   ** Key: `frontend.ingress.hosts.host`

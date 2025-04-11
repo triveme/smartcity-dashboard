@@ -5,7 +5,7 @@ dashboard-service:
 ngsi-service:
   enabled: false
 
-api-service:
+orchideo-connect-service:
   enabled: false
 
 mail-service:

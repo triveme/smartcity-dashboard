@@ -3,7 +3,9 @@ import { env } from 'next-runtime-env';
 
 import { DataConfigRequestType } from '@/types/wizard';
 
-const NEXT_PUBLIC_API_SERVICE_URL = env('NEXT_PUBLIC_API_SERVICE_URL');
+const NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL = env(
+  'NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL',
+);
 
 export async function getCollections(
   args: string | undefined,
@@ -14,7 +16,7 @@ export async function getCollections(
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_API_SERVICE_URL}/wizard/collections`,
+      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/collections`,
       {
         headers,
         params: {
@@ -37,7 +39,7 @@ export async function getSourcesForCollection(
       ? { Authorization: `Bearer ${args.accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_API_SERVICE_URL}/wizard/sources`,
+      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/sources`,
       {
         headers,
         params: {
@@ -61,7 +63,7 @@ export async function getAttributeForSource(
     : undefined;
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_API_SERVICE_URL}/wizard/attributes`,
+      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/attributes`,
       {
         headers,
         params: {
@@ -86,7 +88,7 @@ export async function getSensorsForSource(
       ? { Authorization: `Bearer ${args.accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_API_SERVICE_URL}/wizard/entities`,
+      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/entities`,
       {
         headers,
         params: {

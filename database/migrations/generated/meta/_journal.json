@@ -204,6 +204,13 @@
       "when": 1743500906228,
       "tag": "0028_bouncy_frightful_four_0.24.0",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1744352697842,
+      "tag": "0029_abandoned_zombie_0.24.1",
+      "breakpoints": true
     }
   ]
 }

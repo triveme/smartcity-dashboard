@@ -19,6 +19,9 @@ import DashboardIcon from '../Icons/DashboardIcon';
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
+  chartYAxisScale?: number | undefined;
+  chartYAxisScaleChartMinValue?: number | undefined;
+  chartYAxisScaleChartMaxValue?: number | undefined;
   labels: string[] | undefined;
   data: ChartData[];
   xAxisLabel?: string;
@@ -51,6 +54,9 @@ type LineChartProps = {
 export default function LineChart(props: LineChartProps): ReactElement {
   const {
     chartDateRepresentation,
+    chartYAxisScale,
+    chartYAxisScaleChartMinValue,
+    chartYAxisScaleChartMaxValue,
     data,
     xAxisLabel,
     yAxisLabel,
@@ -172,6 +178,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
           name: formatYAxisLabel(yAxisLabel || ''),
           nameGap: calculateYAxisNameGap(data),
           nameLocation: 'middle',
+          interval:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScale
+              : undefined,
           nameTextStyle: {
             color: axisLabelFontColor,
             fontSize: axisLabelSize,
@@ -204,16 +214,22 @@ export default function LineChart(props: LineChartProps): ReactElement {
               type: 'dashed',
             },
           },
-          min: chartHasAutomaticZoom
-            ? calculateMinYAxisValue(data, decimalPlaces)
-            : undefined,
-          max: chartHasAutomaticZoom
-            ? calculateMaxYAxisValue(data, decimalPlaces)
-            : undefined,
+          min:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScaleChartMinValue
+              : chartHasAutomaticZoom
+                ? calculateMinYAxisValue(data, decimalPlaces)
+                : undefined,
+          max:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScaleChartMaxValue
+              : chartHasAutomaticZoom
+                ? calculateMaxYAxisValue(data, decimalPlaces)
+                : undefined,
         },
         legend: {
           type: 'scroll',
-          orient: legendAlignment === 'Top' ? 'horizontal' : 'vertical',
+          orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
           show: showLegend,
           textStyle: {
             fontSize: legendFontSize,

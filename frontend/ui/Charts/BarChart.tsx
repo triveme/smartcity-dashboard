@@ -17,6 +17,9 @@ import DashboardIcon from '../Icons/DashboardIcon';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
+  chartYAxisScale?: number | undefined;
+  chartYAxisScaleChartMinValue?: number | undefined;
+  chartYAxisScaleChartMaxValue?: number | undefined;
   labels: string[] | undefined;
   data: ChartData[];
   xAxisLabel?: string;
@@ -47,6 +50,9 @@ type BarChartProps = {
 export default function BarChart(props: BarChartProps): ReactElement {
   const {
     chartDateRepresentation,
+    chartYAxisScale,
+    chartYAxisScaleChartMinValue,
+    chartYAxisScaleChartMaxValue,
     data,
     xAxisLabel,
     yAxisLabel,
@@ -169,6 +175,10 @@ export default function BarChart(props: BarChartProps): ReactElement {
           name: formatYAxisLabel(yAxisLabel || ''),
           nameGap: calculateYAxisNameGap(data),
           nameLocation: 'middle',
+          interval:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScale
+              : undefined,
           nameTextStyle: {
             color: fontColor,
             fontSize: axisLabelSize,
@@ -200,10 +210,18 @@ export default function BarChart(props: BarChartProps): ReactElement {
               color: gridColor,
             },
           },
+          min:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScaleChartMinValue
+              : undefined,
+          max:
+            chartYAxisScale && chartYAxisScale !== 0
+              ? chartYAxisScaleChartMaxValue
+              : undefined,
         },
         legend: {
           type: 'scroll',
-          orient: legendAlignment === 'Top' ? 'horizontal' : 'vertical',
+          orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
           show: showLegend,
           textStyle: {
             fontSize: legendFontSize,
