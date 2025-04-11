@@ -690,5 +690,322 @@ describe('DashboardServiceControllers (e2e)', () => {
         .send(updateValues)
         .expect(400);
     });
+    // duplicate
+    it('/widget/duplicate/:id (Post) duplicate', async () => {
+      const widget = await createWidgetByObject(db, getWidget([], []));
+      const tab = await getTab(db, widget.id);
+      await createTab(db, tab);
+      const responseAllWidgets = await request(app.getHttpServer())
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgets.body).toBeInstanceOf(Array);
+      expect(responseAllWidgets.body).toHaveLength(1);
+
+      const responseAllQueryConfigs = await request(app.getHttpServer())
+        .get('/queries')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigs.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigs.body).toHaveLength(1);
+      await request(app.getHttpServer())
+        .post(`/widgets/duplicate/${widget.id}`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+      const responseAllWidgetsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgetsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllWidgetsAfterDuplicate.body).toHaveLength(2);
+
+      const responseAllQueryConfigsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/queries')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(2);
+    });
+
+    it('/widget/duplicate/:id (Post) duplicate combined component and two childs', async () => {
+      const combinedWid = getWidget([], []);
+      combinedWid.name = 'combinedWidget';
+      const combinedWidget = await createWidgetByObject(db, combinedWid);
+      const combinedTab = await getTab(
+        db,
+        combinedWidget.id,
+        'Kombinierte Komponente',
+        undefined,
+        undefined,
+      );
+      const childWid1 = getWidget([], []);
+      const childWid2 = getWidget([], []);
+      childWid1.name = 'child1';
+      childWid2.name = 'child2';
+
+      const childWidget1 = await createWidgetByObject(db, childWid1);
+      const childWidget2 = await createWidgetByObject(db, childWid2);
+
+      const childTab1 = await getTab(db, childWidget1.id);
+      const childTab2 = await getTab(db, childWidget2.id);
+
+      childTab1.componentType = 'Diagramm';
+      childTab1.componentSubType = 'Balken Chart';
+      childTab2.componentType = 'Wert';
+      await createTab(db, childTab1);
+      await createTab(db, childTab2);
+      combinedTab.childWidgets = [childWidget1.id, childWidget2.id];
+      await createTab(db, combinedTab);
+      const responseAllWidgets = await request(app.getHttpServer())
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgets.body).toBeInstanceOf(Array);
+      expect(responseAllWidgets.body).toHaveLength(3);
+
+      const responseAllQueryConfigs = await request(app.getHttpServer())
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      console.log('queries');
+      for (const queries of responseAllQueryConfigs.body) {
+        console.log(queries.id);
+      }
+      expect(responseAllQueryConfigs.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigs.body).toHaveLength(3);
+      await request(app.getHttpServer())
+        .post(`/widgets/duplicate/${combinedWidget.id}`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+      const responseAllWidgetsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgetsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllWidgetsAfterDuplicate.body).toHaveLength(6);
+      const responseAllQueryConfigsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
+      // Only expects 5 queries, because Test Environment always creates a query config for a new Tab,
+      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
+      // So the query config of the combined component wont be duplicated
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(5);
+    });
+
+    it('/widget/duplicate/:id (Post) duplicate combined component and three childs', async () => {
+      const combinedWid = getWidget([], []);
+      combinedWid.name = 'combinedWidget';
+      const combinedWidget = await createWidgetByObject(db, combinedWid);
+      const combinedTab = await getTab(
+        db,
+        combinedWidget.id,
+        'Kombinierte Komponente',
+        undefined,
+        undefined,
+      );
+
+      const childWidget1 = await createWidgetByObject(db, getWidget([], []));
+      const childWidget2 = await createWidgetByObject(db, getWidget([], []));
+      const childWidget3 = await createWidgetByObject(db, getWidget([], []));
+
+      const childTab1 = await getTab(db, childWidget1.id);
+      const childTab2 = await getTab(db, childWidget2.id);
+      const childTab3 = await getTab(db, childWidget3.id);
+
+      childTab1.componentType = 'Diagramm';
+      childTab1.componentSubType = 'Balken Chart';
+      childTab2.componentType = 'Wert';
+      childTab3.componentType = 'Diagramm';
+      childTab3.componentSubType = 'Linien Chart';
+
+      await createTab(db, childTab1);
+      await createTab(db, childTab2);
+      await createTab(db, childTab3);
+
+      combinedTab.childWidgets = [
+        childWidget1.id,
+        childWidget2.id,
+        childWidget3.id,
+      ];
+      await createTab(db, combinedTab);
+      const responseAllWidgets = await request(app.getHttpServer())
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgets.body).toBeInstanceOf(Array);
+      expect(responseAllWidgets.body).toHaveLength(4);
+
+      const responseAllQueryConfigs = await request(app.getHttpServer())
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigs.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigs.body).toHaveLength(4);
+      await request(app.getHttpServer())
+        .post(`/widgets/duplicate/${combinedWidget.id}`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+      const responseAllWidgetsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgetsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllWidgetsAfterDuplicate.body).toHaveLength(8);
+
+      const responseAllQueryConfigsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
+      // Only expects 7 queries, because Test Environment always creates a query config for a new Tab,
+      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
+      // So the query config of the combined component wont be duplicated
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(7);
+    });
+    it('/widget/duplicate/:id (Post) duplicate combined component and two childs, one tab without queryconfig', async () => {
+      const combinedWid = getWidget([], []);
+      combinedWid.name = 'combinedWidget';
+      const combinedWidget = await createWidgetByObject(db, combinedWid);
+      const combinedTab = await getTab(
+        db,
+        combinedWidget.id,
+        'Kombinierte Komponente',
+        undefined,
+        undefined,
+      );
+      const childWid1 = getWidget([], []);
+      const childWid2 = getWidget([], []);
+      childWid1.name = 'child1';
+      childWid2.name = 'child2';
+
+      const childWidget1 = await createWidgetByObject(db, childWid1);
+      const childWidget2 = await createWidgetByObject(db, childWid2);
+
+      const childTab1 = await getTab(db, childWidget1.id);
+      const childTab2 = await getTab(db, childWidget2.id);
+
+      childTab1.componentType = 'Diagramm';
+      childTab1.componentSubType = 'Balken Chart';
+      childTab2.componentType = 'Informationen';
+      await createTab(db, childTab1);
+      await createTab(db, childTab2);
+      combinedTab.childWidgets = [childWidget1.id, childWidget2.id];
+      await createTab(db, combinedTab);
+      const responseAllWidgets = await request(app.getHttpServer())
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgets.body).toBeInstanceOf(Array);
+      expect(responseAllWidgets.body).toHaveLength(3);
+
+      const responseAllQueryConfigs = await request(app.getHttpServer())
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      console.log('queries');
+      for (const queries of responseAllQueryConfigs.body) {
+        console.log(queries.id);
+      }
+      expect(responseAllQueryConfigs.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigs.body).toHaveLength(3);
+      await request(app.getHttpServer())
+        .post(`/widgets/duplicate/${combinedWidget.id}`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+      const responseAllWidgetsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgetsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllWidgetsAfterDuplicate.body).toHaveLength(6);
+      const responseAllQueryConfigsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
+      // Only expects 4 queries, because Test Environment always creates a query config for a new Tab,
+      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
+      // So the query configs of the combined component and the information tab wont be duplicated
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(4);
+    });
+
+    it('/widget/duplicate/:id (Post) duplicate combined component with nested combined component', async () => {
+      const combinedWid = getWidget([], []);
+      combinedWid.name = 'combinedWidget';
+      const combinedWidget = await createWidgetByObject(db, combinedWid);
+      const combinedTab = await getTab(
+        db,
+        combinedWidget.id,
+        'Kombinierte Komponente',
+        undefined,
+        undefined,
+      );
+      const nestedCombinedWid = getWidget([], []);
+      nestedCombinedWid.name = 'nestedCombinedWidget';
+      const nestedCombinedWidget = await createWidgetByObject(
+        db,
+        nestedCombinedWid,
+      );
+      const nestedCombinedTab = await getTab(
+        db,
+        nestedCombinedWidget.id,
+        'Kombinierte Komponente',
+        undefined,
+        undefined,
+      );
+
+      const childWidget1 = await createWidgetByObject(db, getWidget([], []));
+      const childWidget2 = await createWidgetByObject(db, getWidget([], []));
+      const childWidget3 = await createWidgetByObject(db, getWidget([], []));
+
+      const childTab1 = await getTab(db, childWidget1.id);
+      const childTab2 = await getTab(db, childWidget2.id);
+      const childTab3 = await getTab(db, childWidget3.id);
+
+      childTab1.componentType = 'Diagramm';
+      childTab1.componentSubType = 'Balken Chart';
+      childTab2.componentType = 'Wert';
+      childTab3.componentType = 'Diagramm';
+      childTab3.componentSubType = 'Linien Chart';
+
+      await createTab(db, childTab1);
+      await createTab(db, childTab2);
+      await createTab(db, childTab3);
+
+      nestedCombinedTab.childWidgets = [childWidget1.id, childWidget2.id];
+      await createTab(db, nestedCombinedTab);
+      combinedTab.childWidgets = [nestedCombinedWidget.id, childWidget3.id];
+      await createTab(db, combinedTab);
+      const responseAllWidgets = await request(app.getHttpServer())
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgets.body).toBeInstanceOf(Array);
+      expect(responseAllWidgets.body).toHaveLength(5);
+
+      const responseAllQueryConfigs = await request(app.getHttpServer())
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigs.body).toBeInstanceOf(Array);
+      expect(responseAllQueryConfigs.body).toHaveLength(5);
+      await request(app.getHttpServer())
+        .post(`/widgets/duplicate/${combinedWidget.id}`)
+        .set('Authorization', `Bearer ${JWTToken}`);
+      const responseAllWidgetsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/widgets')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllWidgetsAfterDuplicate.body).toBeInstanceOf(Array);
+      expect(responseAllWidgetsAfterDuplicate.body).toHaveLength(10);
+
+      const responseAllQueryConfigsAfterDuplicate = await request(
+        app.getHttpServer(),
+      )
+        .get('/query-configs')
+        .set('Authorization', `Bearer ${JWTToken}`);
+      expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
+      // Only expects 8 queries, because Test Environment always creates a query config for a new Tab,
+      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
+      // So the query configs of the two combined component wont be duplicated
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(8);
+    });
   });
 });

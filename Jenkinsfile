@@ -8,7 +8,7 @@ pipeline {
         NKF_REGISTRY = 'edagacr.azurecr.io'
         NGSI_SERVICE = 'ngsi-service'
         DASHBOARD_SERVICE = 'dashboard-service'
-        API_SERVICE = 'api-service'
+        ORCHIDEO_CONNECT_SERVICE = 'orchideo-connect-service'
         MAIL_SERVICE = 'mail-service'
         INFOPIN_SERVICE = 'infopin-service'
         STATIC_DATA_SERVICE = 'static-data-service'
@@ -19,7 +19,7 @@ pipeline {
         IMAGE_TAG = ''
         DOCKERFILE_NGSI_SERVICE = 'Dockerfile.ngsi-service'
         DOCKERFILE_DASHBOARD_SERVICE = 'Dockerfile.dashboard-service'
-        DOCKERFILE_API_SERVICE = 'Dockerfile.api-service'
+        DOCKERFILE_ORCHIDEO_CONNECT_SERVICE = 'Dockerfile.orchideo-connect-service'
         DOCKERFILE_FRONTEND = 'Dockerfile.frontend'
         DOCKERFILE_FRONTEND_BASEPATH = 'Dockerfile.frontend-with-basepath'
         DOCKERFILE_MIGRATIONS = 'Dockerfile.migrations'
@@ -217,7 +217,7 @@ pipeline {
                     dir('microservices') {
                       sh "docker build -t smartcity/dashboard-service -f ${DOCKERFILE_DASHBOARD_SERVICE} ."
                       sh "docker build -t smartcity/ngsi-service -f ${DOCKERFILE_NGSI_SERVICE} ."
-                      sh "docker build -t smartcity/api-service -f ${DOCKERFILE_API_SERVICE} ."
+                      sh "docker build -t smartcity/orchideo-connect-service -f ${DOCKERFILE_ORCHIDEO_CONNECT_SERVICE} ."
                       sh "docker build -t smartcity/mail-service -f ${DOCKERFILE_MAIL_SERVICE} ."
                       sh "docker build -t smartcity/infopin-service -f ${DOCKERFILE_INFOPIN_SERVICE} ."
                       sh "docker build -t smartcity/static-data-service -f ${DOCKERFILE_STATIC_DATA_SERVICE} ."
@@ -240,7 +240,7 @@ pipeline {
             sh "docker tag smartcity/migrations ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${NGSI_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/api-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${API_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/orchideo-connect-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MAIL_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/infopin-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
@@ -253,7 +253,7 @@ pipeline {
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${NGSI_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${API_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MAIL_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
@@ -277,7 +277,7 @@ pipeline {
             sh "docker tag smartcity/migrations ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${GITHUB_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${GITHUB_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/api-service ${GITHUB_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/orchideo-connect-service ${GITHUB_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${GITHUB_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/infopin-service ${GITHUB_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
@@ -290,7 +290,7 @@ pipeline {
               sh "docker push ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${GITHUB_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${GITHUB_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
@@ -314,7 +314,7 @@ pipeline {
             sh "docker tag smartcity/migrations ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-            sh "docker tag smartcity/api-service ${NKF_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/orchideo-connect-service ${NKF_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/infopin-service ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/static-data-service ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"
@@ -327,7 +327,7 @@ pipeline {
               sh "docker push ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
-              sh "docker push ${NKF_REGISTRY}/${API_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${INFOPIN_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${STATIC_DATA_SERVICE}:${IMAGE_TAG}"

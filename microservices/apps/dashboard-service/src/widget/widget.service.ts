@@ -366,6 +366,29 @@ export class WidgetService {
         id: uuid(),
         name: uniqueWidgetName,
       };
+
+      if (
+        widgetContentToDuplicate.tab.componentType == 'Kombinierte Komponente'
+      ) {
+        const promises: Promise<WidgetWithChildren>[] = [];
+        const duplicateChildIds: string[] = [];
+        for (const child of widgetContentToDuplicate.tab
+          .childWidgets as string[]) {
+          promises.push(
+            new Promise((resolve) =>
+              resolve(
+                this.duplicate(rolesFromRequest, child, tenant, transaction),
+              ),
+            ),
+          );
+        }
+        await Promise.all(promises);
+        for (const child of promises) {
+          duplicateChildIds.push((await child).widget.id);
+        }
+        widgetContentToDuplicate.tab.childWidgets = duplicateChildIds;
+      }
+
       duplicatedStructure.widget = await this.widgetRepo.create(
         duplicatedWidget,
         trx,

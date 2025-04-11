@@ -1,6 +1,6 @@
 {
   "name": "microservices",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "",
   "author": "",
   "private": true,
@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/test/jest-e2e.json --runInBand --detectOpenHandles --forceExit",
-    "api:start": "nest start api-service"
+    "api:start": "nest start orchideo-connect-service"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

@@ -1,5 +1,9 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import { Sketch } from '@uiw/react-color';
+import { Sketch, SwatchPresetColor } from '@uiw/react-color';
+import { getCorporateInfosWithLogos } from '@/app/actions';
+import { env } from 'next-runtime-env';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 
 type ColorPickerComponentProps = {
   currentColor: string;
@@ -20,6 +24,22 @@ export default function ColorPickerComponent(
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const style: CustomStyle = { '--nav-item-color': hex };
   const pickerRef = useRef<HTMLDivElement>(null);
+  const [colorPickerPresets, setColorPickerPresets] = useState<
+    SwatchPresetColor[] | false
+  >(false);
+
+  const params = useParams();
+  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
+  const tenant =
+    NEXT_PUBLIC_MULTI_TENANCY === 'true'
+      ? (params.tenant as string)
+      : undefined;
+
+  const { data: corporateInfo, refetch: refetchCorporateInfo } = useQuery({
+    queryKey: ['corporate-info'],
+    queryFn: () => getCorporateInfosWithLogos(tenant),
+    enabled: false,
+  });
 
   useEffect(() => {
     if (currentColor) {
@@ -43,6 +63,7 @@ export default function ColorPickerComponent(
     };
 
     if (isPickerOpen) {
+      refetchCorporateInfo();
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
     }
@@ -52,6 +73,37 @@ export default function ColorPickerComponent(
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isPickerOpen]);
+
+  useEffect(() => {
+    let presetColors = corporateInfo
+      ? [
+          corporateInfo.dashboardPrimaryColor,
+          corporateInfo.headerPrimaryColor,
+          corporateInfo.menuPrimaryColor,
+          corporateInfo.panelPrimaryColor,
+          corporateInfo.widgetPrimaryColor,
+          corporateInfo.fontColor,
+          corporateInfo.headerFontColor,
+          corporateInfo.dashboardFontColor,
+          corporateInfo.menuActiveFontColor,
+          corporateInfo.menuActiveColor,
+          corporateInfo.menuFontColor,
+          corporateInfo.menuHoverColor,
+          corporateInfo.menuHoverFontColor,
+          corporateInfo.panelFontColor,
+          corporateInfo.widgetFontColor,
+        ]
+      : false;
+
+    if (presetColors) {
+      presetColors = Array.from(
+        new Set(presetColors.filter((color) => color !== null)),
+      );
+      setColorPickerPresets(presetColors);
+    } else {
+      setColorPickerPresets(false);
+    }
+  }, [corporateInfo]);
 
   return (
     <>
@@ -74,6 +126,7 @@ export default function ColorPickerComponent(
             <Sketch
               style={{ marginLeft: 20 }}
               color={hex}
+              presetColors={colorPickerPresets}
               onChange={(color) => {
                 setHex(color.hexa);
                 handleColorChange(color.hexa);

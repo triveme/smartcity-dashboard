@@ -30,7 +30,7 @@ Each microservice has its own dependencies. Below are the Dockerfiles for each m
 
 - [infopin-service](../microservices/Dockerfile.infopin-service)
 - [ngsi-service](../microservices/Dockerfile.ngsi-service)
-- [api-service](../microservices/Dockerfile.api-service)
+- [orchideo-connect-service](../microservices/Dockerfile.orchideo-connect-service)
 - [mail-service](../microservices/Dockerfile.mail-service)
 - [dashboard-service](../microservices/Dockerfile.dashboard-service)
 - [static-data-service](../microservices/Dockerfile.static-data-service)

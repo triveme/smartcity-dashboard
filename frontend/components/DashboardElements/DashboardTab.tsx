@@ -178,9 +178,12 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
+              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
+              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
+              chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
@@ -225,9 +228,12 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
+              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
+              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
+              chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
               data={tab.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
