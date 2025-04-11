@@ -32,7 +32,8 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
 
     if (
       queryConfig.dataSourceType !== 'static-endpoint' &&
-      queryConfig.dataSourceType !== 'ngs-ld'
+      queryConfig.dataSourceType !== 'ngs-ld' &&
+      queryConfig.dataSourceType !== 'usi'
     ) {
       if (!queryConfig?.fiwareService) {
         errorsOccured.push('Fiware-Dienst-/Sammlungsfeld ist erforderlich');

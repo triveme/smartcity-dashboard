@@ -9,16 +9,24 @@ export default function LoginProvider({
 }: {
   children: React.ReactNode;
 }): ReactElement {
-  const { isAuthenticated, isLoading, signinRedirect } = useAuth();
+  const { isAuthenticated, isLoading, signinRedirect, error } = useAuth();
   const pathname = usePathname();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       if (!isAuthenticated && !isLoading) {
-        signinRedirect();
+        signinRedirect({
+          state: pathname,
+        }).catch((err) => {
+          console.error('Failed to redirect to login:', err);
+        });
       }
     }
   }, [isAuthenticated, isLoading, pathname]);
+
+  if (error) {
+    return <div>Authentication error: {error.message}</div>;
+  }
 
   return <>{isAuthenticated ? children : null}</>;
 }

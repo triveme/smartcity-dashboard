@@ -20,6 +20,7 @@ export const authData = pgTable('auth_data', {
   clientSecret: jsonb('client_secret').notNull(),
   collections: text('collections').array(),
   fiwareServices: text('fiware_services').array(),
+  grantType: text('grant_type'),
   liveUrl: text('live_url').notNull(),
   name: text('name').notNull(),
   timeSeriesUrl: text('time_series_url').notNull(),

@@ -23,6 +23,7 @@ import {
 } from '@/api/authData-service';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { dataPlatformTypes } from '@/utils/enumMapper';
 
 type DataPlatformWizardProps = {
   borderColor: string;
@@ -52,6 +53,7 @@ export default function DataPlatformWizard(
   const [liveUrl, setLiveUrl] = useState('');
   const [timeSeriesUrl, setTimeSeriesUrl] = useState('');
   const [apiUrl, setApiUrl] = useState('');
+  const [grantType, setGrantType] = useState('password');
   const [errors, setErrors] = useState<WizardErrors>({});
   const [collections, setCollections] = useState<string[]>([]);
 
@@ -79,6 +81,7 @@ export default function DataPlatformWizard(
       setTimeSeriesUrl(fetchedAuthData.timeSeriesUrl);
       setApiUrl(fetchedAuthData.apiUrl || '');
       setCollections(fetchedAuthData.collections || []);
+      setGrantType(fetchedAuthData.grantType || '');
     }
   }, [fetchedAuthData]);
 
@@ -119,6 +122,7 @@ export default function DataPlatformWizard(
       timeSeriesUrl,
       apiUrl,
       collections: collections,
+      grantType,
     };
 
     const textfieldErrorMessages: string[] = [];
@@ -130,7 +134,7 @@ export default function DataPlatformWizard(
       (type === authDataTypeEnum.ngsiv2 || type === authDataTypeEnum.ngsild) &&
       (!clientId || !clientSecret)
     ) {
-      errorsOccured.clientError = 'Kunde ist erforderlich!';
+      errorsOccured.clientError = 'Client ist erforderlich!';
     }
     if (
       (type === authDataTypeEnum.ngsiv2 || type === authDataTypeEnum.ngsild) &&
@@ -206,11 +210,19 @@ export default function DataPlatformWizard(
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label="Type" />
           <WizardDropdownSelection
-            currentValue={type}
-            onSelect={(value: string | number): void => {
-              setType(value as authDataTypeEnum);
+            currentValue={
+              dataPlatformTypes.find((option) => option.value === type)
+                ?.label || ''
+            }
+            onSelect={(value: number | string): void => {
+              const selectedOption = dataPlatformTypes.find(
+                (option) => option.label === value,
+              );
+              if (selectedOption) {
+                setType(selectedOption.value);
+              }
             }}
-            selectableValues={Object.values(authDataTypeEnum)}
+            selectableValues={dataPlatformTypes.map((option) => option.label)}
             iconColor={iconColor}
             borderColor={borderColor}
             backgroundColor={backgroundColor}
@@ -270,7 +282,7 @@ export default function DataPlatformWizard(
               />
             </div>
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Auth Url" />
+              <WizardLabel label="Authentifizierungs Url" />
               <WizardUrlTextfield
                 value={authUrl}
                 onChange={(value: string | number): void =>
@@ -346,7 +358,7 @@ export default function DataPlatformWizard(
               />
             </div>
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Auth Url" />
+              <WizardLabel label="Authentifizierungs Url" />
               <WizardUrlTextfield
                 value={authUrl}
                 onChange={(value: string | number): void =>
@@ -382,10 +394,62 @@ export default function DataPlatformWizard(
               />
             </div>
           </div>
+        ) : type === authDataTypeEnum.api ? (
+          // Orchideo Connect Dataplatform
+          <div className="flex flex-col justify-start items-start content-center grow w-full">
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Orchideo Connect Url" />
+              <WizardUrlTextfield
+                value={apiUrl}
+                onChange={(value: string | number): void =>
+                  setApiUrl(value.toString())
+                }
+                error={errors && errors.apiUrlError}
+                iconColor={iconColor}
+                borderColor={borderColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Authentifizierungs Url" />
+              <WizardUrlTextfield
+                value={authUrl}
+                onChange={(value: string | number): void =>
+                  setAuthUrl(value.toString())
+                }
+                error={errors && errors.authUrlError}
+                iconColor={iconColor}
+                borderColor={borderColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Client Id" />
+              <WizardTextfield
+                value={clientId}
+                onChange={(value: string | number): void =>
+                  setClientId(value.toString())
+                }
+                error={errors && errors.clientError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Grant Type" />
+              <WizardTextfield
+                value={grantType}
+                onChange={(value: string | number): void =>
+                  setGrantType(value.toString())
+                }
+                error={errors && errors.clientError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col justify-start items-start content-center grow w-full">
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="API Url" />
+              <WizardLabel label="Url Endpunkt" />
               <WizardUrlTextfield
                 value={apiUrl}
                 onChange={(value: string | number): void =>

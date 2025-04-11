@@ -14,7 +14,7 @@ data:
   NEXT_PUBLIC_OIDC_REDIRECT_URI: {{ index .Values "frontend" "oidc" "redirectUri" }}
   NEXT_PUBLIC_BACKEND_URL: {{ index .Values "frontend" "backendUrl" }}
   NODE_TLS_REJECT_UNAUTHORIZED: "{{ .Values.frontend.tlsRejectUnauthorized }}"
-  NEXT_PUBLIC_API_SERVICE_URL: {{ index .Values "frontend" "apiServiceUrl" }}
+  NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL: {{ index .Values "frontend" "orchideoConnectServiceUrl" }}
   NEXT_PUBLIC_NGSI_SERVICE_URL: {{ index .Values "frontend" "ngsiServiceUrl" }}
   NEXT_PUBLIC_MULTI_TENANCY: "true"
   NEXT_PUBLIC_MAIL_TO: {{ index .Values "frontend" "mailTo" }}

@@ -155,7 +155,11 @@ export default function Header(props: HeaderProps): ReactElement {
 
   const handleUserIconClick = (): void => {
     if (!isAuthenticated) {
-      signinRedirect();
+      signinRedirect({
+        state: pathname,
+      }).catch((err) => {
+        console.error('Failed to redirect to login:', err);
+      });
     }
   };
 
