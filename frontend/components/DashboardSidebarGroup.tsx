@@ -168,12 +168,12 @@ export default function DashboardSidebarGroup(
             {isOpen ? (
               <DashboardIcons
                 iconName={getDirectionArrow(true)}
-                color={groupElement.fontColor}
+                color={determineFontColor()}
               />
             ) : (
               <DashboardIcons
                 iconName={getDirectionArrow(false)}
-                color={groupElement.fontColor}
+                color={determineFontColor()}
               />
             )}
           </div>

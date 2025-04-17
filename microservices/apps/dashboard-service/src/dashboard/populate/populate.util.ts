@@ -326,6 +326,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Feinstaub PM10';
     case 'PM25':
       return 'Feinstaub PM2,5';
+    case 'RELATIV_FREI':
+      return 'Frei (%)';
     default:
       console.warn(`No German label found for attribute: ${attribute}`);
       return attribute;
