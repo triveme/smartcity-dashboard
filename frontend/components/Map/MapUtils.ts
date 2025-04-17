@@ -87,7 +87,7 @@ export function getGermanLabelForSensorAttribute(
     case 'ADDRESS':
       return 'Adresse';
     case 'TEMPERATURE':
-      return 'Temperatur';
+      return 'Temperatur (°C)';
     case 'STATUS':
       return 'Status';
     case 'STATUS_DE':
@@ -119,7 +119,7 @@ export function getGermanLabelForSensorAttribute(
     case 'MONTHLYCONSUMPTIONSUMWATER':
       return 'Monatlicher Wasserverbrauch';
     case 'CO2':
-      return 'Kohlenstoffdioxid';
+      return 'Kohlenstoffdioxid (ppm)';
     case 'SOILMOISTUREEC':
       return 'Bodenfeuchtigkeit';
     case 'SOILMOISTUREVWC':
@@ -151,7 +151,7 @@ export function getGermanLabelForSensorAttribute(
       return 'Bodenfeuchtigkeit 90cm';
 
     case 'SOILTEMPERATURE':
-      return 'Bodentemperatur';
+      return 'Bodentemperatur (°C)';
     case 'TOTALCONSUMPTIONSUM_GAS':
       return 'Gesamtverbrauch Gas';
     case 'TOTALCONSUMPTIONSUM_WATER':
@@ -159,7 +159,7 @@ export function getGermanLabelForSensorAttribute(
     case 'CO2AVG':
       return 'CO2 Durchschnitt';
     case 'TEMPERATURE':
-      return 'Temperatur';
+      return 'Temperatur (°C)';
     case 'CURRENTLEVEL':
       return 'Pegelstand';
     case 'CURRENT_LEVEL':
@@ -167,9 +167,9 @@ export function getGermanLabelForSensorAttribute(
     case 'DEWPOINT':
       return 'Taupunkt';
     case 'RELATIVEHUMIDITY':
-      return 'Relative Luftfeuchte';
+      return 'Relative Luftfeuchte (%)';
     case 'SOILTEMPERATUR':
-      return 'Boden Temperatur';
+      return 'Bodentemperatur (°C)';
     case 'PRECIPITATION':
       return 'Niederschlag';
     case 'RAINRATEINTERVAL':
@@ -177,7 +177,7 @@ export function getGermanLabelForSensorAttribute(
     case 'IRRADIATION':
       return 'Sonneneinstrahlung';
     case 'PRESSURE':
-      return 'Luftdruck';
+      return 'Luftdruck (hPa)';
     case 'SOLARRADIATION':
       return 'Solareinstrahlung';
     case 'LIGHTNING_STRIKE_COUNT':
@@ -197,7 +197,7 @@ export function getGermanLabelForSensorAttribute(
     case 'MINLVL':
       return 'Niedrigster Pegelstand';
     case 'ATMOSPHERICPRESSURE':
-      return 'Luftdruck';
+      return 'Luftdruck (hPa)';
     case 'VEHICLETYPE':
       return 'Fahrzeugtyp';
     case 'STREETNAME':
@@ -206,6 +206,18 @@ export function getGermanLabelForSensorAttribute(
       return 'Auslastung';
     case 'STATUS_ISOCCUPIEDSUM':
       return 'Belegung';
+    case 'DATUM':
+      return 'Letzte Aktualisierung';
+    case 'PEGELSTAND':
+      return 'Pegelstand (cm)';
+    case 'ANZAHL_GESAMT':
+      return 'Gesamte Anzahl';
+    case 'ANZAHL_FREI':
+      return 'Anzahl frei';
+    case 'GESAMT_24H':
+      return 'Gesamt (letzte 24 Stunden)';
+    case 'GESAMT_1H':
+      return 'Gesamt (letzte Stunde)';
 
     default:
       return sensorAttribute;
