@@ -169,6 +169,25 @@ export const getChartDateRichText = (
           fontSize: 9,
         },
       };
+    case 'Only Year':
+      return {
+        yearStyle: {
+          fontWeight: 'bold',
+          fontSize: 15,
+        },
+      };
+    case 'Only Month':
+      return {
+        yearStyle: {
+          fontWeight: 'bold',
+          fontSize: 15,
+        },
+        monthStyle: {
+          fontWeight: 'bold',
+          fontSize: 13,
+          padding: [0, 0, 0, 10],
+        },
+      };
 
     /* If the representation not known, deactivate the richtext formatter */
     default:
