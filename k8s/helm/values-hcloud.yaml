@@ -7,7 +7,7 @@ trustedCAFile: "certificates/hcloud_ca.pem"
 migrations:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
   resources:
     requests:
@@ -58,7 +58,7 @@ dashboard-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 ngsi-service:
@@ -80,7 +80,7 @@ ngsi-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 orchideo-connect-service:
@@ -100,7 +100,7 @@ orchideo-connect-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/orchideo-connect-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 mail-service:
@@ -120,7 +120,7 @@ mail-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/mail-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 infopin-service:
@@ -141,7 +141,7 @@ infopin-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 
@@ -164,7 +164,7 @@ report-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/report-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 static-data-service:
@@ -185,7 +185,7 @@ static-data-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/static-data-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 
@@ -207,7 +207,7 @@ usi-platform-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/usi-platform-service
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
 
 
@@ -221,6 +221,7 @@ frontend:
     clientId: scs-frontend
   backendUrl: "https://dashboard-service.smartcity-system.de"
   orchideoConnectServiceUrl: "https://orchideo-connect-service.smartcity-system.de"
+  usiPlatformServiceUrl: "https://usi-platform-service.smartcity-system.de"
   ngsiServiceUrl: "https://ngsi-service.smartcity-system.de"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"
@@ -244,5 +245,5 @@ frontend:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/frontend
-    tag: '0.24.2'
+    tag: '0.24.3'
     pullPolicy: Always
