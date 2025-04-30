@@ -225,7 +225,7 @@ export default function QueryNgsiWizard(
                 <div className="flex-1">
                   <WizardDropdownSelection
                     currentValue={queryConfig?.fiwareService || ''}
-                    selectableValues={ngsiCollections || []}
+                    selectableValues={['', ...ngsiCollections]}
                     onSelect={(value: string | number): void => {
                       handleQueryConfigChange({
                         fiwareService: value.toString(),

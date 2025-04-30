@@ -285,7 +285,7 @@ pipeline {
             sh "docker tag smartcity/usi-platform-service ${GITHUB_REGISTRY}/${USI_PLATFORM_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}"
             sh "docker tag smartcity/frontend-with-basepath ${GITHUB_REGISTRY}/${FRONTEND}:${IMAGE_TAG}-with-basepath"
-            withCredentials([usernamePassword(credentialsId: 'smartcity-github', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PASS')]) {
+            withCredentials([usernamePassword(credentialsId: 'smartcity-github-2', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PASS')]) {
               sh "docker login -u ${GITHUB_USER} -p ${GITHUB_PASS} ${GITHUB_REGISTRY}"
               sh "docker push ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
