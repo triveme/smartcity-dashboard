@@ -238,6 +238,7 @@ export default function MeasurementComponent(
               legendAlignment="Top"
               hasAdditionalSelection={false}
               showTooltip={false}
+              chartDateRepresentation={'Default'}
             />
           )}
           {monthActive && (
@@ -271,6 +272,7 @@ export default function MeasurementComponent(
               legendAlignment="Top"
               hasAdditionalSelection={false}
               showTooltip={false}
+              chartDateRepresentation={'Default'}
             />
           )}
           {dayActive && (
