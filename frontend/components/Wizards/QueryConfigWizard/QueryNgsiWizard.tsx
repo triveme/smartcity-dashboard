@@ -166,7 +166,9 @@ export default function QueryNgsiWizard(
   };
 
   useEffect(() => {
-    if (ngsiCollections && ngsiCollections.length > 0) {
+    if (queryConfig?.fiwareService) {
+      setSelectedCollection(queryConfig?.fiwareService);
+    } else if (ngsiCollections && ngsiCollections.length > 0) {
       setSelectedCollection(ngsiCollections[0]);
     }
   }, [ngsiCollections]);

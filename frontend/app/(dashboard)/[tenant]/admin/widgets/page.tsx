@@ -190,7 +190,7 @@ export default function Widgets(): ReactElement {
             value={search}
             onChange={(value): void => setSearch(value.toString())}
             placeholderText={'Suche'}
-            borderColor={corporateInfo?.widgetBorderColor || '#2B3244'}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
           />
         </div>

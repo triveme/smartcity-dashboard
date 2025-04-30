@@ -652,9 +652,23 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       </div>
                       <WizardSelectBox
                         checked={tab?.setYAxisInterval || false}
-                        onChange={(value: boolean): void =>
-                          handleTabChange({ setYAxisInterval: value })
-                        }
+                        onChange={(value: boolean): void => {
+                          if (value) {
+                            handleTabChange({
+                              setYAxisInterval: value,
+                              chartYAxisScale: 0,
+                              chartYAxisScaleChartMinValue: 0,
+                              chartYAxisScaleChartMaxValue: 100,
+                            });
+                          } else {
+                            handleTabChange({
+                              setYAxisInterval: false,
+                              chartYAxisScale: undefined,
+                              chartYAxisScaleChartMinValue: undefined,
+                              chartYAxisScaleChartMaxValue: undefined,
+                            });
+                          }
+                        }}
                         label=" Interval"
                       />
                     </div>
@@ -665,7 +679,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             <WizardLabel label="Skalierung y-Achse (Werte von 0.1 bis 1000 möglich, 0 für Automatische Skallierung)." />
                             <WizardTextfield
                               isNumeric={true}
-                              value={tab?.chartYAxisScale || '0'}
+                              value={tab?.chartYAxisScale || 0}
                               onChange={(value: string | number): void =>
                                 handleTabChange({
                                   chartYAxisScale: value as number,
@@ -679,7 +693,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             <WizardLabel label="Minimalwert Skala der yAchse" />
                             <WizardTextfield
                               isNumeric={true}
-                              value={tab?.chartYAxisScaleChartMinValue || '0'}
+                              value={tab?.chartYAxisScaleChartMinValue || 0}
                               onChange={(value: string | number): void =>
                                 handleTabChange({
                                   chartYAxisScaleChartMinValue: value as number,
@@ -693,7 +707,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             <WizardLabel label="Maximalwert Skala der yAchse" />
                             <WizardTextfield
                               isNumeric={true}
-                              value={tab?.chartYAxisScaleChartMaxValue || '100'}
+                              value={tab?.chartYAxisScaleChartMaxValue || 100}
                               onChange={(value: string | number): void =>
                                 handleTabChange({
                                   chartYAxisScaleChartMaxValue: value as number,
