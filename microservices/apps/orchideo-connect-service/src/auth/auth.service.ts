@@ -3,7 +3,6 @@ import { HttpService } from '@nestjs/axios';
 import { catchError } from 'rxjs/operators';
 import { AxiosError } from 'axios';
 import { lastValueFrom } from 'rxjs';
-import { error } from 'console';
 
 // Define an interface for the response shape
 export interface KeycloakResponse {
@@ -34,7 +33,7 @@ export class AuthService {
       };
     } else {
       this.logger.error('Using old authentication method');
-      throw error('Using old authentication method');
+      throw Error('Using old authentication method');
     }
     console.log('dataToSend', dataToSend);
     const { data } = await lastValueFrom(

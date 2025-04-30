@@ -13,7 +13,7 @@ import {
   systemUsers,
 } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { OrganisationService } from '../organisation/organisation.service';
-import { TenantService } from 'apps/dashboard-service/src/tenant/tenant.service';
+import { TenantService } from '../../../dashboard-service/src/tenant/tenant.service';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
 
 @Injectable()
