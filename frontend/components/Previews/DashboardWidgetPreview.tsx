@@ -127,14 +127,26 @@ export default function DashboardWidgetPreview(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
-              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
-              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
               labels={undefined}
               chartHasAutomaticZoom={tab.chartHasAutomaticZoom}
-              chartYAxisScale={tab?.chartYAxisScale || undefined}
               data={
                 tab?.chartDateRepresentation !== 'Default'
                   ? DUMMY_CHART_DATA_YEAR
@@ -179,12 +191,24 @@ export default function DashboardWidgetPreview(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
-              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
-              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
-              chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={undefined}
               data={
                 tab?.chartDateRepresentation !== 'Default'

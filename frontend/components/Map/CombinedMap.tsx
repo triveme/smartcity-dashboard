@@ -640,7 +640,7 @@ export default function CombinedMap(props: MapProps): JSX.Element {
                                 ) {
                                   return (
                                     <div key={key}>
-                                      DATUM:
+                                      Datum:
                                       <strong>
                                         {getFormattedDate(tempValue.value)}
                                       </strong>

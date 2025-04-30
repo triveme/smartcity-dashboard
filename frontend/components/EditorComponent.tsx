@@ -63,7 +63,11 @@ export default function EditorComponent({
         onEditorStateChange={handleEditorStateChange}
         editorStyle={{
           height: '200px',
+          maxWidth: '100%',
           overflow: 'auto',
+          overflowWrap: 'break-word',
+          wordWrap: 'break-word',
+          wordBreak: 'break-word',
           backgroundColor: backgroundColor,
           color: fontColor,
           borderColor: borderColor,

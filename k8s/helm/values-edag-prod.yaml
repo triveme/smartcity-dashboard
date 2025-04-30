@@ -135,6 +135,7 @@ frontend:
     clientId: scs-frontend
   backendUrl: "https://mit-smartcity-suite-dashboard-service.container.edag"
   orchideoConnectServiceUrl: "https://mit-smartcity-suite-orchideo-connect-service.container.edag"
+  usiPlatformServiceUrl: "https://mit-smartcity-suite-usi-platform-service.container.edag"
   ngsiServiceUrl: "https://mit-smartcity-suite-ngsi-service.container.edag"
   tlsRejectUnauthorized: "0"
   mailTo: "smart.city@edag.com"

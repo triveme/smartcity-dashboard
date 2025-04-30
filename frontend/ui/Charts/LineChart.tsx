@@ -215,13 +215,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
             },
           },
           min:
-            chartYAxisScale && chartYAxisScale !== 0
+            chartYAxisScale !== undefined
               ? chartYAxisScaleChartMinValue
               : chartHasAutomaticZoom
                 ? calculateMinYAxisValue(data, decimalPlaces)
                 : undefined,
           max:
-            chartYAxisScale && chartYAxisScale !== 0
+            chartYAxisScale !== undefined
               ? chartYAxisScaleChartMaxValue
               : chartHasAutomaticZoom
                 ? calculateMaxYAxisValue(data, decimalPlaces)

@@ -77,7 +77,7 @@
   position: relative;
   border: 1px solid #F1F1F1;
   width: 98%;
-  background: white;
+  background-color: #000000;
   border-radius: 2px;
   margin: 0;
   padding: 0;
@@ -86,7 +86,7 @@
 }
 .rdw-dropdown-optionwrapper:hover {
   box-shadow: 1px 1px 0px #BFBDBD;
-  background-color: #ffffff10;
+  background-color: #000000;
 }
 
 .rdw-dropdownoption-default {
