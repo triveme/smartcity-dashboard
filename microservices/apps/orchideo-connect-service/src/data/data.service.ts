@@ -153,8 +153,10 @@ export class DataService {
         count?: number;
         start?: string;
         end?: string;
+        ordertimebased?: boolean;
       } = {
         limit: 1000, // Fixed limit for each request
+        ordertimebased: true,
       };
 
       // Add time-based parameters based on timeframe
@@ -208,17 +210,24 @@ export class DataService {
       }
 
       let allData = [];
-      let offset = 0;
       let fetchedData;
 
-      do {
-        params.offset = offset; // Set offset for pagination
+      if (query_config.timeframe !== 'live') {
+        let offset = 0;
 
+        // Loop to fetch all data in chunks of 1000
+        do {
+          params.offset = offset;
+          const response = await axios.get(url, { headers, params });
+          fetchedData = response.data;
+          allData = allData.concat(fetchedData);
+          offset += fetchedData.length;
+        } while (fetchedData.length === 1000);
+      } else {
         const response = await axios.get(url, { headers, params });
         fetchedData = response.data;
         allData = allData.concat(fetchedData);
-        offset += fetchedData.length;
-      } while (fetchedData.length === 1000); // Continue if page is full
+      }
 
       return allData;
     } catch (error) {
