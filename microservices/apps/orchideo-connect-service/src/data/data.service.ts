@@ -71,14 +71,14 @@ export class DataService {
     source: string,
     authorizationToken: string,
     apiId?: string,
+    limit?: number,
   ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
-      this.logger.debug(
-        'getEntities: ',
-        `${apiUrl}/collections/${collection}/${source}/entities`,
-      );
-      const url = `${apiUrl}/${collection}/${source}/entities`;
+      const effectiveLimit = limit?? 2147483647;
+      const url = `${apiUrl}/${collection}/${source}/entities?limit=${effectiveLimit}`;
+
+      this.logger.debug('getEntities: ', url);
 
       const response = await axios.get(url, {
         headers: {
