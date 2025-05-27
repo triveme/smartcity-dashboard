@@ -15,6 +15,11 @@ import {
 import { OrganisationService } from '../organisation/organisation.service';
 import { TenantService } from '../../../dashboard-service/src/tenant/tenant.service';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
+import {
+  corporateInfos,
+  NewCorporateInfo,
+} from '@app/postgres-db/schemas/corporate-info.schema';
+import { edagTemplate as DefaultCorporateInfo } from '../../../dashboard-service/src/corporate-info/corporate-info.template';
 
 @Injectable()
 export class SystemUserService {
@@ -165,6 +170,9 @@ export class SystemUserService {
 
       await this.organisationService.updateGroupingElements();
 
+      // Create default corporate infos
+      await this.createDefaultCorporateInfos(tenantAbbreviation);
+
       return result.length > 0 ? result[0] : null;
     }
   }
@@ -188,5 +196,33 @@ export class SystemUserService {
 
   async deleteAll(): Promise<SystemUser[]> {
     return this.db.delete(systemUsers).returning();
+  }
+
+  private async createDefaultCorporateInfos(
+    tenantAbbreviation: string,
+  ): Promise<void> {
+    //Create default light mode corporate info object from template for corporate info
+    const defaultCorporateInfoLight: NewCorporateInfo = {
+      ...DefaultCorporateInfo,
+      tenantId: tenantAbbreviation,
+    };
+
+    //Set titleBar property to "Light"
+    defaultCorporateInfoLight.titleBar = 'Light';
+
+    //Insert default light mode corporate info object into database
+    await this.db.insert(corporateInfos).values(defaultCorporateInfoLight);
+
+    //Create default dark mode corporate info object from template for corporate info
+    const defaultCorporateInfoDark: NewCorporateInfo = {
+      ...DefaultCorporateInfo,
+      tenantId: tenantAbbreviation,
+    };
+
+    //Set titleBar property to "Dark"
+    defaultCorporateInfoDark.titleBar = 'Dark';
+
+    //Insert default dark mode corporate info object into database
+    await this.db.insert(corporateInfos).values(defaultCorporateInfoDark);
   }
 }
