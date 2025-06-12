@@ -72,10 +72,6 @@ export default function QueryConfigWizard(
 
   const [queryConfigFormIsOpen, setQueryConfigFormIsOpen] = useState(false);
   const [datasourceOrigin, setDatasourceOrigin] = useState('');
-  useEffect(() => {
-    console.log('datasourceOrigin', datasourceOrigin);
-  }, [datasourceOrigin]);
-
   const [ngsiCollections, setNgsiCollections] = useState<string[]>([]);
 
   const handleQueryConfigChange = (update: Partial<QueryConfig>): void => {

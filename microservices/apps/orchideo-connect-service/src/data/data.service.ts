@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { eq } from 'drizzle-orm';
@@ -16,7 +17,7 @@ export class DataService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
-  ) { }
+  ) {}
 
   async getCollections(
     authorizationToken: string,
@@ -75,7 +76,7 @@ export class DataService {
   ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
-      const effectiveLimit = limit?? 2147483647;
+      const effectiveLimit = limit ?? 2147483647;
       const url = `${apiUrl}/${collection}/${source}/entities?limit=${effectiveLimit}`;
 
       this.logger.debug('getEntities: ', url);
@@ -205,18 +206,22 @@ export class DataService {
       }
 
       // Construct the URL with entityIds if they exist
-      if (query_config.entityIds
-        && query_config.entityIds.length > 0
-        && query_config.timeframe !== 'live') {
+      if (
+        query_config.entityIds &&
+        query_config.entityIds.length > 0 &&
+        query_config.timeframe !== 'live'
+      ) {
         url += `?filtervalues=${query_config.entityIds.join('&filtervalues=')}`;
         // If only one entityId is provided and the timeframe is "live",
         // we need to set the filtervalues for the provided entityId,
         // the limit to 1 and ordertimebased to true
         // This is needed, to be compatible with the API and getting the correct live data,
         // regardless of the collection we use
-      } else if (query_config.entityIds
-        && query_config.entityIds.length === 1
-        && query_config.timeframe === 'live') {
+      } else if (
+        query_config.entityIds &&
+        query_config.entityIds.length === 1 &&
+        query_config.timeframe === 'live'
+      ) {
         url += `?filtervalues=${query_config.entityIds[0]}`;
         url += `&limit=1`;
         url += `&ordertimebased=true`;
@@ -248,10 +253,14 @@ export class DataService {
       // to ensure we only return the relevant data
       // This is needed for example for the pie chart widget,
       // showing multiple entities with the same attribute
-      if (query_config.entityIds
-        && query_config.entityIds.length > 1
-        && query_config.timeframe === 'live') {
-        this.logger.debug(`Filtering data for entityIds: ${query_config.entityIds.join(', ')}`);
+      if (
+        query_config.entityIds &&
+        query_config.entityIds.length > 1 &&
+        query_config.timeframe === 'live'
+      ) {
+        this.logger.debug(
+          `Filtering data for entityIds: ${query_config.entityIds.join(', ')}`,
+        );
         allData = this.filterDataByEntityIds(allData, query_config.entityIds);
       }
 
@@ -274,7 +283,7 @@ export class DataService {
   }
 
   private filterDataByEntityIds(data: any[], entityIds: string[]): any[] {
-    return data.filter(item => entityIds.includes(item.id));
+    return data.filter((item) => entityIds.includes(item.id));
   }
 
   async getUrl(datasourceId: string): Promise<string> {

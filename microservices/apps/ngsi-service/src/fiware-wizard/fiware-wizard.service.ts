@@ -12,11 +12,20 @@ import {
 import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
 import axios from 'axios';
 
-type PreparedNgsiEntityRequest = {
+type PreparedNgsiV2EntityRequest = {
   entitiesUrl: string;
   headers: {
     Authorization: string;
     'fiware-service': string;
+  };
+};
+
+type PreparedNgsiLdEntityRequest = {
+  entitiesUrl: string;
+  headers: {
+    Authorization: string;
+    'NGSILD-Tenant': string;
+    Link: string;
   };
 };
 
@@ -100,11 +109,11 @@ export class FiwareWizardService {
     }
   }
 
-  private async prepareRequest(
+  private async prepareRequestNgsiV2(
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
-  ): Promise<PreparedNgsiEntityRequest> {
+  ): Promise<PreparedNgsiV2EntityRequest> {
     const selectedDataSource = await this.getDataSourceById(dataSourceId);
 
     if (!selectedDataSource) {
@@ -138,12 +147,50 @@ export class FiwareWizardService {
     };
   }
 
-  async getTypes(
+  private async prepareRequestNgsiLd(
+    dataSourceId: string,
+    rolesFromRequest: string[],
+  ): Promise<PreparedNgsiLdEntityRequest> {
+    const selectedDataSource = await this.getDataSourceById(dataSourceId);
+
+    if (!selectedDataSource) {
+      throw new HttpException(
+        `DataSource with id ${dataSourceId} not found`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const relatedAuthData = await this.getAuthDataById(
+      selectedDataSource.authDataId,
+      rolesFromRequest,
+    );
+
+    if (!relatedAuthData) {
+      throw new HttpException(
+        `AuthData not found for DataSource of id ${dataSourceId}`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const token = await this.getToken(dataSourceId, rolesFromRequest);
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'NGSILD-Tenant': relatedAuthData.ngsildTenant,
+      Link: `<${relatedAuthData.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+    };
+
+    return {
+      entitiesUrl: relatedAuthData.liveUrl,
+      headers,
+    };
+  }
+
+  async getTypesNgsiV2(
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
   ): Promise<string[]> {
-    const { entitiesUrl, headers } = await this.prepareRequest(
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
@@ -162,7 +209,6 @@ export class FiwareWizardService {
       const entitiesResponse = await lastValueFrom(
         this.httpService.get(typesUrl, { headers }),
       );
-
       const types = entitiesResponse.data.map((entity) => entity.type);
       return Array.from(new Set(types));
     } catch (error) {
@@ -174,13 +220,48 @@ export class FiwareWizardService {
     }
   }
 
-  async getEntityIds(
+  async getTypesNgsiLd(
+    fiwareService: string,
+    dataSourceId: string,
+    rolesFromRequest: string[],
+  ): Promise<string[]> {
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
+      dataSourceId,
+      rolesFromRequest,
+    );
+    const url = new URL(entitiesUrl);
+
+    // Adjusting URl to call the NGSI endpoint for 'v1/types'.
+    // Check if the URL contains the word 'entities'.
+    // If so, process the URL, replacing 'entities' with 'types'.
+    const typesUrl = url.toString().includes('entities')
+      ? entitiesUrl.replace('entities', 'types')
+      : entitiesUrl;
+
+    try {
+      url.searchParams.set('limit', '1000');
+      const entitiesResponse = await lastValueFrom(
+        this.httpService.get(typesUrl, { headers }),
+      );
+
+      const types = entitiesResponse.data.typeList.map((entity) => entity);
+      return Array.from(new Set(types));
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Failed to fetch Fiware Types',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getEntityIdsNgsiV2(
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
     type?: string,
   ): Promise<string[]> {
-    const { entitiesUrl, headers } = await this.prepareRequest(
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
@@ -216,6 +297,57 @@ export class FiwareWizardService {
         // Increment the offset to fetch the next batch
         offset += limit;
       }
+      return allEntityIds;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Failed to fetch Fiware Entity IDs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getEntityIdsNgsiLd(
+    fiwareService: string,
+    dataSourceId: string,
+    rolesFromRequest: string[],
+    type?: string,
+  ): Promise<string[]> {
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
+      dataSourceId,
+      rolesFromRequest,
+    );
+    const url = new URL(entitiesUrl);
+
+    let allEntityIds: string[] = [];
+    let offset = 0;
+    const limit = 100;
+
+    try {
+      // Continue fetching entities in batches of 100 until no more are found
+      while (true) {
+        url.searchParams.set('limit', limit.toString());
+        url.searchParams.set('offset', offset.toString());
+        if (type) url.searchParams.set('type', type);
+
+        const entitiesResponse = await lastValueFrom(
+          this.httpService.get(url.toString(), { headers }),
+        );
+
+        const entities = type
+          ? entitiesResponse.data.filter((entity) => entity.type === type)
+          : entitiesResponse.data;
+
+        // Extract entity IDs from the current batch and add them to the result array
+        const entityIds = entities.map((entity) => entity.id);
+        allEntityIds = allEntityIds.concat(entityIds);
+
+        // If fewer than 100 entities were returned, we've reached the last page
+        if (entityIds.length < limit) break;
+
+        // Increment the offset to fetch the next batch
+        offset += limit;
+      }
 
       return allEntityIds;
     } catch (error) {
@@ -227,13 +359,13 @@ export class FiwareWizardService {
     }
   }
 
-  async getEntityAttributes(
+  async getEntityAttributesNgsiV2(
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
     entityType: string[],
   ): Promise<string[]> {
-    const { entitiesUrl, headers } = await this.prepareRequest(
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
@@ -261,6 +393,56 @@ export class FiwareWizardService {
       Object.keys(filteredEntities.attrs).forEach((key) => {
         if (key !== 'id' && key !== 'type') {
           attributesSet.add(key);
+        }
+      });
+
+      // Return set of attribute strings as an array
+      return Array.from(attributesSet);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Failed to fetch Fiware Entity Attributes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getEntityAttributesNgsiLd(
+    fiwareService: string,
+    dataSourceId: string,
+    rolesFromRequest: string[],
+    entityType: string[],
+  ): Promise<string[]> {
+    const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
+      dataSourceId,
+      rolesFromRequest,
+    );
+    const url = new URL(entitiesUrl);
+
+    try {
+      // Adjusting URl to call the NGSI endpoint for 'v1/types'.
+      // Check if the URL contains the word 'entities'.
+      // If so, process the URL, replacing 'entities' with 'types'.
+      const typesUrl = url.toString().includes('entities')
+        ? entitiesUrl.replace('entities', 'types')
+        : entitiesUrl;
+
+      const entitiesResponse = await axios.get(
+        `${typesUrl}/${entityType}?limit=1000`,
+        {
+          headers: headers,
+        },
+      );
+
+      const attributesSet: Set<string> = new Set();
+      const filteredEntities = entitiesResponse.data.attributeDetails;
+      // Add all keys which are not an id or a type to the set
+      filteredEntities.forEach((attribute) => {
+        if (
+          attribute.attributeName !== 'id' &&
+          attribute.attributeName !== 'type'
+        ) {
+          attributesSet.add(attribute.attributeName);
         }
       });
 

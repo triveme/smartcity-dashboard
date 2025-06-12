@@ -43,6 +43,8 @@ keycloak:
 ## dashboard-service config
 dashboard-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
     - configMapRef:
         name: "dashboard-service-configmap"
@@ -55,6 +57,8 @@ dashboard-service:
 ## ngsi-service config
 ngsi-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
     - configMapRef:
         name: "ngsi-service-configmap"
@@ -65,6 +69,8 @@ ngsi-service:
 ## orchideo-connect-service config
 orchideo-connect-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "orchideo-connect-service-configmap"
@@ -75,12 +81,16 @@ orchideo-connect-service:
 ## mail-service config
 mail-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "mail-service-configmap"
 ## infopin-service config
 infopin-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "infopin-service-configmap"
@@ -93,6 +103,8 @@ infopin-service:
 ## report-service config
 report-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "report-service-configmap"
@@ -105,6 +117,8 @@ report-service:
 ## static-data-service config
 static-data-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "static-data-service-configmap"
@@ -117,6 +131,8 @@ static-data-service:
 ## usi-platform-service config
 usi-platform-service:
   enabled: true
+  service:
+    enabled: true
   envFrom:
   - configMapRef:
       name: "usi-platform-service-configmap"
@@ -128,9 +144,23 @@ usi-platform-service:
       name: "postgresql-connection-secrets"
   - secretRef:
       name: "usi-platform-service-secrets"
+## data-translation-service config
+data-translation-service:
+  enabled: true
+  service:
+    enabled: false
+  envFrom:
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - configMapRef:
+        name: "trusted-ca-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
 ## frontend config
 frontend:
   enabled: true
+  service:
+    enabled: true
   envFrom:
     - configMapRef:
         name: "frontend-configmap"

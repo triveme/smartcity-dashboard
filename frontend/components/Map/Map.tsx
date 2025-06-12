@@ -16,7 +16,6 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import L, { LatLngExpression } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 
 import '@/components/Map/map.css';
@@ -230,7 +229,6 @@ export default function Map(props: MapProps): JSX.Element {
   };
 
   const markerPositions: Marker[] = (data || []).map((mapObject, index) => {
-    // Extract the dynamic value for the marker
     const markerValue = mapObject[mapAttributeForValueBased]?.value;
 
     return {

@@ -45,6 +45,7 @@ export const EMPTY_WIDGET: Widget = {
   allowShare: false,
   headlineColor: '',
   visibility: visibilityEnum.public,
+  widgetData: {},
   readRoles: [],
   writeRoles: [],
 };

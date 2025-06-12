@@ -63,6 +63,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'chartYAxisScaleChartMaxValue',
       'colorStages',
       'isStepline',
+      'isStackedChart',
       'labelColor',
       'mapAllowZoom',
       'sliderCurrentAttribute',

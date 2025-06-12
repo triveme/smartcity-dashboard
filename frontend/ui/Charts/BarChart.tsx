@@ -45,6 +45,7 @@ type BarChartProps = {
   filterTextColor?: string;
   isStackedChart: boolean;
   decimalPlaces?: number;
+  showTooltip?: boolean;
 };
 
 export default function BarChart(props: BarChartProps): ReactElement {
@@ -67,7 +68,6 @@ export default function BarChart(props: BarChartProps): ReactElement {
     showGrid,
     gridColor,
     axisFontSize,
-    axisFontColor,
     axisLabelSize,
     legendFontSize,
     legendFontColor,
@@ -77,6 +77,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
     filterTextColor,
     isStackedChart,
     decimalPlaces,
+    showTooltip = true,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -145,7 +146,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
           nameLocation: 'middle',
           nameGap: 35,
           nameTextStyle: {
-            color: axisFontColor,
+            color: fontColor,
             fontSize: axisLabelSize,
           },
           axisLine: {
@@ -267,7 +268,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
             ]
           : [],
         tooltip: {
-          show: true,
+          show: showTooltip,
           trigger: 'item',
           valueFormatter: (value) =>
             applyUserLocaleToNumber(
