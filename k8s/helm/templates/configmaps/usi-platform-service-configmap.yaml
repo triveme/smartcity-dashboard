@@ -7,6 +7,7 @@ metadata:
 data:
   NODE_ENV: "development"
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "usi-platform-service" "frontendUrl" }}
+  USI_API_URL: "https://nfk-s.urbanpulse.de/UrbanPulseManagement"
   USI_AUTH_URL: "https://nfk-s-auth.urbanpulse.de/auth/realms/ui/protocol/openid-connect/token"
   USI_CLIENT_ID: "edag"
 

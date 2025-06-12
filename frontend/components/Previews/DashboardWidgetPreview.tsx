@@ -157,12 +157,13 @@ export default function DashboardWidgetPreview(
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
+              isStackedChart={tab.isStackedChart || false}
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
               axisLabelFontColor={data?.lineChartAxisLabelFontColor || '#fff'}
               axisLineColor={data?.lineChartAxisLineColor || '#fff'}
-              axisTicksFontColor={data?.lineChartAxisTicksFontSize || '#fff'}
+              axisTicksFontColor={data?.lineChartAxisLabelFontColor || '#fff'}
               legendFontSize={data?.lineChartLegendFontSize || '11'}
               legendFontColor={data?.lineChartLegendFontColor || '#FFFFF'}
               axisFontSize={data?.lineChartAxisTicksFontSize || '11'}
@@ -223,7 +224,7 @@ export default function DashboardWidgetPreview(
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
               fontColor={data?.dashboardFontColor || '#fff'}
-              axisColor={data?.headerPrimaryColor || '#fff'}
+              axisColor={data?.barChartAxisLineColor || '#fff'}
               axisFontSize={data?.barChartAxisTicksFontSize || '11'}
               currentValuesColors={
                 data?.barChartCurrentValuesColors || [
@@ -245,7 +246,7 @@ export default function DashboardWidgetPreview(
               legendAlignment={tab.chartLegendAlign || 'Top'}
               legendFontColor={data?.barChartLegendFontColor || '#FFFFF'}
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
-              isStackedChart={tab.isStepline || false}
+              isStackedChart={tab.isStackedChart || false}
               filterColor={data?.barChartFilterColor || '#F1B434'}
               filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
               axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}

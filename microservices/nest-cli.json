@@ -97,6 +97,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/auth-helper/tsconfig.lib.json"
       }
+    },
+    "data-translation-service": {
+      "type": "application",
+      "root": "apps/data-translation-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/data-translation-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/data-translation-service/tsconfig.app.json"
+      }
     }
   },
   "monorepo": true,

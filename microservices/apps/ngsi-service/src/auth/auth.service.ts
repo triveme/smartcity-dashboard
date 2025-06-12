@@ -82,9 +82,12 @@ export class AuthService {
     let authCredentials = {};
     if (queryBatch.auth_data.type === 'ngsi-ld') {
       authCredentials = {
+        grant_type: 'password',
         client_id: queryBatch.auth_data.clientId,
         client_secret: queryBatch.auth_data.clientSecret,
-        grant_type: 'client_credentials',
+        username: queryBatch.auth_data.appUser,
+        password: queryBatch.auth_data.appUserPassword,
+        scope: 'api:read api:write api:delete',
       };
     } else {
       authCredentials = {
@@ -229,9 +232,9 @@ export class AuthService {
    */
   doesTokenNeedToUpdate(tokenData: TokenData): boolean {
     const currentTime = new Date();
-    this.logger.log('Current Time: ', currentTime);
+    // this.logger.log('Current Time: ', currentTime);
     // Both expiresIn and currentTime are in timestamp formatting: e.g. 2023-10-24T12:44:40.497Z
-    this.logger.log('Authentication token expires in: ', tokenData.expiresIn);
+    // this.logger.log('Authentication token expires in: ', tokenData.expiresIn);
 
     return tokenData.expiresIn <= currentTime;
   }

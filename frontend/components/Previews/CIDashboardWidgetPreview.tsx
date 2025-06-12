@@ -297,6 +297,7 @@ export default function CIDashboardWidgetPreview(
               allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
+              isStackedChart={false}
               showLegend={true}
               staticValues={[]}
               axisLabelFontColor={lineChartAxisLabelFontColor}

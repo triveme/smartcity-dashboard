@@ -7,7 +7,6 @@ import {
   boolean,
   smallint,
   json,
-  jsonb,
 } from 'drizzle-orm/pg-core';
 import { queries } from './query.schema';
 import { widgets } from './dashboard.widget.schema';
@@ -46,7 +45,7 @@ export const tabs = pgTable('tab', {
   chartYAxisScale: real('chart_y_axis_scale'),
   chartYAxisScaleChartMinValue: real('chart_y_axis_scale_chart_min_value'),
   chartYAxisScaleChartMaxValue: real('chart_y_axis_scale_chart_max_value'),
-  childWidgets: jsonb('child_widgets'),
+  childWidgets: text('child_widgets').array(),
   componentSubType: tabComponentSubTypeEnum('component_sub_type'),
   componentType: tabComponentTypeEnum('component_type'),
   dataModelId: uuid('data_model_id').references(() => dataModels.id),
@@ -63,6 +62,7 @@ export const tabs = pgTable('tab', {
   imageAllowJumpoff: boolean('image_allow_jumpoff'),
   imageJumpoffUrl: text('image_jumpoff_url'),
   isStepline: boolean('is_stepline'),
+  isStackedChart: boolean('is_stacked_chart'),
   isLayoutVertical: boolean('is_layout_vertical'),
   mapActiveMarkerColor: text('map_active_marker_color'),
   mapAllowFilter: boolean('map_allow_filter'),

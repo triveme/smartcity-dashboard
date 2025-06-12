@@ -98,14 +98,12 @@ export class DashboardService {
 
     return await this.populateService.populateDashboardsWithContent(
       flatDashboardData,
-      rolesFromRequest,
     );
   }
 
   async getDashboardWithContentById(
     id: string,
     rolesFromRequest: string[],
-    includeData: boolean = true,
   ): Promise<DashboardWithContent> {
     const flatDashboardData =
       await this.dashboardRepo.getDashboardWithContentById(
@@ -117,7 +115,6 @@ export class DashboardService {
       const dashboardWithContentArr =
         await this.populateService.reduceRowsToDashboardsWithContent(
           flatDashboardData,
-          includeData,
         );
       const dashboardWithContent =
         dashboardWithContentArr.length > 0 ? dashboardWithContentArr[0] : null;
@@ -132,7 +129,6 @@ export class DashboardService {
     id: string,
     rolesFromRequest: string[],
     tenantFromRequest: string,
-    includeData: boolean = true,
   ): Promise<DashboardWithContent> {
     const tenantFromDashboard =
       await this.tenantService.getTenantByAbbreviation(tenantFromRequest);
@@ -147,7 +143,6 @@ export class DashboardService {
       const dashboardWithContentArr =
         await this.populateService.reduceRowsToDashboardsWithContent(
           flatDashboardData,
-          includeData,
         );
       const dashboardWithContent =
         dashboardWithContentArr.length > 0 ? dashboardWithContentArr[0] : null;
@@ -217,7 +212,6 @@ export class DashboardService {
     const tenant =
       await this.tenantService.getTenantByAbbreviation(tenantAbbreviation);
 
-    // Retrieve tenant by abbreviation
     if (!tenant) {
       throw new HttpException('Tenant Not Found', HttpStatus.NOT_FOUND);
     }
@@ -236,7 +230,6 @@ export class DashboardService {
     const dashboardWithContent =
       await this.populateService.reduceRowsToDashboardsWithContent(
         dashboardsByUrl,
-        true,
       );
 
     return dashboardWithContent[0];
@@ -286,7 +279,6 @@ export class DashboardService {
     }
     return await this.populateService.populateDashboardsWithContent(
       flatDashboardData,
-      rolesFromRequest,
     );
   }
 
@@ -590,7 +582,6 @@ export class DashboardService {
       id,
       rolesFromRequest,
       tenantFromRequest,
-      false,
     );
 
     if (!rawDashboard || !dashboardToDelete) {

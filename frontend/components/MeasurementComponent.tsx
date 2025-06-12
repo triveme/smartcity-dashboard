@@ -226,6 +226,7 @@ export default function MeasurementComponent(
               allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
+              isStackedChart={false}
               axisLabelFontColor={axisLabelFontColor}
               axisLineColor={axisLineColor}
               axisTicksFontColor={axisTicksFontColor}
@@ -260,6 +261,7 @@ export default function MeasurementComponent(
               allowImageDownload={false}
               allowZoom={false}
               isStepline={false}
+              isStackedChart={false}
               axisLabelFontColor={axisLabelFontColor}
               axisLineColor={axisLineColor}
               axisTicksFontColor={axisTicksFontColor}

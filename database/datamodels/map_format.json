@@ -1,0 +1,36 @@
+[
+  {
+    "id": "urn:ngsi-ld:VehicleCounter:VS-6",
+    "location": {
+      "value": {
+        "coordinates": [7.582028, 51.205861]
+      }
+    },
+    "name": {
+      "value": "Volmestraße B54  Höhe Am Wasserturm"
+    },
+    "total_vehicles": {
+      "value": 12
+    },
+    "auto": {
+      "value": 12
+    }
+  },
+  {
+    "id": "urn:ngsi-ld:VehicleCounter:VS-11",
+    "location": {
+      "value": {
+        "coordinates": [7.608917, 51.237694]
+      }
+    },
+    "name": {
+      "value": "Heedfelder Straße Höhe Brockhauser Weg"
+    },
+    "total_vehicles": {
+      "value": 41
+    },
+    "auto": {
+      "value": 39
+    }
+  }
+]

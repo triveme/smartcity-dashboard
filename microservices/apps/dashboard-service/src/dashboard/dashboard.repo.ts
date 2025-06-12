@@ -19,6 +19,8 @@ import {
 } from '@app/postgres-db/schemas/dashboard.schema';
 import {
   Widget,
+  WidgetData,
+  widgetData,
   widgets,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
 import { Tab, tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
@@ -40,6 +42,7 @@ export type FlatDashboardData = {
   panel: Panel;
   widget_to_panel: WidgetToPanel;
   widget: Widget;
+  widget_data?: WidgetData | null;
   tab: Tab;
   data_model: DataModel;
   query: Query;
@@ -58,6 +61,7 @@ export class DashboardRepo {
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
       .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
       .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
@@ -71,7 +75,11 @@ export class DashboardRepo {
             ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
             : undefined,
         ),
-      );
+      )
+      .orderBy((data) => [
+        asc(data.panel.position),
+        asc(data.widget_to_panel.position),
+      ]);
   }
 
   async getDashboardWithContentById(
@@ -84,6 +92,7 @@ export class DashboardRepo {
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
       .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
       .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
@@ -125,6 +134,7 @@ export class DashboardRepo {
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
       .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
       .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
@@ -302,6 +312,7 @@ export class DashboardRepo {
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
       .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
       .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
@@ -386,6 +397,7 @@ export class DashboardRepo {
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
       .leftJoin(widgetsToPanels, eq(panels.id, widgetsToPanels.panelId))
       .leftJoin(widgets, eq(widgetsToPanels.widgetId, widgets.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))
@@ -402,7 +414,11 @@ export class DashboardRepo {
           ),
           inArray(dashboards.id, tenantSubSelect),
         ),
-      );
+      )
+      .orderBy((data) => [
+        asc(data.panel.position),
+        asc(data.widget_to_panel.position),
+      ]);
   }
 
   async create(row: NewDashboard): Promise<Dashboard> {
