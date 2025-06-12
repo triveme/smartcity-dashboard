@@ -3,7 +3,9 @@ import { NgsiModule } from './ngsi.module';
 import { ScheduleService } from './scheduler.service';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(NgsiModule);
+  const app = await NestFactory.create(NgsiModule, {
+    logger: ['error', 'warn', 'log'],
+  });
 
   app.enableCors({
     origin: process.env.NEXT_PUBLIC_FRONTEND_URL,

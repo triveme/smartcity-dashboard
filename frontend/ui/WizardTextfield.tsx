@@ -78,7 +78,6 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
         valueAsString === ',' ||
         valueAsString.endsWith(decimalSeparator)
       ) {
-        console.log('catching special case');
         setTextFieldContent(valueAsString);
         return;
       }

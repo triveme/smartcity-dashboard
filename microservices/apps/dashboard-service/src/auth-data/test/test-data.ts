@@ -19,6 +19,8 @@ export function getAuthDataValue(
     apiToken: 'test-token',
     authUrl: 'https://localhost/test-auth',
     liveUrl: 'https://localhost/live',
+    ngsildTenant: 'test-tenant',
+    ngsildContextUrl: 'https://localhost/context',
     timeSeriesUrl: 'https://localhost/timeSeries',
     fiwareServices: ['etteln_dataspace', 'edag'],
     apiUrl: 'https://localhost/api',

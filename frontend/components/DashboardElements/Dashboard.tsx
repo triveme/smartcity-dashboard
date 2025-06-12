@@ -76,44 +76,75 @@ export default async function Dashboard(
     color: ciColors.menuFontColor || '#FFF',
   };
 
-  const tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
+  let tab;
   let combinedMapData;
   let combinedQueryData;
+  if (dashboard.type === 'Karte') {
+    tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
 
-  if (tab?.componentType === tabComponentTypeEnum.map) {
-    const combinedWidgets: WidgetWithContent[] = isTabOfTypeCombinedWidget(
-      dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0],
-    )
-      ? (
-          dashboard?.panels?.[0]?.widgets?.[0]
-            ?.tabs?.[0] as TabWithCombinedWidgets
-        ).combinedWidgets
-      : [];
+    if (tab?.componentType === tabComponentTypeEnum.map) {
+      // The issue is here - we need to properly detect combined widgets
+      // and extract their mapObject data correctly
 
-    // combine all attributes other than queryData
-    combinedMapData = combineWidgetAttributes(combinedWidgets);
+      // Check if this is a combined map
+      const isCombinedMap =
+        tab?.componentSubType === tabComponentSubTypeEnum.combinedMap;
 
-    const isSingleMap =
-      tab.componentType === tabComponentTypeEnum.map &&
-      tab.componentSubType !== tabComponentSubTypeEnum.combinedMap;
-    const singleMapQueryData = (
-      dashboard.panels?.[0]?.widgets?.[0].tabs?.[0] as TabWithQuery
-    )?.query?.queryData;
-    const mapFilterAttribute =
-      dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapFilterAttribute || '';
+      // Get combined widgets differently based on whether this is a regular tab or a combined map
+      const combinedWidgets: WidgetWithContent[] = isCombinedMap
+        ? dashboard?.panels?.[0]?.widgets?.[0]?.widgetData?.data
+            ?.combinedWidgets || []
+        : isTabOfTypeCombinedWidget(tab)
+          ? (tab as TabWithCombinedWidgets)?.combinedWidgets || []
+          : [];
 
-    // merge queryData from all combinedWidgets
-    const allWidgetQueryData = combinedWidgets.map(
-      (widget) => (widget?.tabs?.[0] as TabWithQuery)?.query?.queryData ?? [],
-    );
+      console.log('combinedWidgets', combinedWidgets);
+      console.log('widget', dashboard?.panels?.[0]?.widgets?.[0]);
 
-    // merge queryData and format to use in filter modal list
-    combinedQueryData = combineQueryData(
-      isSingleMap ? [singleMapQueryData] : allWidgetQueryData,
-      isSingleMap
-        ? [mapFilterAttribute]
-        : (combinedMapData.mapFilterAttribute as string[]),
-    );
+      // Get map data from combinedWidgets if available, or use tab's mapObject directly
+      const mapObjects =
+        combinedWidgets.length > 0
+          ? combinedWidgets.flatMap(
+              (widget) =>
+                // Look for mapObject in both places it might be stored
+                widget?.tabs?.[0]?.mapObject ||
+                widget?.widgetData?.data?.mapObject ||
+                [],
+            )
+          : tab?.mapObject || [];
+
+      // Combine all attributes other than queryData
+      combinedMapData = combineWidgetAttributes(combinedWidgets);
+
+      // Make sure mapObject is populated from the child widgets
+      if (!combinedMapData.mapObject && mapObjects.length > 0) {
+        combinedMapData = { ...combinedMapData, mapObject: mapObjects };
+      }
+
+      const isSingleMap =
+        tab?.componentType === tabComponentTypeEnum.map &&
+        tab?.componentSubType !== tabComponentSubTypeEnum.combinedMap;
+      const singleMapQueryData = (
+        dashboard.panels?.[0]?.widgets?.[0].tabs?.[0] as TabWithQuery
+      )?.query?.queryData;
+      const mapFilterAttribute =
+        dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapFilterAttribute || '';
+
+      // merge queryData from all combinedWidgets, ensuring we look in both possible locations
+      const allWidgetQueryData = combinedWidgets.map((widget) => {
+        const queryData = (widget?.tabs?.[0] as TabWithQuery)?.query?.queryData;
+        // If no queryData directly in tab, check in widgetData
+        return queryData || widget?.widgetData?.data?.queryData || [];
+      });
+
+      // merge queryData and format to use in filter modal list
+      combinedQueryData = combineQueryData(
+        isSingleMap ? [singleMapQueryData] : allWidgetQueryData,
+        isSingleMap
+          ? [mapFilterAttribute]
+          : (combinedMapData.mapFilterAttribute as string[]),
+      );
+    }
   }
 
   return (
@@ -227,7 +258,8 @@ export default async function Dashboard(
                   .mapActiveMarkerColor || '#FF0000'
               }
               data={
-                dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapObject || []
+                dashboard.panels?.[0]?.widgets?.[0].widgetData?.data
+                  ?.mapObject || []
               }
               mapDisplayMode={
                 dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapDisplayMode
@@ -275,14 +307,14 @@ export default async function Dashboard(
               isFullscreenMap={true}
               chartStyle={chartStyle}
               menuStyle={menuStyle}
-              mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
-              mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
-              mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
-              staticValues={tab.chartStaticValues || []}
-              staticValuesColors={tab.chartStaticValuesColors || []}
-              mapFormSizeFactor={tab.mapFormSizeFactor || 1}
-              mapWmsUrl={tab.mapWmsUrl || ''}
-              mapWmsLayer={tab.mapWmsLayer || ''}
+              mapAttributeForValueBased={tab?.mapAttributeForValueBased || ''}
+              mapIsFormColorValueBased={tab?.mapIsFormColorValueBased || false}
+              mapIsIconColorValueBased={tab?.mapIsIconColorValueBased || false}
+              staticValues={tab?.chartStaticValues || []}
+              staticValuesColors={tab?.chartStaticValuesColors || []}
+              mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
+              mapWmsUrl={tab?.mapWmsUrl || ''}
+              mapWmsLayer={tab?.mapWmsLayer || ''}
               ciColors={ciColors}
               allowShare={dashboard.allowShare}
               dashboardId={dashboard.id || ''}

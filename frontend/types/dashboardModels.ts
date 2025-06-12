@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   authDataTypeEnum,
   visibilityEnum,
@@ -88,6 +89,7 @@ export type Widget = {
   visibility: visibilityEnum;
   width: number;
   writeRoles: string[];
+  widgetData: any;
 };
 
 export type WidgetWithContent = {
@@ -106,6 +108,7 @@ export type WidgetWithContent = {
   writeRoles: string[];
   allowDataExport: boolean;
   tabs: Tab[];
+  widgetData: any;
 };
 
 export type WidgetWithComponentTypes = {
@@ -126,6 +129,8 @@ type Position = {
 
 export type MapObject = {
   position: Position;
+  queryId: string;
+  queryConfigId: string;
 };
 
 export type MapModalWidget = {
@@ -155,6 +160,16 @@ export type MapModalWidget = {
   jumpoffUrl?: string;
   jumpoffAttribute?: string;
   openJumpoffLinkInNewTab?: boolean;
+  chartXAxisLabel?: string;
+  chartYAxisLabel?: string;
+  chartDateRepresentation?: string;
+  chartHasAutomaticZoom?: boolean;
+  chartHasAdditionalSelection?: boolean;
+  isStepline?: boolean;
+  setYAxisInterval?: boolean;
+  chartYAxisScale?: number;
+  chartYAxisScaleChartMinValue?: number;
+  chartYAxisScaleChartMaxValue?: number;
 };
 
 export type MapModalLegend = {
@@ -202,6 +217,7 @@ export type Tab = {
   imageUrl?: string;
   imageAllowJumpoff?: boolean;
   imageJumpoffUrl?: string;
+  isStackedChart?: boolean;
   isStepline?: boolean;
   isLayoutVertical?: boolean;
   labelColor?: string;
@@ -510,6 +526,8 @@ export type AuthData = {
   fiwareServices?: string[];
   liveUrl: string;
   name: string;
+  ngsildTenant?: string;
+  ngsildContextUrl?: string;
   tenantAbbreviation: string;
   timeSeriesUrl: string;
   type: authDataTypeEnum;

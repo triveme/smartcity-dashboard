@@ -23,5 +23,10 @@ report-service:
 usi-platform-service:
   enabled: false
 
+data-translation-service:
+  enabled: true
+  service:
+    enabled: false  # Disable service creation since no endpoints are needed
+
 frontend:
   enabled: false

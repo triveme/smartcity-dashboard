@@ -170,14 +170,45 @@ export default async function DashboardWidget({
       >
         {widget.tabs &&
           widget.tabs.length > 0 &&
-          widget.tabs.map((tab: Tab, index: number) => (
-            <DashboardTab
-              key={`tab-in-widget-${tab.id}-${index}`}
-              tab={tab}
-              tenant={tenant}
-              isCombinedWidget={isCombinedWidget}
-            />
-          ))}
+          widget.tabs.map((tab: Tab, index: number) => {
+            // Determine what data to pass to the tab based on available properties
+            let tabData;
+
+            // First check if we have widgetData
+            if (widget?.widgetData?.data) {
+              tabData = widget.widgetData.data;
+            }
+            // If no widgetData exists, build an object with available tab data
+            else {
+              tabData = {
+                chartValues: tab.chartValues || null,
+                chartData: tab.chartData || null,
+                weatherWarnings: tab.weatherWarnings || null,
+                mapObject: tab.mapObject || null,
+                textValue: tab.textValue || null,
+              };
+
+              // Only set to null if no meaningful data exists
+              const hasData = Object.values(tabData).some(
+                (val) =>
+                  val !== null && (Array.isArray(val) ? val.length > 0 : true),
+              );
+
+              if (!hasData) {
+                tabData = null;
+              }
+            }
+
+            return (
+              <DashboardTab
+                key={`tab-in-widget-${tab.id}-${index}`}
+                tab={tab}
+                tabData={tabData}
+                tenant={tenant}
+                isCombinedWidget={isCombinedWidget}
+              />
+            );
+          })}
       </div>
     </div>
   );
