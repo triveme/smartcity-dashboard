@@ -329,7 +329,6 @@ export function getGermanLabelForAttribute(attribute: string): string {
     case 'RELATIV_FREI':
       return 'Frei (%)';
     default:
-      console.warn(`No German label found for attribute: ${attribute}`);
       return attribute;
   }
 }

@@ -1,19 +1,22 @@
 import axios from 'axios';
 import { env } from 'next-runtime-env';
 
+import { ChartData } from '@/types';
+
 const NEXT_PUBLIC_NGSI_SERVICE_URL = env('NEXT_PUBLIC_NGSI_SERVICE_URL');
 
 export async function getFiwareTypes(
   accessToken: string | undefined,
   fiwareService: string,
   datasourceId: string,
+  ngsiVersion: 'v2' | 'ld',
 ): Promise<string[]> {
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/types/${fiwareService}/${datasourceId}`,
+      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/types/${ngsiVersion}/${fiwareService}/${datasourceId}`,
       {
         headers,
       },
@@ -30,13 +33,14 @@ export async function getEntityIds(
   accessToken: string | undefined,
   fiwareService: string,
   datasourceId: string,
+  ngsiVersion: 'v2' | 'ld',
 ): Promise<string[]> {
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/entityIds/${fiwareService}/${datasourceId}`,
+      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/entityIds/${ngsiVersion}/${fiwareService}/${datasourceId}`,
       {
         headers,
         params: {
@@ -56,13 +60,14 @@ export async function getAttributes(
   accessToken: string | undefined,
   fiwareService: string,
   datasourceId: string,
+  ngsiVersion: 'v2' | 'ld',
 ): Promise<string[]> {
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/entityAttributes/${fiwareService}/${datasourceId}`,
+      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/fiwareWizard/entityAttributes/${ngsiVersion}/${fiwareService}/${datasourceId}`,
       {
         headers,
         params: {
@@ -74,5 +79,31 @@ export async function getAttributes(
   } catch (err) {
     console.error(err);
     throw err;
+  }
+}
+
+export async function fetchOnDemandChartData(
+  queryId: string,
+  entityId: string,
+  attribute: string,
+): Promise<ChartData> {
+  try {
+    const response = await fetch(
+      `${NEXT_PUBLIC_NGSI_SERVICE_URL}/ngsi/on-demand-data/${queryId}?entityId=${entityId}&attribute=${attribute}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error fetching chart data: ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch on-demand chart data:', error);
+    throw error;
   }
 }

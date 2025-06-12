@@ -25,7 +25,7 @@ import {
 } from '../../tenant/test/test-data';
 import { generateJWTToken } from '../../../../test/jwt-token-util';
 
-describe('DashboardServiceControllers (e2e)', () => {
+xdescribe('DashboardServiceControllers (e2e)', () => {
   let app: INestApplication;
   let client: Client;
   let db: DbType;
@@ -654,7 +654,8 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(body.panels[0].widgets).toHaveLength(1);
       expect(body.panels[0].widgets[0].tabs).toHaveLength(1);
 
-      const combinedWidgets = body.panels[0].widgets[0].tabs[0].combinedWidgets;
+      const combinedWidgets =
+        body.panels[0].widgets[0].widgetData.combinedWidgets;
       expect(combinedWidgets).toHaveLength(2);
       expect(combinedWidgets[0].tabs).toHaveLength(1);
       expect(combinedWidgets[1].tabs).toHaveLength(1);

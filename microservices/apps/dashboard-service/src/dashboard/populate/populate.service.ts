@@ -1,78 +1,35 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  ChartData,
-  DashboardWithContent,
-  MapObject,
-  WeatherWarningData,
-  WidgetWithContent,
-} from '../dashboard.service';
+import { DashboardWithContent } from '../dashboard.service';
 import { Dashboard, Panel, Tab, Widget } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { WidgetToPanelService } from '../../widget-to-panel/widget-to-panel.service';
 import { FlatDashboardData } from '../dashboard.repo';
-import { PopulateValueService } from './populate-value.service';
-import { PopulateChartService } from './populate-chart.service';
-import { PopulateCombinedWidgetService } from './populate-combined-widget.service';
-import {
-  isCombinedWidgetTab,
-  isSingleValueTab,
-  reduceDashboard,
-} from './populate.util';
+import { reduceDashboard } from './populate.util';
 
 @Injectable()
 export class PopulateService {
   private readonly logger = new Logger(PopulateService.name);
 
-  constructor(
-    private readonly widgetToPanelService: WidgetToPanelService,
-    private readonly populateValueService: PopulateValueService,
-    private readonly populateChartService: PopulateChartService,
-    private readonly populateCombinedWidgetService: PopulateCombinedWidgetService,
-  ) {}
+  constructor(private readonly widgetToPanelService: WidgetToPanelService) {}
 
   async populateDashboardsWithContent(
     flatDashboardData: FlatDashboardData[],
-    rolesFromRequest: string[],
   ): Promise<DashboardWithContent[]> {
     if (flatDashboardData.length === 0) {
       this.logger.warn('No Dashboards Found in Database');
       return [];
     }
-    const dashboardsWithContent = await this.reduceRowsToDashboardsWithContent(
-      flatDashboardData,
-      true,
-    );
-
-    // Order the widgets within each panel for each dashboard
-    for (const dashboard of dashboardsWithContent) {
-      await this.sortWidgets(dashboard);
-    }
-
-    // If user is unauthenticated, exclude role properties from returned dashboards
-    if (rolesFromRequest.length === 0) {
-      dashboardsWithContent.forEach((dashboard) => {
-        // Hide dashboard roles
-        delete dashboard.readRoles;
-        delete dashboard.writeRoles;
-        // Hide widget roles
-        dashboard.panels.forEach((panel) => {
-          panel.widgets.forEach((widget) => {
-            delete widget.readRoles;
-            delete widget.writeRoles;
-          });
-        });
-      });
-    }
+    const dashboardsWithContent =
+      await this.reduceRowsToDashboardsWithContent(flatDashboardData);
 
     return dashboardsWithContent;
   }
 
   async reduceRowsToDashboardsWithContent(
     rows: FlatDashboardData[],
-    includeData: boolean,
   ): Promise<DashboardWithContent[]> {
     // Define Maps to store each dashboard component by their ID
     const dashboardMap = new Map<string, Dashboard>();
@@ -99,7 +56,10 @@ export class PopulateService {
         );
       }
       if (row.widget) {
-        widgetMap.set(row.widget.id, row.widget);
+        widgetMap.set(row.widget.id, {
+          ...row.widget,
+          widgetData: row.widget_data,
+        });
       }
       if (row.tab) {
         tabMap.set(row.tab.id, row.tab);
@@ -113,7 +73,7 @@ export class PopulateService {
     });
 
     // Returning and array of the reduced dashboard object: DashboardWithContent
-    let dashboardsWithContent: DashboardWithContent[] = Array.from(
+    const dashboardsWithContent: DashboardWithContent[] = Array.from(
       dashboardMap.values(),
     ).map((dashboard) => {
       return reduceDashboard(
@@ -130,105 +90,6 @@ export class PopulateService {
       );
     });
 
-    if (includeData) {
-      dashboardsWithContent = await this.populateDashboardsWithData(
-        dashboardsWithContent,
-      );
-    }
-
     return dashboardsWithContent;
-  }
-
-  private async populateDashboardsWithData(
-    dashboardsWithContent: DashboardWithContent[],
-  ): Promise<DashboardWithContent[]> {
-    return await Promise.all(
-      dashboardsWithContent.map(async (dashboard) => {
-        const panels = dashboard.panels;
-
-        for (const panel of panels) {
-          const widgets = panel.widgets;
-
-          for (const widget of widgets) {
-            const tabs = widget.tabs;
-
-            for (const tab of tabs) {
-              await this.populateTabWithContents(tab);
-            }
-          }
-        }
-
-        return dashboard;
-      }),
-    );
-  }
-
-  private async populateTabWithContents(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-    } & { mapObject: MapObject[] } & {
-      weatherWarnings: WeatherWarningData[];
-    } & { combinedWidgets: WidgetWithContent[] },
-  ): Promise<void> {
-    if (
-      tab.componentType !== 'Informationen' &&
-      tab.componentType !== 'Bild' &&
-      tab.componentType !== 'iFrame'
-    ) {
-      if (isSingleValueTab(tab)) {
-        await this.populateValueService.populateTab(tab);
-      } else if (isCombinedWidgetTab(tab)) {
-        await this.populateCombinedWidgetService.populateTab(tab);
-      } else {
-        await this.populateChartService.populateTab(tab);
-      }
-    }
-  }
-
-  async sortWidgets(dashboard: DashboardWithContent): Promise<void> {
-    // Order the widgets within each panel
-    for (const panel of dashboard.panels) {
-      const widgetsToPanels = [];
-
-      for (const widget of panel.widgets) {
-        const widgetToPanel = await this.widgetToPanelService.getById(
-          widget.id,
-          panel.id,
-        );
-        widgetsToPanels.push({
-          widgetId: widget.id,
-          position: widgetToPanel?.position,
-        });
-      }
-
-      // Sort widgets based on the position from widgetsToPanels and ensure positions are unique
-      const positionMap = new Map<number, string>();
-      const adjustedWidgets = widgetsToPanels.map((w) => {
-        let position = w.position ?? Number.MAX_SAFE_INTEGER; // Default position if none exists
-        while (positionMap.has(position)) {
-          position++; // Increment to avoid overlap of widget positions
-        }
-        positionMap.set(position, w.widgetId);
-        return { ...w, position };
-      });
-
-      // Sort adjusted widgets by position
-      adjustedWidgets.sort((a, b) => a.position - b.position);
-
-      // Reorder the panel's widgets based on the new sorted positions
-      panel.widgets.sort((a, b) => {
-        const positionA = adjustedWidgets.find(
-          (w) => w.widgetId === a.id,
-        )?.position;
-        const positionB = adjustedWidgets.find(
-          (w) => w.widgetId === b.id,
-        )?.position;
-
-        return (
-          (positionA ?? Number.MAX_SAFE_INTEGER) -
-          (positionB ?? Number.MAX_SAFE_INTEGER)
-        );
-      });
-    }
   }
 }

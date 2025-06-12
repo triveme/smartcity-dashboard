@@ -109,6 +109,7 @@ export async function getTab(
     chartStaticValuesTexts: ['dry', 'normal', 'humid'],
     childWidgets: [],
     isStepline: false,
+    isStackedChart: false,
     isLayoutVertical: false,
     mapAllowPopups: true,
     mapAllowScroll: true,

@@ -36,6 +36,14 @@ export class WidgetRepo {
     return this.db.select().from(widgets);
   }
 
+  async getWidgetDataById(widgetId: string): Promise<Widget[]> {
+    return this.db
+      .select()
+      .from(widgets)
+      .where(eq(widgets.id, widgetId))
+      .catch(() => null);
+  }
+
   async getById(id: string): Promise<Widget> {
     const widgetArr = await this.db
       .select()

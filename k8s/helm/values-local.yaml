@@ -34,6 +34,10 @@ usi-platform-service:
   ingress:
     enabled: false
 
+data-translation-service:
+  ingress:
+    enabled: false
+
 frontend:
   ingress:
     enabled: false

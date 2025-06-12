@@ -13,6 +13,7 @@ import ColorPickerComponent from './ColorPickerComponent';
 import WizardDropdownSelection from './WizardDropdownSelection';
 import {
   chartComponentSubTypes,
+  chartDateRepresentation,
   informationComponentSubTypes,
   widgetImageSources,
 } from '@/utils/enumMapper';
@@ -73,11 +74,13 @@ export default function StaticValuesFieldMapWidgets(
   const requestAttributes = async (): Promise<void> => {
     toggleLoading('attributes', true);
     try {
+      //TODO implement a callback instead of calling the API directly
       const req = await getAttributes(
         queryConfig?.fiwareType,
         accessToken,
         queryConfig?.fiwareService,
         queryConfig?.dataSourceId,
+        'v2',
       );
       if (req && req.length > 0) {
         setAvailableAttributes(req);
@@ -142,7 +145,9 @@ export default function StaticValuesFieldMapWidgets(
         (subType) =>
           subType.value === '' ||
           subType.value === tabComponentSubTypeEnum.degreeChart180 ||
-          subType.value === tabComponentSubTypeEnum.stageableChart,
+          subType.value === tabComponentSubTypeEnum.stageableChart ||
+          subType.value === tabComponentSubTypeEnum.lineChart ||
+          subType.value === tabComponentSubTypeEnum.barChart,
       );
     } else if (componentType === tabComponentTypeEnum.image) {
       return widgetImageSources;
@@ -1208,6 +1213,239 @@ export default function StaticValuesFieldMapWidgets(
                         setMapWidgetValues(updatedMapWidgetValues);
                       }}
                     />
+                  </div>
+                )}
+
+                {(value.componentSubType ===
+                  tabComponentSubTypeEnum.lineChart ||
+                  value.componentSubType ===
+                    tabComponentSubTypeEnum.barChart) && (
+                  <div>
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Name der X-Achse" />
+                      <WizardTextfield
+                        value={value.chartXAxisLabel || ''}
+                        onChange={(value: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    chartXAxisLabel: value.toString(),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Name der Y-Achse" />
+                      <WizardTextfield
+                        value={value.chartYAxisLabel || ''}
+                        onChange={(value: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    chartYAxisLabel: value.toString(),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <div className="flex flex-col w-full pb-2">
+                      <div>
+                        <WizardLabel label="Anzahl Dezimalstellen" />
+                        <WizardIntegerfield
+                          value={value.decimalPlaces || '0'}
+                          onChange={(value: string | number): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      decimalPlaces: Number(value),
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex w-full items-center">
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="Format Datumsanzeige xAchse" />
+                        <WizardDropdownSelection
+                          currentValue={
+                            chartDateRepresentation.find(
+                              (option) =>
+                                option.value === value.chartDateRepresentation,
+                            )?.label || ''
+                          }
+                          selectableValues={chartDateRepresentation.map(
+                            (option) => option.label,
+                          )}
+                          onSelect={(label: string | number): void => {
+                            const enumValue = chartDateRepresentation.find(
+                              (option) => option.label === label,
+                            )?.value;
+                            handleTabChange({
+                              chartDateRepresentation: enumValue,
+                            });
+                          }}
+                          iconColor={iconColor}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                          error={errors?.chartDateRepresentationError}
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full flex flex-col">
+                      {value.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart && (
+                        <>
+                          <div className="flex w-full items-center">
+                            <div className="min-w-[220px]">
+                              <WizardLabel label="Stufenlinie anzeigen?" />
+                            </div>
+                            <WizardSelectBox
+                              checked={value.isStepline || false}
+                              onChange={(value: boolean): void =>
+                                handleTabChange({ isStepline: value })
+                              }
+                              label=" Stufenlinie"
+                            />
+                          </div>
+                          <div className="flex w-full items-center">
+                            <div className="min-w-[220px]">
+                              <WizardLabel label="Automatischer Zoom der Achseneinteilung" />
+                            </div>
+                            <WizardSelectBox
+                              checked={value.chartHasAutomaticZoom || false}
+                              onChange={(value: boolean): void =>
+                                handleTabChange({
+                                  chartHasAutomaticZoom: value,
+                                })
+                              }
+                              label="Automatischer Zoom"
+                            />
+                          </div>
+                        </>
+                      )}
+                      {value.componentSubType ===
+                        tabComponentSubTypeEnum.barChart && (
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Gestapelte Balken?" />
+                          </div>
+                          <WizardSelectBox
+                            checked={value.isStepline || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ isStepline: value })
+                            }
+                            label=" Stapel"
+                          />
+                        </div>
+                      )}
+                      <div className="flex w-full items-center">
+                        <div className="min-w-[220px]">
+                          <WizardLabel label="Y-Achsen Interval setzen?" />
+                        </div>
+                        <WizardSelectBox
+                          checked={value.setYAxisInterval || false}
+                          onChange={(value: boolean): void => {
+                            if (value) {
+                              handleTabChange({
+                                setYAxisInterval: value,
+                                chartYAxisScale: 0,
+                                chartYAxisScaleChartMinValue: 0,
+                                chartYAxisScaleChartMaxValue: 100,
+                              });
+                            } else {
+                              handleTabChange({
+                                setYAxisInterval: false,
+                                chartYAxisScale: undefined,
+                                chartYAxisScaleChartMinValue: undefined,
+                                chartYAxisScaleChartMaxValue: undefined,
+                              });
+                            }
+                          }}
+                          label=" Interval"
+                        />
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        {value.setYAxisInterval && (
+                          <>
+                            <div className="flex-grow">
+                              <WizardLabel label="Skalierung y-Achse (Werte von 0.1 bis 1000 möglich, 0 für Automatische Skallierung)." />
+                              <WizardTextfield
+                                isNumeric={true}
+                                value={value.chartYAxisScale || 0}
+                                onChange={(value: string | number): void =>
+                                  handleTabChange({
+                                    chartYAxisScale: value as number,
+                                  })
+                                }
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                            </div>
+                            <div className="flex-grow">
+                              <WizardLabel label="Minimalwert Skala der yAchse" />
+                              <WizardTextfield
+                                isNumeric={true}
+                                value={value.chartYAxisScaleChartMinValue || 0}
+                                onChange={(value: string | number): void =>
+                                  handleTabChange({
+                                    chartYAxisScaleChartMinValue:
+                                      value as number,
+                                  })
+                                }
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                            </div>
+                            <div className="flex-grow">
+                              <WizardLabel label="Maximalwert Skala der yAchse" />
+                              <WizardTextfield
+                                isNumeric={true}
+                                value={
+                                  value.chartYAxisScaleChartMaxValue || 100
+                                }
+                                onChange={(value: string | number): void =>
+                                  handleTabChange({
+                                    chartYAxisScaleChartMaxValue:
+                                      value as number,
+                                  })
+                                }
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

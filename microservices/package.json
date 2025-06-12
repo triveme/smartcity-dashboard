@@ -1,6 +1,6 @@
 {
   "name": "microservices",
-  "version": "0.24.5",
+  "version": "1.0.0",
   "description": "",
   "author": "",
   "private": true,
@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/test/jest-e2e.json --runInBand --detectOpenHandles --forceExit",
-    "api:start": "nest start orchideo-connect-service"
+    "api:start": "nest start orchideo-connect-service",
+    "translate:restart": "docker build -t smartcity/data-translation-service -f Dockerfile.data-translation-service . && kubectl delete pod smart-city-data-translation-service -n smart-city-local && cd ../k8s/helm && helm upgrade smart-city --namespace smart-city-local -f values.yaml -f values-local.yaml -f values-infrastructure.yaml ."
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",
