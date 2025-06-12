@@ -23,6 +23,8 @@ export const authData = pgTable('auth_data', {
   grantType: text('grant_type'),
   liveUrl: text('live_url').notNull(),
   name: text('name').notNull(),
+  ngsildTenant: text('ngsild_tenant'),
+  ngsildContextUrl: text('ngsild_context_url'),
   timeSeriesUrl: text('time_series_url').notNull(),
   type: authDataTypeEnum('type').notNull().default('api'),
   visibility: visibilityEnum('visibility'),

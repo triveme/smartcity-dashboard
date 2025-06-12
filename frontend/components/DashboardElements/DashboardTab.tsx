@@ -38,9 +38,12 @@ import {
 } from '@/utils/combinedMapDataHelper';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
+import NoDataWarning from '@/ui/NoDataWarning';
 
 type DashboardTabProps = {
   tab: Tab;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tabData: any;
   tenant: string | undefined;
   isCombinedWidget?: boolean;
 };
@@ -57,7 +60,7 @@ const CombinedMapWithNoSSR = nextDynamic(
 export default async function DashboardTab(
   props: DashboardTabProps,
 ): Promise<ReactElement> {
-  const { tab, tenant } = props;
+  const { tab, tabData, tenant } = props;
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
@@ -84,12 +87,43 @@ export default async function DashboardTab(
     stageableChartTicksFontSize: ciColors.stageableChartTicksFontSize,
   };
 
+  // Stop if no data exists for tab
+  const isSpecialType = [
+    tabComponentTypeEnum.information,
+    tabComponentTypeEnum.iframe,
+    tabComponentTypeEnum.image,
+    tabComponentTypeEnum.combinedComponent,
+  ].includes(tab.componentType as tabComponentTypeEnum);
+
+  const hasCombinedWidgetData =
+    !isTabOfTypeCombinedWidget(tab) ||
+    (tabData?.combinedWidgets && tabData.combinedWidgets.length > 0);
+
+  if (tabData === null || (!isSpecialType && !hasCombinedWidgetData)) {
+    console.log('Showing NoDataWarning with conditions:', {
+      isSpecialType,
+      hasCombinedWidgetData,
+      tabType: tab.componentType,
+      tabDataNull: tabData === null,
+      combinedWidgetCheck: isTabOfTypeCombinedWidget(tab),
+      combinedWidgetsExist: tabData?.combinedWidgets !== undefined,
+      combinedWidgetsLength: tabData?.combinedWidgets?.length,
+    });
+
+    return (
+      <NoDataWarning
+        iconColor={ciColors.headerPrimaryColor}
+        fontColor={ciColors.widgetFontColor}
+      />
+    );
+  }
+
   let combinedMapData;
   let combinedQueryData;
 
   if (tab?.componentType === tabComponentTypeEnum.map) {
     const combinedWidgets: WidgetWithContent[] = isTabOfTypeCombinedWidget(tab)
-      ? tab.combinedWidgets
+      ? tabData.combinedWidgets
       : [];
 
     // combine all attributes other than queryData
@@ -127,9 +161,7 @@ export default async function DashboardTab(
               maxValue={tab.chartMaximum || 100}
               unit={tab.chartUnit || ''}
               value={
-                tab.chartValues && tab.chartValues.length > 0
-                  ? tab.chartValues[0]
-                  : 25
+                tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 25
               }
               fontColor={ciColors.degreeChart180FontColor || '#fff'}
               fontSize={ciColors.degreeChart180FontSize || '11'}
@@ -144,9 +176,7 @@ export default async function DashboardTab(
               maxValue={tab.chartMaximum || 100}
               unit={tab.chartUnit || ''}
               value={
-                tab.chartValues && tab.chartValues.length > 0
-                  ? tab.chartValues[0]
-                  : 25
+                tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 25
               }
               mainColor={ciColors.dashboardSecondaryColor || '#3D4760'}
               fontColor={ciColors.dashboardFontColor || '#FFF'}
@@ -159,7 +189,7 @@ export default async function DashboardTab(
           {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
             <PieChart
               labels={tab.chartLabels || []}
-              data={tab.chartValues || []}
+              data={tabData?.chartValues || []}
               fontSize={ciColors.pieChartFontSize}
               fontColor={ciColors.pieChartFontColor}
               currentValuesColors={
@@ -185,12 +215,13 @@ export default async function DashboardTab(
               }
               chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
-              data={tab.chartData || DUMMY_CHART_DATA}
+              data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
+              isStackedChart={tab?.isStackedChart || false}
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
@@ -235,7 +266,7 @@ export default async function DashboardTab(
               }
               chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
-              data={tab.chartData || DUMMY_CHART_DATA}
+              data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
@@ -266,7 +297,7 @@ export default async function DashboardTab(
               showGrid={false}
               legendAlignment={tab.chartLegendAlign || 'Top'}
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
-              isStackedChart={tab.isStepline || false}
+              isStackedChart={tab.isStackedChart || false}
               legendFontColor={ciColors.lineChartLegendFontColor || '#FFFFFF'}
               filterColor={ciColors.barChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
@@ -278,8 +309,8 @@ export default async function DashboardTab(
             <MeasurementComponent
               preview={false}
               dataValues={
-                tab.chartData && tab.chartData.length > 0
-                  ? tab.chartData[0].values
+                tabData?.chartData?.length > 0
+                  ? tabData.chartData[0].values
                   : []
               }
               timeValues={
@@ -370,9 +401,7 @@ export default async function DashboardTab(
               staticValuesColors={tab.chartStaticValuesColors || []}
               staticValuesTexts={tab.chartStaticValuesTexts || ['Label']}
               value={
-                tab.chartValues && tab.chartValues.length > 0
-                  ? tab.chartValues[0]
-                  : 25
+                tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 25
               }
               fontColor={ciColors.stageableChartFontColor || '#FFFFF'}
               fontSize={ciColors.stageableChartFontSize || '32'}
@@ -385,7 +414,7 @@ export default async function DashboardTab(
       {tab.componentType === tabComponentTypeEnum.slider && (
         <div className="h-full p-2 overflow-y-auto">
           {tab.componentSubType === tabComponentSubTypeEnum.coloredSlider && (
-            <div className="flex justify-center items-center px-6">
+            <div className="flex w-full h-full justify-center items-center px-6">
               <Slider
                 unit={tab.chartUnit || ''}
                 minValue={tab.chartMinimum || 0}
@@ -398,9 +427,7 @@ export default async function DashboardTab(
                 iconColor={tab.iconColor || '#000000'}
                 labelColor={tab.labelColor || '#000000'}
                 value={
-                  tab.chartValues && tab.chartValues.length > 0
-                    ? tab.chartValues[0]
-                    : 25
+                  tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 25
                 }
                 bigValueFontSize={
                   ciColors.coloredSliderBigValueFontSize || '50'
@@ -420,7 +447,7 @@ export default async function DashboardTab(
 
           {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (
             <SliderOverview
-              data={tab.chartData || []}
+              data={tabData?.chartData || []}
               currentCapacityAttribute={tab.sliderCurrentAttribute || ''}
               maximumCapacityAttribute={tab.sliderMaximumAttribute || ''}
               fontColorCurrent={ciColors.sliderCurrentFontColor || '#000000'}
@@ -436,11 +463,15 @@ export default async function DashboardTab(
         <DashboardValues
           decimalPlaces={tab.decimalPlaces || 0}
           value={
-            tab.chartValues?.[0] !== undefined && tab.chartValues?.[0] !== null
-              ? tab.chartValues?.[0]
-              : tab.textValue
-                ? tab.textValue
-                : 6.5791231231321312
+            tabData?.chartValues?.length > 0 &&
+            tabData.chartValues[0] !== undefined &&
+            tabData.chartValues[0] !== null
+              ? tabData.chartValues[0]
+              : tab.chartValues
+                ? tab.chartValues[0]
+                : tabData.textValue
+                  ? tabData.textValue
+                  : 6.5791231231321312
           }
           unit={tab.chartUnit || ''}
           staticValues={tab.chartStaticValues || []}
@@ -495,7 +526,7 @@ export default async function DashboardTab(
               mapActiveMarkerColor={
                 tab.mapActiveMarkerColor ? tab.mapActiveMarkerColor : '#FF0000'
               }
-              data={tab.mapObject}
+              data={tabData?.mapObject || []}
               mapShapeOption={
                 tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
               }
@@ -601,21 +632,21 @@ export default async function DashboardTab(
                 : 'flex-col items-center gap-4'
             }`}
           >
-            {tab.combinedWidgets?.length > 0 &&
-              tab.combinedWidgets.map(
+            {tabData?.combinedWidgets?.length > 0 &&
+              tabData.combinedWidgets.map(
                 (widget: WidgetWithContent, index: number) => (
                   <div
                     key={`widget-in-panel-${widget.id}-${index}`}
                     className={`${
                       tab.isLayoutVertical
                         ? `w-full lg:w-[${
-                            tab.combinedWidgets?.length === 2
+                            tabData.combinedWidgets?.length === 2
                               ? '49%'
-                              : tab.combinedWidgets?.length === 3
+                              : tabData.combinedWidgets?.length === 3
                                 ? '32%'
-                                : tab.combinedWidgets?.length === 4
+                                : tabData.combinedWidgets?.length === 4
                                   ? '24%'
-                                  : tab.combinedWidgets?.length === 5
+                                  : tabData.combinedWidgets?.length === 5
                                     ? '19%'
                                     : '100%'
                           }] max-w-[200px] transition-all duration-200`

@@ -11,6 +11,7 @@ import { QueryModule } from './query/query.module';
 import { FiwareWizardModule } from './fiware-wizard/fiware-wizard.module';
 import { FiwareWizardController } from './fiware-wizard/fiware-wizard.controller';
 import { FiwareWizardService } from './fiware-wizard/fiware-wizard.service';
+import { NgsiController } from './ngsi.controller';
 
 @Module({
   imports: [
@@ -23,6 +24,6 @@ import { FiwareWizardService } from './fiware-wizard/fiware-wizard.service';
     FiwareWizardModule,
   ],
   providers: [NgsiService, AuthService, ScheduleService, FiwareWizardService],
-  controllers: [FiwareWizardController],
+  controllers: [FiwareWizardController, NgsiController],
 })
 export class NgsiModule {}

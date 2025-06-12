@@ -29,9 +29,6 @@ import { TenantRepo } from '../tenant/tenant.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { WidgetToTenantRepo } from '../widget-to-tenant/widget-to-tenant.repo';
 import { CorporateInfoRepo } from '../corporate-info/corporate-info.repo';
-import { PopulateValueService } from './populate/populate-value.service';
-import { PopulateChartService } from './populate/populate-chart.service';
-import { PopulateMapService } from './populate/populate-map.service';
 import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
 import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
 import { AuthService as NgsiAuthService } from '../../../ngsi-service/src/auth/auth.service';
@@ -41,7 +38,6 @@ import { WidgetRepo } from '../widget/widget.repo';
 import { CorporateInfoSidebarLogosRepo } from '../corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
 import { LogoService } from '../logo/logo.service';
-import { PopulateCombinedWidgetService } from './populate/populate-combined-widget.service';
 import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
 import { WidgetService } from '../widget/widget.service';
 import { TabService } from '../tab/tab.service';
@@ -65,9 +61,6 @@ import { WidgetDataService } from '../widget/widget.data.service';
     DashboardToTenantService,
     WidgetToTenantService,
     PopulateService,
-    PopulateValueService,
-    PopulateChartService,
-    PopulateMapService,
     AuthDataRepo,
     DataSourceRepo,
     DashboardRepo,
@@ -89,7 +82,6 @@ import { WidgetDataService } from '../widget/widget.data.service';
     CorporateInfoSidebarLogosRepo,
     LogoRepo,
     LogoService,
-    PopulateCombinedWidgetService,
     GeneralSettingsRepo,
     WidgetService,
     WidgetDataService,

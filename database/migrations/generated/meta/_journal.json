@@ -211,6 +211,13 @@
       "when": 1744352697842,
       "tag": "0029_abandoned_zombie_0.24.1",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1749545204933,
+      "tag": "0030_useful_abomination_1.0.0",
+      "breakpoints": true
     }
   ]
 }

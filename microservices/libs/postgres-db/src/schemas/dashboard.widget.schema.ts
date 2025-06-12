@@ -1,5 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { boolean, pgTable, smallint, text, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  json,
+  pgTable,
+  smallint,
+  text,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { visibilityEnum } from './dashboard.schema';
 
 export const widgets = pgTable('widget', {
@@ -21,5 +28,18 @@ export const widgets = pgTable('widget', {
   writeRoles: text('write_roles').array(),
 });
 
-export type Widget = typeof widgets.$inferSelect;
+export const widgetData = pgTable('widget_data', {
+  id: uuid('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  widgetId: uuid('widget_id').references(() => widgets.id, {
+    onDelete: 'cascade',
+  }),
+  data: json('data'),
+});
+
+export type WidgetData = typeof widgetData.$inferSelect;
+export type Widget = typeof widgets.$inferSelect & {
+  widgetData?: WidgetData;
+};
 export type NewWidget = typeof widgets.$inferInsert;
