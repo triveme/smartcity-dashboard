@@ -82,6 +82,7 @@ export default function QueryNgsiWizard(
           auth?.user?.access_token,
           selectedCollection,
           queryConfig?.dataSourceId,
+          ngsiType === 'ngsi-v2' ? 'v2' : 'ld',
         );
 
         if (req.length > 0) {
@@ -117,6 +118,7 @@ export default function QueryNgsiWizard(
           auth?.user?.access_token,
           selectedCollection,
           queryConfig?.dataSourceId,
+          ngsiType === 'ngsi-v2' ? 'v2' : 'ld',
         );
       } else {
         return;
@@ -150,6 +152,7 @@ export default function QueryNgsiWizard(
           auth?.user?.access_token,
           selectedCollection,
           queryConfig.dataSourceId,
+          ngsiType === 'ngsi-v2' ? 'v2' : 'ld',
         );
       } else {
         return;
@@ -389,69 +392,147 @@ export default function QueryNgsiWizard(
         ) : (
           <div>
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="LD Tenant" />
-              <div className="flex-1">
-                <WizardTextfield
-                  value={queryConfig?.fiwareService || ''}
-                  onChange={(value: string | number): void => {
-                    handleQueryConfigChange({
-                      fiwareService: value.toString(),
-                    });
-                    setSelectedCollection(value.toString());
-                  }}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
-            </div>
-            <div className="flex flex-col w-full pb-2">
               <WizardLabel label="Fiware-Typ" />
-              <div className="flex-1">
-                <WizardTextfield
-                  value={queryConfig?.fiwareType || ''}
-                  onChange={(value: string | number): void =>
-                    handleQueryConfigChange({
-                      fiwareType: value.toString(),
-                    })
-                  }
-                  error={errors && errors.fiwareTypeError}
-                  borderColor={borderColor}
+              <div className="flex flex-row items-center">
+                <div className="flex-1">
+                  <WizardDropdownSelection
+                    currentValue={queryConfig?.fiwareType || ''}
+                    selectableValues={['', ...sources]}
+                    onSelect={(value: string | number): void => {
+                      handleQueryConfigChange({
+                        fiwareType: value.toString(),
+                        entityIds: [],
+                        attributes: [],
+                      });
+                      setSelectedSource(value.toString());
+                    }}
+                    error={errors && errors.fiwareServiceError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+                <RefreshButton
+                  handleClick={requestSource}
+                  className={loadingState.source ? 'animate-spin' : ''}
+                  fontColor={iconColor}
+                  hoverColor={hoverColor}
                   backgroundColor={backgroundColor}
                 />
               </div>
             </div>
-            <div className="flex flex-col w-full pb-2">
-              <WizardLabel label={'Entitäts-ID / Source'} />
-              <div className="flex-1">
-                <WizardTextfield
-                  value={queryConfig?.entityIds?.[0] || ''}
-                  error={errors && errors.sensorError}
-                  onChange={(value: string | number): void => {
-                    handleQueryConfigChange({
-                      entityIds: [value.toString()],
-                    });
-                  }}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
+            {isSingleWidget ? (
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label={'Entitäts-ID / Source'} />
+                <div className="flex flex-row items-center">
+                  <div className="flex-1">
+                    <WizardDropdownSelection
+                      currentValue={queryConfig?.entityIds?.[0] || ''}
+                      selectableValues={['', ...sensors]}
+                      error={errors && errors.sensorError}
+                      onSelect={(value: string | number): void => {
+                        handleQueryConfigChange({
+                          entityIds: [value.toString()],
+                        });
+                        setSelectedSensors([value.toString()]);
+                      }}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <RefreshButton
+                    handleClick={requestSensors}
+                    className={loadingState.sensors ? 'animate-spin' : ''}
+                    fontColor={iconColor}
+                    hoverColor={hoverColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col w-full pb-2">
-              <WizardLabel label={'Attribut'} />
-              <div className="flex-1">
-                <WizardTextfield
-                  value={queryConfig?.attributes[0] || ''}
-                  error={errors && errors.attributeError}
-                  onChange={(value: string | number): void => {
-                    handleQueryConfigChange({
-                      attributes: [value.toString()],
-                    });
-                  }}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
+            ) : (
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label={'Entitäts-IDs / Sources'} />
+                <div className="flex flex-row items-center">
+                  <div className="flex-1">
+                    <WizardMultipleDropdownSelection
+                      currentValue={queryConfig?.entityIds || []}
+                      selectableValues={sensors}
+                      error={errors && errors.sensorError}
+                      onSelect={(value: string[]): void => {
+                        handleQueryConfigChange({ entityIds: value });
+                        setSelectedSensors(value);
+                      }}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <RefreshButton
+                    handleClick={requestSensors}
+                    className={loadingState.sensors ? 'animate-spin' : ''}
+                    fontColor={iconColor}
+                    hoverColor={hoverColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
               </div>
-            </div>
+            )}
+            {isSingleWidget ? (
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label={'Attribut'} />
+                <div className="flex flex-row items-center">
+                  <div className="flex-1">
+                    <WizardDropdownSelection
+                      currentValue={queryConfig?.attributes[0] || ''}
+                      selectableValues={['', ...attributes]}
+                      error={errors && errors.attributeError}
+                      onSelect={(value: string | number): void => {
+                        handleQueryConfigChange({
+                          attributes: [value.toString()],
+                        });
+                      }}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <RefreshButton
+                    handleClick={requestAttributes}
+                    className={loadingState.attributes ? 'animate-spin' : ''}
+                    fontColor={iconColor}
+                    hoverColor={hoverColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Attribute" />
+                <div className="flex flex-row items-center">
+                  <div className="flex-1">
+                    <WizardMultipleDropdownSelection
+                      currentValue={queryConfig?.attributes || []}
+                      selectableValues={attributes}
+                      error={errors && errors.attributeError}
+                      onSelect={(value: string[]): void => {
+                        handleQueryConfigChange({ attributes: value });
+                      }}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <RefreshButton
+                    handleClick={requestAttributes}
+                    className={loadingState.attributes ? 'animate-spin' : ''}
+                    fontColor={iconColor}
+                    hoverColor={hoverColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

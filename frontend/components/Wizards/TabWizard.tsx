@@ -631,16 +631,18 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         </div>
                       </>
                     )}
-                    {tab?.componentSubType ===
-                      tabComponentSubTypeEnum.barChart && (
+                    {(tab?.componentSubType ===
+                      tabComponentSubTypeEnum.barChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart) && (
                       <div className="flex w-full items-center">
                         <div className="min-w-[220px]">
-                          <WizardLabel label="Gestapelte Balken?" />
+                          <WizardLabel label="Gestapelte Werte?" />
                         </div>
                         <WizardSelectBox
-                          checked={tab?.isStepline || false}
+                          checked={tab?.isStackedChart || false}
                           onChange={(value: boolean): void =>
-                            handleTabChange({ isStepline: value })
+                            handleTabChange({ isStackedChart: value })
                           }
                           label=" Stapel"
                         />

@@ -15,6 +15,7 @@ import {
   faChevronLeft,
   faChevronRight,
   faChevronUp,
+  faExclamationCircle,
   faPen,
   faPlusCircle,
   faShapes,
@@ -125,6 +126,7 @@ export const AvailableIcons = [
   'Envelope',
   'Download',
   'Cogs',
+  'Attention',
 ];
 
 type FontAwesomeIconsProps = {
@@ -225,6 +227,10 @@ export default function FontAwesomeIcons(
       );
     case 'XMark':
       return <FontAwesomeIcon icon={faCircleXmark} color={color} size={size} />;
+    case 'Attention':
+      return (
+        <FontAwesomeIcon icon={faExclamationCircle} color={color} size={size} />
+      );
     case 'Building':
       return <FontAwesomeIcon icon={faBuilding} color={color} size={size} />;
     case 'Hotel':

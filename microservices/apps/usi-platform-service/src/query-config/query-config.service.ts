@@ -29,6 +29,8 @@ export class QueryConfigService {
       const apiUrl = (await this.getUrl(apiId)) || this.apiBaseUrl;
       const url = `${apiUrl}/api/eventtypes`;
       const token = await this.authService.getToken();
+      console.log('URL: ', url);
+      console.log('Token: ', token);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -51,6 +53,8 @@ export class QueryConfigService {
       const apiUrl = (await this.getUrl(apiId)) || this.apiBaseUrl;
       const url = `${apiUrl}/api/${eventType}/sensors`;
       const token = await this.authService.getToken();
+      console.log('URL: ', url);
+      console.log('Token: ', token);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -76,7 +80,8 @@ export class QueryConfigService {
       .where(eq(dataSources.id, apiId));
 
     if (result.length > 0) {
-      return result[0].auth_data.apiUrl;
+      console.log('Returning URL: ', result[0].auth_data.liveUrl);
+      return result[0].auth_data.liveUrl;
     } else {
       this.logger.error(`No datasource found with id: ${apiId}`);
       throw new Error('No datasource found with this id');

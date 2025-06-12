@@ -29,6 +29,7 @@ type LineChartProps = {
   allowImageDownload: boolean;
   allowZoom?: boolean;
   isStepline?: boolean;
+  isStackedChart: boolean;
   chartHasAutomaticZoom?: boolean;
   showLegend?: boolean;
   staticValues: number[];
@@ -63,6 +64,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     allowImageDownload,
     allowZoom,
     isStepline,
+    isStackedChart,
     showLegend,
     staticValues,
     staticValuesColors,
@@ -116,6 +118,28 @@ export default function LineChart(props: LineChartProps): ReactElement {
             step: isStepline ? 'start' : undefined,
             name: sensorNames[i],
             color: currentValuesColors[i % 10] || 'black',
+            ...(isStackedChart && { stack: 'a' }),
+            ...(isStackedChart && {
+              areaStyle: {
+                opacity: 0.8,
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  {
+                    offset: 0,
+                    color: echarts.color.lift(
+                      currentValuesColors[i % currentValuesColors.length],
+                      -1,
+                    ),
+                  },
+                  {
+                    offset: 1,
+                    color: echarts.color.lift(
+                      currentValuesColors[i % currentValuesColors.length],
+                      0.2,
+                    ),
+                  },
+                ]),
+              },
+            }),
           };
           series.push(tempSeries);
         }

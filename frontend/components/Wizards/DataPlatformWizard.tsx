@@ -56,6 +56,8 @@ export default function DataPlatformWizard(
   const [grantType, setGrantType] = useState('password');
   const [errors, setErrors] = useState<WizardErrors>({});
   const [collections, setCollections] = useState<string[]>([]);
+  const [ngsildTenant, setNgsildTenant] = useState('');
+  const [ngsildContextUrl, setNgsildContextUrl] = useState('');
 
   const {
     data: fetchedAuthData,
@@ -82,6 +84,8 @@ export default function DataPlatformWizard(
       setApiUrl(fetchedAuthData.apiUrl || '');
       setCollections(fetchedAuthData.collections || []);
       setGrantType(fetchedAuthData.grantType || '');
+      setNgsildTenant(fetchedAuthData.ngsildTenant || '');
+      setNgsildContextUrl(fetchedAuthData.ngsildContextUrl || '');
     }
   }, [fetchedAuthData]);
 
@@ -123,6 +127,8 @@ export default function DataPlatformWizard(
       apiUrl,
       collections: collections,
       grantType,
+      ngsildTenant,
+      ngsildContextUrl,
     };
 
     const textfieldErrorMessages: string[] = [];
@@ -293,32 +299,82 @@ export default function DataPlatformWizard(
                 borderColor={borderColor}
               />
             </div>
+            {type === authDataTypeEnum.ngsiv2 ? (
+              <>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Live Url" />
+                  <WizardUrlTextfield
+                    value={liveUrl}
+                    onChange={(value: string | number): void =>
+                      setLiveUrl(value.toString())
+                    }
+                    error={errors && errors.liveUrlError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                  />
+                </div>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Time Series Url" />
+                  <WizardUrlTextfield
+                    value={timeSeriesUrl}
+                    onChange={(value: string | number): void =>
+                      setTimeSeriesUrl(value.toString())
+                    }
+                    error={errors && errors.timeSeriesUrlError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Daten Url" />
+                  <WizardUrlTextfield
+                    value={liveUrl}
+                    onChange={(value: string | number): void => {
+                      setLiveUrl(value.toString());
+                      setTimeSeriesUrl(value.toString());
+                    }}
+                    error={errors && errors.liveUrlError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                  />
+                </div>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="LD Context Url" />
+                  <WizardUrlTextfield
+                    value={ngsildContextUrl}
+                    onChange={(value: string | number): void => {
+                      setNgsildContextUrl(value.toString());
+                    }}
+                    error={errors && errors.liveUrlError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                  />
+                </div>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="NGSILD Tenant" />
+                  <WizardTextfield
+                    value={ngsildTenant}
+                    onChange={(value: string | number): void =>
+                      setNgsildTenant(value.toString())
+                    }
+                    error={errors && errors.appUserError}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              </>
+            )}
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Live Url" />
-              <WizardUrlTextfield
-                value={liveUrl}
-                onChange={(value: string | number): void =>
-                  setLiveUrl(value.toString())
+              <WizardLabel
+                label={
+                  type === authDataTypeEnum.ngsiv2
+                    ? 'Collections / Services (Liste mit Komma getrennt eingeben)'
+                    : 'Typen (Liste mit Komma getrennt eingeben)'
                 }
-                error={errors && errors.liveUrlError}
-                iconColor={iconColor}
-                borderColor={borderColor}
               />
-            </div>
-            <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Time Series Url" />
-              <WizardUrlTextfield
-                value={timeSeriesUrl}
-                onChange={(value: string | number): void =>
-                  setTimeSeriesUrl(value.toString())
-                }
-                error={errors && errors.timeSeriesUrlError}
-                iconColor={iconColor}
-                borderColor={borderColor}
-              />
-            </div>
-            <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Collections / Services (Liste mit Komma getrennt eingeben)" />
               <WizardTextfield
                 value={collections.join(',')}
                 onChange={(value: string | number): void =>

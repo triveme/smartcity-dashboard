@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
+import React, { ReactElement, CSSProperties } from 'react';
+
 import {
   CorporateInfo,
   MapModalChartStyle,
@@ -11,12 +13,13 @@ import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import ImageComponent from '@/ui/ImageComponent';
 import { roundToDecimalIfValueHasDecimal } from '@/utils/mathHelper';
-import React, { ReactElement, CSSProperties } from 'react';
 import { DashboardValues } from '@/ui/DashboardValues';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import IconWithLink from '@/ui/IconWithLink';
 import JumpoffButton from '@/ui/Buttons/JumpoffButton';
+import ChartMapWrapper from '@/ui/Charts/ChartMapWrapper';
+import { DEFAULT_CI } from '@/utils/objectHelper';
 
 type Marker = {
   position: [number, number];
@@ -58,6 +61,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
       selectedMarker.details[widgetAttribute]
     ) {
       const chartValue = selectedMarker.details[widgetAttribute].value;
+
       if (typeof chartValue !== 'number') {
         return Number(roundToDecimalIfValueHasDecimal(chartValue, 1));
       } else {
@@ -199,6 +203,29 @@ export default function MapModal(props: MapModalProps): ReactElement {
                             widget.attributes,
                           )}
                           showAxisLabels={widget.showAxisLabels}
+                        />
+                      </div>
+                    )}
+
+                    {(widget.componentSubType ===
+                      tabComponentSubTypeEnum.lineChart ||
+                      widget.componentSubType ===
+                        tabComponentSubTypeEnum.barChart) && (
+                      <div className="flex flex-col w-full h-60">
+                        {widget.title && (
+                          <h2 className="text-center font-semibold">
+                            {widget.title}
+                          </h2>
+                        )}
+                        <ChartMapWrapper
+                          queryId={selectedMarker.details.queryId}
+                          entityId={selectedMarker.details.id}
+                          attribute={widget.attributes}
+                          ciColors={ciColors || DEFAULT_CI}
+                          isLinechart={
+                            widget.componentSubType ===
+                            tabComponentSubTypeEnum.lineChart
+                          }
                         />
                       </div>
                     )}

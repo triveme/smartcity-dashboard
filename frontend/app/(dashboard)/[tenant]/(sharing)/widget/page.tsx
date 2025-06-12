@@ -48,6 +48,7 @@ export default async function DashboardPage(props: {
     visibility: widgetWithChildren.widget.visibility,
     width: widgetWithChildren.widget.width,
     writeRoles: widgetWithChildren.widget.writeRoles,
+    widgetData: widgetWithChildren.widget.widgetData,
   };
 
   return (

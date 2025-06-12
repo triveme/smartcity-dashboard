@@ -29,6 +29,7 @@ async function getData(
 
   if (!res.ok) {
     console.error(`Unauthorized to access dashboard page ${param}`);
+    console.error(res.statusText);
     redirect('/not-found');
   }
 

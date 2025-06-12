@@ -14,12 +14,12 @@ export default function Snowflake(props: SVGProps): ReactElement {
       width={height}
       xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="m0 0h48v48h-48z" fill={fontColor} fill-opacity=".01" />
+      <path d="m0 0h48v48h-48z" fill={fontColor} fillOpacity=".01" />
       <g
         stroke={fontColor}
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="4"
       >
         <path d="m24 4v40" />
         <path d="m6.72461 14 34.64099 20" />

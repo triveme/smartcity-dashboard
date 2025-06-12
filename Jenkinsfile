@@ -8,6 +8,7 @@ pipeline {
         NKF_REGISTRY = 'edagacr.azurecr.io'
         NGSI_SERVICE = 'ngsi-service'
         DASHBOARD_SERVICE = 'dashboard-service'
+        DATA_TRANSLATION_SERVICE = 'data-translation-service'
         ORCHIDEO_CONNECT_SERVICE = 'orchideo-connect-service'
         MAIL_SERVICE = 'mail-service'
         INFOPIN_SERVICE = 'infopin-service'
@@ -19,6 +20,7 @@ pipeline {
         IMAGE_TAG = ''
         DOCKERFILE_NGSI_SERVICE = 'Dockerfile.ngsi-service'
         DOCKERFILE_DASHBOARD_SERVICE = 'Dockerfile.dashboard-service'
+        DOCKERFILE_DATA_TRANSLATION_SERVICE = 'Dockerfile.data-translation-service'
         DOCKERFILE_ORCHIDEO_CONNECT_SERVICE = 'Dockerfile.orchideo-connect-service'
         DOCKERFILE_FRONTEND = 'Dockerfile.frontend'
         DOCKERFILE_FRONTEND_BASEPATH = 'Dockerfile.frontend-with-basepath'
@@ -216,6 +218,7 @@ pipeline {
                     sh "docker build -t smartcity/migrations -f ${DOCKERFILE_MIGRATIONS} ."
                     dir('microservices') {
                       sh "docker build -t smartcity/dashboard-service -f ${DOCKERFILE_DASHBOARD_SERVICE} ."
+                      sh "docker build -t smartcity/data-translation-service -f ${DOCKERFILE_DATA_TRANSLATION_SERVICE} ."
                       sh "docker build -t smartcity/ngsi-service -f ${DOCKERFILE_NGSI_SERVICE} ."
                       sh "docker build -t smartcity/orchideo-connect-service -f ${DOCKERFILE_ORCHIDEO_CONNECT_SERVICE} ."
                       sh "docker build -t smartcity/mail-service -f ${DOCKERFILE_MAIL_SERVICE} ."
@@ -239,6 +242,7 @@ pipeline {
           container('docker') {
             sh "docker tag smartcity/migrations ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/data-translation-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${NGSI_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/orchideo-connect-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MAIL_SERVICE}:${IMAGE_TAG}"
@@ -252,6 +256,7 @@ pipeline {
               sh "docker login -u ${NEXUS_USER} -p ${NEXUS_PASS} ${NEXUS_REGISTRY}/${NEXUS_REPO}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${NGSI_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NEXUS_REGISTRY}/${NEXUS_REPO}/${NEXUS_PROJECT}/${MAIL_SERVICE}:${IMAGE_TAG}"
@@ -276,6 +281,7 @@ pipeline {
           container('docker') {
             sh "docker tag smartcity/migrations ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${GITHUB_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/data-translation-service ${GITHUB_REGISTRY}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${GITHUB_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/orchideo-connect-service ${GITHUB_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${GITHUB_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
@@ -289,6 +295,7 @@ pipeline {
               sh "docker login -u ${GITHUB_USER} -p ${GITHUB_PASS} ${GITHUB_REGISTRY}"
               sh "docker push ${GITHUB_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${GITHUB_REGISTRY}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${GITHUB_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
@@ -313,6 +320,7 @@ pipeline {
           container('docker') {
             sh "docker tag smartcity/migrations ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
             sh "docker tag smartcity/dashboard-service ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+            sh "docker tag smartcity/data-translation-service ${NKF_REGISTRY}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/ngsi-service ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/orchideo-connect-service ${NKF_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
             sh "docker tag smartcity/mail-service ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"
@@ -326,6 +334,7 @@ pipeline {
               sh "docker login -u ${NKF_USER} --password ${NKF_PASS} ${NKF_REGISTRY}"
               sh "docker push ${NKF_REGISTRY}/${MIGRATIONS}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${DASHBOARD_SERVICE}:${IMAGE_TAG}"
+              sh "docker push ${NKF_REGISTRY}/${DATA_TRANSLATION_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${NGSI_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${ORCHIDEO_CONNECT_SERVICE}:${IMAGE_TAG}"
               sh "docker push ${NKF_REGISTRY}/${MAIL_SERVICE}:${IMAGE_TAG}"

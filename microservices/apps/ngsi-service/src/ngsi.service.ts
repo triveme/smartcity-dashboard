@@ -9,6 +9,7 @@ import { Tab, Widget } from '@app/postgres-db/schemas';
 import { ReportService } from './report/report.service';
 import { DataService } from './data/data.service';
 import { QueryService } from './query/query.service';
+import { ChartData } from 'apps/dashboard-service/src/dashboard/dashboard.service';
 
 export type QueryWithAllInfos = {
   query: Query;
@@ -40,9 +41,11 @@ export class NgsiService {
   ) {}
 
   async updateQueries(): Promise<void> {
+    console.log('Updating queries at', new Date().toISOString());
     await this.updateFiwareQueries();
     await this.updateImageQueries();
     await this.reportService.updateReportData();
+    console.log('Queries updated successfully at', new Date().toISOString());
   }
 
   async updateImageQueries(): Promise<void> {
@@ -119,5 +122,51 @@ export class NgsiService {
         error,
       );
     }
+  }
+
+  async getOnDemandData(
+    queryId: string,
+    entityId: string,
+    attribute: string,
+  ): Promise<ChartData> {
+    const queryHashMap = await this.queryService.getQueryHashMap(queryId);
+
+    if (queryHashMap.size === 0) {
+      throw new Error(`No query found with id: ${queryId}`);
+    }
+
+    // Get the first (and only) QueryBatch
+    const queryBatch = Array.from(queryHashMap.values())[0];
+    queryBatch.query_config.timeframe = 'week';
+    queryBatch.query_config.aggrPeriod = 'day';
+    queryBatch.query_config.aggrMode = 'avg';
+    queryBatch.query_config.attributes = [attribute];
+    queryBatch.query_config.entityIds = [entityId];
+
+    const data = await this.dataService.getDataFromDataSource(queryBatch);
+    const transformedData: [string, number][] = [];
+
+    // DATAMAPPING
+    if (
+      data &&
+      data['index'] &&
+      data['attributes'] &&
+      data['attributes'].length > 0
+    ) {
+      const attrData = data['attributes'].find(
+        (attr) => attr.attrName === attribute,
+      );
+
+      if (attrData && attrData.values) {
+        transformedData.push(
+          ...data['index'].map((date, idx) => [date, attrData.values[idx]]),
+        );
+      }
+    }
+
+    return {
+      name: attribute,
+      values: transformedData,
+    };
   }
 }

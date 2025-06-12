@@ -64,21 +64,6 @@ const waitingForDatabaseAvailability = async (
 const migrateDatabase = async (client: Client): Promise<void> => {
   const projectRoot = path.resolve(__dirname, '../../../../');
 
-  /* TODO: find solution to run dizzle-kit on jenkins.
-     If no solution is found, then a automated generation of the
-     migtaion files is not possible and the migration files must be
-     generated manually.
-  */
-  // const options = { cwd: projectRoot };
-
-  // try {
-  //   const command = 'npm run db:gen';
-  //   const output = execSync(command, { encoding: 'utf-8', ...options });
-  //   console.log(output);
-  // } catch (error) {
-  //   console.error('Error while generating migration files:', error.message);
-  // }
-
   try {
     const db = drizzle(client);
 
