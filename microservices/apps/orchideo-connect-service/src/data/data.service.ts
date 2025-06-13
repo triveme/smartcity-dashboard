@@ -8,6 +8,10 @@ import { QueryBatch } from '../api.service';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { dataSources } from '@app/postgres-db/schemas/data-source.schema';
 import { authData } from '@app/postgres-db/schemas/auth-data.schema';
+import {
+  SystemUser,
+  systemUsers,
+} from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
 
 @Injectable()
@@ -119,6 +123,15 @@ export class DataService {
       this.logger.error('Failed to fetch data: ', error);
       throw new Error('Failed to fetch data');
     }
+  }
+
+  async getSystemUserForTenant(tenant: string): Promise<SystemUser | null> {
+    const users = await this.db
+      .select()
+      .from(systemUsers)
+      .where(eq(systemUsers.tenantAbbreviation, tenant));
+
+    return users.length > 0 ? users[0] : null;
   }
 
   async getDataFromDataSource(
