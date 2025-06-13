@@ -174,7 +174,7 @@ describe('DataService (e2e)', () => {
 
     it.each(['day', 'hour', 'week', 'month', 'year'])(
       'should fetch historical data from data source',
-      async (timeframe: 'live' | 'hour' | 'day' | 'week' | 'month') => {
+      async (timeframe: 'live' | 'day' | 'week' | 'month') => {
         const queryBatch = await getQueryBatch();
         queryBatch.query_config.timeframe = timeframe;
 
@@ -219,7 +219,7 @@ describe('DataService (e2e)', () => {
 
     it('should handle an error while fetching data', async () => {
       const queryBatch = await getQueryBatch();
-      queryBatch.query_config.timeframe = 'hour';
+      queryBatch.query_config.timeframe = 'day';
 
       const query = getNGSILiveQuery();
       query.id = queryBatch.queryIds[0];
@@ -259,7 +259,7 @@ describe('DataService (e2e)', () => {
 
     it('should handle an undefined token', async () => {
       const queryBatch = await getQueryBatch();
-      queryBatch.query_config.timeframe = 'hour';
+      queryBatch.query_config.timeframe = 'day';
 
       const query = getNGSILiveQuery();
       query.id = queryBatch.queryIds[0];
@@ -299,7 +299,7 @@ describe('DataService (e2e)', () => {
 
     it('should handle an error while fetching token', async () => {
       const queryBatch = await getQueryBatch();
-      queryBatch.query_config.timeframe = 'hour';
+      queryBatch.query_config.timeframe = 'day';
 
       const query = getNGSILiveQuery();
       query.id = queryBatch.queryIds[0];

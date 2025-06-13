@@ -7,6 +7,8 @@ import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/d
 import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { PanelRepo } from '../panel/panel.repo';
+import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
+import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 
 @Injectable()
 export class DashboardDataService {
@@ -14,6 +16,8 @@ export class DashboardDataService {
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly widgetsToPanelRepo: WidgetToPanelRepo,
     private readonly ngsiDataService: NgsiDataService,
+    private readonly orchideoDataService: OrchideoDataService,
+    private readonly orchideoConnectService: OrchideoConnectService,
     private readonly ngsiQueryService: NgsiQueryService,
     private readonly panelRepo: PanelRepo,
   ) {}
@@ -73,9 +77,33 @@ export class DashboardDataService {
 
             queryBatch.query_config.aggrMode = 'none';
             queryBatch.query_config.timeframe = 'year';
-
-            const rawData =
-              await this.ngsiDataService.downloadDataFromDataSource(queryBatch);
+            let rawData: object | object[] = [];
+            if (
+              queryBatch.auth_data.type === 'ngsi' ||
+              queryBatch.auth_data.type === 'ngsi-ld' ||
+              queryBatch.auth_data.type === 'ngsi-v2'
+            ) {
+              rawData =
+                await this.ngsiDataService.downloadDataFromDataSource(
+                  queryBatch,
+                );
+            } else if (queryBatch.auth_data.type === 'api') {
+              console.log('DOWNLOAD ORCHIDEO CONNECT DATA');
+              console.log(queryBatch.queryIds);
+              const systemUser =
+                await this.orchideoDataService.getSystemUserForTenant(
+                  queryBatch.auth_data.tenantAbbreviation,
+                );
+              rawData = await this.orchideoDataService.getDataFromDataSource({
+                ...queryBatch,
+                system_user: systemUser,
+              });
+              // Ensure rawData is an array before transforming
+              const dataArray = Array.isArray(rawData) ? rawData : [rawData];
+              rawData =
+                this.orchideoConnectService.transformToTargetModel(dataArray);
+              console.log('Transformed rawData:', rawData);
+            }
 
             // Ensure rawData is an array
             const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
@@ -97,11 +125,11 @@ export class DashboardDataService {
                   );
 
                   // Process without types if not available
-                  return attr.values.map((value) => ({
+                  return attr.values.map((value, index) => ({
                     entityId: dataItem.entityId,
                     attrName: attr.attrName,
                     value: value,
-                    index: null,
+                    index: dataItem.index ? dataItem.index[index] : null,
                   }));
                 }
 
