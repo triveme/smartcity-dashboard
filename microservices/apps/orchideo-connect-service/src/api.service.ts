@@ -111,6 +111,7 @@ export class OrchideoConnectService {
             queryConfig.timeframe,
             queryConfig.aggrMode,
             queryConfig.attributes,
+            queryConfig.aggrPeriod,
           );
 
           const transformedData = this.transformToTargetModel(aggregatedData);
@@ -144,7 +145,7 @@ export class OrchideoConnectService {
     });
   }
 
-  private transformToTargetModel(data: any[]): any {
+  transformToTargetModel(data: any[]): any {
     // Group data by `id`
     const groupedData = data.reduce(
       (acc, item) => {
@@ -213,6 +214,7 @@ export class OrchideoConnectService {
     timeframe: Timeframe,
     aggregationMode: AggregationMode,
     attributes: string[],
+    aggregationPeriod: AggregationPeriod,
   ): object[] {
     let aggregatedData: object[] = [];
 
@@ -228,6 +230,7 @@ export class OrchideoConnectService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             1,
+            this.getIntervalStep(aggregationPeriod),
             attributes,
             aggregationMode,
           );
@@ -240,6 +243,7 @@ export class OrchideoConnectService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             7,
+            this.getIntervalStep(aggregationPeriod),
             attributes,
             aggregationMode,
           );
@@ -252,6 +256,7 @@ export class OrchideoConnectService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             30,
+            this.getIntervalStep(aggregationPeriod),
             attributes,
             aggregationMode,
           );
@@ -264,6 +269,7 @@ export class OrchideoConnectService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             90,
+            this.getIntervalStep(aggregationPeriod),
             attributes,
             aggregationMode,
           );
@@ -276,6 +282,7 @@ export class OrchideoConnectService {
           const aggregatedValues = this.aggregateTimeframe(
             sensorValues,
             365,
+            this.getIntervalStep(aggregationPeriod),
             attributes,
             aggregationMode,
           );
@@ -294,33 +301,84 @@ export class OrchideoConnectService {
     return aggregatedData;
   }
 
+  private getIntervalStep(aggregationPeriod: AggregationPeriod): number {
+    switch (aggregationPeriod) {
+      case 'second':
+        return 1000;
+      case 'minute':
+        return 60 * 1000;
+      case 'hour':
+        return 60 * 60 * 1000;
+      case 'day':
+        return 24 * 60 * 60 * 1000;
+      case 'week':
+        return 7 * 24 * 60 * 60 * 1000;
+      case 'month':
+        return 30 * 24 * 60 * 60 * 1000;
+      case 'year':
+        return 365 * 24 * 60 * 60 * 1000;
+      default:
+        this.logger.error(
+          `Invalid aggregation period supplied: ${aggregationPeriod}`,
+        );
+        throw new Error('Invalid aggregation period.');
+    }
+  }
+
   private aggregateTimeframe(
     data,
     aggregationDays: number,
+    intervalStep: number,
     properties: string[],
     aggregationMode: AggregationMode,
   ): object[] {
     const aggregatedValues: object[] = [];
-    const endTimestamp = new Date(data[0].timestamp);
+
+    if (!data || data.length === 0) {
+      return aggregatedValues;
+    }
+
+    // Sort data by timestamp in descending order
+    const sortedData = [...data].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+
+    const endTimestamp = new Date(sortedData[0].timestamp);
     const startTimestamp = new Date(endTimestamp);
     startTimestamp.setDate(endTimestamp.getDate() - aggregationDays);
+
+    // Round timestamps to interval boundaries for better grouping
+    startTimestamp.setMinutes(0, 0, 0);
 
     for (
       let i = startTimestamp.getTime();
       i <= endTimestamp.getTime();
-      i += 24 * 60 * 60 * 1000
+      i += intervalStep
     ) {
-      const currentDate = new Date(i);
+      const intervalStart = new Date(i);
+      const intervalEnd = new Date(i + intervalStep);
 
-      const values = data.filter(
-        (entry) =>
-          new Date(entry.timestamp).toDateString() ===
-          currentDate.toDateString(),
-      );
+      // Filter entries that fall within this interval
+      const intervalValues = data.filter((entry) => {
+        const entryTime = new Date(entry.timestamp);
+        return entryTime >= intervalStart && entryTime < intervalEnd;
+      });
 
-      aggregatedValues.push(
-        this.startValueAggregation(values, properties, aggregationMode),
-      );
+      // Only create an aggregated entry if there's data in this interval
+      if (intervalValues.length > 0) {
+        const aggregatedEntry = this.startValueAggregation(
+          intervalValues,
+          properties,
+          aggregationMode,
+        );
+
+        // Set timestamp to the beginning of the interval for consistency
+        if (aggregatedEntry) {
+          aggregatedEntry.timestamp = intervalStart.toISOString();
+          aggregatedValues.push(aggregatedEntry);
+        }
+      }
     }
 
     return aggregatedValues;
@@ -330,10 +388,10 @@ export class OrchideoConnectService {
     values,
     attributes: string[],
     aggregationMode: AggregationMode,
-  ): object {
+  ): Record<string, any> {
     if (values.length > 0) {
       const lastEntry = values[0];
-      const aggregatedEntry = { ...lastEntry };
+      const aggregatedEntry: Record<string, any> = { ...lastEntry };
 
       attributes.forEach((attribute) => {
         const attributeValue = values.map((entry) => entry[attribute]);
@@ -406,11 +464,12 @@ export class OrchideoConnectService {
 }
 
 type AggregationMode = 'none' | 'min' | 'max' | 'sum' | 'avg';
-type Timeframe =
-  | 'live'
+type Timeframe = 'live' | 'day' | 'week' | 'month' | 'quarter' | 'year';
+type AggregationPeriod =
+  | 'second'
+  | 'minute'
   | 'hour'
   | 'day'
   | 'week'
   | 'month'
-  | 'quarter'
   | 'year';

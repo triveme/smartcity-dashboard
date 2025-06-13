@@ -98,9 +98,6 @@ export default async function Dashboard(
           ? (tab as TabWithCombinedWidgets)?.combinedWidgets || []
           : [];
 
-      console.log('combinedWidgets', combinedWidgets);
-      console.log('widget', dashboard?.panels?.[0]?.widgets?.[0]);
-
       // Get map data from combinedWidgets if available, or use tab's mapObject directly
       const mapObjects =
         combinedWidgets.length > 0
