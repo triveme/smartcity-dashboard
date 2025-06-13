@@ -43,6 +43,10 @@ import { WidgetService } from '../widget/widget.service';
 import { TabService } from '../tab/tab.service';
 import { TabRepo } from '../tab/tab.repo';
 import { WidgetDataService } from '../widget/widget.data.service';
+import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
+import { AuthService } from '../../../orchideo-connect-service/src/auth/auth.service';
+import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
+import { QueryService as OrchideoQueryService } from '../../../orchideo-connect-service/src/query/query.service';
 
 @Module({
   imports: [HttpModule],
@@ -87,6 +91,10 @@ import { WidgetDataService } from '../widget/widget.data.service';
     WidgetDataService,
     TabService,
     TabRepo,
+    OrchideoDataService,
+    OrchideoConnectService,
+    OrchideoQueryService,
+    AuthService,
   ],
   controllers: [DashboardController],
 })

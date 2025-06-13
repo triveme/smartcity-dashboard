@@ -100,16 +100,6 @@ export default async function DashboardTab(
     (tabData?.combinedWidgets && tabData.combinedWidgets.length > 0);
 
   if (tabData === null || (!isSpecialType && !hasCombinedWidgetData)) {
-    console.log('Showing NoDataWarning with conditions:', {
-      isSpecialType,
-      hasCombinedWidgetData,
-      tabType: tab.componentType,
-      tabDataNull: tabData === null,
-      combinedWidgetCheck: isTabOfTypeCombinedWidget(tab),
-      combinedWidgetsExist: tabData?.combinedWidgets !== undefined,
-      combinedWidgetsLength: tabData?.combinedWidgets?.length,
-    });
-
     return (
       <NoDataWarning
         iconColor={ciColors.headerPrimaryColor}

@@ -10,7 +10,6 @@ export const aggregationEnum = pgEnum('aggregation', [
 
 export const timeframeEnum = pgEnum('timeframe', [
   'live',
-  'hour',
   'day',
   'week',
   'month',

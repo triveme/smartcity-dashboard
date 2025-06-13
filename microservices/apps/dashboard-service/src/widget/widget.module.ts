@@ -34,6 +34,10 @@ import { DataSourceService } from '../data-source/data-source.service';
 import { AuthDataRepo } from '../auth-data/auth-data.repo';
 import { DataSourceRepo } from '../data-source/data-source.repo';
 import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
+import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
+import { AuthService } from '../../../orchideo-connect-service/src/auth/auth.service';
+import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
+import { QueryService as OrchideoQueryService } from '../../../orchideo-connect-service/src/query/query.service';
 
 @Module({
   imports: [HttpModule],
@@ -66,6 +70,10 @@ import { GeneralSettingsRepo } from '../general-settings/general-settings.repo';
     DataSourceRepo,
     AuthDataRepo,
     GeneralSettingsRepo,
+    OrchideoDataService,
+    AuthService,
+    OrchideoConnectService,
+    OrchideoQueryService,
   ],
   controllers: [WidgetController],
 })

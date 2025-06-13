@@ -21,6 +21,10 @@ export default function JumpoffButton(
     color: headerFontColor || 'FFF',
     fontSize: '1rem',
   };
+  const hasLabel =
+    panel.jumpoffLabel && panel.jumpoffLabel !== '' ? true : false;
+  const hasIcon =
+    panel.jumpoffIcon && panel.jumpoffIcon !== 'empty' ? true : false;
 
   return (
     <Link
@@ -29,7 +33,7 @@ export default function JumpoffButton(
       rel="noopener"
     >
       <button
-        className="p-4 h-10 w-full rounded-lg flex justify-evenly items-center content-center transition-colors ease-in-out duration-300"
+        className={`p-4 h-10 w-full rounded-lg flex ${hasLabel ? 'justify-evenly' : 'justify-center'} items-center content-center transition-colors ease-in-out duration-300`}
         style={jumpoffButtonStyle}
       >
         {panel.jumpoffIcon && panel.jumpoffIcon !== 'empty' && (
@@ -38,17 +42,20 @@ export default function JumpoffButton(
             color={jumpoffButtonStyle.color}
           />
         )}
-        <div
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            maxWidth: '11rem',
-            marginLeft: panel.jumpoffIcon ? '0.5rem' : '',
-          }}
-        >
-          <div className="ml-2 hidden sm:block">{panel.jumpoffLabel}</div>
-        </div>
+        {hasLabel && (
+          <div
+            style={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '11rem',
+              marginLeft: hasIcon ? '0.5rem' : '',
+              color: jumpoffButtonStyle.color,
+            }}
+          >
+            <div className="ml-2">{panel.jumpoffLabel}</div>
+          </div>
+        )}
       </button>
     </Link>
   );
