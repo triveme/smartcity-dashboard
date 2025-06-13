@@ -263,7 +263,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                       )}
                     {widget.componentType === 'Button' &&
                       widget.componentSubType === 'jumpoff-url' && (
-                        <div className="w-12 sm:w-48">
+                        <div className="w-48">
                           <JumpoffButton
                             panel={widget}
                             headerPrimaryColor={ciColors?.headerPrimaryColor}
@@ -274,7 +274,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
 
                     {widget.componentType === 'Button' &&
                       widget.componentSubType === 'jumpoff-attribute' && (
-                        <div className="w-12 sm:w-48">
+                        <div className="w-48">
                           <JumpoffButton
                             panel={widget}
                             url={

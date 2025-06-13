@@ -21,8 +21,6 @@ import WizardLabel from './WizardLabel';
 import HorizontalDivider from './HorizontalDivider';
 import { WizardErrors } from '@/types/errors';
 import { EMPTY_MAP_MODAL_WIDGET } from '@/utils/objectHelper';
-import { getAttributes } from '@/api/wizard-service-fiware';
-import RefreshButton from './Buttons/RefreshButton';
 import WizardUrlTextfield from './WizardUrlTextfield';
 import IconSelection from './Icons/IconSelection';
 import WizardSelectBox from '@/ui/WizardSelectBox';
@@ -51,46 +49,14 @@ export default function StaticValuesFieldMapWidgets(
     backgroundColor,
     initialMapModalWidgetsValues,
     queryConfig,
-    accessToken,
     iconColor,
-    hoverColor,
   } = props;
 
   const defaultMapModalWidget: MapModalWidget = EMPTY_MAP_MODAL_WIDGET;
   const [mapWidgetValues, setMapWidgetValues] = useState<MapModalWidget[]>(
     initialMapModalWidgetsValues || [defaultMapModalWidget],
   );
-
-  const [loadingState, setLoadingState] = useState<{ [key: string]: boolean }>({
-    collections: false,
-    sources: false,
-  });
-  const toggleLoading = (key: string, isLoading: boolean): void => {
-    setLoadingState((prev) => ({ ...prev, [key]: isLoading }));
-  };
-
-  // Get all Attributes
   const [availableAttributes, setAvailableAttributes] = useState<string[]>([]);
-  const requestAttributes = async (): Promise<void> => {
-    toggleLoading('attributes', true);
-    try {
-      //TODO implement a callback instead of calling the API directly
-      const req = await getAttributes(
-        queryConfig?.fiwareType,
-        accessToken,
-        queryConfig?.fiwareService,
-        queryConfig?.dataSourceId,
-        'v2',
-      );
-      if (req && req.length > 0) {
-        setAvailableAttributes(req);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      toggleLoading('attributes', false);
-    }
-  };
 
   const changeWidgetOrder = (widget: MapModalWidget, isUp: boolean): void => {
     const widgetPos = mapWidgetValues.findIndex(
@@ -109,12 +75,6 @@ export default function StaticValuesFieldMapWidgets(
     handleTabChange({ mapWidgetValues: arr });
     setMapWidgetValues(arr);
   };
-
-  useEffect((): void => {
-    if (queryConfig && accessToken) {
-      requestAttributes();
-    }
-  }, [queryConfig, accessToken]);
 
   const getAllowableComponentTypes = (): string[] => {
     return [
@@ -187,6 +147,12 @@ export default function StaticValuesFieldMapWidgets(
     background: backgroundColor,
     padding: '6px',
   };
+
+  useEffect(() => {
+    if (queryConfig && queryConfig.attributes) {
+      setAvailableAttributes(queryConfig.attributes);
+    }
+  }, [queryConfig]);
 
   return (
     <div>
@@ -310,15 +276,6 @@ export default function StaticValuesFieldMapWidgets(
                             backgroundColor={backgroundColor}
                           />
                         </div>
-                        <RefreshButton
-                          handleClick={requestAttributes}
-                          className={
-                            loadingState.attributes ? 'animate-spin' : ''
-                          }
-                          fontColor={iconColor}
-                          hoverColor={hoverColor}
-                          backgroundColor={backgroundColor}
-                        />
                       </div>
                     </div>
                   )}
@@ -936,15 +893,6 @@ export default function StaticValuesFieldMapWidgets(
                                 backgroundColor={backgroundColor}
                               />
                             </div>
-                            <RefreshButton
-                              handleClick={requestAttributes}
-                              className={
-                                loadingState.attributes ? 'animate-spin' : ''
-                              }
-                              fontColor={iconColor}
-                              hoverColor={hoverColor}
-                              backgroundColor={backgroundColor}
-                            />
                           </div>
                         </div>
                       </div>
