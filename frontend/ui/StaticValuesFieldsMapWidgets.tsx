@@ -946,54 +946,6 @@ export default function StaticValuesFieldMapWidgets(
                       />
                     </div>
                     <div className="flex flex-col pb-2">
-                      <WizardLabel label="Minimum" />
-                      <WizardTextfield
-                        value={value?.chartMinimum ?? ''}
-                        onChange={(newValue: string | number): void => {
-                          const updatedMapWidgetValues = mapWidgetValues.map(
-                            (widget, idx) =>
-                              idx === index
-                                ? {
-                                    ...widget,
-                                    chartMinimum: newValue as number,
-                                  }
-                                : widget,
-                          );
-                          handleTabChange({
-                            mapWidgetValues: updatedMapWidgetValues,
-                          });
-                          setMapWidgetValues(updatedMapWidgetValues);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
-                    <div className="flex flex-col pb-2">
-                      <WizardLabel label="Maximum" />
-                      <WizardTextfield
-                        value={value?.chartMaximum ?? ''}
-                        onChange={(newValue: string | number): void => {
-                          const updatedMapWidgetValues = mapWidgetValues.map(
-                            (widget, idx) =>
-                              idx === index
-                                ? {
-                                    ...widget,
-                                    chartMaximum: newValue as number,
-                                  }
-                                : widget,
-                          );
-                          handleTabChange({
-                            mapWidgetValues: updatedMapWidgetValues,
-                          });
-                          setMapWidgetValues(updatedMapWidgetValues);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
-                    <div className="flex flex-col pb-2">
                       <WizardLabel label="Einheit" />
                       <WizardTextfield
                         value={value?.chartUnit || ''}
@@ -1170,7 +1122,7 @@ export default function StaticValuesFieldMapWidgets(
                     tabComponentSubTypeEnum.barChart) && (
                   <div>
                     <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Name der X-Achse" />
+                      <WizardLabel label="Achsenbeschreibung (y-Achse über x-Achse)" />
                       <WizardTextfield
                         value={value.chartXAxisLabel || ''}
                         onChange={(value: string | number): void => {
@@ -1180,29 +1132,6 @@ export default function StaticValuesFieldMapWidgets(
                                 ? {
                                     ...widget,
                                     chartXAxisLabel: value.toString(),
-                                  }
-                                : widget,
-                          );
-                          handleTabChange({
-                            mapWidgetValues: updatedMapWidgetValues,
-                          });
-                          setMapWidgetValues(updatedMapWidgetValues);
-                        }}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
-                    <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Name der Y-Achse" />
-                      <WizardTextfield
-                        value={value.chartYAxisLabel || ''}
-                        onChange={(value: string | number): void => {
-                          const updatedMapWidgetValues = mapWidgetValues.map(
-                            (widget, idx) =>
-                              idx === index
-                                ? {
-                                    ...widget,
-                                    chartYAxisLabel: value.toString(),
                                   }
                                 : widget,
                           );

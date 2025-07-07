@@ -51,6 +51,7 @@ type LineChartProps = {
   filterTextColor?: string;
   showTooltip?: boolean;
   decimalPlaces?: number;
+  isShownInMapModal?: boolean;
 };
 
 export default function LineChart(props: LineChartProps): ReactElement {
@@ -85,6 +86,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     filterTextColor,
     showTooltip = true,
     decimalPlaces,
+    isShownInMapModal = true,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -115,7 +117,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
           const tempSeries: echarts.LineSeriesOption = {
             data: dataArray,
             type: 'line',
-            symbolSize: 6,
+            symbolSize: isShownInMapModal ? 0 : 6,
             step: isStepline ? 'start' : undefined,
             name: sensorNames[i],
             color: currentValuesColors[i % 10] || 'black',
@@ -172,7 +174,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
           type: 'time',
           splitNumber: splitNumber,
           nameLocation: 'middle',
-          nameGap: 35,
+          nameGap: isShownInMapModal ? 26 : 35,
           nameTextStyle: {
             color: axisLabelFontColor,
             fontSize: axisLabelSize,
@@ -275,10 +277,14 @@ export default function LineChart(props: LineChartProps): ReactElement {
           },
         },
         grid: {
-          left: calculateLeftGrid(yAxisLabel || '', legendAlignment),
+          left: isShownInMapModal
+            ? 10
+            : calculateLeftGrid(yAxisLabel || '', legendAlignment),
           right: 10,
-          top: 30,
-          bottom: calculateBottomGrid(xAxisLabel || '', allowZoom),
+          top: isShownInMapModal ? 20 : 30,
+          bottom: isShownInMapModal
+            ? 20
+            : calculateBottomGrid(xAxisLabel || '', allowZoom),
           containLabel: true,
         },
         series: [...series, ...staticValueSeries],

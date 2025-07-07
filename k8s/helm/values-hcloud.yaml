@@ -7,7 +7,7 @@ trustedCAFile: "certificates/hcloud_ca.pem"
 migrations:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
   resources:
     requests:
@@ -58,7 +58,7 @@ dashboard-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/dashboard-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 ngsi-service:
@@ -80,7 +80,7 @@ ngsi-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/ngsi-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 orchideo-connect-service:
@@ -100,7 +100,7 @@ orchideo-connect-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/orchideo-connect-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 mail-service:
@@ -120,7 +120,7 @@ mail-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/mail-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 infopin-service:
@@ -141,7 +141,7 @@ infopin-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/infopin-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 report-service:
@@ -163,7 +163,7 @@ report-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/report-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 static-data-service:
@@ -184,7 +184,7 @@ static-data-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/static-data-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 usi-platform-service:
@@ -205,7 +205,7 @@ usi-platform-service:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/usi-platform-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 frontend:
@@ -242,13 +242,13 @@ frontend:
             pathType: Prefix
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/frontend
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
 
 data-translation-service:
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/data-translation-service
-    tag: '1.0.1'
+    tag: '1.0.4'
     pullPolicy: Always
   resources:
     requests:
