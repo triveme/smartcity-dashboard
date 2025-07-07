@@ -17,6 +17,7 @@ import useWizardState from '@/app/custom-hooks/singleState';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import Loading from '@/app/(dashboard)/loading';
 
 export default function CorporateIdentity(): ReactElement {
   const auth = useAuth();
@@ -542,7 +543,7 @@ export default function CorporateIdentity(): ReactElement {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loading />;
   if (error) return <div>Error: {error.message}</div>;
 
   return (

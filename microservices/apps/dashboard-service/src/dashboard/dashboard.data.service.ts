@@ -74,15 +74,14 @@ export class DashboardDataService {
               data_source: queryWithAllInfos.data_source,
               auth_data: queryWithAllInfos.auth_data,
             };
-
-            queryBatch.query_config.aggrMode = 'none';
-            queryBatch.query_config.timeframe = 'year';
             let rawData: object | object[] = [];
             if (
               queryBatch.auth_data.type === 'ngsi' ||
               queryBatch.auth_data.type === 'ngsi-ld' ||
               queryBatch.auth_data.type === 'ngsi-v2'
             ) {
+              queryBatch.query_config.aggrMode = 'none';
+              queryBatch.query_config.timeframe = 'year';
               rawData =
                 await this.ngsiDataService.downloadDataFromDataSource(
                   queryBatch,

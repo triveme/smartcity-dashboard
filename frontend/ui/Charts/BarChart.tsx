@@ -14,6 +14,7 @@ import {
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
+import FilterButton from '../Buttons/FilterButton';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -381,36 +382,13 @@ export default function BarChart(props: BarChartProps): ReactElement {
           </div>
 
           {/* Buttons for larger screens */}
-          <div className="hidden sm:flex flex-col items-center gap-4 px-3 w-[250px]">
-            {attributes.length > 0 &&
-              attributes.map((attribute) => (
-                <button
-                  key={`button-linechart-${attribute}`}
-                  onClick={() => handleFilterButtonClicked(attribute)}
-                  style={{
-                    width: '100%',
-                    padding: 4,
-                    color:
-                      clickedAttribute === attribute
-                        ? filterTextColor
-                        : filterColor,
-                    backgroundColor:
-                      clickedAttribute === attribute
-                        ? filterColor
-                        : 'transparent',
-                    borderColor: filterColor,
-                    borderRadius: '12px',
-                    borderWidth: '2px',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontSize: 'calc(1em - 2px)',
-                  }}
-                >
-                  {attribute}
-                </button>
-              ))}
-          </div>
+          <FilterButton
+            attributes={attributes}
+            onClick={handleFilterButtonClicked}
+            filterColor={filterColor}
+            filterTextColor={filterTextColor}
+            clickedAttribute={clickedAttribute}
+          ></FilterButton>
         </>
       )}
       <div className="w-full h-full" ref={chartRef} />

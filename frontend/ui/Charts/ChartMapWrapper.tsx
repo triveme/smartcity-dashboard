@@ -25,7 +25,7 @@ export default function ChartMapWrapper({
   mapWidgetValue,
 }: ChartWrapperProps): ReactElement {
   const { data } = useQuery({
-    queryKey: ['chartData', queryId, attribute],
+    queryKey: ['chartData'],
     queryFn: () => fetchOnDemandChartData(queryId, entityId, attribute),
   });
 
@@ -33,7 +33,10 @@ export default function ChartMapWrapper({
     return (
       <div>
         <div className="flex flex-row min-h-screen justify-center items-center text-2xl">
-          <DashboardIcons iconName="Spinner" color="white" />
+          <DashboardIcons
+            iconName="Spinner"
+            color={ciColors.headerPrimaryColor}
+          />
           <p>Lädt...</p>
         </div>
       </div>
@@ -44,6 +47,8 @@ export default function ChartMapWrapper({
       {isLinechart ? (
         <LineChart
           labels={undefined}
+          xAxisLabel={mapWidgetValue?.chartXAxisLabel || ''}
+          yAxisLabel={mapWidgetValue?.chartYAxisLabel || ''}
           data={[data]}
           allowImageDownload={false}
           staticValues={[]}
