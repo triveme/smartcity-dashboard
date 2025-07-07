@@ -158,7 +158,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
               onChange={onChange}
               error={error}
               borderColor={borderColor}
-              backgroundColor={backgroundColor}
+              backgroundColor={backgroundColor || '#fff'}
               fontColor={panelFontColor || '#000'}
             />
           </div>
