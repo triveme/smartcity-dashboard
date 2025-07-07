@@ -1,0 +1,1 @@
+ALTER TABLE "corporate_info" ADD COLUMN "show_info_buttons_on_mobile" boolean DEFAULT false;

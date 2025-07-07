@@ -58,6 +58,7 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     cancelHoverButtonColor: '#333',
     showHeaderLogo: true,
     showMenuLogo: true,
+    showInfoButtonsOnMobile: false,
     titleBar: 'Light',
     widgetBorderColor: '#333',
     widgetBorderRadius: 'widget_border_radius',

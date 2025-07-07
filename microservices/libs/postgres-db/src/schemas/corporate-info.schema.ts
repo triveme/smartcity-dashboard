@@ -254,6 +254,9 @@ export const corporateInfos = pgTable('corporate_info', {
   scrollbarColor: text('scrollbar_color').default('#3D4760'),
   showHeaderLogo: boolean('show_header_logo').default(true),
   showMenuLogo: boolean('show_menu_logo').default(true),
+  showInfoButtonsOnMobile: boolean('show_info_buttons_on_mobile').default(
+    false,
+  ),
   sliderCurrentFontColor: text('slider_current_font_color').default('#000000'),
   sliderMaximumFontColor: text('slider_maximum_font_color').default('#FFFFFF'),
   sliderGeneralFontColor: text('slider_general_font_color').default('#FFFFFF'),
