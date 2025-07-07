@@ -467,6 +467,12 @@ export default function CorporateIdentity(): ReactElement {
       updateState('headerTitleDashboards', corporateInfo.headerTitleDashboards);
       updateState('titleBar', corporateInfo.titleBar);
 
+      // SHOW INFO BUTTONS FOR MOBILE
+      updateState(
+        'showInfoButtonsOnMobile',
+        corporateInfo.showInfoButtonsOnMobile,
+      );
+
       setIsInitDone(true);
     }
   }, [corporateInfo]);

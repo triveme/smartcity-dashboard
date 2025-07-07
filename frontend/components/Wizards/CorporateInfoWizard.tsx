@@ -197,6 +197,10 @@ export default function CorporateInfoWizard({
             borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
             backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
             iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+            showInfoButtonsOnMobile={state.showInfoButtonsOnMobile}
+            setShowInfoButtonsOnMobile={(value): void =>
+              updateState('showInfoButtonsOnMobile', value)
+            }
           />
         )}
         {activeTab === 'Dashboard' && (
