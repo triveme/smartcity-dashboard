@@ -52,16 +52,28 @@ export default function MapModal(props: MapModalProps): ReactElement {
     fontSize: ciColors?.informationTextFontSize ?? '14px',
   };
 
+  const getAttributeValue = (attributeName: string): any => {
+    if (!selectedMarker?.details?.[attributeName]) {
+      return null;
+    }
+
+    const attribute = selectedMarker.details[attributeName];
+
+    // Check if it's NGSI-LD structure with .value
+    if (attribute.value !== undefined) {
+      return attribute.value;
+    }
+
+    // Simple structure - return the value directly
+    return attribute;
+  };
+
   const getAttributeChartValueFromMapObject = (
     widgetAttribute: string,
   ): number => {
-    if (
-      selectedMarker &&
-      selectedMarker.details &&
-      selectedMarker.details[widgetAttribute]
-    ) {
-      const chartValue = selectedMarker.details[widgetAttribute].value;
+    const chartValue = getAttributeValue(widgetAttribute);
 
+    if (chartValue !== null) {
       if (typeof chartValue !== 'number') {
         return Number(roundToDecimalIfValueHasDecimal(chartValue, 1));
       } else {
@@ -121,10 +133,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         )}
                         <DashboardValues
                           decimalPlaces={widget.decimalPlaces || 0}
-                          value={
-                            selectedMarker.details[widget.attributes]?.value ||
-                            '0'
-                          }
+                          value={getAttributeValue(widget.attributes) || '0'}
                           unit={widget.chartUnit || ''}
                           staticValues={widget.chartStaticValues || []}
                           staticValuesColors={
@@ -137,12 +146,10 @@ export default function MapModal(props: MapModalProps): ReactElement {
                             widget.chartStaticValuesLogos || []
                           }
                           fontSize={getFontSizeForValueWidget(
-                            selectedMarker.details[widget.attributes]?.value ||
-                              0,
+                            getAttributeValue(widget.attributes) || 0,
                           )}
                           unitFontSize={getUnitFontSizeForValueWidget(
-                            selectedMarker.details[widget.attributes]?.value ||
-                              0,
+                            getAttributeValue(widget.attributes) || 0,
                           )}
                           fontColor={ciColors?.wertFontColor || '#FFF'}
                         />
@@ -232,9 +239,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     {widget.componentType === tabComponentTypeEnum.image && (
                       <div className="w-full h-40">
                         <ImageComponent
-                          imageUrl={
-                            selectedMarker?.details[widget?.attributes]?.value
-                          }
+                          imageUrl={getAttributeValue(widget?.attributes)}
                         />
                       </div>
                     )}
@@ -277,10 +282,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         <div className="w-48">
                           <JumpoffButton
                             panel={widget}
-                            url={
-                              selectedMarker.details[widget.jumpoffAttribute!]
-                                ?.value
-                            }
+                            url={getAttributeValue(widget.jumpoffAttribute!)}
                             headerPrimaryColor={ciColors?.headerPrimaryColor}
                             headerFontColor={ciColors?.headerFontColor}
                           />

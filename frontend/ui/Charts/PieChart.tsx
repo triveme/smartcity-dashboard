@@ -58,7 +58,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
 
   const dataToDisplay: PieChartDataItem[] = data.map((value, index) => ({
     value,
-    name: labels[index] || `Bsp. ${index + 1}`,
+    name: labels[index] || `Sensor ${index + 1}`,
     unit: unit,
     itemStyle: {
       color: currentValuesColors[index % currentValuesColors.length],

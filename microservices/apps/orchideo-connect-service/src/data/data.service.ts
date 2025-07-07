@@ -261,6 +261,18 @@ export class DataService {
         allData = allData.concat(fetchedData);
       }
 
+      // Data cleanup because orchideo is always returning all sensor attributes
+      allData = this.filterByAttribute(query_config.attributes, allData);
+
+      // Change LAT LONG order if position attribute is present
+      allData = allData.map((item) => {
+        if (item.position && item.position.coordinates) {
+          const [lat, long] = item.position.coordinates;
+          item.position.coordinates = [long, lat]; // Swap order
+        }
+        return item;
+      });
+
       // When multiple entityIds are provided and the timeframe is "live",
       // we need to filter the data based on the entityIds
       // to ensure we only return the relevant data
@@ -271,9 +283,6 @@ export class DataService {
         query_config.entityIds.length > 1 &&
         query_config.timeframe === 'live'
       ) {
-        this.logger.debug(
-          `Filtering data for entityIds: ${query_config.entityIds.join(', ')}`,
-        );
         allData = this.filterDataByEntityIds(allData, query_config.entityIds);
       }
 
@@ -293,6 +302,22 @@ export class DataService {
       );
       return [];
     }
+  }
+
+  private filterByAttribute(attributes: string[], data: object[]): object[] {
+    return data.map((item) => {
+      const reducedItem = {};
+      // Always keep id and timestamp
+      reducedItem['id'] = item['id'];
+      reducedItem['timestamp'] = item['timestamp'];
+
+      for (const attribute of attributes) {
+        if (item.hasOwnProperty(attribute)) {
+          reducedItem[attribute] = item[attribute];
+        }
+      }
+      return reducedItem;
+    });
   }
 
   private filterDataByEntityIds(data: any[], entityIds: string[]): any[] {

@@ -199,7 +199,13 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faShapes} color={color} size={size} />;
     case 'Spinner':
       return (
-        <FontAwesomeIcon icon={faSpinner} color={color} size={size} spin />
+        <FontAwesomeIcon
+          icon={faSpinner}
+          color={color}
+          size={size}
+          spin
+          className={className}
+        />
       );
     case 'Trashcan':
       return <FontAwesomeIcon icon={faTrashCan} color={color} size={size} />;
