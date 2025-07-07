@@ -255,7 +255,7 @@ export default function StaticValuesFieldMapWidgets(
                         <div className="flex-1">
                           <WizardDropdownSelection
                             currentValue={value?.attributes || ''}
-                            selectableValues={availableAttributes}
+                            selectableValues={['', ...availableAttributes]}
                             onSelect={(newValue): void => {
                               const updatedMapWidgetValues =
                                 mapWidgetValues.map((widget, idx) =>
@@ -1284,20 +1284,6 @@ export default function StaticValuesFieldMapWidgets(
                               label=" Stufenlinie"
                             />
                           </div>
-                          <div className="flex w-full items-center">
-                            <div className="min-w-[220px]">
-                              <WizardLabel label="Automatischer Zoom der Achseneinteilung" />
-                            </div>
-                            <WizardSelectBox
-                              checked={value.chartHasAutomaticZoom || false}
-                              onChange={(value: boolean): void =>
-                                handleTabChange({
-                                  chartHasAutomaticZoom: value,
-                                })
-                              }
-                              label="Automatischer Zoom"
-                            />
-                          </div>
                         </>
                       )}
                       {value.componentSubType ===
@@ -1315,84 +1301,6 @@ export default function StaticValuesFieldMapWidgets(
                           />
                         </div>
                       )}
-                      <div className="flex w-full items-center">
-                        <div className="min-w-[220px]">
-                          <WizardLabel label="Y-Achsen Interval setzen?" />
-                        </div>
-                        <WizardSelectBox
-                          checked={value.setYAxisInterval || false}
-                          onChange={(value: boolean): void => {
-                            if (value) {
-                              handleTabChange({
-                                setYAxisInterval: value,
-                                chartYAxisScale: 0,
-                                chartYAxisScaleChartMinValue: 0,
-                                chartYAxisScaleChartMaxValue: 100,
-                              });
-                            } else {
-                              handleTabChange({
-                                setYAxisInterval: false,
-                                chartYAxisScale: undefined,
-                                chartYAxisScaleChartMinValue: undefined,
-                                chartYAxisScaleChartMaxValue: undefined,
-                              });
-                            }
-                          }}
-                          label=" Interval"
-                        />
-                      </div>
-                      <div className="flex flex-col w-full pb-2">
-                        {value.setYAxisInterval && (
-                          <>
-                            <div className="flex-grow">
-                              <WizardLabel label="Skalierung y-Achse (Werte von 0.1 bis 1000 möglich, 0 für Automatische Skallierung)." />
-                              <WizardTextfield
-                                isNumeric={true}
-                                value={value.chartYAxisScale || 0}
-                                onChange={(value: string | number): void =>
-                                  handleTabChange({
-                                    chartYAxisScale: value as number,
-                                  })
-                                }
-                                borderColor={borderColor}
-                                backgroundColor={backgroundColor}
-                              />
-                            </div>
-                            <div className="flex-grow">
-                              <WizardLabel label="Minimalwert Skala der yAchse" />
-                              <WizardTextfield
-                                isNumeric={true}
-                                value={value.chartYAxisScaleChartMinValue || 0}
-                                onChange={(value: string | number): void =>
-                                  handleTabChange({
-                                    chartYAxisScaleChartMinValue:
-                                      value as number,
-                                  })
-                                }
-                                borderColor={borderColor}
-                                backgroundColor={backgroundColor}
-                              />
-                            </div>
-                            <div className="flex-grow">
-                              <WizardLabel label="Maximalwert Skala der yAchse" />
-                              <WizardTextfield
-                                isNumeric={true}
-                                value={
-                                  value.chartYAxisScaleChartMaxValue || 100
-                                }
-                                onChange={(value: string | number): void =>
-                                  handleTabChange({
-                                    chartYAxisScaleChartMaxValue:
-                                      value as number,
-                                  })
-                                }
-                                borderColor={borderColor}
-                                backgroundColor={backgroundColor}
-                              />
-                            </div>
-                          </>
-                        )}
-                      </div>
                     </div>
                   </div>
                 )}

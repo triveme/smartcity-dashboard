@@ -4,6 +4,7 @@ import React, { ReactElement, useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { useSnackbar } from './SnackBarFeedbackProvider';
 import Cookies from 'js-cookie';
+import Loading from '@/app/(dashboard)/loading';
 
 const AuthWrapper = ({
   children,
@@ -37,7 +38,7 @@ const AuthWrapper = ({
   }
 
   if (auth.isLoading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return <>{children}</>;

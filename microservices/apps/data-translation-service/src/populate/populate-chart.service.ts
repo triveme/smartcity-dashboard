@@ -210,8 +210,29 @@ export class PopulateChartService {
         ) {
           const queryData = query.queryData as { [key: string]: any };
 
+          // Check if we have the flat attribute structure first (your case)
+          if (queryData.attributes && Array.isArray(queryData.attributes)) {
+            // For pie charts with flat attribute structure, process all attributes at once
+            // Filter out non-data attributes like 'name'
+            const dataAttributes = queryData.attributes.filter(
+              (attr) => attr.attrName !== 'name',
+            );
+
+            dataAttributes.forEach((attrObj) => {
+              if (attrObj.values && attrObj.values.length > 0) {
+                // Get the latest value (last element in values array)
+                const value = attrObj.values[attrObj.values.length - 1];
+
+                // Use attribute name as label
+                const label = attrObj.attrName;
+
+                tab.chartLabels.push(getGermanLabelForAttribute(label));
+                tab.chartValues.push(value);
+              }
+            });
+          }
           // Check if we have the FIWARE attribute structure
-          if (queryData.attrs && Array.isArray(queryData.attrs)) {
+          else if (queryData.attrs && Array.isArray(queryData.attrs)) {
             // Find the attribute we're looking for
             const attrObj = queryData.attrs.find(
               (attr) => attr.attrName === attribute,

@@ -200,9 +200,9 @@ export type Tab = {
   chartXAxisLabel?: string;
   chartYAxisLabel?: string;
   childWidgets?: string[];
-  chartYAxisScale?: number;
-  chartYAxisScaleChartMinValue?: number;
-  chartYAxisScaleChartMaxValue?: number;
+  chartYAxisScale?: number | null;
+  chartYAxisScaleChartMinValue?: number | null;
+  chartYAxisScaleChartMaxValue?: number | null;
   componentSubType?: string;
   componentType?: string;
   dataModelId?: string;

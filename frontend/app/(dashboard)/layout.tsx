@@ -22,7 +22,7 @@ export default function RootLayout({
           id="Cookiebot"
           src="https://consent.cookiebot.com/uc.js"
           data-cbid={process.env.NEXT_PUBLIC_COOKIEBOT_ID}
-          data-blockingmode="auto"
+          data-blockingmode="manual"
           type="text/javascript"
         ></Script>
       </head>

@@ -56,20 +56,18 @@ export class WidgetDataService {
         auth_data: queryWithAllInfos.auth_data,
       };
 
-      // Configure query batch
-      queryBatch.query_config.aggrMode = 'none';
-      queryBatch.query_config.timeframe = 'year';
-
       let rawData: object | object[] = [];
       if (
         queryBatch.auth_data.type === 'ngsi' ||
         queryBatch.auth_data.type === 'ngsi-ld' ||
         queryBatch.auth_data.type === 'ngsi-v2'
       ) {
+        // Configure query batch
+        queryBatch.query_config.aggrMode = 'none';
+        queryBatch.query_config.timeframe = 'year';
+
         rawData = await this.ngsiDataService.getDataFromDataSource(queryBatch);
       } else if (queryBatch.auth_data.type === 'api') {
-        console.log('DOWNLOAD ORCHIDEO CONNECT DATA');
-        console.log(queryBatch.queryIds);
         const systemUser =
           await this.orchideoDataService.getSystemUserForTenant(
             queryBatch.auth_data.tenantAbbreviation,
@@ -81,7 +79,6 @@ export class WidgetDataService {
         // Ensure rawData is an array before transforming
         const dataArray = Array.isArray(rawData) ? rawData : [rawData];
         rawData = this.orchideoConnectService.transformToTargetModel(dataArray);
-        console.log('Transformed rawData:', rawData);
       }
 
       // Ensure rawData is an array
