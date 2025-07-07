@@ -655,7 +655,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       <WizardSelectBox
                         checked={tab?.setYAxisInterval || false}
                         onChange={(value: boolean): void => {
-                          if (value) {
+                          if (value === true) {
                             handleTabChange({
                               setYAxisInterval: value,
                               chartYAxisScale: 0,
@@ -665,9 +665,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           } else {
                             handleTabChange({
                               setYAxisInterval: false,
-                              chartYAxisScale: undefined,
-                              chartYAxisScaleChartMinValue: undefined,
-                              chartYAxisScaleChartMaxValue: undefined,
+                              chartYAxisScale: null,
+                              chartYAxisScaleChartMinValue: null,
+                              chartYAxisScaleChartMaxValue: null,
                             });
                           }
                         }}

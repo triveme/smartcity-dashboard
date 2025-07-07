@@ -120,6 +120,12 @@ export class OrchideoConnectService {
             queryBatch,
             transformedData,
           );
+        } else {
+          console.warn(
+            `No data received for query batch with ID: ${queryBatch.queryIds.join(
+              ', ',
+            )} in tenant: ${tenant}`,
+          );
         }
       });
 
@@ -291,7 +297,7 @@ export class OrchideoConnectService {
         break;
 
       case 'live':
-        return this.filterByAttribute(attributes, data);
+        return aggregatedData;
 
       default:
         this.logger.warn(`Invalid timeframe supplied: ${timeframe}`);

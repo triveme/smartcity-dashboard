@@ -198,12 +198,27 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
-              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
-              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined &&
+                tab?.chartYAxisScaleChartMinValue !== null
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined &&
+                tab?.chartYAxisScaleChartMaxValue !== null
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined &&
+                tab?.chartYAxisScale !== null
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
-              chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
@@ -244,17 +259,32 @@ export default async function DashboardTab(
               filterColor={ciColors.lineChartFilterColor || '#F1B434'}
               filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
-              chartHasAutomaticZoom={tab?.chartHasAutomaticZoom || false}
+              chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
-              chartYAxisScaleChartMinValue={tab?.chartYAxisScaleChartMinValue}
-              chartYAxisScaleChartMaxValue={tab?.chartYAxisScaleChartMaxValue}
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined &&
+                tab?.chartYAxisScaleChartMinValue !== null
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined &&
+                tab?.chartYAxisScaleChartMaxValue !== null
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined &&
+                tab?.chartYAxisScale !== null
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
-              chartYAxisScale={tab?.chartYAxisScale || undefined}
               labels={tab.chartLabels}
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}

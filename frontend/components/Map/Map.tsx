@@ -229,11 +229,32 @@ export default function Map(props: MapProps): JSX.Element {
   };
 
   const markerPositions: Marker[] = (data || []).map((mapObject, index) => {
-    const markerValue = mapObject[mapAttributeForValueBased]?.value;
+    // Handle different data structures for the attribute value
+    let markerValue;
+    if (mapObject[mapAttributeForValueBased]?.value !== undefined) {
+      // NGSI structure
+      markerValue = mapObject[mapAttributeForValueBased].value;
+    } else {
+      // Simple structure
+      markerValue = mapObject[mapAttributeForValueBased];
+    }
+
+    // Handle different data structures for the name/title
+    let title;
+    if (mapObject.name?.value) {
+      // NGSI structure
+      title = mapObject.name.value;
+    } else if (mapObject.name) {
+      // Simple structure
+      title = mapObject.name;
+    } else {
+      // Fallback
+      title = `Sensor ${index + 1}`;
+    }
 
     return {
       position: mapObject.position.coordinates ?? [52.520008, 13.404954], // Coordinates
-      title: mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`, // Sensor name
+      title: title, // Sensor name
       details: mapObject, // Full sensor details object
       dataSource: mapObject.dataSource, // Optional dataSource attribute
       color: getColorForMarker(mapObject, markerValue), // Determine the color based on the value
@@ -246,11 +267,19 @@ export default function Map(props: MapProps): JSX.Element {
           const attributeDetails = marker.details[mapFilterAttribute];
           if (!attributeDetails) return false;
 
-          const propertyValueRaw = attributeDetails.value;
+          let propertyValue;
+          if (attributeDetails.value !== undefined) {
+            // NGSI structure
+            propertyValue = attributeDetails.value;
+          } else {
+            // Simple structure
+            propertyValue = attributeDetails;
+          }
+
           // convert value "0.00" to 0 of type number
-          const propertyValue =
-            parseFloat(propertyValueRaw) === 0 ? 0 : propertyValueRaw;
-          return selectedFilters.includes(propertyValue);
+          const normalizedValue =
+            parseFloat(propertyValue) === 0 ? 0 : propertyValue;
+          return selectedFilters.includes(normalizedValue);
         })
       : markerPositions;
   };
@@ -564,11 +593,19 @@ export default function Map(props: MapProps): JSX.Element {
                             key === 'id' ||
                             key === 'location' ||
                             key === 'position' ||
-                            key === 'name'
+                            key === 'name' ||
+                            key === 'queryId' ||
+                            key === 'queryConfigId' ||
+                            key === 'type'
                           )
                             return;
 
-                          if (value && tempValue.value) {
+                          // Check if this is a structured field with type/value/metadata (NGSI-LD)
+                          if (
+                            value &&
+                            typeof tempValue === 'object' &&
+                            'type' in tempValue
+                          ) {
                             //Quick and dirty solution...bad stuff
                             if (key.toUpperCase() === 'TOTALCONSUMPTION') {
                               return (
@@ -632,15 +669,33 @@ export default function Map(props: MapProps): JSX.Element {
                                 :{' '}
                                 <strong>
                                   {' '}
-                                  {tempValue.type === 'Number' &&
-                                  tempValue.value
+                                  {tempValue.value === null ||
+                                  tempValue.value === undefined
+                                    ? 'Keine Daten'
+                                    : tempValue.type === 'Number' &&
+                                        tempValue.value
+                                      ? convertToLocaleNumber(
+                                          roundToDecimal(
+                                            tempValue.value,
+                                          ).toString(),
+                                          decimalSeparator,
+                                        )
+                                      : tempValue.value}
+                                </strong>
+                              </div>
+                            );
+                          } else if (value !== null && value !== undefined) {
+                            // Handle simple data structure (not NGSI-LD)
+                            return (
+                              <div key={key}>
+                                {key}:{' '}
+                                <strong>
+                                  {typeof value === 'number'
                                     ? convertToLocaleNumber(
-                                        roundToDecimal(
-                                          tempValue.value,
-                                        ).toString(),
+                                        roundToDecimal(value).toString(),
                                         decimalSeparator,
                                       )
-                                    : tempValue.value}
+                                    : value.toString()}
                                 </strong>
                               </div>
                             );
