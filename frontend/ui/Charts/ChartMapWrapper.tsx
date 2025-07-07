@@ -48,7 +48,7 @@ export default function ChartMapWrapper({
         <LineChart
           labels={undefined}
           xAxisLabel={mapWidgetValue?.chartXAxisLabel || ''}
-          yAxisLabel={mapWidgetValue?.chartYAxisLabel || ''}
+          yAxisLabel={''}
           data={[data]}
           allowImageDownload={false}
           staticValues={[]}
@@ -78,10 +78,8 @@ export default function ChartMapWrapper({
           filterColor={ciColors.lineChartFilterColor || '#F1B434'}
           filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
           decimalPlaces={mapWidgetValue?.decimalPlaces || 2}
-          chartHasAutomaticZoom={mapWidgetValue?.chartHasAutomaticZoom || false}
-          chartDateRepresentation={
-            mapWidgetValue?.chartDateRepresentation || 'Default'
-          }
+          chartHasAutomaticZoom={true}
+          chartDateRepresentation={'Default'}
           chartYAxisScale={mapWidgetValue?.chartYAxisScale || undefined}
           legendAlignment={'Top'}
           hasAdditionalSelection={false}
@@ -89,12 +87,15 @@ export default function ChartMapWrapper({
           showTooltip={false}
           allowZoom={false}
           isStackedChart={false}
+          isShownInMapModal={true}
         />
       ) : (
         <BarChart
           chartDateRepresentation={'Default'}
           chartYAxisScale={undefined}
           labels={undefined}
+          xAxisLabel={mapWidgetValue?.chartXAxisLabel || ''}
+          yAxisLabel={''}
           data={[data]}
           allowImageDownload={false}
           allowZoom={false}
