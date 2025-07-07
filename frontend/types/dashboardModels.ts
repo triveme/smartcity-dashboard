@@ -470,6 +470,7 @@ export type CorporateInfo = {
   scrollbarColor: string;
   showHeaderLogo: boolean;
   showMenuLogo: boolean;
+  showInfoButtonsOnMobile: boolean;
   sidebarLogos: SidebarLogo[];
   sliderCurrentFontColor: string;
   sliderMaximumFontColor: string;

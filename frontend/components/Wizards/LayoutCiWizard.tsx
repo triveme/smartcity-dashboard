@@ -61,6 +61,8 @@ type Props = {
   borderColor: string;
   backgroundColor: string;
   iconColor: string;
+  showInfoButtonsOnMobile: boolean;
+  setShowInfoButtonsOnMobile: (value: boolean) => void;
 };
 
 export default function LayoutCiWizard({
@@ -111,6 +113,8 @@ export default function LayoutCiWizard({
   borderColor,
   backgroundColor,
   iconColor,
+  showInfoButtonsOnMobile,
+  setShowInfoButtonsOnMobile,
 }: Props): JSX.Element {
   const tenant = getTenantOfPage();
   const { data: generalSetting } = useQuery({
@@ -345,7 +349,7 @@ export default function LayoutCiWizard({
         </div>
       </div>
       <div className="flex flex-col w-full mt-2">
-        <div className="flex flex-wrap w-full" style={{ marginBottom: 245 }}>
+        <div className="flex flex-wrap w-full">
           <div className="w-1/2">
             <ColorPickerComponent
               currentColor={cancelButtonColor}
@@ -358,6 +362,19 @@ export default function LayoutCiWizard({
               currentColor={cancelHoverButtonColor}
               handleColorChange={setCancelHoverButtonColor}
               label="Hover Schaltfläche Abbrechen"
+            />
+          </div>
+        </div>
+      </div>
+      <HorizontalDivider />
+      <div className="flex flex-col w-full">
+        <WizardLabel label="Mobile Ansicht" />
+        <div className="flex flex-wrap w-full pb-4">
+          <div className="w-1/4" style={{ marginBottom: 245 }}>
+            <CheckBox
+              label={'Infobuttons anzeigen'}
+              value={showInfoButtonsOnMobile}
+              handleSelectChange={setShowInfoButtonsOnMobile}
             />
           </div>
         </div>
