@@ -233,6 +233,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                             widget.componentSubType ===
                             tabComponentSubTypeEnum.lineChart
                           }
+                          mapWidgetValue={widget}
                         />
                       </div>
                     )}
