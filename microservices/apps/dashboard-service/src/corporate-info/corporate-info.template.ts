@@ -29,6 +29,7 @@ export const edagTemplate: NewCorporateInfo = {
   panelSecondaryColor: '#3D4760',
   showHeaderLogo: true,
   showMenuLogo: true,
+  showInfoButtonsOnMobile: false,
   widgetBorderColor: '#3D4760',
   widgetBorderRadius: '4px',
   widgetBorderSize: '4px',

@@ -36,6 +36,8 @@ export default async function DashboardPanel(
     );
   };
 
+  const showInfoButtonsOnMobile = ciColors.showInfoButtonsOnMobile ?? false;
+
   //Dynamic Styling
   const panelStyle: CSSProperties = {
     height: 'auto',
@@ -53,8 +55,29 @@ export default async function DashboardPanel(
       style={panelStyle}
     >
       {showPanelHeader() && (
-        <div className="flex flex-row items-center justify-between content-between gap-x-4 pb-2">
-          <div className="flex flex-row items-center">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-4 sm:items-center sm:justify-between pb-2">
+          {/* Buttons container - appears first on mobile, last on desktop */}
+          <div
+            className={`${showInfoButtonsOnMobile ? 'flex' : 'hidden'} sm:flex flex-row items-center gap-x-4 justify-end sm:justify-start order-first sm:order-last`}
+          >
+            {panel.showJumpoffButton && (
+              <JumpoffButton
+                panel={panel}
+                headerPrimaryColor={ciColors.headerPrimaryColor}
+                headerFontColor={ciColors.headerFontColor}
+              />
+            )}
+            {panel.showGeneralInfo && (
+              <DashboardGeneralInfoMessage
+                panel={panel}
+                infoModalBackgroundColor={ciColors.widgetPrimaryColor}
+                infoModalFontColor={ciColors.widgetFontColor}
+              />
+            )}
+          </div>
+
+          {/* Headline container - appears second on mobile, first on desktop */}
+          <div className="flex flex-row items-center order-last sm:order-first">
             <div className="w-12 min-w-12 flex justify-center">
               <DashboardIcons
                 iconName={panel.icon || 'empty'}
@@ -80,22 +103,6 @@ export default async function DashboardPanel(
                 />
               ) : null}
             </div>
-          </div>
-          <div className="sm:flex flex-row items-center gap-x-4 hidden">
-            {panel.showJumpoffButton && (
-              <JumpoffButton
-                panel={panel}
-                headerPrimaryColor={ciColors.headerPrimaryColor}
-                headerFontColor={ciColors.headerFontColor}
-              />
-            )}
-            {panel.showGeneralInfo && (
-              <DashboardGeneralInfoMessage
-                panel={panel}
-                infoModalBackgroundColor={ciColors.widgetPrimaryColor}
-                infoModalFontColor={ciColors.widgetFontColor}
-              />
-            )}
           </div>
         </div>
       )}

@@ -33,6 +33,7 @@ export default async function DashboardWidget({
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
+  const showInfoButtonsOnMobile = ciColors.showInfoButtonsOnMobile ?? false;
 
   const getWidgetHeight = (): string => {
     let height = '0px';
@@ -84,11 +85,37 @@ export default async function DashboardWidget({
   return (
     <div className={`pb-4 w-full h-full ${customStyle}`}>
       <div
-        className={`w-full flex flex-row gap-x-4 items-center overflow-auto hide-scrollbar ${ciColors.isWidgetHeadlineBold ? 'font-bold' : ''}`}
+        className={`w-full flex flex-col sm:flex-row gap-2 sm:gap-x-4 sm:items-center overflow-auto hide-scrollbar ${ciColors.isWidgetHeadlineBold ? 'font-bold' : ''}`}
         style={{ color: widgetStyle.color }}
       >
+        {/* Buttons container - appears first on mobile, last on desktop */}
+        <div
+          className={`${showInfoButtonsOnMobile ? 'flex' : 'hidden'} sm:flex text-sm flex-row space-x-2 items-center justify-end sm:justify-start order-first sm:order-last`}
+        >
+          {widget.allowDataExport && (
+            <SmallDataExportButton
+              id={widget.id || ''}
+              type="widget"
+              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+              widgetFontColor={ciColors?.widgetFontColor}
+            />
+          )}
+          {widget.allowShare && (
+            <ShareLinkButton
+              type="widget"
+              id={widget.id || ''}
+              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+              widgetFontColor={ciColors?.widgetFontColor}
+            />
+          )}
+        </div>
+
+        {/* Headline container - appears second on mobile, first on desktop */}
         {widget.showName ? (
-          <div style={{ color: ciColors.widgetFontColor }}>
+          <div
+            style={{ color: ciColors.widgetFontColor }}
+            className="order-last sm:order-first"
+          >
             <div className="flex flex-row items-center">
               <div className="w-12 min-w-12 flex justify-center">
                 <DashboardIcons
@@ -131,7 +158,7 @@ export default async function DashboardWidget({
             </div>
           </div>
         ) : (
-          <>
+          <div className="order-last sm:order-first">
             <div>&nbsp;</div>
             {isEditable ? (
               <RedirectPageButton
@@ -141,26 +168,8 @@ export default async function DashboardWidget({
                 headerFontColor={ciColors.headerFontColor}
               />
             ) : null}
-          </>
+          </div>
         )}
-        <div className="sm:flex hidden text-sm flex-row space-x-2 items-center">
-          {widget.allowDataExport && (
-            <SmallDataExportButton
-              id={widget.id || ''}
-              type="widget"
-              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
-              widgetFontColor={ciColors?.widgetFontColor}
-            />
-          )}
-          {widget.allowShare && (
-            <ShareLinkButton
-              type="widget"
-              id={widget.id || ''}
-              widgetPrimaryColor={ciColors?.widgetPrimaryColor}
-              widgetFontColor={ciColors?.widgetFontColor}
-            />
-          )}
-        </div>
       </div>
       <div
         style={widgetStyle}
