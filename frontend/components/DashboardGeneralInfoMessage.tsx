@@ -23,7 +23,7 @@ export default function DashboardGeneralInfoMessage(
   };
 
   return (
-    <div className="justify-center items-center content-center h-4/6 overflow-y-auto">
+    <div className="justify-center items-center content-center h-4/6">
       <button onClick={handleInfoButtonClicked}>
         <FontAwesomeIcon icon={faExclamationCircle} size="sm" />
       </button>

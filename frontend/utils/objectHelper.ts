@@ -126,6 +126,7 @@ export const DEFAULT_CI: CorporateInfo = {
   cancelHoverButtonColor: '#6C7188',
   showHeaderLogo: false,
   showMenuLogo: false,
+  showInfoButtonsOnMobile: false,
   titleBar: '',
   useColorTransitionHeader: false,
   useColorTransitionMenu: false,

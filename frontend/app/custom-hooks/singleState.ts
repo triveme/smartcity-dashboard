@@ -40,6 +40,7 @@ const initialWizardState: CorporateInfo = {
   cancelHoverButtonColor: '#6C7188',
   showHeaderLogo: true,
   showMenuLogo: true,
+  showInfoButtonsOnMobile: false,
   titleBar: 'name',
   widgetBorderColor: '#3D4760',
   widgetBorderRadius: '4px',

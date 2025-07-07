@@ -558,7 +558,6 @@ export class DataService {
     const { queryIds, query_config, data_source, auth_data } = queryBatch;
 
     try {
-      let url: string;
       let headers;
       const access_token =
         await this.authService.getAccessTokenByQuery(queryBatch);
@@ -570,7 +569,7 @@ export class DataService {
         return;
       }
 
-      url =
+      const url =
         query_config.entityIds.length === 1
           ? `${auth_data.timeSeriesUrl}${query_config.entityIds}`
           : auth_data.timeSeriesUrl;
@@ -597,7 +596,6 @@ export class DataService {
         attrs: query_config.attributes.join(','),
         id: query_config.entityIds.join(','),
       };
-      url = url.replace('entities/', 'attrs');
 
       // Workaround for aggregation attributes with a name attribute included
       if (params.attrs.includes('name')) {
