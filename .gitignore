@@ -44,10 +44,11 @@ lerna-debug.log*
 k8s/helm/charts/*.tgz
 k8s/helm/*.lock
 k8s/helm/certificates/*
+k8s/helm/secrets/*
 k8s/helm/secrets.yaml
 
 # Migrationfiles
-# database/migrations/generated/*
+database/migrations/generated/*
 
 # Ignore everything in the hcloud folder
 hcloud/*
