@@ -46,6 +46,7 @@ k8s/helm/*.lock
 k8s/helm/certificates/*
 k8s/helm/secrets/*
 k8s/helm/secrets.yaml
+k8s/helm/*
 
 # Migrationfiles
 database/migrations/generated/*
