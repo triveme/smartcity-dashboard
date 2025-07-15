@@ -58,3 +58,7 @@ hcloud/*
 
 # Keycloak
 keycloak/import/production-realm.json
+
+.env
+microservices/.env.testing
+microservices/.env
