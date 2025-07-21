@@ -550,18 +550,6 @@ export type Mail = {
   body: string;
 };
 
-export type MapModalChartStyle = {
-  degreeChart180BgColor: string;
-  degreeChart180FillColor: string;
-  degreeChart180FontColor: string;
-  degreeChart180FontSize: string;
-  degreeChart180UnitFontSize: string;
-  stageableChartFontColor: string;
-  stageableChartFontSize: string;
-  stageableChartTicksFontColor: string;
-  stageableChartTicksFontSize: string;
-};
-
 export type SliderOverviewType = {
   name: string;
   capacityMax: number;

@@ -145,6 +145,9 @@ export class DataService {
       const tokenData = await this.authService.getTokenData({
         username: queryBatch.system_user.username,
         password: EncryptionUtil.decryptPassword(password as object),
+        client_id: auth_data.clientId,
+        grant_type: auth_data.grantType,
+        authUrl: auth_data.authUrl,
       });
 
       let url = `${auth_data.apiUrl}/collections/${queryBatch.query_config.fiwareService}/${queryBatch.query_config.fiwareType}/data`;

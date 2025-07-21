@@ -19,7 +19,7 @@ postgresql:
 
 migrations:
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/migrations
+    repository: nexus.edag.de:8202/smart-city/scs/migrations
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -60,7 +60,7 @@ dashboard-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/dashboard-service
+    repository: nexus.edag.de:8202/smart-city/scs/dashboard-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -81,7 +81,7 @@ data-translation-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/data-translation-service
+    repository: nexus.edag.de:8202/smart-city/scs/data-translation-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -102,7 +102,7 @@ ngsi-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/ngsi-service
+    repository: nexus.edag.de:8202/smart-city/scs/ngsi-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -123,7 +123,7 @@ orchideo-connect-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/orchideo-connect-service
+    repository: nexus.edag.de:8202/smart-city/scs/orchideo-connect-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -144,7 +144,7 @@ mail-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/mail-service
+    repository: nexus.edag.de:8202/smart-city/scs/mail-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -165,7 +165,7 @@ infopin-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/infopin-service
+    repository: nexus.edag.de:8202/smart-city/scs/infopin-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -186,7 +186,7 @@ report-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/report-service
+    repository: nexus.edag.de:8202/smart-city/scs/report-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -207,7 +207,7 @@ static-data-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/static-data-service
+    repository: nexus.edag.de:8202/smart-city/scs/static-data-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -228,7 +228,7 @@ usi-platform-service:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/usi-platform-service
+    repository: nexus.edag.de:8202/smart-city/scs/usi-platform-service
     tag: 'latest-dev'
     pullPolicy: Always
   resources:
@@ -249,7 +249,7 @@ frontend:
       cert-manager.io/issuer-kind: ClusterIssuer
     ingressClassName: nginx
   image:
-    repository: nexus.edag.de:8206/mobit-malaysia/scs/frontend
+    repository: nexus.edag.de:8202/smart-city/scs/frontend
     tag: 'latest-dev'
     pullPolicy: Always
   resources:

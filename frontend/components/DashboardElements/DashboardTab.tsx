@@ -5,7 +5,6 @@ import '@/components/dependencies/quill.snow.css';
 import '../../app/quill.css';
 import {
   CorporateInfo,
-  MapModalChartStyle,
   MapModalLegend,
   MapModalWidget,
   MapObject,
@@ -39,6 +38,7 @@ import {
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
 import NoDataWarning from '@/ui/NoDataWarning';
+import { MapModalChartStyle } from '@/types/mapRelatedModels';
 
 type DashboardTabProps = {
   tab: Tab;
@@ -47,15 +47,9 @@ type DashboardTabProps = {
   tenant: string | undefined;
   isCombinedWidget?: boolean;
 };
-const MapWithNoSSR = nextDynamic(() => import('@/components/Map/Map'), {
+const Map = nextDynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
 });
-const CombinedMapWithNoSSR = nextDynamic(
-  () => import('@/components/Map/CombinedMap'),
-  {
-    // ssr: false,
-  },
-);
 
 export default async function DashboardTab(
   props: DashboardTabProps,
@@ -178,8 +172,21 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
             <PieChart
-              labels={tab.chartLabels || []}
-              data={tabData?.chartValues || []}
+              labels={
+                tabData?.chartData?.map(
+                  (item: { name: string }) => item.name,
+                ) ||
+                tab.chartLabels ||
+                []
+              }
+              data={
+                tabData?.chartData?.map(
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (item: { values: any[][] }) => item.values[0]?.[1],
+                ) ||
+                tabData?.chartValues ||
+                []
+              }
               fontSize={ciColors.pieChartFontSize}
               fontColor={ciColors.pieChartFontColor}
               currentValuesColors={
@@ -524,10 +531,48 @@ export default async function DashboardTab(
           )}
         </div>
       )}
-      {tab.componentType === tabComponentTypeEnum.map &&
-        tab.componentSubType !== tabComponentSubTypeEnum.combinedMap && (
-          <div id="map" className="h-full w-full">
-            <MapWithNoSSR
+      {tab.componentType === tabComponentTypeEnum.map && (
+        <div id="map" className="h-full w-full">
+          {tab.componentSubType === tabComponentSubTypeEnum.combinedMap ? (
+            <Map
+              data={combinedMapData?.mapObject as MapObject[]}
+              combinedMapData={combinedMapData}
+              mapAllowFilter={true}
+              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
+              mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
+              mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
+              mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
+              mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
+              mapLegendValues={
+                combinedMapData?.mapLegendValues as MapModalLegend[]
+              }
+              mapLegendDisclaimer={
+                combinedMapData?.mapLegendDisclaimer as string[]
+              }
+              mapActiveMarkerColor={
+                combinedMapData?.mapActiveMarkerColor as string[]
+              }
+              mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
+              mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
+              mapMarkerIconColor={
+                combinedMapData?.mapMarkerIconColor as string[]
+              }
+              mapShapeOption={combinedMapData?.mapShapeOption as string[]}
+              mapShapeColor={combinedMapData?.mapShapeColor as string[]}
+              mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
+              mapWidgetValues={
+                combinedMapData?.mapWidgetValues as MapModalWidget[]
+              }
+              mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
+              mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
+              mapNames={(combinedMapData?.mapNames as string[]) || []}
+              isFullscreenMap={false}
+              chartStyle={chartStyle}
+              menuStyle={menuStyle}
+              ciColors={ciColors}
+            />
+          ) : (
+            <Map
               mapMaxZoom={tab.mapMaxZoom ? tab.mapMaxZoom : 18}
               mapMinZoom={tab.mapMinZoom ? tab.mapMinZoom : 0}
               mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
@@ -557,63 +602,26 @@ export default async function DashboardTab(
               isFullscreenMap={false}
               mapAllowFilter={tab.mapAllowFilter || false}
               mapFilterAttribute={tab.mapFilterAttribute || ''}
+              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
               mapAllowLegend={tab.mapAllowLegend || false}
               mapLegendValues={tab.mapLegendValues ? tab.mapLegendValues : []}
               mapLegendDisclaimer={
                 tab.mapLegendDisclaimer ? [tab.mapLegendDisclaimer] : []
               }
-              menuStyle={menuStyle}
               mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
+              mapFormSizeFactor={tab.mapFormSizeFactor || 1}
               mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
               mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
-              mapFormSizeFactor={tab.mapFormSizeFactor || 1}
               mapWmsUrl={tab.mapWmsUrl || ''}
               mapWmsLayer={tab.mapWmsLayer || ''}
-              ciColors={ciColors}
-            />
-          </div>
-        )}
-      {tab.componentType === tabComponentTypeEnum.map &&
-        tab.componentSubType === tabComponentSubTypeEnum.combinedMap && (
-          <div id="map" className="w-full h-full">
-            <CombinedMapWithNoSSR
-              data={combinedMapData?.mapObject as MapObject[]}
-              combinedMapData={combinedMapData}
-              mapAllowFilter={true}
-              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
-              mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
-              mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
-              mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
-              mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
-              mapLegendValues={
-                combinedMapData?.mapLegendValues as MapModalLegend[]
-              }
-              mapLegendDisclaimer={
-                combinedMapData?.mapLegendDisclaimer as string[]
-              }
-              mapActiveMarkerColor={
-                combinedMapData?.mapActiveMarkerColor as string[]
-              }
-              mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
-              mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
-              mapShapeOption={combinedMapData?.mapShapeOption as string[]}
-              mapShapeColor={combinedMapData?.mapShapeColor as string[]}
-              mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
-              mapWidgetValues={
-                combinedMapData?.mapWidgetValues as MapModalWidget[]
-              }
-              mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
-              mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
-              mapNames={(combinedMapData?.mapNames as string[]) || []}
-              isFullscreenMap={false}
-              chartStyle={chartStyle}
               menuStyle={menuStyle}
               ciColors={ciColors}
             />
-          </div>
-        )}
+          )}
+        </div>
+      )}
       {tab.componentType === tabComponentTypeEnum.iframe && (
         <IFrameComponent src={tab.iFrameUrl || ''} />
       )}

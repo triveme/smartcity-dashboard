@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { dataSources } from '@app/postgres-db/schemas/data-source.schema';
-import { authData } from '@app/postgres-db/schemas/auth-data.schema';
+import { AuthData, authData } from '@app/postgres-db/schemas/auth-data.schema';
 import { AuthService } from '../auth/auth.service';
 
 export type UsiEventType = {
@@ -15,22 +15,19 @@ export type UsiEventType = {
 @Injectable()
 export class QueryConfigService {
   private readonly logger = new Logger(QueryConfigService.name);
-  private readonly apiBaseUrl: string;
 
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
-  ) {
-    this.apiBaseUrl = `${process.env.USI_API_URL}`;
-  }
+  ) {}
 
   async getEventTypes(apiId?: string): Promise<UsiEventType[]> {
     try {
-      const apiUrl = (await this.getUrl(apiId)) || this.apiBaseUrl;
+      const apiUrl = await this.getUrl(apiId);
       const url = `${apiUrl}/api/eventtypes`;
-      const token = await this.authService.getToken();
+      const authData = await this.getUsiAuthData(apiId);
+      const token = await this.authService.getToken(authData);
       console.log('URL: ', url);
-      console.log('Token: ', token);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -50,11 +47,11 @@ export class QueryConfigService {
 
   async getSensors(eventType: string, apiId?: string): Promise<string[]> {
     try {
-      const apiUrl = (await this.getUrl(apiId)) || this.apiBaseUrl;
+      const apiUrl = await this.getUrl(apiId);
+      const authData = await this.getUsiAuthData(apiId);
       const url = `${apiUrl}/api/${eventType}/sensors`;
-      const token = await this.authService.getToken();
+      const token = await this.authService.getToken(authData);
       console.log('URL: ', url);
-      console.log('Token: ', token);
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -82,6 +79,21 @@ export class QueryConfigService {
     if (result.length > 0) {
       console.log('Returning URL: ', result[0].auth_data.liveUrl);
       return result[0].auth_data.liveUrl;
+    } else {
+      this.logger.error(`No datasource found with id: ${apiId}`);
+      throw new Error('No datasource found with this id');
+    }
+  }
+
+  private async getUsiAuthData(apiId: string): Promise<AuthData> {
+    const result = await this.db
+      .select()
+      .from(dataSources)
+      .leftJoin(authData, eq(dataSources.authDataId, authData.id))
+      .where(eq(dataSources.id, apiId));
+
+    if (result.length > 0) {
+      return result[0].auth_data;
     } else {
       this.logger.error(`No datasource found with id: ${apiId}`);
       throw new Error('No datasource found with this id');

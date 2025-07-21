@@ -9,6 +9,7 @@ import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
+import { TabService } from '../tab/tab.service';
 
 @Injectable()
 export class DashboardDataService {
@@ -20,6 +21,7 @@ export class DashboardDataService {
     private readonly orchideoConnectService: OrchideoConnectService,
     private readonly ngsiQueryService: NgsiQueryService,
     private readonly panelRepo: PanelRepo,
+    private readonly tabService: TabService,
   ) {}
 
   async downloadDashboardData(dashboardId: string): Promise<string> {
@@ -50,7 +52,49 @@ export class DashboardDataService {
           }),
         );
 
+        // Expand combined widgets by replacing them with their child widgets
+        const expandedWidgets = [];
         for (const panelWidget of allWidgets) {
+          const widgetTabs = await this.tabService.getTabsByWidgetId(
+            panelWidget.id,
+          );
+
+          if (widgetTabs.length > 0) {
+            const combinedTab = widgetTabs[0];
+            if (
+              combinedTab.componentType === 'Kombinierte Komponente' ||
+              combinedTab.componentSubType === 'Kombinierte Karte'
+            ) {
+              if (
+                combinedTab.childWidgets &&
+                Array.isArray(combinedTab.childWidgets) &&
+                combinedTab.childWidgets.length > 0
+              ) {
+                const childWidgets = await Promise.all(
+                  combinedTab.childWidgets.map(async (childWidgetId) => {
+                    const childWidget = await this.db
+                      .select()
+                      .from(widgets)
+                      .where(eq(widgets.id, childWidgetId));
+                    return childWidget[0];
+                  }),
+                );
+
+                childWidgets.forEach((childWidget) => {
+                  if (childWidget) {
+                    expandedWidgets.push(childWidget);
+                  }
+                });
+              }
+            } else {
+              expandedWidgets.push(panelWidget);
+            }
+          } else {
+            expandedWidgets.push(panelWidget);
+          }
+        }
+
+        for (const panelWidget of expandedWidgets) {
           try {
             const queryWithAllInfos =
               await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
@@ -152,9 +196,6 @@ export class DashboardDataService {
               const warning = `No data found for widget with id: ${panelWidget.id}`;
               console.warn(warning);
               errorMessages.push(warning);
-              allCsvData.push(
-                `"entityId","attrName","value","index"\n"No data found for widget with id: ${panelWidget.id}"`,
-              );
             } else {
               const opts = {
                 fields: ['entityId', 'attrName', 'value', 'index'],

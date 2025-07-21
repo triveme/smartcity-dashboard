@@ -129,7 +129,7 @@ export class PopulateChartService {
       const queryDataElement: any = query.queryData;
 
       const chartData: ChartData = {
-        name: queryDataElement.id,
+        name: queryDataElement['name']?.value || queryDataElement.id,
         values: [],
       };
 
@@ -168,7 +168,7 @@ export class PopulateChartService {
             const attributes = Object.keys(tquery).filter(
               (key) =>
                 // Filter out common metadata fields - adjust as needed
-                !['id', '_id', 'timestamp', 'sensorId'].includes(key),
+                !['_id', 'timestamp', 'sensorId'].includes(key),
             );
 
             // Process each attribute
@@ -181,8 +181,16 @@ export class PopulateChartService {
                   : tvalue;
 
               if (tvalue !== null && tvalue !== undefined) {
-                tab.chartLabels.push(getGermanLabelForAttribute(attr));
+                const label = getGermanLabelForAttribute(attr);
+                tab.chartLabels.push(label);
                 tab.chartValues.push(tvalue);
+
+                // Add to chartData
+                tab.chartData.push({
+                  name: label,
+                  values: [[attr, tvalue]],
+                  color: null,
+                });
               }
             });
           }
@@ -197,9 +205,17 @@ export class PopulateChartService {
               const sensorValue =
                 attributes[queryConfig.attributes[0]]?.value || 0;
               const sensorLabel = attributes['name']?.value || `${id} ${i}`;
+              const label = getGermanLabelForAttribute(sensorLabel);
 
-              tab.chartLabels.push(getGermanLabelForAttribute(sensorLabel));
+              tab.chartLabels.push(label);
               tab.chartValues.push(sensorValue);
+
+              // Add to chartData
+              tab.chartData.push({
+                name: label,
+                values: [[queryConfig.attributes[0], sensorValue]],
+                color: null,
+              });
             });
           }
         }
@@ -224,10 +240,17 @@ export class PopulateChartService {
                 const value = attrObj.values[attrObj.values.length - 1];
 
                 // Use attribute name as label
-                const label = attrObj.attrName;
+                const label = getGermanLabelForAttribute(attrObj.attrName);
 
-                tab.chartLabels.push(getGermanLabelForAttribute(label));
+                tab.chartLabels.push(label);
                 tab.chartValues.push(value);
+
+                // Add to chartData
+                tab.chartData.push({
+                  name: label,
+                  values: [[attrObj.attrName, value]],
+                  color: null,
+                });
               }
             });
           }
@@ -263,8 +286,16 @@ export class PopulateChartService {
                         }
                       }
 
-                      tab.chartLabels.push(getGermanLabelForAttribute(label));
+                      const processedLabel = getGermanLabelForAttribute(label);
+                      tab.chartLabels.push(processedLabel);
                       tab.chartValues.push(value);
+
+                      // Add to chartData
+                      tab.chartData.push({
+                        name: processedLabel,
+                        values: [[attribute, value]],
+                        color: null,
+                      });
                     }
                   });
                 }
@@ -279,8 +310,16 @@ export class PopulateChartService {
                 : null;
 
             if (value !== null) {
-              tab.chartLabels.push(getGermanLabelForAttribute(attribute));
+              const label = getGermanLabelForAttribute(attribute);
+              tab.chartLabels.push(label);
               tab.chartValues.push(value);
+
+              // Add to chartData
+              tab.chartData.push({
+                name: label,
+                values: [[attribute, value]],
+                color: null,
+              });
             }
           }
         }
@@ -475,6 +514,33 @@ export class PopulateChartService {
                     matchingEntityData.values[
                       matchingEntityData.values.length - 1
                     ]?.toString() || null;
+                }
+              }
+            }
+
+            if (!sensorName || sensorName === '') {
+              const idAttribute = queryDataMap
+                .get('attrs')
+                ?.find((attr) => attr.attrName === 'id');
+              if (idAttribute) {
+                const matchingEntity = idAttribute.types.find((t) =>
+                  t.entities.some((e) => e.entityId === entity.entityId),
+                );
+
+                if (matchingEntity) {
+                  const matchingEntityData = matchingEntity.entities.find(
+                    (e) => e.entityId === entity.entityId,
+                  );
+                  if (
+                    matchingEntityData &&
+                    matchingEntityData.values &&
+                    matchingEntityData.values.length > 0
+                  ) {
+                    sensorName =
+                      matchingEntityData.values[
+                        matchingEntityData.values.length - 1
+                      ]?.toString() || null;
+                  }
                 }
               }
             }

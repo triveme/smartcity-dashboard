@@ -414,6 +414,18 @@ export default function DataPlatformWizard(
               />
             </div>
             <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Grant Type (Zum Beispiel 'password' oder 'client_credentials'" />
+              <WizardTextfield
+                value={grantType}
+                onChange={(value: string | number): void =>
+                  setGrantType(value.toString())
+                }
+                error={errors && errors.clientError}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
               <WizardLabel label="Authentifizierungs Url" />
               <WizardUrlTextfield
                 value={authUrl}
@@ -454,7 +466,7 @@ export default function DataPlatformWizard(
           // Orchideo Connect Dataplatform
           <div className="flex flex-col justify-start items-start content-center grow w-full">
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Orchideo Connect Url" />
+              <WizardLabel label="Orchideo Connect Url (endet mit /consumer-api/v1)" />
               <WizardUrlTextfield
                 value={apiUrl}
                 onChange={(value: string | number): void =>

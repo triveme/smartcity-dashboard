@@ -65,6 +65,7 @@ export type Position = {
 };
 
 export type MapObject = {
+  entityId: string;
   position: Position;
   queryId: string;
   queryConfigId: string;

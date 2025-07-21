@@ -6,7 +6,6 @@ import PageHeadline from '@/ui/PageHeadline';
 import {
   CorporateInfo,
   DashboardWithContent,
-  MapModalChartStyle,
   MapModalLegend,
   MapModalWidget,
   MapObject,
@@ -28,6 +27,7 @@ import { isTabOfTypeCombinedWidget } from '@/utils/tabTypeHelper';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
 import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
+import { MapModalChartStyle } from '@/types/mapRelatedModels';
 
 type DashboardProps = {
   dashboard: DashboardWithContent;
@@ -41,15 +41,9 @@ export default async function Dashboard(
   const cookieStore = await cookies();
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
 
-  const MapWithNoSSR = nextDynamic(() => import('@/components/Map/Map'), {
+  const Map = nextDynamic(() => import('@/components/Map/Map'), {
     // ssr: false,
   });
-  const CombinedMapWithNoSSR = nextDynamic(
-    () => import('@/components/Map/CombinedMap'),
-    {
-      // ssr: false,
-    },
-  );
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
@@ -201,11 +195,62 @@ export default async function Dashboard(
           </div>
         </div>
       )}
-      {dashboard.type === 'Karte' &&
-        dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType !==
-          tabComponentSubTypeEnum.combinedMap && (
-          <div id="map" className="w-full h-full">
-            <MapWithNoSSR
+      {dashboard.type === 'Karte' && (
+        <div id="map" className="w-full h-full">
+          {dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType ===
+          tabComponentSubTypeEnum.combinedMap ? (
+            <Map
+              data={combinedMapData?.mapObject as MapObject[]}
+              combinedMapData={combinedMapData}
+              mapAllowFilter={true}
+              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
+              mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
+              mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
+              mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
+              mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
+              mapLegendValues={
+                combinedMapData?.mapLegendValues as MapModalLegend[]
+              }
+              mapLegendDisclaimer={
+                combinedMapData?.mapLegendDisclaimer as string[]
+              }
+              mapActiveMarkerColor={
+                combinedMapData?.mapActiveMarkerColor as string[]
+              }
+              mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
+              mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
+              mapMarkerIconColor={
+                combinedMapData?.mapMarkerIconColor as string[]
+              }
+              mapShapeOption={combinedMapData?.mapShapeOption as string[]}
+              mapShapeColor={combinedMapData?.mapShapeColor as string[]}
+              mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
+              mapWidgetValues={
+                combinedMapData?.mapWidgetValues as MapModalWidget[]
+              }
+              mapCombinedWmsUrl={
+                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
+                  .mapCombinedWmsUrl || ''
+              }
+              mapCombinedWmsLayer={
+                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
+                  .mapCombinedWmsLayer || ''
+              }
+              mapNames={(combinedMapData?.mapNames as string[]) || []}
+              isFullscreenMap={true}
+              chartStyle={chartStyle}
+              menuStyle={menuStyle}
+              ciColors={ciColors}
+              allowShare={dashboard.allowShare}
+              dashboardId={dashboard.id || ''}
+              allowDataExport={
+                dashboard.allowDataExport &&
+                dashboard.panels?.[0].widgets?.[0].allowDataExport
+              }
+              widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
+            />
+          ) : (
+            <Map
               mapMaxZoom={
                 dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapMaxZoom || 18
               }
@@ -315,68 +360,15 @@ export default async function Dashboard(
               ciColors={ciColors}
               allowShare={dashboard.allowShare}
               dashboardId={dashboard.id || ''}
-              // both dashboard and widget have to allowDataExport
               allowDataExport={
                 dashboard.allowDataExport &&
                 dashboard.panels?.[0].widgets?.[0].allowDataExport
               }
               widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
             />
-          </div>
-        )}
-      {dashboard.type === 'Karte' &&
-        dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType ===
-          tabComponentSubTypeEnum.combinedMap && (
-          <div id="map" className="w-full h-full">
-            <CombinedMapWithNoSSR
-              data={combinedMapData?.mapObject as MapObject[]}
-              combinedMapData={combinedMapData}
-              mapAllowFilter={true}
-              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
-              mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
-              mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
-              mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
-              mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
-              mapLegendValues={
-                combinedMapData?.mapLegendValues as MapModalLegend[]
-              }
-              mapLegendDisclaimer={
-                combinedMapData?.mapLegendDisclaimer as string[]
-              }
-              mapActiveMarkerColor={
-                combinedMapData?.mapActiveMarkerColor as string[]
-              }
-              mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
-              mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
-              mapShapeOption={combinedMapData?.mapShapeOption as string[]}
-              mapShapeColor={combinedMapData?.mapShapeColor as string[]}
-              mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
-              mapWidgetValues={
-                combinedMapData?.mapWidgetValues as MapModalWidget[]
-              }
-              mapCombinedWmsUrl={
-                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
-                  .mapCombinedWmsUrl || ''
-              }
-              mapCombinedWmsLayer={
-                dashboard.panels?.[0].widgets?.[0].tabs?.[0]
-                  .mapCombinedWmsLayer || ''
-              }
-              mapNames={(combinedMapData?.mapNames as string[]) || []}
-              isFullscreenMap={true}
-              chartStyle={chartStyle}
-              menuStyle={menuStyle}
-              ciColors={ciColors}
-              allowShare={dashboard.allowShare}
-              dashboardId={dashboard.id || ''}
-              allowDataExport={
-                dashboard.allowDataExport &&
-                dashboard.panels?.[0].widgets?.[0].allowDataExport
-              }
-              widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
-            />
-          </div>
-        )}
+          )}
+        </div>
+      )}
     </div>
   );
 }
