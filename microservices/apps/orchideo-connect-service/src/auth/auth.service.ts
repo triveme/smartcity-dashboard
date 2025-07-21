@@ -28,8 +28,8 @@ export class AuthService {
     if (toSend) {
       dataToSend = {
         ...toSend,
-        client_id: process.env.ORCHIDEO_CONNECT_CLIENT_ID,
-        grant_type: process.env.ORCHIDEO_CONNECT_GRANT_TYPE,
+        client_id: toSend.client_id,
+        grant_type: toSend.grant_type,
       };
     } else {
       this.logger.error('Using old authentication method');
@@ -38,7 +38,7 @@ export class AuthService {
     console.log('dataToSend', dataToSend);
     const { data } = await lastValueFrom(
       this.httpService
-        .post(process.env.ORCHIDEO_CONNECT_KEYCLOAK_URL, dataToSend, {
+        .post(toSend.authUrl, dataToSend, {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },

@@ -4,13 +4,14 @@ import { AuthService } from '../auth/auth.service';
 import axios from 'axios';
 import { tenants } from '@app/postgres-db/schemas/tenant.schema';
 import { groupingElements } from '@app/postgres-db/schemas/dashboard.grouping-element.schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { v4 as uuid } from 'uuid';
 import {
   SystemUser,
   systemUsers,
 } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
+import { authData, AuthData } from '@app/postgres-db/schemas/auth-data.schema';
 
 type OrganisationResponse = { id: string; name: string };
 
@@ -21,17 +22,12 @@ type GroupingElementNamesAndUrls = {
 
 @Injectable()
 export class OrganisationService {
-  private readonly apiBaseUrl: string;
-  private readonly authUrl: string;
   private readonly logger = new Logger(OrganisationService.name);
 
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
-  ) {
-    this.apiBaseUrl = `${process.env.ORCHIDEO_CONNECT_MANDATORS_URL}/mandators`;
-    this.authUrl = `${process.env.API_AUTH_URL}`;
-  }
+  ) {}
 
   async updateGroupingElements(): Promise<void> {
     const mandators = await this.getMandatorCodes();
@@ -39,7 +35,9 @@ export class OrganisationService {
       await this.getGroupingElementNamesAndUrls();
 
     for (const mandatorCode of mandators) {
+      const authData = await this.getAuthDataByTenant(mandatorCode)[0];
       const organisations = await this.getOrganisations(
+        authData,
         mandatorCode,
         groupingElementNamesAndUrls,
       );
@@ -51,6 +49,15 @@ export class OrganisationService {
         );
       }
     }
+  }
+
+  private getAuthDataByTenant(tenant: string): Promise<AuthData[]> {
+    return this.db
+      .select()
+      .from(authData)
+      .where(
+        and(eq(authData.tenantAbbreviation, tenant), eq(authData.type, 'api')),
+      );
   }
 
   private async createGroupingElementForOrganisation(
@@ -107,11 +114,14 @@ export class OrganisationService {
   }
 
   private async getOrganisations(
+    authData: AuthData,
     mandatorCode: string,
     groupingElementNamesAndUrls: GroupingElementNamesAndUrls,
   ): Promise<OrganisationResponse[]> {
-    const organisations =
-      await this.getOrganisationsDataFromDataSource(mandatorCode);
+    const organisations = await this.getOrganisationsDataFromDataSource(
+      authData,
+      mandatorCode,
+    );
 
     return organisations
       ? organisations.filter(
@@ -136,22 +146,25 @@ export class OrganisationService {
   }
 
   async getOrganisationsDataFromDataSource(
+    authData: AuthData,
     mandator: string,
   ): Promise<OrganisationResponse[]> {
     try {
-      const authData = await this.getByTenantAbbreviation(mandator);
-      if (!authData) {
+      const systemUser = await this.getByTenantAbbreviation(mandator);
+      if (!systemUser) {
         throw new Error(`Could not get credentials for mandator ${mandator}`);
       }
       const tokenData = await this.authService.getTokenData({
-        authUrl: this.authUrl,
-        username: authData.username,
-        password: EncryptionUtil.decryptPassword(authData.password as object),
+        authUrl: authData.authUrl,
+        username: systemUser.username,
+        password: EncryptionUtil.decryptPassword(systemUser.password as object),
       });
       if (!tokenData.access_token) {
-        throw new Error(`Could not get access token for mandator ${mandator}`);
+        throw new Error(
+          `Could not get access token for mandator ${mandator} with authUrl ${authData.authUrl}`,
+        );
       }
-      const url = `${this.apiBaseUrl}/${mandator}/organisations`;
+      const url = `${authData.apiUrl}/${mandator}/organisations`;
       const headers = {
         Authorization: `Bearer ${tokenData.access_token}`,
       };

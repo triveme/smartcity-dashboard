@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { AxiosError, AxiosResponse } from 'axios';
 import { catchError } from 'rxjs/operators';
+import { AuthData } from '@app/postgres-db/schemas/auth-data.schema';
 
 export interface KeycloakResponse {
   access_token: string;
@@ -25,11 +26,11 @@ export class AuthService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  private async fetchToken(): Promise<KeycloakResponse> {
+  private async fetchToken(authData: AuthData): Promise<KeycloakResponse> {
     const dataToSend: SendableData = {
-      client_id: process.env.USI_CLIENT_ID as string,
-      client_secret: process.env.USI_CLIENT_SECRET as string,
-      grant_type: 'client_credentials',
+      client_id: authData.clientId,
+      client_secret: authData.clientSecret as string,
+      grant_type: authData.grantType || 'password',
     };
 
     const params = new URLSearchParams();
@@ -40,7 +41,7 @@ export class AuthService {
     try {
       const { data }: AxiosResponse<KeycloakResponse> = await lastValueFrom(
         this.httpService
-          .post(process.env.USI_AUTH_URL, params.toString(), {
+          .post(authData.authUrl, params.toString(), {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           })
           .pipe(
@@ -70,14 +71,16 @@ export class AuthService {
   }
 
   // Refresh token if needed
-  private async refreshTokenIfNeeded(): Promise<KeycloakResponse> {
+  private async refreshTokenIfNeeded(
+    authData: AuthData,
+  ): Promise<KeycloakResponse> {
     if (!this.refreshToken) {
       throw new Error('No refresh token available');
     }
 
     const dataToSend: SendableData = {
-      client_id: process.env.USI_CLIENT_ID as string,
-      client_secret: process.env.USI_CLIENT_SECRET as string,
+      client_id: authData.clientId,
+      client_secret: authData.clientSecret as string,
       grant_type: 'refresh_token',
       refresh_token: this.refreshToken,
     };
@@ -90,7 +93,7 @@ export class AuthService {
     try {
       const { data }: AxiosResponse<KeycloakResponse> = await lastValueFrom(
         this.httpService
-          .post(process.env.USI_AUTH_URL, params.toString(), {
+          .post(authData.authUrl, params.toString(), {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           })
           .pipe(
@@ -115,15 +118,15 @@ export class AuthService {
   }
 
   // Get token, refresh it if necessary
-  async getToken(): Promise<string> {
+  async getToken(authData: AuthData): Promise<string> {
     if (this.doesTokenNeedToUpdate()) {
       // Token needs to be refreshed or fetched again
       if (this.refreshToken) {
         // Try to refresh using the refresh token
-        await this.refreshTokenIfNeeded();
+        await this.refreshTokenIfNeeded(authData);
       } else {
         // If no refresh token, fetch a new token
-        await this.fetchToken();
+        await this.fetchToken(authData);
       }
     }
     return this.token!;

@@ -1,4 +1,3 @@
-import { Marker } from '@/components/Map/Map';
 import {
   aggregationEnum,
   CorporateInfo,
@@ -15,6 +14,7 @@ import {
   ChartData,
   menuArrowDirectionEnum,
 } from '@/types';
+import { MarkerType } from '@/types/mapRelatedModels';
 
 export const EMPTY_PANEL: Panel = {
   name: '',
@@ -273,7 +273,7 @@ export const EMPTY_REPORT_CONFIG: ReportConfig = {
   mailText: '',
 };
 
-export const DEFAULT_MARKERS: Marker[] = [
+export const DEFAULT_MARKERS: MarkerType[] = [
   {
     position: [50.61078589279524, 9.705162007336277],
     title: 'Marker 1',

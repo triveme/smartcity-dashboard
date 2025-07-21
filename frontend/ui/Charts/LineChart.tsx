@@ -86,7 +86,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     filterTextColor,
     showTooltip = true,
     decimalPlaces,
-    isShownInMapModal = true,
+    isShownInMapModal = false,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);

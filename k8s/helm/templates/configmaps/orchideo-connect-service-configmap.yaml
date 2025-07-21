@@ -6,7 +6,5 @@ metadata:
   name: orchideo-connect-service-configmap
 data:
   NODE_ENV: "development"
-  ORCHIDEO_CONNECT_MANDATORS_URL: "https://dev-iot-dash.swu.de/consumer-api/v1"
-  ORCHIDEO_CONNECT_KEYCLOAK_URL: "https://dev-iot-dash.swu.de/auth/realms/ocon/protocol/openid-connect/token"
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "orchideo-connect-service" "frontendUrl" }}
 {{- end }}

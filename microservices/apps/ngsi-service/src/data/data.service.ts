@@ -569,7 +569,7 @@ export class DataService {
         return;
       }
 
-      const url =
+      let url =
         query_config.entityIds.length === 1
           ? `${auth_data.timeSeriesUrl}${query_config.entityIds}`
           : auth_data.timeSeriesUrl;
@@ -596,6 +596,13 @@ export class DataService {
         attrs: query_config.attributes.join(','),
         id: query_config.entityIds.join(','),
       };
+
+      if (query_config.entityIds.length > 1) {
+        // Remove "entities" from url since the request fetches the values
+        // via the attributes endpoint
+        url = url.replace('entities/', 'attrs');
+        params.id = query_config.entityIds.join(',');
+      }
 
       // Workaround for aggregation attributes with a name attribute included
       if (params.attrs.includes('name')) {

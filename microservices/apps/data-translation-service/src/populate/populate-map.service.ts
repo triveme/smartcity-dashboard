@@ -79,6 +79,7 @@ export class PopulateMapService {
       const position = queryData['fakePosition'].value;
 
       tab.mapObject.push({
+        entityId: queryData['entityId'] || '',
         position: position,
         ...queryData,
         queryId: query.id,
@@ -88,6 +89,7 @@ export class PopulateMapService {
       const position = queryData['location'].value;
 
       tab.mapObject.push({
+        entityId: queryData['entityId'] || '',
         position: position,
         ...queryData,
         queryId: query.id,
@@ -116,6 +118,7 @@ export class PopulateMapService {
 
         if (locationValues && locationValues.length > 0) {
           const mapObject = this.buildMapObjectForSingleEntity(
+            queryData['entityId'],
             locationValues,
             dataArrayWithoutLocation,
             query,
@@ -141,6 +144,7 @@ export class PopulateMapService {
       if (this.isLocationArrayForMultipleEntitiesExisting(locationArray)) {
         let positions = this.getMultipleEntityPositions(locationArray);
         positions = this.populatePositionsWithValues(
+          queryData['entityId'],
           positions,
           dataArrayWithoutLocation,
         );
@@ -151,6 +155,7 @@ export class PopulateMapService {
   }
 
   private buildMapObjectForSingleEntity(
+    entityId: string,
     locationValues: any[],
     dataArrayWithoutLocation: object[],
     query: Query,
@@ -180,6 +185,7 @@ export class PopulateMapService {
     }
 
     let mapObject: MapObject = {
+      entityId: entityId || '',
       position: position,
       queryId: query.id,
       queryConfigId: query.queryConfigId,
@@ -246,11 +252,13 @@ export class PopulateMapService {
   }
 
   private populatePositionsWithValues(
+    entityId: string,
     positions: Array<MapObject>,
     dataArrayWithoutLocation: object[],
   ): MapObject[] {
     positions.forEach((mapObject, entityIdIndex) => {
       return this.populateMapObjectWithAttributesForEntityId(
+        entityId,
         mapObject,
         entityIdIndex,
         dataArrayWithoutLocation,
@@ -261,6 +269,7 @@ export class PopulateMapService {
   }
 
   private populateMapObjectWithAttributesForEntityId(
+    entityId: string,
     mapObject: MapObject,
     entityIdIndex: number,
     dataArrayWithoutLocation: Array<object>,
@@ -279,6 +288,7 @@ export class PopulateMapService {
 
           if (entityValues && entityValues.length > 0) {
             mapObject[attributeName] = entityValues[entityValues.length - 1];
+            mapObject['entityId'] = entityObject['entityId'] || entityId;
           }
         }
       }

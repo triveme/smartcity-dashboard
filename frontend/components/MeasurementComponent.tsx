@@ -191,20 +191,27 @@ export default function MeasurementComponent(
         <div className="w-full h-full flex flex-col justify-center items-center pl-2 pr-2">
           {dayActive && (
             <div className="text-center" style={{ color: bigValueFontStyle }}>
-              <span
-                className="leading-none font-bold"
-                style={{
-                  fontSize: generateResponsiveFontSize(
-                    parseInt(bigValueFontSize || '14', 10),
-                  ),
-                }}
-              >
-                {applyUserLocaleToNumber(
-                  currentValue,
-                  navigator.language || 'de-DE',
-                )}
-              </span>
-              <span className="text-[1.5rem] leading-none">{unit}</span>
+              <div className="text-xs uppercase tracking-wide opacity-75 mb-2">
+                Heutiger Durchschnitt
+              </div>
+              <div className="flex items-baseline justify-center gap-2">
+                <span
+                  className="leading-none font-bold"
+                  style={{
+                    fontSize: generateResponsiveFontSize(
+                      parseInt(bigValueFontSize || '14', 10),
+                    ),
+                  }}
+                >
+                  {applyUserLocaleToNumber(
+                    currentValue,
+                    navigator.language || 'de-DE',
+                  )}
+                </span>
+                <span className="text-[1.5rem] leading-none font-medium">
+                  {unit}
+                </span>
+              </div>
             </div>
           )}
           {weekActive && (

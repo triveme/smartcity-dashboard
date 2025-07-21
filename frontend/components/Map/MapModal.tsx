@@ -4,7 +4,6 @@ import React, { ReactElement, CSSProperties } from 'react';
 
 import {
   CorporateInfo,
-  MapModalChartStyle,
   MapModalWidget,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
@@ -20,6 +19,7 @@ import IconWithLink from '@/ui/IconWithLink';
 import JumpoffButton from '@/ui/Buttons/JumpoffButton';
 import ChartMapWrapper from '@/ui/Charts/ChartMapWrapper';
 import { DEFAULT_CI } from '@/utils/objectHelper';
+import { MapModalChartStyle } from '@/types/mapRelatedModels';
 
 type Marker = {
   position: [number, number];

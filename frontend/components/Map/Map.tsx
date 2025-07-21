@@ -4,150 +4,70 @@ import React, { useEffect, useState, useRef, CSSProperties, JSX } from 'react';
 import {
   MapContainer,
   TileLayer,
-  Marker,
   Popup,
   Rectangle,
   Circle,
   Polygon,
-  // LayerGroup,
   WMSTileLayer,
+  Marker,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import L, { LatLngExpression } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
+import { env } from 'next-runtime-env';
 
 import '@/components/Map/map.css';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import SetViewToBounds from './SetViewToBounds';
-import {
-  MapModalChartStyle,
-  MapModalWidget,
-  MapModalLegend,
-  tabComponentSubTypeEnum,
-  QueryDataWithAttributes,
-  CorporateInfo,
-} from '@/types';
+import { tabComponentSubTypeEnum } from '@/types';
 import MapModal from './MapModal';
-import { env } from 'next-runtime-env';
+import MapPopupContent from './MapPopupContent';
 import { DEFAULT_MARKERS } from '@/utils/objectHelper';
 import MapFilterModal from './MapFilterModal';
 import MapLegendModal from './MapLegendModal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 import {
   createHexagonAroundMarker,
   createRectangleAroundMarker,
   createSquareAroundMarker,
-  getGermanLabelForSensorAttribute,
-  getGermanVehicleType,
   ZoomHandler,
+  getColorForValue,
+  createCustomIcon,
+  createClusterCustomIcon,
+  findValidWmsConfig,
 } from './MapUtils';
-import { convertToLocaleNumber, roundToDecimal } from '@/utils/mathHelper';
-import { localSvgIconsList } from '@/ui/Icons/LocalSvgIcons';
 import DataExportButton from '@/ui/Buttons/DataExportButton';
 import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
+import {
+  CombinedMapProps,
+  MarkerType,
+  SelectedMarker,
+  SingleMapProps,
+} from '@/types/mapRelatedModels';
 
-type MapProps = {
-  mapMaxZoom: number;
-  mapMinZoom: number;
-  mapAllowPopups: boolean;
-  mapStandardZoom: number;
-  mapAllowZoom: boolean;
-  mapAllowScroll: boolean;
-  mapAllowFilter?: boolean;
-  mapFilterAttribute?: string;
-  mapAllowLegend?: boolean;
-  mapLegendValues?: MapModalLegend[];
-  mapLegendDisclaimer?: string[];
-  mapMarkerColor: string;
-  mapMarkerIcon: string;
-  mapMarkerIconColor: string;
-  mapLongitude: number;
-  mapLatitude: number;
-  mapActiveMarkerColor: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data?: any[];
-  mapShapeOption?: string;
-  mapDisplayMode?: string;
-  mapShapeColor?: string;
-  mapWidgetValues?: MapModalWidget[];
-  isFullscreenMap?: boolean;
-  chartStyle?: MapModalChartStyle;
-  menuStyle?: CSSProperties;
-  combinedQueryData?: QueryDataWithAttributes[];
-  mapAttributeForValueBased: string;
-  mapFormSizeFactor: number;
-  mapIsFormColorValueBased: boolean;
-  mapIsIconColorValueBased: boolean;
-  staticValues: number[];
-  staticValuesColors: string[];
-  mapWmsUrl: string;
-  mapWmsLayer: string;
-  ciColors?: CorporateInfo;
-  allowShare?: boolean;
-  dashboardId?: string;
-  allowDataExport?: boolean;
-  widgetDownloadId?: string;
-};
+// Union type for the component props
+type MapNewProps = SingleMapProps | CombinedMapProps;
 
-export type Marker = {
-  position: [number, number];
-  title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  details: any;
-  dataSource?: number;
-  color: string;
-};
+// Type guard to check if props are for a combined map
+function isCombinedMapProps(props: MapNewProps): props is CombinedMapProps {
+  return Array.isArray((props as CombinedMapProps).mapActiveMarkerColor);
+}
 
-type SelectedMarker = {
-  id: number | null;
-  data: Marker | null;
-};
-
-export default function Map(props: MapProps): JSX.Element {
+export default function MapNew(props: MapNewProps): JSX.Element {
   const {
-    mapMaxZoom,
-    mapMinZoom,
-    mapAllowPopups,
-    mapStandardZoom,
-    mapAllowZoom,
-    mapAllowScroll,
-    mapAllowFilter,
-    mapFilterAttribute,
-    mapAllowLegend,
-    mapLegendValues,
-    mapLegendDisclaimer,
-    mapMarkerColor,
-    mapMarkerIcon,
-    mapMarkerIconColor,
-    mapLongitude,
-    mapLatitude,
-    mapActiveMarkerColor,
-    data,
-    mapShapeOption,
-    mapDisplayMode,
-    mapShapeColor,
-    mapWidgetValues,
     isFullscreenMap,
-    chartStyle,
     menuStyle,
-    combinedQueryData,
-    mapAttributeForValueBased,
-    mapFormSizeFactor,
-    mapIsFormColorValueBased,
-    mapIsIconColorValueBased,
-    staticValues,
-    staticValuesColors,
-    mapWmsUrl,
-    mapWmsLayer,
     ciColors,
     allowShare,
     dashboardId,
     allowDataExport,
     widgetDownloadId,
   } = props;
+
+  const isCombinedMap = isCombinedMapProps(props);
 
   const userLocale =
     typeof window !== 'undefined' ? navigator.language || 'en-US' : 'en-US';
@@ -156,23 +76,46 @@ export default function Map(props: MapProps): JSX.Element {
 
   const [mapZoom, setMapZoom] = useState(6);
   const iconRef = useRef<HTMLDivElement>(null);
-  const [iconSvgMarkup, setIconSvgMarkup] = useState('');
+  const [iconSvgMarkup, setIconSvgMarkup] = useState<string | string[]>('');
   const [initialLoad, setInitialLoad] = useState(true);
   const [isMobileView, setIsMobileView] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<SelectedMarker>({
     id: null,
     data: null,
+    dataSource: null,
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
+  const [selectedMapFilterAttribute, setSelectedMapFilterAttribute] =
+    useState('');
   const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
     [],
   );
+  const [selectedDataSources, setSelectedDataSources] = useState<number[]>([]);
+
+  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}?access_token=${env(
+    'NEXT_PUBLIC_MAPBOX_TOKEN',
+  )}`;
 
   const handleFilterChange = (
     newSelectedFilters: (string | number)[],
+    filterAttribute?: string,
   ): void => {
     setSelectedFilters(newSelectedFilters);
+    if (filterAttribute) {
+      setSelectedMapFilterAttribute(filterAttribute);
+    }
+  };
+
+  const handleDataSourceFilterChange = (
+    mapIndex: number,
+    checked: boolean,
+  ): void => {
+    const updatedDataSources = checked
+      ? [...selectedDataSources, mapIndex]
+      : selectedDataSources.filter((source) => source !== mapIndex);
+
+    setSelectedDataSources(updatedDataSources);
   };
 
   const closeFilterModal = (): void => {
@@ -183,7 +126,6 @@ export default function Map(props: MapProps): JSX.Element {
     setIsLegendModalOpen(false);
   };
 
-  // allow opening both modals only for desktop and fullscreen Map
   const toggleFilterModal = (): void => {
     if (
       ((isFullscreenMap && isMobileView) || !isFullscreenMap) &&
@@ -204,221 +146,138 @@ export default function Map(props: MapProps): JSX.Element {
     setIsLegendModalOpen(!isLegendModalOpen);
   };
 
-  useEffect(() => {
-    const handleResize = (): void => setIsMobileView(window.innerWidth <= 1024);
-
-    window.addEventListener('resize', handleResize);
-    handleResize(); // Initial check
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const getColorForMarker = (marker: Marker, markerValue: any): string => {
-    // Use form-based value coloring if the flag is set
-    if (mapIsFormColorValueBased) {
-      return getColorForValue(markerValue);
-    }
-
-    // Use icon-based value coloring if the flag is set
-    if (mapIsIconColorValueBased) {
-      return getColorForValue(markerValue);
-    }
-
-    // Default to static color if value-based coloring isn't enabled
-    return mapShapeColor || '#000000';
-  };
-
-  const markerPositions: Marker[] = (data || []).map((mapObject, index) => {
-    // Handle different data structures for the attribute value
-    let markerValue;
-    if (mapObject[mapAttributeForValueBased]?.value !== undefined) {
-      // NGSI structure
-      markerValue = mapObject[mapAttributeForValueBased].value;
-    } else {
-      // Simple structure
-      markerValue = mapObject[mapAttributeForValueBased];
-    }
-
-    // Handle different data structures for the name/title
-    let title;
-    if (mapObject.name?.value) {
-      // NGSI structure
-      title = mapObject.name.value;
-    } else if (mapObject.name) {
-      // Simple structure
-      title = mapObject.name;
-    } else {
-      // Fallback
-      title = `Sensor ${index + 1}`;
-    }
-
-    return {
-      position: mapObject.position.coordinates ?? [52.520008, 13.404954], // Coordinates
-      title: title, // Sensor name
-      details: mapObject, // Full sensor details object
-      dataSource: mapObject.dataSource, // Optional dataSource attribute
-      color: getColorForMarker(mapObject, markerValue), // Determine the color based on the value
-    };
-  });
-
-  const getFilteredMarkers = (): Marker[] => {
-    return selectedFilters && selectedFilters.length > 0 && mapFilterAttribute
-      ? markerPositions.filter((marker) => {
-          const attributeDetails = marker.details[mapFilterAttribute];
-          if (!attributeDetails) return false;
-
-          let propertyValue;
-          if (attributeDetails.value !== undefined) {
-            // NGSI structure
-            propertyValue = attributeDetails.value;
-          } else {
-            // Simple structure
-            propertyValue = attributeDetails;
-          }
-
-          // convert value "0.00" to 0 of type number
-          const normalizedValue =
-            parseFloat(propertyValue) === 0 ? 0 : propertyValue;
-          return selectedFilters.includes(normalizedValue);
-        })
-      : markerPositions;
-  };
-
-  useEffect(() => {
-    if (initialLoad) {
-      setInitialLoad(false); // After the first load, set this to false to prevent refitting bounds on updates
-    }
-  }, [initialLoad]);
-
-  function getColorForValue(value: number): string {
-    for (let i = 0; i < staticValues.length; i++) {
-      if (value <= staticValues[i]) {
-        return staticValuesColors[i];
+  const getColorForMarker = (marker: MarkerType, markerValue: any): string => {
+    if (!isCombinedMap) {
+      const singleProps = props as SingleMapProps;
+      // Use form-based value coloring if the flag is set
+      if (singleProps.mapIsFormColorValueBased) {
+        return getColorForValue(
+          markerValue,
+          singleProps.staticValues,
+          singleProps.staticValuesColors,
+        );
       }
+
+      // Use icon-based value coloring if the flag is set
+      if (singleProps.mapIsIconColorValueBased) {
+        return getColorForValue(
+          markerValue,
+          singleProps.staticValues,
+          singleProps.staticValuesColors,
+        );
+      }
+
+      // Default to static color if value-based coloring isn't enabled
+      return singleProps.mapShapeColor || '#000000';
     }
-    return staticValuesColors[staticValuesColors.length - 1];
-  }
 
-  const getCustomTranslateForSvg = (): number => {
-    if (!mapMarkerIcon) return 10.2;
-
-    // Check if the icon is a Font Awesome icon
-    const isFontAwesomeIcon = !localSvgIconsList.some(
-      (icon) => icon.name === mapMarkerIcon,
-    );
-
-    if (isFontAwesomeIcon) return 10.2;
-
-    // Custom translate values for specific svg icons
-    const nameOfIconsToCustom = [
-      { name: 'SoilMoisture', value: 10.5 },
-      { name: 'WaterLevelHigh', value: 11.2 },
-      { name: 'HumidityNormal', value: 11.5 },
-      { name: 'HumidityMedium', value: 11.5 },
-      { name: 'RemoteSoil', value: 11.5 },
-      { name: 'HumidityPercentage', value: 11.5 },
-      { name: 'Trees', value: 11.5 },
-      { name: 'Info', value: 11.5 },
-      { name: 'Dry', value: 12 },
-      { name: 'Pollen', value: 12 },
-    ];
-
-    // Check icons need custom translate values
-    const customIcon = nameOfIconsToCustom.find(
-      (icon) => icon.name === mapMarkerIcon,
-    );
-
-    // Return custom value if found, otherwise default to 11
-    return customIcon ? customIcon.value : 11;
+    // For combined maps, use the marker color based on data source
+    const combinedProps = props as CombinedMapProps;
+    const dataSource = marker.dataSource as number;
+    return combinedProps.mapShapeColor?.[dataSource] || '#000000';
   };
 
-  // Modify the createCustomIcon function to use the color based on sensor values
-  const createCustomIcon = (color: string): L.DivIcon => {
-    const iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="${color}">
-        <path d="M15 2C10.58 2 7 5.58 7 10c0 6.627 8 16 8 16s8-9.373 8-16c0-4.42-3.58-8-8-8z"/>
-        <g transform="translate(${getCustomTranslateForSvg()},6) scale(0.4)">
-          ${iconSvgMarkup}
-        </g>
-      </svg>
-    `;
+  const markerPositions: MarkerType[] = (props.data || []).map(
+    (mapObject, index) => {
+      let markerValue;
+      let title;
+      let color = '#000000';
 
-    return L.divIcon({
-      html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
-      className: 'custom-marker-icon',
-      iconSize: L.point(60, 60),
-      iconAnchor: [30, 60],
-      popupAnchor: [0, -60],
+      if (isCombinedMap) {
+        // Combined map logic
+        title = mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`;
+        color = getColorForMarker(
+          { ...mapObject, dataSource: mapObject.dataSource },
+          null,
+        );
+      } else {
+        // Single map logic
+        const singleProps = props as SingleMapProps;
+
+        // Handle different data structures for the attribute value
+        if (
+          mapObject[singleProps.mapAttributeForValueBased]?.value !== undefined
+        ) {
+          markerValue = mapObject[singleProps.mapAttributeForValueBased].value;
+        } else {
+          markerValue = mapObject[singleProps.mapAttributeForValueBased];
+        }
+
+        // Handle different data structures for the name/title
+        if (mapObject.name?.value) {
+          title = mapObject.name.value;
+        } else if (mapObject.name) {
+          title = mapObject.name;
+        } else {
+          title = `Sensor ${index + 1}`;
+        }
+
+        color = getColorForMarker(mapObject, markerValue);
+      }
+
+      return {
+        position: mapObject.position.coordinates ?? [52.520008, 13.404954],
+        title: title,
+        details: mapObject,
+        dataSource: mapObject.dataSource,
+        color: color,
+      };
+    },
+  );
+
+  const getFilteredMarkers = (): MarkerType[] => {
+    return markerPositions.filter((marker) => {
+      // Filter by attribute and value
+      if (selectedFilters.length > 0) {
+        const filterAttribute = isCombinedMap
+          ? selectedMapFilterAttribute
+          : props.mapFilterAttribute;
+        if (!filterAttribute) return false;
+        const attributeDetails = marker.details[filterAttribute];
+        if (!attributeDetails) return false;
+
+        let propertyValue;
+        if (attributeDetails.value !== undefined) {
+          propertyValue = attributeDetails.value;
+        } else {
+          propertyValue = attributeDetails;
+        }
+
+        const normalizedValue =
+          parseFloat(propertyValue) === 0 ? 0 : propertyValue;
+        if (!selectedFilters.includes(normalizedValue)) return false;
+      }
+
+      // Filter by dataSource (map selection) - only for combined maps
+      if (
+        isCombinedMap &&
+        selectedDataSources.length > 0 &&
+        !selectedDataSources.includes(marker.dataSource ?? -1)
+      ) {
+        return false;
+      }
+
+      return true;
     });
   };
-
-  const createClusterCustomIcon = (cluster: L.MarkerCluster): L.DivIcon => {
-    const count = cluster.getChildCount();
-    let displayCount = count.toString();
-    let fontSize = '12px';
-    if (count > 99) {
-      fontSize = '8px';
-    }
-    if (count > 1000 && count <= 9999) {
-      displayCount = (count / 1000).toFixed(0) + 'K';
-    }
-
-    const iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="${mapMarkerColor}">
-        <path d="M15 2C10.58 2 7 5.58 7 10c0 6.627 8 16 8 16s8-9.373 8-16c0-4.42-3.58-8-8-8z"/>
-        <text x="15" y="12" text-anchor="middle" fill="${mapMarkerIconColor}" font-size="${fontSize}" font-family="Arial" dy=".3em">${displayCount}</text>
-      </svg>`;
-
-    // const urlEncodedSvg = encodeURIComponent(iconSvg);
-
-    return L.divIcon({
-      html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
-      className: 'custom-marker-icon',
-      iconSize: L.point(60, 60),
-      iconAnchor: [30, 60],
-      popupAnchor: [0, -60],
-    });
-  };
-
-  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}?access_token=${env(
-    'NEXT_PUBLIC_MAPBOX_TOKEN',
-  )}`;
-
-  useEffect(() => {
-    if (iconRef.current && mapMarkerIcon) {
-      const svgElement = iconRef.current.querySelector('svg');
-      if (svgElement instanceof SVGElement) {
-        svgElement.setAttribute('fill', mapMarkerIconColor);
-
-        svgElement
-          .querySelectorAll('path, circle, rect, polygon, polyline')
-          .forEach((el) => {
-            el.setAttribute('fill', mapMarkerIconColor);
-          });
-
-        const scaledSvgMarkup = `
-          <g transform="scale(0.8)">
-            ${svgElement.outerHTML}
-          </g>
-        `;
-        setIconSvgMarkup(scaledSvgMarkup);
-      }
-    } else {
-      setIconSvgMarkup('');
-    }
-  }, [mapMarkerIcon, mapMarkerIconColor]);
 
   const renderShape = (
     position: [number, number],
+    shapeType: string,
     color: string,
+    dataSource: number,
   ): JSX.Element => {
-    switch (mapShapeOption) {
+    const sizeFactor = isCombinedMap
+      ? 1
+      : (props as SingleMapProps).mapFormSizeFactor;
+
+    switch (shapeType) {
       case 'Circle':
         return (
           <Circle
-            key={color}
+            key={`${color}-${dataSource}`}
             center={position}
-            radius={100 * mapFormSizeFactor}
+            radius={isCombinedMap ? 1000 : 100 * sizeFactor}
             color={color}
             fillColor={color}
             fillOpacity={0.1}
@@ -427,8 +286,8 @@ export default function Map(props: MapProps): JSX.Element {
       case 'Hexagon':
         return (
           <Polygon
-            key={color}
-            positions={createHexagonAroundMarker(position, mapFormSizeFactor)}
+            key={`${color}-${dataSource}`}
+            positions={createHexagonAroundMarker(position, sizeFactor)}
             color={color}
             fillColor={color}
             fillOpacity={0.1}
@@ -437,20 +296,21 @@ export default function Map(props: MapProps): JSX.Element {
       case 'Rectangle':
         return (
           <Rectangle
-            key={color}
-            bounds={createRectangleAroundMarker(position, mapFormSizeFactor)}
+            key={`${color}-${dataSource}`}
+            bounds={createRectangleAroundMarker(position, sizeFactor)}
             color={color}
             weight={2}
             fillColor={color}
             fillOpacity={0.1}
           />
         );
-      default:
+      default: // 'Square'
         return (
           <Rectangle
-            key={color}
-            bounds={createSquareAroundMarker(position, mapFormSizeFactor)}
+            key={`${color}-${dataSource}`}
+            bounds={createSquareAroundMarker(position, sizeFactor)}
             color={color}
+            weight={2}
             fillColor={color}
             fillOpacity={0.1}
           />
@@ -462,22 +322,9 @@ export default function Map(props: MapProps): JSX.Element {
     setSelectedMarker({
       id: null,
       data: null,
+      dataSource: null,
     });
   }
-
-  const getFormattedDate = (value: string): string => {
-    const date = new Date(value);
-    return date.getMonth() === 0 &&
-      date.getDate() === 1 &&
-      date.getHours() === 1 &&
-      date.getMinutes() === 0
-      ? date.getFullYear().toString()
-      : date.toLocaleString(navigator.language || 'de-DE', {
-          year: '2-digit',
-          month: '2-digit',
-          day: '2-digit',
-        });
-  };
 
   const getDivStyle = (): CSSProperties => {
     if (isFullscreenMap && !isMobileView) {
@@ -501,7 +348,6 @@ export default function Map(props: MapProps): JSX.Element {
         bottom: '1.5rem',
       };
     } else {
-      // Map panel widget and mobile view
       return {
         zIndex: 1000,
         position: 'absolute',
@@ -511,224 +357,304 @@ export default function Map(props: MapProps): JSX.Element {
     }
   };
 
+  const renderPopupContent = (marker: MarkerType): JSX.Element => (
+    <MapPopupContent
+      marker={marker}
+      isCombinedMap={isCombinedMap}
+      decimalSeparator={decimalSeparator}
+    />
+  );
+
+  // Get marker colors and icons based on map type
+  const getMarkerProps = (
+    dataSource: number,
+    isSelected: boolean,
+  ): {
+    color: string;
+    iconIndex: number;
+    shapeType: string;
+    displayMode: string;
+  } => {
+    if (isCombinedMap) {
+      const combinedProps = props as CombinedMapProps;
+      return {
+        color: isSelected
+          ? combinedProps.mapActiveMarkerColor[dataSource] ||
+            combinedProps.mapActiveMarkerColor[0]
+          : combinedProps.mapMarkerColor?.[dataSource] ||
+            combinedProps.mapMarkerColor?.[0] ||
+            '#257DC9',
+        iconIndex: dataSource,
+        shapeType:
+          combinedProps.mapShapeOption?.[dataSource] ||
+          combinedProps.mapShapeOption?.[0] ||
+          'Rectangle',
+        displayMode:
+          combinedProps.mapDisplayMode?.[dataSource] ||
+          combinedProps.mapDisplayMode?.[0] ||
+          '',
+      };
+    } else {
+      const singleProps = props as SingleMapProps;
+      return {
+        color: isSelected
+          ? singleProps.mapActiveMarkerColor
+          : singleProps.mapMarkerColor,
+        iconIndex: 0,
+        shapeType: singleProps.mapShapeOption || 'Rectangle',
+        displayMode: singleProps.mapDisplayMode || '',
+      };
+    }
+  };
+
+  // Handle initial load state
+  useEffect(() => {
+    if (initialLoad) {
+      setInitialLoad(false);
+    }
+  }, [initialLoad]);
+
+  // Handle window resize events and set mobile view state
+  useEffect(() => {
+    const handleResize = (): void => setIsMobileView(window.innerWidth <= 1024);
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Process SVG icons and set markup for map markers
+  useEffect(() => {
+    if (iconRef.current) {
+      if (isCombinedMap) {
+        const combinedProps = props as CombinedMapProps;
+        if (combinedProps.mapMarkerIcon) {
+          const svgElements = iconRef.current.querySelectorAll('svg');
+          const newIconSvgMarkup = Array.from(svgElements).map((svgElement) => {
+            svgElement.setAttribute(
+              'fill',
+              combinedProps.mapMarkerIconColor?.[0] || '#FFF',
+            );
+
+            svgElement
+              .querySelectorAll('path, circle, rect, polygon, polyline')
+              .forEach((el) => {
+                el.setAttribute(
+                  'fill',
+                  combinedProps.mapMarkerIconColor?.[0] || '#FFF',
+                );
+              });
+            return svgElement.outerHTML;
+          });
+          setIconSvgMarkup(newIconSvgMarkup);
+        }
+      } else {
+        const singleProps = props as SingleMapProps;
+        if (singleProps.mapMarkerIcon) {
+          const svgElement = iconRef.current.querySelector('svg');
+          if (svgElement instanceof SVGElement) {
+            svgElement.setAttribute('fill', singleProps.mapMarkerIconColor);
+
+            svgElement
+              .querySelectorAll('path, circle, rect, polygon, polyline')
+              .forEach((el) => {
+                el.setAttribute('fill', singleProps.mapMarkerIconColor);
+              });
+
+            const scaledSvgMarkup = `
+              <g transform="scale(0.8)">
+                ${svgElement.outerHTML}
+              </g>
+            `;
+            setIconSvgMarkup(scaledSvgMarkup);
+          }
+        }
+      }
+    } else {
+      setIconSvgMarkup(isCombinedMap ? [] : '');
+    }
+  }, [props, isCombinedMap]);
+
   return (
     <div className="w-full h-full">
       <div className="w-full h-full relative">
         <MapContainer
-          key={`map-container-${mapAllowZoom}-${mapAllowScroll}-${mapMaxZoom}-${mapMinZoom}-${mapStandardZoom}`}
+          key={`map-container-${props.mapAllowZoom}-${props.mapAllowScroll}-${props.mapMaxZoom}-${props.mapMinZoom}-${props.mapStandardZoom}`}
           style={{ height: '100%', width: '100%' }}
           center={
-            data && data.length > 0
+            props.data && props.data.length > 0
               ? [
-                  data?.[0]?.position.coordinates[0],
-                  data?.[0]?.position.coordinates[1],
+                  props.data[0]?.position.coordinates[0],
+                  props.data[0]?.position.coordinates[1],
                 ]
-              : [mapLatitude, mapLongitude]
+              : [
+                  props.mapLatitude || 52.520008,
+                  props.mapLongitude || 13.404954,
+                ]
           }
           zoom={2}
-          zoomControl={mapAllowZoom}
-          scrollWheelZoom={mapAllowZoom}
-          touchZoom={mapAllowZoom}
-          doubleClickZoom={mapAllowZoom}
-          dragging={mapAllowScroll}
+          zoomControl={props.mapAllowZoom}
+          scrollWheelZoom={props.mapAllowZoom}
+          touchZoom={props.mapAllowZoom}
+          doubleClickZoom={props.mapAllowZoom}
+          dragging={props.mapAllowScroll}
         >
-          {mapWmsUrl && mapWmsUrl !== '' ? (
-            <WMSTileLayer
-              url={mapWmsUrl}
-              layers={mapWmsLayer} // Define the specific layer name
-              // format="image/png" // You can use other formats like 'image/jpeg'
-              transparent={true} // If you need transparency
-              version="1.3.0" // Ensure WMS version is set
-            />
-          ) : (
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
-              url={mapboxUrl}
-            />
-          )}
+          {((): JSX.Element => {
+            const wmsConfig = findValidWmsConfig(
+              isCombinedMap ? undefined : (props as SingleMapProps).mapWmsUrl,
+              isCombinedMap ? undefined : (props as SingleMapProps).mapWmsLayer,
+              isCombinedMap
+                ? (props as CombinedMapProps).mapCombinedWmsUrl
+                : undefined,
+              isCombinedMap
+                ? (props as CombinedMapProps).mapCombinedWmsLayer
+                : undefined,
+              isCombinedMap,
+            );
+            return wmsConfig ? (
+              <WMSTileLayer
+                url={wmsConfig.url}
+                layers={wmsConfig.layer}
+                transparent={true}
+                version="1.3.0"
+              />
+            ) : (
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
+                url={mapboxUrl}
+              />
+            );
+          })()}
 
           <ZoomHandler onZoomChange={setMapZoom} />
-          {mapDisplayMode !== tabComponentSubTypeEnum.onlyFormArea && (
-            <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
+
+          {(!isCombinedMap ||
+            (isCombinedMap &&
+              (props as CombinedMapProps).mapDisplayMode?.[0] !==
+                tabComponentSubTypeEnum.onlyFormArea)) && (
+            <MarkerClusterGroup
+              iconCreateFunction={(cluster: L.MarkerCluster) =>
+                createClusterCustomIcon(
+                  cluster,
+                  isCombinedMap
+                    ? (props as CombinedMapProps).mapMarkerColor || []
+                    : (props as SingleMapProps).mapMarkerColor || '',
+                  isCombinedMap
+                    ? (props as CombinedMapProps).mapMarkerIconColor || []
+                    : (props as SingleMapProps).mapMarkerIconColor || '',
+                  isCombinedMap,
+                )
+              }
+              disableClusteringAtZoom={15}
+            >
               {(markerPositions.length > 0
                 ? getFilteredMarkers()
                 : DEFAULT_MARKERS
-              ).map((marker, index) => (
-                <Marker
-                  key={index}
-                  position={marker.position as LatLngExpression}
-                  icon={createCustomIcon(
-                    selectedMarker.id === index
-                      ? mapActiveMarkerColor
-                      : mapMarkerColor,
-                  )}
-                  eventHandlers={{
-                    click: (e): void => {
-                      e.originalEvent.stopPropagation();
-                      if (selectedMarker.id === index) {
-                        setSelectedMarker({ id: null, data: null });
-                      } else {
-                        setSelectedMarker({ id: index, data: marker });
-                      }
-                    },
-                    popupclose: handleOnCloseModal,
-                  }}
-                >
-                  {mapAllowPopups && !isFullscreenMap ? (
-                    <Popup maxWidth={200}>
-                      <div
-                        style={{
-                          textAlign: 'center',
-                          fontSize: '16px',
-                          marginBottom: '10px',
-                          color: '#000000',
-                        }}
-                      >
-                        <strong>{marker.title}</strong>
-                      </div>
-                      <div style={{ fontSize: '14px', color: '#000000' }}>
-                        {Object.entries(marker.details).map(([key, value]) => {
-                          const tempValue: any = value;
-                          if (
-                            key === 'id' ||
-                            key === 'location' ||
-                            key === 'position' ||
-                            key === 'name' ||
-                            key === 'queryId' ||
-                            key === 'queryConfigId' ||
-                            key === 'type'
-                          )
-                            return;
+              ).map((marker, index) => {
+                const dataSource = marker.dataSource || 0;
+                const markerProps = getMarkerProps(
+                  dataSource,
+                  selectedMarker.id === index,
+                );
 
-                          // Check if this is a structured field with type/value/metadata (NGSI-LD)
-                          if (
-                            value &&
-                            typeof tempValue === 'object' &&
-                            'type' in tempValue
-                          ) {
-                            //Quick and dirty solution...bad stuff
-                            if (key.toUpperCase() === 'TOTALCONSUMPTION') {
-                              return (
-                                <div key={key}>
-                                  Gesamtverbrauch:
-                                  <strong>
-                                    {' '}
-                                    {convertToLocaleNumber(
-                                      tempValue.value.toString(),
-                                      decimalSeparator,
-                                    )}{' '}
-                                    {'m³'}
-                                  </strong>
-                                </div>
-                              );
-                            }
-                            if (key.toUpperCase() === 'METERTYPE') {
-                              return (
-                                <div key={key}>
-                                  Zählertyp:
-                                  <strong>
-                                    {' '}
-                                    {tempValue.value.toString() === 'water'
-                                      ? 'Wasser'
-                                      : 'Gas'}
-                                  </strong>
-                                </div>
-                              );
-                            }
-                            if (key.toUpperCase() === 'VEHICLETYPE') {
-                              return (
-                                <div key={key}>
-                                  Fahrzeugart:
-                                  <strong>
-                                    {' '}
-                                    {getGermanVehicleType(
-                                      tempValue.value.toString().toUpperCase(),
-                                    )}
-                                  </strong>
-                                </div>
-                              );
-                            }
-                            if (
-                              key.toUpperCase() === 'DATE' ||
-                              key.toUpperCase() === 'DATEOBSERVED'
-                            ) {
-                              return (
-                                <div key={key}>
-                                  Datum:
-                                  <strong>
-                                    {getFormattedDate(tempValue.value)}
-                                  </strong>
-                                </div>
-                              );
-                            }
-                            return (
-                              <div key={key}>
-                                {getGermanLabelForSensorAttribute(
-                                  key.toUpperCase(),
-                                )}
-                                :{' '}
-                                <strong>
-                                  {' '}
-                                  {tempValue.value === null ||
-                                  tempValue.value === undefined
-                                    ? 'Keine Daten'
-                                    : tempValue.type === 'Number' &&
-                                        tempValue.value
-                                      ? convertToLocaleNumber(
-                                          roundToDecimal(
-                                            tempValue.value,
-                                          ).toString(),
-                                          decimalSeparator,
-                                        )
-                                      : tempValue.value}
-                                </strong>
-                              </div>
-                            );
-                          } else if (value !== null && value !== undefined) {
-                            // Handle simple data structure (not NGSI-LD)
-                            return (
-                              <div key={key}>
-                                {key}:{' '}
-                                <strong>
-                                  {typeof value === 'number'
-                                    ? convertToLocaleNumber(
-                                        roundToDecimal(value).toString(),
-                                        decimalSeparator,
-                                      )
-                                    : value.toString()}
-                                </strong>
-                              </div>
-                            );
+                return (
+                  markerProps.displayMode !==
+                    tabComponentSubTypeEnum.onlyFormArea && (
+                    <Marker
+                      key={index}
+                      position={marker.position as LatLngExpression}
+                      icon={createCustomIcon(
+                        markerProps.color,
+                        iconSvgMarkup,
+                        markerProps.iconIndex,
+                        isCombinedMap,
+                        isCombinedMap
+                          ? (props as CombinedMapProps).mapMarkerIcon?.[
+                              markerProps.iconIndex
+                            ]
+                          : (props as SingleMapProps).mapMarkerIcon,
+                      )}
+                      eventHandlers={{
+                        click: (e): void => {
+                          e.originalEvent.stopPropagation();
+                          if (selectedMarker.id === index) {
+                            setSelectedMarker({
+                              id: null,
+                              data: null,
+                              dataSource: null,
+                            });
+                          } else {
+                            setSelectedMarker({
+                              id: index,
+                              data: marker,
+                              dataSource: dataSource,
+                            });
                           }
+                        },
+                        popupclose: handleOnCloseModal,
+                      }}
+                    >
+                      {props.mapAllowPopups && !isFullscreenMap && (
+                        <Popup maxWidth={200}>
+                          <div
+                            style={{
+                              textAlign: 'center',
+                              fontSize: '16px',
+                              marginBottom: '10px',
+                              color: '#000000',
+                            }}
+                          >
+                            <strong>{marker.title}</strong>
+                          </div>
+                          {renderPopupContent(marker)}
+                        </Popup>
+                      )}
 
-                          return null; // Ignore undefined or other non-relevant fields
-                        })}
-                      </div>
-                    </Popup>
-                  ) : null}
-
-                  {mapDisplayMode !== tabComponentSubTypeEnum.onlyPin &&
-                    mapZoom > 15 &&
-                    (!Array.isArray(marker) || marker.length === 1) &&
-                    renderShape(marker.position, marker.color)}
-                </Marker>
-              ))}
+                      {markerProps.displayMode !==
+                        tabComponentSubTypeEnum.onlyPin &&
+                        mapZoom > 15 &&
+                        (!Array.isArray(marker) || marker.length === 1) &&
+                        renderShape(
+                          marker.position,
+                          markerProps.shapeType,
+                          marker.color || markerProps.color,
+                          dataSource,
+                        )}
+                    </Marker>
+                  )
+                );
+              })}
             </MarkerClusterGroup>
           )}
+
           <SetViewToBounds
             markerPositions={markerPositions}
             centerPosition={[
-              isNaN(data?.[0]?.position.coordinates[0] || mapLatitude)
+              isNaN(
+                props.data?.[0]?.position.coordinates[0] ||
+                  props.mapLatitude ||
+                  52.520008,
+              )
                 ? 52.520008
-                : data?.[0]?.position.coordinates[0] || mapLatitude,
-              isNaN(data?.[0]?.position.coordinates[1] || mapLongitude)
+                : props.data?.[0]?.position.coordinates[0] ||
+                  props.mapLatitude ||
+                  52.520008,
+              isNaN(
+                props.data?.[0]?.position.coordinates[1] ||
+                  props.mapLongitude ||
+                  13.404954,
+              )
                 ? 13.404954
-                : data?.[0]?.position.coordinates[1] || mapLongitude,
+                : props.data?.[0]?.position.coordinates[1] ||
+                  props.mapLongitude ||
+                  13.404954,
             ]}
           />
+
           {/* filter and legend button toggle */}
           <div className="flex flex-row gap-x-2 ml-3" style={getDivStyle()}>
-            {mapAllowFilter && (
+            {props.mapAllowFilter && (
               <div
                 className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
                 onClick={toggleFilterModal}
@@ -743,7 +669,7 @@ export default function Map(props: MapProps): JSX.Element {
                 />
               </div>
             )}
-            {mapAllowLegend && (
+            {props.mapAllowLegend && (
               <div
                 className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
                 onClick={toggleLegendModal}
@@ -758,7 +684,7 @@ export default function Map(props: MapProps): JSX.Element {
                 />
               </div>
             )}
-            {allowShare ? (
+            {allowShare && (
               <div
                 className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
                 style={menuStyle}
@@ -768,10 +694,9 @@ export default function Map(props: MapProps): JSX.Element {
                   id={dashboardId || ''}
                   widgetPrimaryColor={ciColors?.widgetPrimaryColor}
                   widgetFontColor={ciColors?.widgetFontColor}
-                />{' '}
+                />
               </div>
-            ) : null}
-
+            )}
             {allowDataExport && (
               <div className="shadow-lg">
                 <DataExportButton
@@ -786,23 +711,29 @@ export default function Map(props: MapProps): JSX.Element {
               </div>
             )}
           </div>
+
           {/* filter and legend modals */}
-          {mapAllowFilter && isFilterModalOpen && (
+          {props.mapAllowFilter && isFilterModalOpen && (
             <MapFilterModal
-              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
+              combinedQueryData={props.combinedQueryData || []}
               selectedFilters={selectedFilters}
               onFilterChange={handleFilterChange}
               menuStyle={menuStyle}
               onCloseModal={closeFilterModal}
               isLegendModalOpen={isLegendModalOpen}
               isFullscreenMap={isFullscreenMap}
-              isCombinedMap={false}
+              mapNames={
+                isCombinedMap ? (props as CombinedMapProps).mapNames || [] : []
+              }
+              handleMapNameFilterChange={handleDataSourceFilterChange}
+              selectedDataSources={selectedDataSources}
+              isCombinedMap={isCombinedMap}
             />
           )}
-          {mapAllowLegend && isLegendModalOpen && (
+          {props.mapAllowLegend && isLegendModalOpen && (
             <MapLegendModal
-              mapLegendValues={mapLegendValues}
-              mapLegendDisclaimer={mapLegendDisclaimer}
+              mapLegendValues={props.mapLegendValues}
+              mapLegendDisclaimer={props.mapLegendDisclaimer}
               menuStyle={menuStyle}
               onCloseModal={closeLegendModal}
               isFilterModalOpen={isFilterModalOpen}
@@ -810,20 +741,45 @@ export default function Map(props: MapProps): JSX.Element {
             />
           )}
         </MapContainer>
+
         <div ref={iconRef} style={{ display: 'none' }}>
-          <DashboardIcons iconName={mapMarkerIcon} color={mapMarkerIconColor} />
+          {isCombinedMap
+            ? (props as CombinedMapProps).mapMarkerIcon?.map(
+                (iconName, index) => (
+                  <DashboardIcons
+                    key={index}
+                    iconName={iconName}
+                    color="white"
+                  />
+                ),
+              )
+            : (props as SingleMapProps).mapMarkerIcon && (
+                <DashboardIcons
+                  iconName={(props as SingleMapProps).mapMarkerIcon}
+                  color={(props as SingleMapProps).mapMarkerIconColor}
+                />
+              )}
         </div>
       </div>
+
       {/* sidebar modal */}
-      {mapAllowPopups && selectedMarker.data && isFullscreenMap && (
+      {props.mapAllowPopups && selectedMarker.data && isFullscreenMap && (
         <MapModal
           selectedMarker={selectedMarker.data}
-          mapWidgetValues={mapWidgetValues}
+          mapWidgetValues={
+            props.mapWidgetValues && props.mapWidgetValues.length > 0
+              ? isCombinedMap
+                ? props.mapWidgetValues.filter(
+                    (widget) => widget.dataSource === selectedMarker.dataSource,
+                  )
+                : props.mapWidgetValues
+              : undefined
+          }
           menuStyle={menuStyle}
-          chartStyle={chartStyle}
+          chartStyle={isCombinedMap ? props.chartStyle : undefined}
           ciColors={ciColors}
           onCloseModal={handleOnCloseModal}
-        ></MapModal>
+        />
       )}
     </div>
   );

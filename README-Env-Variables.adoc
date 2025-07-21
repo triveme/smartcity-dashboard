@@ -77,5 +77,4 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 == Note
 
 - Make sure to replace placeholder values (like URLs and passwords) with your actual configuration values before deployment.
-- For security reasons, never commit sensitive information like passwords or secret keys to your version control system.
-- Consider using secrets management tools or environment variable management practices.
+- For security reasons, never commit sensitive information like passwords or secret keys to your version control system. Consider using secrets management tools or environment variable management practices.
