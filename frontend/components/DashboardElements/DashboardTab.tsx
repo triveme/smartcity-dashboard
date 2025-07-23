@@ -567,6 +567,16 @@ export default async function DashboardTab(
               mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
               mapNames={(combinedMapData?.mapNames as string[]) || []}
               isFullscreenMap={false}
+              mapAttributeForValueBased={
+                combinedMapData?.mapAttributeForValueBased as string[]
+              }
+              mapIsIconColorValueBased={
+                combinedMapData?.mapIsIconColorValueBased as boolean[]
+              }
+              staticValues={combinedMapData?.chartStaticValues as number[][]}
+              staticValuesColors={
+                combinedMapData?.chartStaticValuesColors as string[][]
+              }
               chartStyle={chartStyle}
               menuStyle={menuStyle}
               ciColors={ciColors}

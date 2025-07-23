@@ -67,6 +67,13 @@ export interface CombinedMapProps extends BaseMapProps {
   mapCombinedWmsUrl?: string;
   mapCombinedWmsLayer?: string;
   mapNames?: string[];
+  // Value-based coloring support for combined maps
+  mapAttributeForValueBased?: string[];
+  mapFormSizeFactor?: number[];
+  mapIsFormColorValueBased?: boolean[];
+  mapIsIconColorValueBased?: boolean[];
+  staticValues?: number[][];
+  staticValuesColors?: string[][];
 }
 
 export type MarkerType = {

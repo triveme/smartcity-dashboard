@@ -171,10 +171,42 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       return singleProps.mapShapeColor || '#000000';
     }
 
-    // For combined maps, use the marker color based on data source
+    // For combined maps, check if value-based coloring is enabled
     const combinedProps = props as CombinedMapProps;
-    const dataSource = marker.dataSource as number;
-    return combinedProps.mapShapeColor?.[dataSource] || '#000000';
+    const dataSource = marker.dataSource ?? 0; // Default to 0 if undefined
+
+    // Use form-based value coloring if the flag is set for this data source
+    if (
+      combinedProps.mapIsFormColorValueBased?.[dataSource] &&
+      markerValue !== undefined
+    ) {
+      const staticValues = combinedProps.staticValues?.[dataSource];
+      const staticColors = combinedProps.staticValuesColors?.[dataSource];
+      if (staticValues && staticColors) {
+        const color = getColorForValue(markerValue, staticValues, staticColors);
+        return color;
+      }
+    }
+
+    // Use icon-based value coloring if the flag is set for this data source
+    if (
+      combinedProps.mapIsIconColorValueBased?.[dataSource] &&
+      markerValue !== undefined
+    ) {
+      const staticValues = combinedProps.staticValues?.[dataSource];
+      const staticColors = combinedProps.staticValuesColors?.[dataSource];
+      if (staticValues && staticColors) {
+        const color = getColorForValue(markerValue, staticValues, staticColors);
+        return color;
+      }
+    }
+
+    // Default to marker color for this data source if value-based coloring isn't enabled
+    const fallbackColor =
+      combinedProps.mapMarkerColor?.[dataSource] ||
+      combinedProps.mapShapeColor?.[dataSource] ||
+      '#000000';
+    return fallbackColor;
   };
 
   const markerPositions: MarkerType[] = (props.data || []).map(
@@ -185,10 +217,30 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
       if (isCombinedMap) {
         // Combined map logic
+        const combinedProps = props as CombinedMapProps;
         title = mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`;
+
+        // Extract marker value for combined maps if value-based coloring is enabled
+        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
+
+        if (
+          combinedProps.mapIsIconColorValueBased?.[dataSource] ||
+          combinedProps.mapIsFormColorValueBased?.[dataSource]
+        ) {
+          const valueAttribute =
+            combinedProps.mapAttributeForValueBased?.[dataSource];
+          if (valueAttribute) {
+            if (mapObject[valueAttribute]?.value !== undefined) {
+              markerValue = mapObject[valueAttribute].value;
+            } else if (mapObject[valueAttribute] !== undefined) {
+              markerValue = mapObject[valueAttribute];
+            }
+          }
+        }
+
         color = getColorForMarker(
-          { ...mapObject, dataSource: mapObject.dataSource },
-          null,
+          { ...mapObject, dataSource: dataSource },
+          markerValue,
         );
       } else {
         // Single map logic
@@ -565,7 +617,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       key={index}
                       position={marker.position as LatLngExpression}
                       icon={createCustomIcon(
-                        markerProps.color,
+                        marker.color || markerProps.color,
                         iconSvgMarkup,
                         markerProps.iconIndex,
                         isCombinedMap,

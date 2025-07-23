@@ -130,7 +130,9 @@ export class DataTranslationService {
           await this.populateCombinedWidgetService.populateTab(tabWithContent);
         } else if (
           tab.componentType === 'Diagramm' ||
-          tab.componentType === 'Karte'
+          tab.componentType === 'Karte' ||
+          (tab.componentType === 'Slider' &&
+            tab.componentSubType === 'Slider Übersicht')
         ) {
           await this.populateChartService.populateTab(tabWithContent);
         }

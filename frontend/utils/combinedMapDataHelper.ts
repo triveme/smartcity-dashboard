@@ -44,10 +44,18 @@ export function combineWidgetAttributes(
             if (item !== null && item !== undefined) {
               // ensure it's an array before push
               if (Array.isArray(combinedAttributes[key])) {
-                combinedAttributes[key].push({
-                  ...item,
-                  dataSource: widgetIndex,
-                });
+                // Special handling for primitives (strings, numbers) to prevent them from being spread character by character
+                if (typeof item === 'string' || typeof item === 'number') {
+                  combinedAttributes[key].push({
+                    value: item,
+                    dataSource: widgetIndex,
+                  });
+                } else {
+                  combinedAttributes[key].push({
+                    ...item,
+                    dataSource: widgetIndex,
+                  });
+                }
               }
             }
           });
@@ -74,7 +82,48 @@ export function combineWidgetAttributes(
       }
       // handle boolean arrays: if any value is true, set to true
       else if (typeof values[0] === 'boolean') {
-        combinedAttributes[key] = values.some((value) => value === true);
+        // Special handling for map-related boolean arrays that need to be preserved per data source
+        if (
+          key === 'mapIsIconColorValueBased' ||
+          key === 'mapIsFormColorValueBased'
+        ) {
+          // Keep as array for map value-based coloring properties
+          combinedAttributes[key] = values;
+        } else {
+          // For other boolean arrays, collapse to single boolean
+          combinedAttributes[key] = values.some((value) => value === true);
+        }
+      }
+      // Special handling for chartStaticValuesColors and chartStaticValues
+      // These need to be transformed into arrays organized by dataSource
+      else if (
+        key === 'chartStaticValuesColors' ||
+        key === 'chartStaticValues'
+      ) {
+        // Group by dataSource and extract the values
+        const groupedByDataSource: { [dataSource: number]: any[] } = {};
+
+        values.forEach((item: any) => {
+          if (item && typeof item === 'object' && 'dataSource' in item) {
+            const dataSource = item.dataSource;
+            if (!groupedByDataSource[dataSource]) {
+              groupedByDataSource[dataSource] = [];
+            }
+            // Extract the actual value (handle both wrapped and unwrapped values)
+            const actualValue = item.value !== undefined ? item.value : item;
+            groupedByDataSource[dataSource].push(actualValue);
+          }
+        });
+
+        // Convert to array format expected by the Map component
+        const maxDataSource = Math.max(
+          ...Object.keys(groupedByDataSource).map(Number),
+        );
+        const result: any[][] = [];
+        for (let i = 0; i <= maxDataSource; i++) {
+          result[i] = groupedByDataSource[i] || [];
+        }
+        combinedAttributes[key] = result;
       }
     }
   });

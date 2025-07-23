@@ -238,6 +238,19 @@ export default async function Dashboard(
               }
               mapNames={(combinedMapData?.mapNames as string[]) || []}
               isFullscreenMap={true}
+              mapAttributeForValueBased={
+                combinedMapData?.mapAttributeForValueBased as string[]
+              }
+              mapIsIconColorValueBased={
+                combinedMapData?.mapIsIconColorValueBased as boolean[]
+              }
+              mapIsFormColorValueBased={
+                combinedMapData?.mapIsFormColorValueBased as boolean[]
+              }
+              staticValues={combinedMapData?.chartStaticValues as number[][]}
+              staticValuesColors={
+                combinedMapData?.chartStaticValuesColors as string[][]
+              }
               chartStyle={chartStyle}
               menuStyle={menuStyle}
               ciColors={ciColors}
