@@ -1,4 +1,4 @@
-import { Tab, Widget } from '@app/postgres-db/schemas';
+import { Tab, Widget, WidgetData } from '@app/postgres-db/schemas';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
@@ -27,6 +27,7 @@ export type WidgetWithComponentTypes = {
 
 export type FlatWidgetData = {
   widget: Widget;
+  widget_data?: WidgetData | null;
   tab: Tab;
   data_model: DataModel;
   query: Query;

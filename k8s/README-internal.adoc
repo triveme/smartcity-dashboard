@@ -55,7 +55,8 @@ This sections walks us through the Dashboard's infrastructure deployment in a lo
 === TLDR
 [source,bash]
 ----
-docker build -t smartcity/migrations -f Dockerfile.migrations .
+docker build -t smartcity/data-translation-service:latest-dev -f Dockerfile.data-translation-service .
+docker build -t smartcity/migrations:latest-dev -f Dockerfile.migrations .
 kubectl create namespace smart-city-local
 cd k8s/helm
 helm dependency build
@@ -64,11 +65,18 @@ kubectl port-forward smart-city-keycloak-0 8080:8080 -n smart-city-local
 kubectl port-forward smart-city-postgresql-0  5432:5432 -n smart-city-local
 ----
 
+=== Create the image for our data translation service container
+
+[source,bash]
+----
+docker build -t smartcity/data-translation-service:latest-dev -f Dockerfile.data-translation-service .
+----
+
 === Create the image for our automatic db migrations container
 
 [source,bash]
 ----
-docker build -t smartcity/migrations -f Dockerfile.migrations .
+docker build -t smartcity/migrations:latest-dev -f Dockerfile.migrations .
 ----
 
 === Create a Kubernetes namespace
@@ -134,13 +142,13 @@ Unlike our local kubernetes workflow, this helm install will deploy both the inf
 === Prequisites
 
 === Configure EDAG kubernetes cluster
-When connected to the EDAG network, the config file to setup the EDAG K8S cluster on your local rancher desktop can be found at the url:
+When connected to the EDAG network, the config file to setup the EDAG K8S cluster on your local rancher-desktop can be found at the url:
 
 **https://loginapp.container.edag**
 
 * At this URL, navigate to "Full KubeConfig" and copy the contents.
 * Paste the Full KubeConfig into your **.kube/config** file, replacing what is already inside.
-* This .kube folder is installed with rancher desktop and can be found at this example path: "C:\Users\your-user\ .kube"
+* This .kube folder is installed with rancher-desktop and can be found at this example path: "C:\Users\your-user\ .kube"
 
 === Build helm dependencies
 Installs the dependencies defined in the Chart.yaml files
@@ -309,3 +317,16 @@ helm upgrade smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml 
 
 NOTE: In the k8s/helm directory, we have a keycloak-config folder which contains a direct copy of the realm JSONs which already exist in our root keycloak/import/ directory.
 This duplication is necessary because, in Helm, the '.Files' function, which is used to reference files in configmaps, is limited to files within the Helm chart's directory structure.  This means it cannot directly access files outside of the Helm chart directory, such as the realm JSON defined in our project's root.
+
+
+== Troubleshooting
+
+=== Rancher local images
+
+If the Kubernetes cannot pull the local images from docker there is a option for this. Change the engine to `containerd` and import the images into the right namespace.
+
+[source,bash]
+----
+docker save -o sc.tar smartcity/data-translation-service:latest-dev
+nerdctl --namespace=k8s.io load -i sc.tar
+----

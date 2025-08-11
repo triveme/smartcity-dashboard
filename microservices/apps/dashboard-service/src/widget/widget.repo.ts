@@ -6,6 +6,7 @@ import {
   NewWidget,
   Widget,
   widgets,
+  widgetData,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
 import {
   widgetsToPanels,
@@ -61,6 +62,17 @@ export class WidgetRepo {
     return this.db
       .select()
       .from(widgets)
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
+      .leftJoin(queries, eq(tabs.queryId, queries.id))
+      .where(eq(widgets.id, id));
+  }
+
+  async getWidgetWithContentAndData(id: string): Promise<FlatWidgetData[]> {
+    return this.db
+      .select()
+      .from(widgets)
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
       .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
       .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
       .leftJoin(queries, eq(tabs.queryId, queries.id))

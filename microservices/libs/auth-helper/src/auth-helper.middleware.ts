@@ -111,6 +111,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
       const roles = payload.realm_access?.roles;
       const tenant = payload.mandator_code;
       req.roles = roles || undefined;
+      req.tenant = tenant || undefined;
       this.logger.log(
         `Authenticated request with roles: ${roles.join(
           ', ',

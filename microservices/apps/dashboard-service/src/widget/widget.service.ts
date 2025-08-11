@@ -52,6 +52,9 @@ import {
   WidgetWithComponentTypes,
 } from './widget.model';
 import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
+import { WidgetWithContent } from '../dashboard/dashboard.service';
+import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
+import { reduceWidget } from '../dashboard/populate/populate.util';
 
 export type WidgetWithChildren = {
   widget: Widget;
@@ -624,6 +627,73 @@ export class WidgetService {
     response.widget = widget;
 
     return response;
+  }
+
+  async getWithChildrenWithContentById(
+    id: string,
+    rolesFromRequest: string[],
+  ): Promise<WidgetWithChildren> {
+    const widgetWithChildren = await this.getWithChildrenById(
+      id,
+      rolesFromRequest,
+    );
+
+    try {
+      const flatWidgetData = await this.widgetRepo.getWidgetWithContent(id);
+
+      if (!flatWidgetData || flatWidgetData.length === 0) {
+        this.logger.warn(`No content found for widget ${id}`);
+        return widgetWithChildren;
+      }
+
+      const tabMap = new Map<string, Tab>();
+      const dataModelMap = new Map<string, DataModel>();
+      const queryMap = new Map<string, Query>();
+
+      let widgetDataFromDb = null;
+      for (const row of flatWidgetData) {
+        if (row?.widget_data) {
+          widgetDataFromDb = row.widget_data;
+          break;
+        }
+      }
+
+      flatWidgetData.forEach((row) => {
+        if (row?.tab) {
+          tabMap.set(row.tab.id, row.tab);
+        }
+        if (row?.data_model) {
+          dataModelMap.set(row.data_model.id, row.data_model);
+        }
+        if (row?.query) {
+          queryMap.set(row.query.id, row.query);
+        }
+      });
+
+      const widgetWithContent: WidgetWithContent = {
+        ...widgetWithChildren.widget,
+        tabs: [],
+        widgetData: widgetDataFromDb || {
+          id: widgetWithChildren.widget.id,
+          data: {},
+          widgetId: widgetWithChildren.widget.id,
+        },
+      };
+
+      const populatedWidget = reduceWidget(
+        widgetWithContent,
+        tabMap,
+        dataModelMap,
+        queryMap,
+      );
+
+      widgetWithChildren.widget = populatedWidget;
+
+      return widgetWithChildren;
+    } catch (error) {
+      this.logger.error(`Error populating widget content for ${id}:`, error);
+      return widgetWithChildren;
+    }
   }
 
   async getBySearchParam(

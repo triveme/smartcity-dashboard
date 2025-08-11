@@ -238,10 +238,8 @@ export default function MapModal(props: MapModalProps): ReactElement {
                       </div>
                     )}
                     {widget.componentType === tabComponentTypeEnum.image && (
-                      <div className="w-full h-40">
-                        <ImageComponent
-                          imageUrl={getAttributeValue(widget?.attributes)}
-                        />
+                      <div className="w-full max-h-40">
+                        <ImageComponent imageUrl={widget?.imageUrl} />
                       </div>
                     )}
                     {widget.componentType ===

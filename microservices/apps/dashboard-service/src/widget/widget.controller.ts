@@ -182,9 +182,13 @@ export class WidgetController {
   @Get('/with-children/:id')
   async getWithChildrenById(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Query('includeContent') includeContent: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<WidgetWithChildren> {
     const roles = request.roles ?? [];
+    if (includeContent === 'true') {
+      return this.service.getWithChildrenWithContentById(id, roles);
+    }
     return this.service.getWithChildrenById(id, roles);
   }
 
