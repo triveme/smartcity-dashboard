@@ -1454,7 +1454,10 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                     currentValue={
                                       tab?.mapAttributeForValueBased || ''
                                     }
-                                    selectableValues={queryConfig.attributes}
+                                    selectableValues={[
+                                      '',
+                                      ...queryConfig.attributes,
+                                    ]}
                                     error={
                                       errors && errors.mapFilterAttributeError
                                     }

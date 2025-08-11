@@ -108,3 +108,40 @@ export async function deleteWidgetToPanelRelation(
     throw err;
   }
 }
+
+export async function patchWidgetToPanelRelation(
+  accessToken: string | undefined,
+  widgetId: string,
+  newWidgetId: string,
+  panelId: string,
+): Promise<WidgetToPanel> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    const response = await axios.patch(
+      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/${widgetId}/${panelId}`,
+      {
+        widgetId: newWidgetId,
+      },
+      { headers: headers },
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        'HTTP Error on patchWidgetToPanelRelation:',
+        err.response?.status,
+      );
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}

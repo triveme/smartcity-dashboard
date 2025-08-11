@@ -23,7 +23,10 @@ import {
 } from '@/types';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
 import { deletePanel, postPanel } from '@/api/panel-service';
-import { postWidgetToPanelRelation } from '@/api/widgetPanelRelation-service';
+import {
+  patchWidgetToPanelRelation,
+  postWidgetToPanelRelation,
+} from '@/api/widgetPanelRelation-service';
 import { visibilityEnum } from '@/types';
 import RoleSelection from '@/components/RoleSelecton';
 import WizardSuffixUrlTextfield from '@/ui/WizardSuffixUrlTextfield';
@@ -108,6 +111,8 @@ export default function DashboardWizard(
   // Keycloak roles
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState([]);
+  let origianlMapIdIsSet: boolean = false;
+  const [originalMapId, setOriginalMapId] = useState<string>();
 
   useEffect(() => {
     if (auth && auth.user && auth.user?.access_token) {
@@ -193,6 +198,10 @@ export default function DashboardWizard(
         }
       }
     };
+    if (!origianlMapIdIsSet) {
+      setOriginalMapId(selectedWidget?.id);
+      origianlMapIdIsSet = true;
+    }
 
     fetchPanel();
   }, [dashboardType, auth.user?.access_token, setPanels]);
@@ -206,12 +215,21 @@ export default function DashboardWizard(
             )
           : undefined;
       if (match && match.id && panels && panels.length > 0 && panels[0].id) {
-        await postWidgetToPanelRelation(
-          auth?.user?.access_token,
-          match.id!,
-          panels[0].id,
-          0,
-        );
+        if (originalMapId) {
+          await patchWidgetToPanelRelation(
+            auth?.user?.access_token,
+            originalMapId!,
+            match.id!,
+            panels[0].id,
+          );
+        } else {
+          await postWidgetToPanelRelation(
+            auth?.user?.access_token,
+            match.id!,
+            panels[0].id!,
+            0,
+          );
+        }
       }
     };
     handleWidgetClick();

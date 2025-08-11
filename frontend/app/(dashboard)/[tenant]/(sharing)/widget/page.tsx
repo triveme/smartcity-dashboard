@@ -10,7 +10,7 @@ export const runtime = 'edge';
 
 async function getData(param: string): Promise<WidgetWithChildren> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/widgets/with-children/${param}`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/widgets/with-children/${param}?includeContent=true`,
   );
   if (!res.ok) {
     console.error(process.env.NEXT_PUBLIC_BACKEND_URL);

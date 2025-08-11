@@ -250,7 +250,7 @@ export default function StaticValuesFieldMapWidgets(
                       value.componentSubType ===
                         widgetImageSourceEnum.sensor)) && (
                     <div className="flex flex-col w-2/4 pb-2">
-                      <WizardLabel label="Attribute (nach Query Konfiguration möglich)" />
+                      <WizardLabel label="Attribut (nach Query Konfiguration möglich)" />
                       <div className="flex flex-row items-end">
                         <div className="flex-1">
                           <WizardDropdownSelection
@@ -871,7 +871,7 @@ export default function StaticValuesFieldMapWidgets(
                             <div className="flex-1">
                               <WizardDropdownSelection
                                 currentValue={value?.jumpoffAttribute || ''}
-                                selectableValues={availableAttributes}
+                                selectableValues={['', ...availableAttributes]}
                                 onSelect={(textValue): void => {
                                   const updatedMapWidgetValues =
                                     mapWidgetValues.map((widget, idx) =>

@@ -47,6 +47,9 @@ export default function ImageComponent(props: ImageProps): ReactElement {
         src={imageUrl!}
         className="max-h-full mx-auto object-contain"
         alt="Image"
+        onError={(e) => {
+          e.currentTarget.style.display = 'none';
+        }}
       />
     </div>
   );

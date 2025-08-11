@@ -48,7 +48,7 @@ microservice & frontend chart.
 
 This sections walks us through the Dashboard's infrastructure deployment in a local rancher-desktop k8s cluster.  Locally, our k8s workflow is to deploy only the postgres, its migrations and keycloak.  We then portforward these pods and continue to use npm to start the individual microservices and frontend locally.
 
-=== TLDR
+=== TL;DR
 [source,bash]
 ----
 docker build -t smartcity/migrations -f Dockerfile.migrations .
@@ -122,6 +122,16 @@ helm uninstall smart-city --namespace smart-city-local
 
 
 == Server Dashboard Deployment with Kubernetes (helm)
+
+=== TL;DR
+* Copy entry of `k3s_kubeconfig.yaml` from `hcloud`-folder into your `.kube/config`.
+* Switch context to `k3s`.
+* Execute helm command:
+[source,bash]
+----
+cd k8s/helm
+helm upgrade smart-city --namespace hcloud -f values.yaml -f values-hcloud.yaml -f secrets.yaml .
+----
 
 === Additional Context For values.yaml
 
