@@ -13,14 +13,10 @@ export default async function RootLayout(props: {
   children: React.ReactNode;
   params: Promise<{ tenant: string; url: string[] }>;
 }): Promise<JSX.Element> {
-  const params = await props.params;
-
   const { children } = props;
 
-  const NEXT_PUBLIC_MULTI_TENANCY = process.env.NEXT_PUBLIC_MULTI_TENANCY;
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
-
+  const params = await props.params;
+  const tenant = params.tenant || undefined;
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
   let dynamicHeadline = '';

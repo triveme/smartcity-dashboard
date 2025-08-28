@@ -9,9 +9,15 @@ import { DataTranslationRepo } from './data-translation.repo';
 import { PopulateMapService } from './populate/populate-map.service';
 import { PostgresDbModule } from '@app/postgres-db';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
+import { PopulateListviewService } from './populate/populate-listview';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
     ScheduleModule.forRoot(),
     PostgresDbModule,
     JwtModule.register({
@@ -26,6 +32,7 @@ import { JwtModule } from '@nestjs/jwt';
     PopulateCombinedWidgetService,
     PopulateValueService,
     PopulateMapService,
+    PopulateListviewService,
   ],
 })
 export class DataTranslationServiceModule {}

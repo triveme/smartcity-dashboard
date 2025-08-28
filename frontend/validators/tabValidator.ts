@@ -40,6 +40,8 @@ export function validateTab(tab: Tab): WizardErrors {
       !tab?.componentSubType ||
       (tab.componentSubType !== tabComponentSubTypeEnum.pin &&
         tab.componentSubType !== tabComponentSubTypeEnum.combinedMap &&
+        tab.componentSubType !== tabComponentSubTypeEnum.geoJSON &&
+        tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic &&
         tab.componentSubType !== tabComponentSubTypeEnum.parking)
     ) {
       errorsOccured.mapTypeError = 'Der Karten Typ muss gewählt werden.';
@@ -113,6 +115,75 @@ export function validateTab(tab: Tab): WizardErrors {
       !validateUrl(tab?.imageJumpoffUrl)
     ) {
       errorsOccured.imageJumpoffUrlError = 'Ungültige URL für Bild Jumpoff-URL';
+    }
+  } else if (tab?.componentType === tabComponentTypeEnum.listview) {
+    if (!tab?.listviewName) {
+      errorsOccured.listviewNameError = 'Listview Name ist erforderlich!';
+    }
+
+    if (tab?.listviewIsFilteringAllowed && !tab?.listviewFilterAttribute) {
+      errorsOccured.listviewFilterAttributeError =
+        'Filter Attribut ist erforderlich wenn Filtering erlaubt ist!';
+    }
+
+    if (tab?.listviewShowAddress && !tab?.listviewAddressAttribute) {
+      errorsOccured.listviewAddressAttributeError =
+        'Adresse Attribut ist erforderlich wenn Adresse angezeigt wird!';
+    }
+
+    if (tab?.listviewShowContact && !tab?.listviewContactAttribute) {
+      errorsOccured.listviewContactAttributeError =
+        'Kontakt Attribut ist erforderlich wenn Kontakt angezeigt wird!';
+    }
+
+    if (tab?.listviewShowImage && !tab?.listviewImageAttribute) {
+      errorsOccured.listviewImageAttributeError =
+        'Bild Attribut ist erforderlich wenn Bild angezeigt wird!';
+    }
+
+    if (tab?.listviewShowCategory && !tab?.listviewCategoryAttribute) {
+      errorsOccured.listviewCategoryAttributeError =
+        'Kategorie Attribut ist erforderlich wenn Kategorie angezeigt wird!';
+    }
+
+    if (tab?.listviewShowName && !tab?.listviewNameAttribute) {
+      errorsOccured.listviewNameAttributeError =
+        'Name Attribut ist erforderlich wenn Name angezeigt wird!';
+    }
+
+    if (tab?.listviewShowContactName && !tab?.listviewContactNameAttribute) {
+      errorsOccured.listviewContactNameAttributeError =
+        'Kontakt Name Attribut ist erforderlich wenn Kontakt Name angezeigt wird!';
+    }
+
+    if (tab?.listviewShowContactPhone && !tab?.listviewContactPhoneAttribute) {
+      errorsOccured.listviewContactPhoneAttributeError =
+        'Kontakt Telefonnummer Attribut ist erforderlich wenn Kontakt Telefonnummer angezeigt wird!';
+    }
+
+    if (tab?.listviewShowParticipants && !tab?.listviewParticipantsAttribute) {
+      errorsOccured.listviewParticipantsAttributeError =
+        'Teilnehmer Attribut ist erforderlich wenn Teilnehmer angezeigt wird!';
+    }
+
+    if (tab?.listviewShowSupporter && !tab?.listviewSupporterAttribute) {
+      errorsOccured.listviewSupporterAttributeError =
+        'Unterstützer Attribut ist erforderlich wenn Unterstützer angezeigt wird!';
+    }
+
+    if (tab?.listviewShowEmail && !tab?.listviewEmailAttribute) {
+      errorsOccured.listviewEmailAttributeError =
+        'E-Mail Attribut ist erforderlich wenn E-Mail angezeigt wird!';
+    }
+
+    if (tab?.listviewShowWebsite && !tab?.listviewWebsiteAttribute) {
+      errorsOccured.listviewWebsiteAttributeError =
+        'Website Attribut ist erforderlich wenn Website angezeigt wird!';
+    }
+
+    if (tab?.listviewShowDescription && !tab?.listviewDescriptionAttribute) {
+      errorsOccured.listviewDescriptionAttributeError =
+        'Beschreibung Attribut ist erforderlich wenn Beschreibung angezeigt wird!';
     }
   }
   return errorsOccured;

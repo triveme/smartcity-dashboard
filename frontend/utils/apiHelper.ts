@@ -2,6 +2,7 @@ import { deleteAuthData } from '@/api/authData-service';
 import { deleteDashboard } from '@/api/dashboard-service';
 import { deleteTenant } from '@/api/tenant-service';
 import { deleteWidget } from '@/api/widget-service';
+import { deleteData } from '@/api/internal-data-service';
 
 export async function deleteGenericItemById(
   accessToken: string | undefined,
@@ -21,6 +22,9 @@ export async function deleteGenericItemById(
       break;
     case 'tenant':
       await deleteTenant(accessToken, id);
+      break;
+    case 'InternalData':
+      await deleteData(accessToken, id);
       break;
     default:
       console.error('Unknown generic type');

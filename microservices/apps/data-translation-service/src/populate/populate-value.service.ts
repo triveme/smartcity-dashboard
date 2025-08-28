@@ -59,6 +59,11 @@ export class PopulateValueService {
 
     try {
       const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
+
+      if (!query) {
+        return;
+      }
+
       const queryData = query.queryData as any[];
 
       if (Array.isArray(queryData) && queryData.length > 0) {
@@ -87,9 +92,18 @@ export class PopulateValueService {
     },
   ): Promise<void> {
     const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
+
+    if (!query) {
+      return;
+    }
+
     const queryConfig = await this.dataTranslationRepo.getQueryConfigById(
       query.queryConfigId,
     );
+
+    if (!queryConfig) {
+      return;
+    }
 
     if (queryConfig.attributes && queryConfig.attributes.length > 0) {
       tab.chartValues = [];

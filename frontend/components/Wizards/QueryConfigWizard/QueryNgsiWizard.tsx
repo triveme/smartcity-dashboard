@@ -74,6 +74,7 @@ export default function QueryNgsiWizard(
   };
 
   const requestSource = async (): Promise<void> => {
+    console.log('Requesting sources...');
     toggleLoading('source', true);
     try {
       let req: string[] = [];
@@ -90,8 +91,11 @@ export default function QueryNgsiWizard(
           if (queryConfig?.fiwareType) {
             setSelectedSource(queryConfig?.fiwareType);
           } else {
-            setSelectedSource(sources[0]);
+            setSelectedSource(req[0]);
           }
+        } else {
+          setSources([]);
+          setSelectedSource('');
         }
       }
     } catch (error) {
@@ -174,10 +178,22 @@ export default function QueryNgsiWizard(
     } else if (ngsiCollections && ngsiCollections.length > 0) {
       setSelectedCollection(ngsiCollections[0]);
     }
-  }, [ngsiCollections]);
+  }, [ngsiCollections, queryConfig?.fiwareService]);
+
+  // Additional effect to handle NGSI-LD case where collection might not be set via fiwareService
+  useEffect(() => {
+    if (
+      ngsiType === 'ngsi-ld' &&
+      ngsiCollections &&
+      ngsiCollections.length > 0 &&
+      !selectedCollection
+    ) {
+      setSelectedCollection(ngsiCollections[0]);
+    }
+  }, [ngsiType, ngsiCollections, selectedCollection]);
 
   useEffect(() => {
-    if (selectedCollection) {
+    if (selectedCollection && queryConfig?.dataSourceId) {
       requestSource();
     } else {
       setSelectedSource('');
@@ -185,24 +201,29 @@ export default function QueryNgsiWizard(
       setSensors([]);
       setAttributes([]);
     }
-  }, [selectedCollection]);
+  }, [selectedCollection, queryConfig?.dataSourceId]);
 
   useEffect(() => {
-    if (selectedSource) {
+    if (selectedSource && selectedCollection && queryConfig?.dataSourceId) {
       requestSensors();
     } else {
       setSensors([]);
       setAttributes([]);
     }
-  }, [selectedSource]);
+  }, [selectedSource, selectedCollection, queryConfig?.dataSourceId]);
 
   useEffect(() => {
-    if (selectedSensors && selectedSensors.length > 0) {
+    if (
+      selectedSensors &&
+      selectedSensors.length > 0 &&
+      selectedCollection &&
+      queryConfig?.dataSourceId
+    ) {
       requestAttributes();
     } else {
       setAttributes([]);
     }
-  }, [selectedSensors]);
+  }, [selectedSensors, selectedCollection, queryConfig?.dataSourceId]);
 
   return (
     <>
@@ -309,7 +330,7 @@ export default function QueryNgsiWizard(
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label={'Entitäts-IDs / Sources'} />
                 <div className="flex flex-row items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection
                       currentValue={queryConfig?.entityIds || []}
                       selectableValues={sensors}
@@ -365,7 +386,7 @@ export default function QueryNgsiWizard(
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Attribute" />
                 <div className="flex flex-row items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection
                       currentValue={queryConfig?.attributes || []}
                       selectableValues={attributes}
@@ -454,7 +475,7 @@ export default function QueryNgsiWizard(
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label={'Entitäts-IDs / Sources'} />
                 <div className="flex flex-row items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection
                       currentValue={queryConfig?.entityIds || []}
                       selectableValues={sensors}
@@ -510,7 +531,7 @@ export default function QueryNgsiWizard(
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Attribute" />
                 <div className="flex flex-row items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection
                       currentValue={queryConfig?.attributes || []}
                       selectableValues={attributes}

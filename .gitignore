@@ -64,3 +64,13 @@ keycloak/import/production-realm.json
 microservices/.env.testing
 microservices/.env
 Jenkinsfile
+
+# Local environment files
+.env.local
+.env*.local
+
+# Ignore everything in the hcloud folder
+hcloud/*
+# Except these custom files - everything else is terraform generated
+!hcloud/kube.tf
+!hcloud/README.adoc

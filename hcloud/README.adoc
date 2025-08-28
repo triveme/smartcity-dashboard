@@ -1,0 +1,152 @@
+= Terraform Hetzner Cloud Kubernetes Deployment
+
+:toc: macro
+:toc-title: Table of Contents
+
+== Table of Contents
+
+* <<Overview, Overview>>
+* <<Referenced Repository, Referenced Repository>>
+* <<Prerequisites, Prerequisites>>
+* <<Creating a new Hetzner k3s Server, Creating a new Hetzner k3s Server>>
+* <<Using the Hetzner k3s Server, Using the Hetzner k3s Server>>
+* <<Configuring Ingresses for Hosting the Dashboard at https://smartcity-system.de, Configuring Ingresses>>
+* <<The Unscheduleable Error, The Unscheduleable Error>>
+
+
+== Overview
+
+This README details the steps taken to deploy a kubernetes server to our Hetzner Cloud Project - SmartCity Dashboard Showcase.
+
+== Referenced Repository
+This repository provides Terraform configurations to deploy a lightweight (k3s) Kubernetes cluster on Hetzner Cloud using the [kube-hetzner/terraform-hcloud-kube-hetzner](https://github.com/kube-hetzner/terraform-hcloud-kube-hetzner) module. The configurations are customized in the `kube.tf` file to fit specific Kubernetes environment requirements.
+
+== Prerequisites
+
+The following packages were used to install the necessary cli tools for the k3s server installation:
+
+* [Terraform](https://www.terraform.io/)
+* [Packer](https://www.packer.io/)
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+* [hcloud CLI](https://github.com/hetznercloud/cli)
+
+Commands executed in Linux based terminal, e.g. WSL:
+```sh
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+brew install packer
+brew install kubectl
+brew install hcloud
+```
+== Creating a new Hetzner k3s Server
+
+=== Generate the Required Folder
+
+To generate the `terraform-hcloud-k3s` folder or `hcloud` as named in our project root, the following command was ran (ensure you are not on your company network or VPN):
+
+```sh
+tmp_script=$(mktemp) && curl -sSL -o "${tmp_script}" https://raw.githubusercontent.com/kube-hetzner/terraform-hcloud-kube-hetzner/master/scripts/create.sh && chmod +x "${tmp_script}" && "${tmp_script}" && rm "${tmp_script}"
+```
+
+=== Customize `kube.tf`
+
+Once the terraform-hcloud-k3s folder was generated, the `kube.tf` file was then customized  based on our Kubernetes environment needs. Key customizations included:
+
+* Specifying the Hetzner Cloud API token of our project.
+* Configuring SSH key pair for accessing servers (NOTE: a ssh key pair was generated with the command - `ssh-keygen -t rsa`)
+* Defining the region (`network_region`) where the Kubernetes cluster will be deployed.
+* Setting up control plane and agent node pools with desired server types, locations, and counts.
+* Configuring a load balancer for the Kubernetes cluster.
+* Specifying DNS servers to be used by Kubernetes.
+
+Refer to the comments in the `kube.tf` file for more details on customization.
+
+=== Server Deployment
+
+The following command were executed to initialize, validate, and apply the Terraform configuration:
+
+NOTE: I found that these commands must be executed in a Linux based terminal, e.g. WSL, and OUTSIDE of the company network to avoid issuer cert problems.
+
+```sh
+cd hcloud
+terraform init --upgrade
+terraform validate
+terraform apply -auto-approve
+```
+
+Terraform apply deploys the servers defined in the kube.tf file to our Hetzner Cloud project which is specified by the API token.
+
+=== Server Teardown
+
+To remove the server infrastructure, execute the following command:
+
+```sh
+terraform init
+terraform destroy -auto-approve
+```
+
+== Using the Hetzner k3s Server
+
+=== Generating the resulting kubeconfig for the k3s server
+
+Copy the output of the deployed server to your local `~/.kube/config` file to access the cluster using `kubectl` or `k9s`.
+
+IMPORTANT: the kubernetes environment can only be accessed OUTSIDE of the company network.
+
+```sh
+terraform init
+terraform output kubeconfig
+```
+
+
+== Configuring Ingresses for Hosting the Dashboard at https://smartcity-system.de
+
+1. Domain Acquisition: The domain name smartcity-system.de was obtained from Hetzner Cloud.
+
+2. DNS Configuration: DNS records were created in Hetzner DNS to point the k3s server on Hetzner Cloud to the domain and all its subdomains using a wildcard entry (*.smartcity-system.de).
+
+3. Kubernetes Server Modifications via our hcloud/kube.tf file:
+
+  * An Nginx ingress controller was added to the k3s server.
+  * The cert-manager flag was enabled to manage certificates.
+
+4. Certificate Issuer Deployment:
+
+  * A new Kubernetes YAML file (k8s/helm/ca-issuer-clusterissuer.yaml) was created and deployed to set up a Lets Encrypt Certificate Issuer in the k8s cluster.
+  * Ingresses and tls secret names were then defined for every deployable node of our dashboard in the values-hcloud.yaml.
+  * This ClusterIssuer was then responsible for distributing TLS certificates to the ingresses across the cluster.
+
+5. Certificate Management:
+
+  Our Dashboard application uses a .env var TRUSTED_CA to allow communication between dashboard-service and keycloak when deployed to a k8s environment.  In our helm charts, a configmap points to a specified .pem file, in this case it will be located at k8s/helm/certificates/hcloud_ca.pem.
+  Here are the certs which populate this particular .pem file to allow communication between our pods in the k3s server:
+
+  * The ssl certs assigned to our server.  Obtained with this command:
+  ```sh
+openssl s_client -connect smartcity-system.de:443 -showcerts
+  ```
+  * Root certificate of our Cluster Issuer - Let's Encrypt: ISRG Root X1 self signed - https://letsencrypt.org/certificates/
+
+
+These steps enabled the public availability of our dashboard at https://smartcity-system.de.
+
+
+== The Unscheduleable Error
+
+We found that the Hetzner Cloud provider can have some downtime here and there.  This downtime can affect our k3s server, causing all pods, including the kubernetes infrastructure, to become stuck in a 'pending' state.  When inspecting the server on kubectl command line, we discover that the downtime caused our server to become 'cordoned'.
+
+The solution to our server becoming cordoned, leavig the pods stuck in an unschedulable 'pending' state, is to force uncordon our server with the following command:
+  ```sh
+kubectl uncordon k3s-combined-node-edf
+  ```
+
+k3s-combined-node-edf being the name of our server deployed on Hetzner Cloud.
+This uncordon command forces the pods to schedule and run again.
+
+The dashboard may still be unavailable due to a issuer cert error after uncordoning.  This is because the cert manager in our k3s server was restarted during the uncordoning and issued a new ssl cert to our server.
+
+We need to update the first certificate in the hcloud_ca.pem in our k8s/helm/certificates directory.
+The new ssl cert assigned to our server can be fetched with command:
+  ```sh
+openssl s_client -connect smartcity-system.de:443 -showcerts
+  ```

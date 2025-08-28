@@ -42,14 +42,28 @@ export default function WizardMultipleDropdownSelection(
   };
 
   const renderSelectedValues = (): string => {
-    const visibleValues = currentValue.slice(0, 2);
-    const remainingCount = currentValue.length - visibleValues.length;
+    if (currentValue.length === 0) return '';
 
-    if (remainingCount > 0) {
-      return `${visibleValues.join(', ')} und ${remainingCount} weitere...`;
+    // For very long names, show only the count
+    if (currentValue.length > 2) {
+      return `${currentValue.length} Elemente ausgewählt`;
     }
 
-    return visibleValues.join(', ');
+    // For 1-2 items, truncate individual names if they're too long
+    const truncatedValues = currentValue.map((value) => {
+      if (value.length > 30) {
+        return `${value.substring(0, 30)}...`;
+      }
+      return value;
+    });
+
+    // If even truncated names are too long for display, fall back to count
+    const joinedText = truncatedValues.join(', ');
+    if (joinedText.length > 50) {
+      return `${currentValue.length} Elemente ausgewählt`;
+    }
+
+    return joinedText;
   };
 
   useEffect(() => {

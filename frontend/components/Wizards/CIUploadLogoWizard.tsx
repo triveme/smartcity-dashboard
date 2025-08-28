@@ -7,7 +7,6 @@ import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { CorporateInfo, Logo } from '@/types';
 import { getLogos, postLogo } from '@/api/logo-service';
 import { useParams } from 'next/navigation';
-import { env } from 'next-runtime-env';
 
 type Props = {
   corporateInfo: CorporateInfo | undefined;
@@ -27,11 +26,8 @@ const CIUploadLogoWizard: FC<Props> = () => {
 
   // Multi Tenancy
   const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const tenant = (params.tenant as string) || undefined;
+
   const { refetch: refetchLogos } = useQuery({
     queryKey: ['logos'],
     queryFn: () => getLogos(auth?.user?.access_token, tenant),

@@ -14,6 +14,7 @@ import { PopulateCombinedWidgetService } from './populate/populate-combined-widg
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataTranslationRepo } from './data-translation.repo';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
+import { PopulateListviewService } from './populate/populate-listview';
 
 export type QueryDataWidthWidgetId = {
   widgetId: string;
@@ -45,6 +46,7 @@ export type ChartData = {
   name: string;
   values: [string, number][];
   color?: string;
+  id?: string;
 };
 
 export type WeatherWarningData = {
@@ -55,6 +57,28 @@ export type WeatherWarningData = {
   alertDescription: string;
   validFrom: string;
   validTo: string;
+};
+
+export type InterestingPlace = {
+  name: string;
+  types: string[];
+  address: string;
+  image: string;
+  imagePreview: string;
+  creator: string;
+  location: {
+    type: string;
+    coordinates: number[];
+  };
+  info: string;
+  zoomprio: string;
+  contactName?: string;
+  contactPhone?: string;
+  participants?: string;
+  supporter?: string;
+  email?: string;
+  website?: string;
+  description?: string;
 };
 
 type Coordinate = [number, number];
@@ -76,6 +100,8 @@ export type TabWithContent = Tab & { query?: Query } & {
   weatherWarnings: WeatherWarningData[];
 } & {
   mapObject: MapObject[];
+} & {
+  listviewData: InterestingPlace[];
 };
 export type WidgetWithContent = Widget & { tabs: TabWithContent[] };
 export type PanelWithContent = Panel & { widgets: WidgetWithContent[] };
@@ -104,6 +130,11 @@ const wrapTabWithDefaultData = (tab: Tab): TabWithContent => {
     combinedWidgets: [],
     weatherWarnings: [],
     mapObject: [],
+    listviewData: [],
+    // Initialize properties that might be null from database
+    chartValues: tab.chartValues || [],
+    textValue: tab.textValue || '',
+    imageSrc: tab.imageSrc || '',
   };
 };
 
@@ -115,43 +146,112 @@ export class DataTranslationService {
     private readonly populateChartService: PopulateChartService,
     private readonly populateCombinedWidgetService: PopulateCombinedWidgetService,
     private readonly dataTranslationRepo: DataTranslationRepo,
+    private readonly populateListviewService: PopulateListviewService,
   ) {}
 
   async refreshTabData(): Promise<void> {
-    console.log('Refreshing tab data...');
-    const data = await this.dataTranslationRepo.getAllTabs();
-    const tabPromises = data.map(async (tab) => {
-      try {
-        const tabWithContent = wrapTabWithDefaultData(tab);
+    try {
+      console.log('Refreshing tab data...');
+      const data = await this.dataTranslationRepo.getAllTabs();
+      const tabPromises = data.map(async (tab) => {
+        try {
+          // Skip tabs that don't have a valid widget ID
+          if (!tab.widgetId) {
+            console.warn(`Tab ${tab.id} has no widget ID. Skipping.`);
+            return;
+          }
 
-        if (isSingleValueTab(tab)) {
-          await this.populateValueService.populateTab(tabWithContent);
-        } else if (isCombinedWidgetTab(tab)) {
-          await this.populateCombinedWidgetService.populateTab(tabWithContent);
-        } else if (
-          tab.componentType === 'Diagramm' ||
-          tab.componentType === 'Karte' ||
-          (tab.componentType === 'Slider' &&
-            tab.componentSubType === 'Slider Übersicht')
-        ) {
-          await this.populateChartService.populateTab(tabWithContent);
+          // Check if widget exists before processing
+          const widget = await this.dataTranslationRepo.getWidgetById(
+            tab.widgetId,
+          );
+          if (!widget) {
+            console.warn(
+              `Widget ${tab.widgetId} for tab ${tab.id} does not exist. Skipping.`,
+            );
+            return;
+          }
+
+          const tabWithContent = wrapTabWithDefaultData(tab);
+
+          if (isSingleValueTab(tab)) {
+            await this.populateValueService.populateTab(tabWithContent);
+          } else if (isCombinedWidgetTab(tab)) {
+            await this.populateCombinedWidgetService.populateTab(
+              tabWithContent,
+            );
+          } else if (tab.componentType === 'Listview') {
+            await this.populateListviewService.populateListview(tabWithContent);
+          } else if (
+            tab.componentType === 'Diagramm' ||
+            tab.componentType === 'Karte' ||
+            (tab.componentType === 'Slider' &&
+              tab.componentSubType === 'Slider Übersicht')
+          ) {
+            await this.populateChartService.populateTab(tabWithContent);
+          }
+
+          if (
+            tabWithContent.chartData.length > 0 ||
+            tabWithContent.weatherWarnings.length > 0 ||
+            tabWithContent.mapObject.length > 0 ||
+            tabWithContent.listviewData.length > 0 ||
+            (tabWithContent.chartValues &&
+              tabWithContent.chartValues.length > 0) ||
+            (tabWithContent.textValue && tabWithContent.textValue !== '')
+          ) {
+            // Get existing data to preserve fields that weren't populated this time
+            const existingData = await this.dataTranslationRepo.getWidgetData(
+              tab.widgetId,
+            );
+
+            this.dataTranslationRepo.setWidgetData(tab.widgetId, {
+              chartData:
+                tabWithContent.chartData.length > 0
+                  ? tabWithContent.chartData
+                  : existingData?.chartData || [],
+              combinedWidgets:
+                tabWithContent.combinedWidgets ||
+                existingData?.combinedWidgets ||
+                [],
+              weatherWarnings:
+                tabWithContent.weatherWarnings.length > 0
+                  ? tabWithContent.weatherWarnings
+                  : existingData?.weatherWarnings || [],
+              mapObject:
+                tabWithContent.mapObject.length > 0
+                  ? tabWithContent.mapObject
+                  : existingData?.mapObject || [],
+              chartValues:
+                tabWithContent.chartValues &&
+                tabWithContent.chartValues.length > 0
+                  ? tabWithContent.chartValues
+                  : existingData?.chartValues || [],
+              textValue:
+                tabWithContent.textValue && tabWithContent.textValue !== ''
+                  ? tabWithContent.textValue
+                  : existingData?.textValue || '',
+              listviewData:
+                tabWithContent.listviewData.length > 0
+                  ? tabWithContent.listviewData
+                  : existingData?.listviewData || [],
+            });
+          }
+        } catch (error) {
+          console.error('Error while refreshing tab data:', error);
+          console.error(
+            'TAB: ',
+            tab.id,
+            tab.componentType,
+            tab.componentSubType,
+          );
         }
+      });
 
-        this.dataTranslationRepo.setWidgetData(tab.widgetId, {
-          chartData: tabWithContent.chartData,
-          combinedWidgets: tabWithContent.combinedWidgets,
-          weatherWarnings: tabWithContent.weatherWarnings,
-          mapObject: tabWithContent.mapObject,
-          chartValues: tabWithContent.chartValues,
-          textValue: tabWithContent.textValue,
-        });
-      } catch (error) {
-        console.error('Error while refreshing tab data:', error);
-        console.error('TAB: ', tab.id, tab.componentType, tab.componentSubType);
-        this.dataTranslationRepo.setWidgetData(tab.widgetId, null);
-      }
-    });
-
-    await Promise.all(tabPromises);
+      await Promise.all(tabPromises);
+    } catch (error) {
+      console.error('Critical error in refreshTabData:', error);
+      // Service continues to run, just logs the error
+    }
   }
 }

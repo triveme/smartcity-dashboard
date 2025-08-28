@@ -183,7 +183,6 @@ export default function DataPlatformWizard(
       setErrors(errorsOccured);
       return;
     }
-
     try {
       if (itemId) {
         await updateAuthData(auth?.user?.access_token, authData);
@@ -513,6 +512,21 @@ export default function DataPlatformWizard(
                 backgroundColor={backgroundColor}
               />
             </div>
+          </div>
+        ) : type === authDataTypeEnum.internal ? (
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel
+              label={'Collections (Liste mit Komma getrennt eingeben)'}
+            />
+            <WizardTextfield
+              value={collections.join(',')}
+              onChange={(value: string | number): void =>
+                handleCollectionChange(value.toString().replace(' ', ','))
+              }
+              error={errors && errors.appUserError}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+            />
           </div>
         ) : (
           <div className="flex flex-col justify-start items-start content-center grow w-full">

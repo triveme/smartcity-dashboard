@@ -15,6 +15,7 @@ import React from 'react';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
+import { ListView } from '@/components/listview/listview';
 
 type CIDashboardWidgetPreviewProps = {
   componentType: string;
@@ -114,6 +115,31 @@ type CIDashboardWidgetPreviewProps = {
   weatherWarningDateColor: string;
   weatherWarningButtonBackgroundColor: string;
   weatherWarningButtonIconColor: string;
+
+  // ListView
+  listviewBackgroundColor: string;
+  listviewItemBackgroundColor: string;
+  listviewItemBorderColor: string;
+  listviewItemBorderRadius: string;
+  listviewItemBorderSize: string;
+  listviewTitleFontColor: string;
+  listviewTitleFontSize: string;
+  listviewTitleFontWeight: string;
+  listviewDescriptionFontColor: string;
+  listviewDescriptionFontSize: string;
+  listviewCounterFontColor: string;
+  listviewCounterFontSize: string;
+  listviewFilterButtonBackgroundColor: string;
+  listviewFilterButtonBorderColor: string;
+  listviewFilterButtonFontColor: string;
+  listviewFilterButtonHoverBackgroundColor: string;
+  listviewArrowIconColor: string;
+  listviewBackButtonBackgroundColor: string;
+  listviewBackButtonHoverBackgroundColor: string;
+  listviewBackButtonFontColor: string;
+  listviewMapButtonBackgroundColor: string;
+  listviewMapButtonHoverBackgroundColor: string;
+  listviewMapButtonFontColor: string;
 };
 
 export default function CIDashboardWidgetPreview(
@@ -215,6 +241,31 @@ export default function CIDashboardWidgetPreview(
     weatherWarningDateColor,
     weatherWarningButtonBackgroundColor,
     weatherWarningButtonIconColor,
+
+    // ListView
+    listviewBackgroundColor,
+    listviewItemBackgroundColor,
+    listviewItemBorderColor,
+    listviewItemBorderRadius,
+    listviewItemBorderSize,
+    listviewTitleFontColor,
+    listviewTitleFontSize,
+    listviewTitleFontWeight,
+    listviewDescriptionFontColor,
+    listviewDescriptionFontSize,
+    listviewCounterFontColor,
+    listviewCounterFontSize,
+    listviewFilterButtonBackgroundColor,
+    listviewFilterButtonBorderColor,
+    listviewFilterButtonFontColor,
+    listviewFilterButtonHoverBackgroundColor,
+    listviewArrowIconColor,
+    listviewBackButtonBackgroundColor,
+    listviewBackButtonHoverBackgroundColor,
+    listviewBackButtonFontColor,
+    listviewMapButtonBackgroundColor,
+    listviewMapButtonHoverBackgroundColor,
+    listviewMapButtonFontColor,
   } = props;
 
   // Static styling values
@@ -277,7 +328,8 @@ export default function CIDashboardWidgetPreview(
               unitFontSize={degreeChart360UnitFontSize}
             />
           )}
-          {componentSubType === tabComponentSubTypeEnum.pieChart && (
+          {(componentSubType === tabComponentSubTypeEnum.pieChart ||
+            componentSubType === tabComponentSubTypeEnum.pieChartDynamic) && (
             <PieChart
               labels={[]}
               data={[30, 30, 30, 30, 30]} // Static values
@@ -549,6 +601,92 @@ export default function CIDashboardWidgetPreview(
           buttonBackgroundColor={weatherWarningButtonBackgroundColor}
           buttonIconColor={weatherWarningButtonIconColor}
         />
+      )}
+
+      {componentType === tabComponentTypeEnum.listview && (
+        <div className="w-full h-full">
+          <ListView
+            data={[
+              {
+                name: 'Sample Location 1',
+                types: ['restaurant', 'food'],
+                address: 'Musterstraße 123, 12345 Musterstadt',
+                image: 'https://via.placeholder.com/150x100',
+                imagePreview: 'https://via.placeholder.com/75x50',
+                creator: 'Demo Creator',
+                location: {
+                  type: 'Point',
+                  coordinates: [13.404954, 52.520008],
+                },
+                info: 'Sample information about this location',
+                zoomprio: '1',
+              },
+              {
+                name: 'Sample Location 2',
+                types: ['shop', 'retail'],
+                address: 'Beispielweg 456, 67890 Beispielstadt',
+                image: 'https://via.placeholder.com/150x100',
+                imagePreview: 'https://via.placeholder.com/75x50',
+                creator: 'Demo Creator',
+                location: {
+                  type: 'Point',
+                  coordinates: [13.404954, 52.520008],
+                },
+                info: 'Another sample location with different information',
+                zoomprio: '2',
+              },
+              {
+                name: 'Sample Location 3',
+                types: ['service', 'business'],
+                address: 'Testplatz 789, 11223 Testdorf',
+                image: 'https://via.placeholder.com/150x100',
+                imagePreview: 'https://via.placeholder.com/75x50',
+                creator: 'Demo Creator',
+                location: {
+                  type: 'Point',
+                  coordinates: [13.404954, 52.520008],
+                },
+                info: 'Third sample location for demonstration purposes',
+                zoomprio: '3',
+              },
+            ]}
+            listName="Preview Locations"
+            isFilteringAllowed={true}
+            poiBackgroundColor={listviewBackgroundColor}
+            headlineYellowColor={listviewTitleFontColor}
+            headlineGrayColor={listviewDescriptionFontColor}
+            iconColor={listviewArrowIconColor}
+            listviewItemBackgroundColor={listviewItemBackgroundColor}
+            listviewItemBorderColor={listviewItemBorderColor}
+            listviewItemBorderRadius={listviewItemBorderRadius}
+            listviewItemBorderSize={listviewItemBorderSize}
+            listviewTitleFontSize={listviewTitleFontSize}
+            listviewTitleFontWeight={listviewTitleFontWeight}
+            listviewDescriptionFontSize={listviewDescriptionFontSize}
+            listviewCounterFontColor={listviewCounterFontColor}
+            listviewCounterFontSize={listviewCounterFontSize}
+            listviewFilterButtonBackgroundColor={
+              listviewFilterButtonBackgroundColor
+            }
+            listviewFilterButtonBorderColor={listviewFilterButtonBorderColor}
+            listviewFilterButtonFontColor={listviewFilterButtonFontColor}
+            listviewFilterButtonHoverBackgroundColor={
+              listviewFilterButtonHoverBackgroundColor
+            }
+            listviewBackButtonBackgroundColor={
+              listviewBackButtonBackgroundColor
+            }
+            listviewBackButtonHoverBackgroundColor={
+              listviewBackButtonHoverBackgroundColor
+            }
+            listviewBackButtonFontColor={listviewBackButtonFontColor}
+            listviewMapButtonBackgroundColor={listviewMapButtonBackgroundColor}
+            listviewMapButtonHoverBackgroundColor={
+              listviewMapButtonHoverBackgroundColor
+            }
+            listviewMapButtonFontColor={listviewMapButtonFontColor}
+          />
+        </div>
       )}
     </div>
   );

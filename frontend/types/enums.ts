@@ -26,6 +26,7 @@ export enum tabComponentTypeEnum {
   diagram = 'Diagramm',
   slider = 'Slider',
   map = 'Karte',
+  listview = 'Listview',
   weatherWarning = 'Wetterwarnungen',
   combinedComponent = 'Kombinierte Komponente',
   value = 'Wert',
@@ -41,6 +42,7 @@ export enum tabComponentSubTypeEnum {
   degreeChart360 = '360° Chart',
   stageableChart = 'Stageable Chart',
   pieChart = 'Pie Chart',
+  pieChartDynamic = 'Pie Chart (dynamisch)',
   lineChart = 'Linien Chart',
   barChart = 'Balken Chart',
   measurement = 'Measurement',
@@ -54,6 +56,8 @@ export enum tabComponentSubTypeEnum {
   onlyPin = 'Only pin',
   onlyFormArea = 'Only form area',
   combinedPinAndForm = 'Combined form and pin',
+  geoJSON = 'GeoJSON',
+  geoJSONDynamic = 'GeoJSON (dynamisch)',
   coloredSlider = 'Farbiger Slider',
   overviewSlider = 'Slider Übersicht',
 }
@@ -76,6 +80,7 @@ export enum authDataTypeEnum {
   api = 'api',
   staticendpoint = 'static-endpoint',
   usi = 'usi',
+  internal = 'internal',
 }
 
 export enum reportThresholdTriggerTypeEnum {

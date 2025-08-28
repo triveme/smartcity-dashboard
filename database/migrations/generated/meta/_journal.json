@@ -225,6 +225,13 @@
       "when": 1751270531463,
       "tag": "0031_sweet_rockslide_1.0.2",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1756372687384,
+      "tag": "0032_boring_tarot_1.0.8",
+      "breakpoints": true
     }
   ]
 }

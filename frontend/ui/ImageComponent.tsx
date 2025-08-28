@@ -59,7 +59,7 @@ export default function ImageComponent(props: ImageProps): ReactElement {
     : {};
 
   if (!imageUrl && !imageBase64) {
-    return <div>ERROR with Image</div>;
+    return <div></div>;
   }
 
   return (

@@ -1,8 +1,7 @@
-import { getCorporateInfosWithLogos } from '@/app/actions';
-import { env } from 'next-runtime-env';
-
-import { CorporateInfo } from '@/types';
 import { JSX } from 'react';
+
+import { getCorporateInfosWithLogos } from '@/app/actions';
+import { CorporateInfo } from '@/types';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
@@ -14,10 +13,7 @@ export default async function RootLayout(props: {
   const params = await props.params;
 
   const { children } = props;
-
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
+  const tenant = params.tenant || undefined;
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 

@@ -47,13 +47,7 @@ export default function DataSourceDropdownSelection(
   useEffect(() => {
     if (dataSourcesData) {
       setSelectableDataSources(dataSourcesData);
-      if (!selectedDataSource && dataSourcesData.length > 0) {
-        onSelectDataSource(
-          dataSourcesData[0].id!,
-          dataSourcesData[0].origin,
-          dataSourcesData[0].collections,
-        );
-      } else if (selectedDataSource) {
+      if (selectedDataSource) {
         const preSelect = dataSourcesData.find(
           (ds) => ds.id === selectedDataSource,
         );
@@ -80,7 +74,10 @@ export default function DataSourceDropdownSelection(
         selectableDataSources?.find((ds) => ds.id === selectedDataSource)
           ?.name || ''
       }
-      selectableValues={selectableDataSources?.map((ds) => ds.name) ?? []}
+      selectableValues={[
+        '',
+        ...(selectableDataSources?.map((ds) => ds.name) ?? []),
+      ]}
       onSelect={(value): void => {
         const selectedDataSource = selectableDataSources?.find(
           (ds) => ds.name === value,

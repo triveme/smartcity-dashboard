@@ -1,6 +1,5 @@
 import { ReactElement } from 'react';
 import { redirect } from 'next/navigation';
-import { env } from 'next-runtime-env';
 
 import { DashboardWithContent } from '@/types';
 import Dashboard from '@/components/DashboardElements/Dashboard';
@@ -28,9 +27,7 @@ export default async function DashboardPage(props: {
   const searchParams = await props.searchParams;
   const dashboardWithChildren = await getData(searchParams.id || '');
 
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
+  const tenant = params.tenant || undefined;
 
   return (
     <div className="w-full h-full">

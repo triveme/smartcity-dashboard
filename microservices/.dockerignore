@@ -5,3 +5,7 @@ npm-debug.log
 .git
 .gitignore
 dist
+
+# Local environment files
+.env.local
+.env*.local

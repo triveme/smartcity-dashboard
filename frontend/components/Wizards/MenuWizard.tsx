@@ -17,7 +17,6 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { getDashboards } from '@/api/dashboard-service';
 import { useParams } from 'next/navigation';
-import { env } from 'next-runtime-env';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
 
 type MenuWizardProps = {
@@ -40,13 +39,9 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
   const { openSnackbar } = useSnackbar();
   const cookie = Cookies.get('access_token');
   const accessToken = cookie || '';
-  const params = useParams();
 
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const params = useParams();
+  const tenant = (params.tenant as string) || undefined;
 
   // Query Menu Structure
   const {

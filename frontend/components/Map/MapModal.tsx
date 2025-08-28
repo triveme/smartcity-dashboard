@@ -157,7 +157,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     )}
                     {widget.componentSubType ===
                       tabComponentSubTypeEnum.degreeChart180 && (
-                      <div className="flex flex-col w-full h-44">
+                      <div className="flex flex-col w-full h-60">
                         {widget.title && (
                           <h2 className="text-center font-semibold">
                             {widget.title}

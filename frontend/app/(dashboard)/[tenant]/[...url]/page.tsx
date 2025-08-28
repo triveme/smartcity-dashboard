@@ -1,6 +1,5 @@
 import { ReactElement } from 'react';
 import { redirect } from 'next/navigation';
-import { env } from 'next-runtime-env';
 import { cookies } from 'next/headers';
 
 import { DashboardWithContent } from '@/types';
@@ -43,10 +42,7 @@ export default async function DashboardPage(props: {
   const cookieStore = await cookies();
   const cookie = cookieStore.get('access_token');
   let accessToken = cookie && cookie.value ? cookie.value : '';
-
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
+  const tenant = params.tenant || undefined;
 
   if (!accessToken) {
     console.warn('No access token found');

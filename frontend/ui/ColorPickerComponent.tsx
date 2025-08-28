@@ -1,7 +1,6 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { Sketch, SwatchPresetColor } from '@uiw/react-color';
 import { getCorporateInfosWithLogos } from '@/app/actions';
-import { env } from 'next-runtime-env';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 
@@ -29,11 +28,7 @@ export default function ColorPickerComponent(
   >(false);
 
   const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const tenant = (params.tenant as string) || undefined;
 
   const { data: corporateInfo, refetch: refetchCorporateInfo } = useQuery({
     queryKey: ['corporate-info'],

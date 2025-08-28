@@ -1,15 +1,12 @@
 'use client';
 
-import { env } from 'next-runtime-env';
 import { useParams } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 
 export function getTenantOfPage(): string | undefined {
   const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  return NEXT_PUBLIC_MULTI_TENANCY === 'true'
-    ? (params.tenant as string)
-    : undefined;
+  const tenant = (params.tenant as string) || undefined;
+  return tenant;
 }
 
 export function isUserMatchingTenant(

@@ -8,9 +8,14 @@ import { AuthGuard } from '@app/auth-helper/AuthGuard';
 import { JwtModule } from '@nestjs/jwt';
 import { DefectModule } from './defect/defect.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
     ClimateProjectModule,
     ReportModule,
     PostgresDbModule,

@@ -26,9 +26,14 @@ import { CorporateInfoSidebarLogosRepo } from '../../dashboard-service/src/corpo
 import { LogoRepo } from '../../dashboard-service/src/logo/logo.repo';
 import { LogoService } from '../../dashboard-service/src/logo/logo.service';
 import { GeneralSettingsRepo } from '../../dashboard-service/src/general-settings/general-settings.repo';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
     AuthModule,
     DataModule,
     HttpModule,

@@ -14,6 +14,7 @@ import {
   ChartData,
   menuArrowDirectionEnum,
 } from '@/types';
+import { InterestingPlace } from '@/types/dataModels';
 import { MarkerType } from '@/types/mapRelatedModels';
 
 export const EMPTY_PANEL: Panel = {
@@ -57,7 +58,7 @@ export const EMPTY_QUERY_CONFIG: QueryConfig = {
   attributes: [],
   entityIds: [],
   dataSourceId: '',
-  interval: 60,
+  interval: 300,
   aggrMode: aggregationEnum.none,
   aggrPeriod: aggregationPeriodEnum.hour,
   timeframe: timeframeEnum.day,
@@ -263,6 +264,31 @@ export const DEFAULT_CI: CorporateInfo = {
   weatherDateColor: '#FFFFF',
   weatherWarningButtonBackgroundColor: '#2C3E50',
   weatherWarningButtonIconColor: '#FFFFF',
+
+  // ListView styling properties
+  listviewBackgroundColor: '#F9FAFB',
+  listviewItemBackgroundColor: '#FFFFFF',
+  listviewItemBorderColor: '#E5E7EB',
+  listviewItemBorderRadius: '8px',
+  listviewItemBorderSize: '1px',
+  listviewTitleFontColor: '#1F2937',
+  listviewTitleFontSize: '16px',
+  listviewTitleFontWeight: '600',
+  listviewDescriptionFontColor: '#6B7280',
+  listviewDescriptionFontSize: '14px',
+  listviewCounterFontColor: '#6B7280',
+  listviewCounterFontSize: '14px',
+  listviewFilterButtonBackgroundColor: '#FFFFFF',
+  listviewFilterButtonBorderColor: '#D1D5DB',
+  listviewFilterButtonFontColor: '#374151',
+  listviewFilterButtonHoverBackgroundColor: '#F9FAFB',
+  listviewArrowIconColor: '#374151',
+  listviewBackButtonBackgroundColor: '#3B82F6',
+  listviewBackButtonHoverBackgroundColor: '#2563EB',
+  listviewBackButtonFontColor: '#FFFFFF',
+  listviewMapButtonBackgroundColor: '#10B981',
+  listviewMapButtonHoverBackgroundColor: '#059669',
+  listviewMapButtonFontColor: '#FFFFFF',
 };
 
 export const EMPTY_REPORT_CONFIG: ReportConfig = {
@@ -314,6 +340,35 @@ export const DEFAULT_MARKERS: MarkerType[] = [
     color: '#000000',
   },
 ];
+
+export const DUMMY_GEOJSON = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        coordinates: [
+          [
+            [8.973971100909637, 49.55294573986987],
+            [10.048343303262584, 49.35046003973548],
+            [10.671335304108197, 49.53550418909691],
+            [11.09570866678203, 50.19683851471177],
+            [10.252466078753741, 50.617765075423364],
+            [9.95684063211678, 50.06598820653727],
+            [9.580893256783753, 50.4916299809106],
+            [8.334238105936237, 50.52590910176383],
+            [7.9157513559189, 50.096986865767235],
+            [7.679329936564329, 49.41334338277284],
+            [8.188751508664069, 48.98837989747645],
+            [8.973971100909637, 49.55294573986987],
+          ],
+        ],
+        type: 'Polygon',
+      },
+    },
+  ],
+};
 
 export const DUMMY_CHART_DATA_YEAR: ChartData[] = [
   {
@@ -585,4 +640,95 @@ export const DUMMY_CHART_DATA: ChartData[] = [
   },
 ];
 
+export const DUMMY_POI_DATA: InterestingPlace[] = [
+  {
+    name: 'Gasthof zur Linde',
+    types: ['restaurant', 'food'],
+    address: 'Hauptstraße 15, 97753 Karlstadt',
+    image: 'https://via.placeholder.com/150x100',
+    imagePreview: 'https://via.placeholder.com/75x50',
+    creator: 'Stadtverwaltung',
+    location: {
+      type: 'Point',
+      coordinates: [9.7709, 49.9607],
+    },
+    info: 'Traditionelles bayerisches Restaurant im Herzen der Altstadt',
+    zoomprio: '1',
+    contactName: 'Hans Müller',
+    contactPhone: '+49 9353 123456',
+    participants: 'Alle willkommen',
+    supporter: 'Stadtrat Karlstadt',
+    email: 'info@gasthof-linde.de',
+    website: 'https://www.gasthof-linde.de',
+    description:
+      'Traditioneller Gasthof mit regionaler fränkischer Küche und gemütlicher Atmosphäre im historischen Stadtkern.',
+  },
+  {
+    name: 'Bücherstube am Markt',
+    types: ['shop', 'retail'],
+    address: 'Marktplatz 8, 97753 Karlstadt',
+    image: 'https://via.placeholder.com/150x100',
+    imagePreview: 'https://via.placeholder.com/75x50',
+    creator: 'Einzelhandelsverband',
+    location: {
+      type: 'Point',
+      coordinates: [9.7709, 49.9607],
+    },
+    info: 'Inhabergeführte Buchhandlung mit regionaler Literatur',
+    zoomprio: '2',
+    contactName: 'Petra Schmidt',
+    contactPhone: '+49 9353 987654',
+    participants: 'Buchliebhaber',
+    supporter: 'Gewerbeverein Karlstadt',
+    email: 'kontakt@buecherstube-karlstadt.de',
+    website: 'https://www.buecherstube-karlstadt.de',
+    description:
+      'Gemütliche Buchhandlung mit sorgfältig ausgewähltem Sortiment und persönlicher Beratung.',
+  },
+  {
+    name: 'Rechtsanwaltskanzlei Weber',
+    types: ['service', 'business'],
+    address: 'Würzburger Straße 23, 97753 Karlstadt',
+    image: 'https://via.placeholder.com/150x100',
+    imagePreview: 'https://via.placeholder.com/75x50',
+    creator: 'Anwaltskammer',
+    location: {
+      type: 'Point',
+      coordinates: [9.7709, 49.9607],
+    },
+    info: 'Fachanwaltskanzlei für Familienrecht und Erbrecht',
+    zoomprio: '3',
+    contactName: 'Dr. Michael Weber',
+    contactPhone: '+49 9353 555123',
+    participants: 'Nach Terminvereinbarung',
+    supporter: 'Industrie- und Handelskammer',
+    email: 'kanzlei@weber-recht.de',
+    website: 'https://www.weber-recht.de',
+    description:
+      'Spezialisierte Rechtsberatung in Familien- und Erbangelegenheiten mit über 20 Jahren Erfahrung.',
+  },
+];
+
 export const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36];
+
+export const EMPTY_POI: InterestingPlace = {
+  name: '',
+  types: [],
+  address: '',
+  image: '',
+  imagePreview: '',
+  creator: '',
+  location: {
+    type: 'point',
+    coordinates: [7.120197671, 51.1951799443],
+  },
+  info: '',
+  zoomprio: '',
+  contactName: '',
+  contactPhone: '',
+  participants: '',
+  supporter: '',
+  email: '',
+  website: '',
+  description: '',
+};

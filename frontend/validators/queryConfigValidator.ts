@@ -55,7 +55,10 @@ export function validateQueryConfig(
       errorsOccured.attributeError =
         'Diagramm Widgets müssen mindestens ein Attribut haben';
     }
-    if (componentSubType === tabComponentSubTypeEnum.pieChart) {
+    if (
+      componentSubType === tabComponentSubTypeEnum.pieChart ||
+      componentSubType === tabComponentSubTypeEnum.pieChartDynamic
+    ) {
       if (queryConfig.attributes && !(queryConfig?.attributes.length > 0)) {
         errorsOccured.attributeError =
           'Pie Charts benötigen mindestens 1 Attribut';

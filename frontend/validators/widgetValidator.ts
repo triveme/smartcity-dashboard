@@ -129,6 +129,7 @@ function getMinHeightBasedOnComponentType(
   const largeComponentTypes = [
     tabComponentTypeEnum.diagram,
     tabComponentTypeEnum.map,
+    tabComponentTypeEnum.listview,
   ];
   const mediumComponentTypes = [tabComponentTypeEnum.slider];
 

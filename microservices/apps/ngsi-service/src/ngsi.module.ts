@@ -12,9 +12,14 @@ import { FiwareWizardModule } from './fiware-wizard/fiware-wizard.module';
 import { FiwareWizardController } from './fiware-wizard/fiware-wizard.controller';
 import { FiwareWizardService } from './fiware-wizard/fiware-wizard.service';
 import { NgsiController } from './ngsi.controller';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
     PostgresDbModule,
     HttpModule,
     ScheduleModule.forRoot(),

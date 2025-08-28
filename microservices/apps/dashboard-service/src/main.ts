@@ -13,6 +13,10 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
   app.use(json({ limit: '5mb' }));
+  console.log('Dashboard Service is starting...');
+  console.log(
+    `CORS enabled for origin: ${process.env.NEXT_PUBLIC_FRONTEND_URL}`,
+  );
   await app.listen(8081);
 }
 

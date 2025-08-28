@@ -234,7 +234,10 @@ export default function DashboardPanelPreview(
               color={data?.panelFontColor ?? '#FFFFFF'}
             />
           </button>
-          <button onClick={(): void => handleRemovePanelClick(panel)}>
+          <button
+            title="Delete"
+            onClick={(): void => handleRemovePanelClick(panel)}
+          >
             <DashboardIcons iconName="Trashcan" color="#FA4141" />
           </button>
         </div>

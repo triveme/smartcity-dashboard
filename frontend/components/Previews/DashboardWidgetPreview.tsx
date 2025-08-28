@@ -24,7 +24,12 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
-import { DUMMY_CHART_DATA, DUMMY_CHART_DATA_YEAR } from '@/utils/objectHelper';
+import { ListView } from '@/components/listview/listview';
+import {
+  DUMMY_CHART_DATA,
+  DUMMY_CHART_DATA_YEAR,
+  DUMMY_POI_DATA,
+} from '@/utils/objectHelper';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -46,7 +51,7 @@ export default function DashboardWidgetPreview(
   const { data } = useQuery({
     queryKey: ['corporate-info'],
     queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
+    enabled: true, // Enable query to load styling data
   });
   //Dynamic Styling
   const widgetStyle = {
@@ -60,7 +65,7 @@ export default function DashboardWidgetPreview(
   return (
     <div
       key={`widget-in-panel-${widget.id!}`}
-      className={`flex justify-center items-center content-center text-center rounded-lg border-2 col-span-${widget.width}`}
+      className={`${tab.componentType === tabComponentTypeEnum.listview ? 'flex flex-col' : 'flex justify-center items-center content-center text-center'} rounded-lg border-2 col-span-${widget.width}`}
       style={widgetStyle}
     >
       {/* TAB */}
@@ -105,7 +110,9 @@ export default function DashboardWidgetPreview(
               fillColor={data?.degreeChart360FillColor || '#fff'}
             />
           )}
-          {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
+          {(tab.componentSubType === tabComponentSubTypeEnum.pieChart ||
+            tab.componentSubType ===
+              tabComponentSubTypeEnum.pieChartDynamic) && (
             <PieChart
               labels={tab.chartLabels || []}
               data={tab.chartValues || []}
@@ -450,6 +457,66 @@ export default function DashboardWidgetPreview(
             mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
             mapWmsUrl={tab.mapWmsUrl || ''}
             mapWmsLayer={tab.mapWmsLayer || ''}
+          />
+        </div>
+      )}
+      {tab.componentType === tabComponentTypeEnum.listview && (
+        <div className="w-full h-full">
+          <ListView
+            data={DUMMY_POI_DATA}
+            listName={tab.listviewName || 'Preview Locations'}
+            isFilteringAllowed={tab.listviewIsFilteringAllowed || false}
+            poiBackgroundColor={data?.listviewBackgroundColor || '#F9FAFB'}
+            headlineYellowColor={data?.listviewTitleFontColor || '#FCD34D'}
+            headlineGrayColor={data?.listviewDescriptionFontColor || '#6B7280'}
+            iconColor={data?.listviewArrowIconColor || '#374151'}
+            listviewItemBackgroundColor={
+              data?.listviewItemBackgroundColor || '#FFFFFF'
+            }
+            listviewItemBorderColor={data?.listviewItemBorderColor || '#E5E7EB'}
+            listviewItemBorderRadius={data?.listviewItemBorderRadius || '8px'}
+            listviewItemBorderSize={data?.listviewItemBorderSize || '1px'}
+            listviewTitleFontSize={data?.listviewTitleFontSize || '16px'}
+            listviewTitleFontWeight={data?.listviewTitleFontWeight || '600'}
+            listviewDescriptionFontSize={
+              data?.listviewDescriptionFontSize || '14px'
+            }
+            listviewCounterFontColor={
+              data?.listviewCounterFontColor || '#6B7280'
+            }
+            listviewCounterFontSize={data?.listviewCounterFontSize || '14px'}
+            listviewFilterButtonBackgroundColor={
+              data?.listviewFilterButtonBackgroundColor || '#FFFFFF'
+            }
+            listviewFilterButtonBorderColor={
+              data?.listviewFilterButtonBorderColor || '#D1D5DB'
+            }
+            listviewFilterButtonFontColor={
+              data?.listviewFilterButtonFontColor || '#374151'
+            }
+            listviewFilterButtonHoverBackgroundColor={
+              data?.listviewFilterButtonHoverBackgroundColor || '#F9FAFB'
+            }
+            listviewBackButtonBackgroundColor={
+              data?.listviewBackButtonBackgroundColor || '#3B82F6'
+            }
+            listviewBackButtonHoverBackgroundColor={
+              data?.listviewBackButtonHoverBackgroundColor || '#2563EB'
+            }
+            listviewBackButtonFontColor={
+              data?.listviewBackButtonFontColor || '#FFFFFF'
+            }
+            listviewMapButtonBackgroundColor={
+              data?.listviewMapButtonBackgroundColor || '#10B981'
+            }
+            listviewMapButtonHoverBackgroundColor={
+              data?.listviewMapButtonHoverBackgroundColor || '#059669'
+            }
+            listviewMapButtonFontColor={
+              data?.listviewMapButtonFontColor || '#FFFFFF'
+            }
+            showAddress={tab.listviewShowAddress || false}
+            showCategory={tab.listviewShowCategory || false}
           />
         </div>
       )}

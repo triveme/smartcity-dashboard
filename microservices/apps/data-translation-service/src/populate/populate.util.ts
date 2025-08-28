@@ -96,6 +96,7 @@ export function reduceWidget(
         mapObject: null,
         combinedWidgets: null,
         weatherWarnings: null,
+        listviewData: null,
       },
       dataModelMap,
       queryMap,

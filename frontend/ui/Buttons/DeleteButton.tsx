@@ -21,6 +21,7 @@ export default function DeleteButton(props: DeleteButtonProps): ReactElement {
   return (
     <div className="text-white">
       <button
+        title="Delete"
         className={`p-2 bg-[#FA4141] hover:bg-[#DC3939] h-19 w-48 rounded-lg flex justify-evenly items-center align-middle content-center ${
           isDeleting ? 'opacity-50 cursor-not-allowed' : ''
         }`}

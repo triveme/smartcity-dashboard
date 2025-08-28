@@ -56,13 +56,17 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       queryConfig.componentSubType !== '360° Chart' &&
       queryConfig.componentSubType !== 'Stageable Chart' &&
       queryConfig.componentSubType !== 'Pie Chart' &&
+      queryConfig.componentSubType !== 'Pie Chart (dynamisch)' &&
       queryConfig?.timeframe === 'live'
     ) {
       errorsOccured.push('Zeitwert ist erforderlich');
     }
 
     if (queryConfig.componentType === 'Diagram') {
-      if (queryConfig.componentSubType === 'Pie Chart') {
+      if (
+        queryConfig.componentSubType === 'Pie Chart' ||
+        queryConfig.componentSubType === 'Pie Chart (dynamisch)'
+      ) {
         if (queryConfig.attributes && !(queryConfig?.attributes.length > 0)) {
           errorsOccured.push('Pie Charts benötigen mindestens 1 Attribute');
         }
