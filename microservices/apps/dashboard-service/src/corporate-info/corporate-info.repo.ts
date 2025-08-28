@@ -83,6 +83,10 @@ export class CorporateInfoRepo {
     const tenant: Tenant =
       await this.tenantRepo.getTenantByAbbreviation(tenantAbbreviation);
 
+    if (!tenant) {
+      console.error('Tenant not found for abbreviation:', tenantAbbreviation);
+      return [];
+    }
     const result = await this.db
       .select()
       .from(corporateInfos)

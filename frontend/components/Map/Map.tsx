@@ -10,11 +10,12 @@ import {
   Polygon,
   WMSTileLayer,
   Marker,
+  GeoJSON,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
-import L, { LatLngExpression } from 'leaflet';
+import L, { LatLngExpression, LeafletEvent, PathOptions } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
@@ -26,7 +27,7 @@ import SetViewToBounds from './SetViewToBounds';
 import { tabComponentSubTypeEnum } from '@/types';
 import MapModal from './MapModal';
 import MapPopupContent from './MapPopupContent';
-import { DEFAULT_MARKERS } from '@/utils/objectHelper';
+import { DEFAULT_MARKERS, DUMMY_GEOJSON } from '@/utils/objectHelper';
 import MapFilterModal from './MapFilterModal';
 import MapLegendModal from './MapLegendModal';
 import {
@@ -92,10 +93,14 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     [],
   );
   const [selectedDataSources, setSelectedDataSources] = useState<number[]>([]);
+  const selectedMapFeatures = useRef<string[]>([]);
 
-  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}?access_token=${env(
-    'NEXT_PUBLIC_MAPBOX_TOKEN',
-  )}`;
+  const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/${
+    props.mapType === tabComponentSubTypeEnum.geoJSON ||
+    props.mapType === tabComponentSubTypeEnum.geoJSONDynamic
+      ? 'light-v11'
+      : 'streets-v12'
+  }/tiles/256/{z}/{x}/{y}?access_token=${env('NEXT_PUBLIC_MAPBOX_TOKEN')}`;
 
   const handleFilterChange = (
     newSelectedFilters: (string | number)[],
@@ -168,7 +173,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       }
 
       // Default to static color if value-based coloring isn't enabled
-      return singleProps.mapShapeColor || '#000000';
+      return singleProps.mapMarkerColor || '#000000';
     }
 
     // For combined maps, check if value-based coloring is enabled
@@ -209,6 +214,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     return fallbackColor;
   };
 
+  const geoJSONData = (props.mapGeoJSON ? props.mapGeoJSON : '') as any;
+
   const markerPositions: MarkerType[] = (props.data || []).map(
     (mapObject, index) => {
       let markerValue;
@@ -247,12 +254,20 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         const singleProps = props as SingleMapProps;
 
         // Handle different data structures for the attribute value
+        // Only extract markerValue if value-based coloring is enabled
         if (
-          mapObject[singleProps.mapAttributeForValueBased]?.value !== undefined
+          singleProps.mapIsIconColorValueBased ||
+          singleProps.mapIsFormColorValueBased
         ) {
-          markerValue = mapObject[singleProps.mapAttributeForValueBased].value;
-        } else {
-          markerValue = mapObject[singleProps.mapAttributeForValueBased];
+          if (
+            mapObject[singleProps.mapAttributeForValueBased]?.value !==
+            undefined
+          ) {
+            markerValue =
+              mapObject[singleProps.mapAttributeForValueBased].value;
+          } else {
+            markerValue = mapObject[singleProps.mapAttributeForValueBased];
+          }
         }
 
         // Handle different data structures for the name/title
@@ -312,6 +327,153 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       return true;
     });
   };
+
+  const getColorForGeoJSONFeature = (
+    featureId: string,
+    defaultColor: string,
+  ): string => {
+    const combinedProps = props as CombinedMapProps;
+    const values = props.mapGeoJSONSensorData?.filter(
+      (item) => item.id == featureId || item.id == featureId.substring(1),
+    );
+    if (values) {
+      const value =
+        values?.reduce((sum, current) => sum + current.value, 0) /
+        values?.length;
+      if (
+        combinedProps.mapGeoJSONSensorBasedColors &&
+        value &&
+        !Number.isNaN(value)
+      ) {
+        if (
+          Object.prototype.toString.call(props.staticValues?.[0]) ===
+          '[object Array]'
+        ) {
+          const staticValues = combinedProps.staticValues?.[0];
+          const staticColors = combinedProps.staticValuesColors?.[0];
+          if (staticValues && staticColors) {
+            return getColorForValue(value, staticValues, staticColors);
+          }
+        } else {
+          return getColorForValue(
+            value,
+            (props.staticValues as number[]) || [],
+            (props.staticValuesColors as string[]) || [],
+          );
+        }
+      }
+    }
+
+    // Default to marker color for this data source if value-based coloring isn't enabled
+    const fallbackColor =
+      defaultColor || combinedProps.mapGeoJSONFillColor || '#000000';
+    return fallbackColor;
+  };
+
+  function geoJSONStyle(
+    feature?: GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>,
+  ): PathOptions {
+    const geoJSONId = geoJSONGetIDProperty(feature?.properties);
+    if (
+      selectedMapFeatures.current.includes(geoJSONId) ||
+      selectedMapFeatures.current.includes('0' + geoJSONId)
+    ) {
+      return {
+        color: props.mapGeoJSONSelectionBorderColor,
+        fillColor: getColorForGeoJSONFeature(
+          geoJSONId,
+          props.mapGeoJSONSelectionFillColor!,
+        ),
+        fillOpacity: 0.4,
+        weight: 2,
+      };
+    }
+    return {
+      color: props.mapGeoJSONBorderColor,
+      fillColor: getColorForGeoJSONFeature(
+        geoJSONId,
+        props.mapGeoJSONFillColor!,
+      ),
+      fillOpacity: 0.3,
+      weight: 1,
+    };
+  }
+
+  function geoJSONOnEachFeature(
+    feature: GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>,
+    layer: L.GeoJSON,
+  ): void {
+    layer.on({
+      mouseover: geoJSONOnMouseOver,
+      mouseout: geoJSONOnMouseOut,
+      click: geoJSONOnMouseClick,
+    });
+
+    let tooltip: string = feature.properties?.GEN;
+    const geoJSONId: string = geoJSONGetIDProperty(feature?.properties);
+    if (props.mapGeoJSONSensorData && props.mapGeoJSONSensorData.length > 0) {
+      const tooltipValue = props.mapGeoJSONSensorData?.find(
+        (x) => x.id === geoJSONId || x.id === geoJSONId.substring(1),
+      )?.value;
+      if (tooltipValue) {
+        tooltip += ': ' + tooltipValue;
+      }
+    }
+    if (
+      selectedMapFeatures.current.includes(geoJSONId) ||
+      selectedMapFeatures.current.includes(geoJSONId.substring(1))
+    ) {
+      layer.bringToFront();
+    } else {
+      layer.bringToBack();
+    }
+
+    layer.bindTooltip(tooltip);
+  }
+
+  function geoJSONOnMouseOver(event: LeafletEvent): void {
+    event.target.bringToFront();
+    event.target.setStyle({
+      color: props.mapGeoJSONHoverBorderColor,
+      fillColor: props.mapGeoJSONHoverFillColor,
+      fillOpacity: 0.2,
+    });
+  }
+
+  function geoJSONOnMouseOut(event: LeafletEvent): void {
+    const geoJSONId = geoJSONGetIDProperty(event.target.feature.properties);
+    if (
+      !(
+        selectedMapFeatures.current.includes(geoJSONId) ||
+        selectedMapFeatures.current.includes(geoJSONId.substring(1))
+      )
+    ) {
+      event.target.bringToBack();
+    }
+    event.target.setStyle(geoJSONStyle(event.target.feature));
+  }
+
+  function geoJSONOnMouseClick(event: LeafletEvent): void {
+    const geoJSONId = geoJSONGetIDProperty(event.target.feature.properties);
+    const id = selectedMapFeatures.current.findIndex(
+      (x) => x == geoJSONId || x == '0' + geoJSONId,
+    );
+    if (id != -1) {
+      event.target.bringToBack();
+      selectedMapFeatures.current.splice(id, 1);
+    } else {
+      event.target.bringToFront();
+      selectedMapFeatures.current.push(geoJSONId);
+    }
+    if (props.sendFeaturesToDynamicMap) {
+      props.sendFeaturesToDynamicMap(selectedMapFeatures.current);
+    }
+    event.target.setStyle(geoJSONStyle(event.target.feature));
+  }
+
+  function geoJSONGetIDProperty(properties: any): any {
+    return properties['AGS']; // TODO make this configurable
+  }
 
   const renderShape = (
     position: [number, number],
@@ -581,7 +743,18 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
           <ZoomHandler onZoomChange={setMapZoom} />
 
-          {(!isCombinedMap ||
+          {(props.mapType === tabComponentSubTypeEnum.geoJSON ||
+            props.mapType === tabComponentSubTypeEnum.geoJSONDynamic) && (
+            <GeoJSON
+              onEachFeature={geoJSONOnEachFeature}
+              data={geoJSONData ? geoJSONData : DUMMY_GEOJSON}
+              style={geoJSONStyle}
+            />
+          )}
+
+          {((!isCombinedMap &&
+            props.mapType !== tabComponentSubTypeEnum.geoJSON &&
+            props.mapType !== tabComponentSubTypeEnum.geoJSONDynamic) ||
             (isCombinedMap &&
               (props as CombinedMapProps).mapDisplayMode?.[0] !==
                 tabComponentSubTypeEnum.onlyFormArea)) && (
@@ -610,6 +783,32 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   selectedMarker.id === index,
                 );
 
+                // Determine the correct color to use
+                // Priority: 1) Active color if selected, 2) Value-based color if enabled, 3) Default marker color
+                const isSelected = selectedMarker.id === index;
+                let finalColor = markerProps.color; // This already handles active vs default color
+
+                // Only use value-based color if not selected and value-based coloring is enabled
+                if (!isSelected) {
+                  if (isCombinedMap) {
+                    const combinedProps = props as CombinedMapProps;
+                    if (
+                      combinedProps.mapIsIconColorValueBased?.[dataSource] ||
+                      combinedProps.mapIsFormColorValueBased?.[dataSource]
+                    ) {
+                      finalColor = marker.color || markerProps.color;
+                    }
+                  } else {
+                    const singleProps = props as SingleMapProps;
+                    if (
+                      singleProps.mapIsIconColorValueBased ||
+                      singleProps.mapIsFormColorValueBased
+                    ) {
+                      finalColor = marker.color || markerProps.color;
+                    }
+                  }
+                }
+
                 return (
                   markerProps.displayMode !==
                     tabComponentSubTypeEnum.onlyFormArea && (
@@ -617,7 +816,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       key={index}
                       position={marker.position as LatLngExpression}
                       icon={createCustomIcon(
-                        marker.color || markerProps.color,
+                        finalColor,
                         iconSvgMarkup,
                         markerProps.iconIndex,
                         isCombinedMap,
@@ -670,7 +869,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                         renderShape(
                           marker.position,
                           markerProps.shapeType,
-                          marker.color || markerProps.color,
+                          finalColor,
                           dataSource,
                         )}
                     </Marker>

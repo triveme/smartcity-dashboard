@@ -193,6 +193,31 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     weatherDateColor: '#FFFFF',
     weatherWarningButtonBackgroundColor: '#2C3E50',
     weatherWarningButtonIconColor: '#FFFFF',
+
+    // ListView styling properties
+    listviewBackgroundColor: '#F9FAFB',
+    listviewItemBackgroundColor: '#FFFFFF',
+    listviewItemBorderColor: '#E5E7EB',
+    listviewItemBorderRadius: '8px',
+    listviewItemBorderSize: '1px',
+    listviewTitleFontColor: '#1F2937',
+    listviewTitleFontSize: '16px',
+    listviewTitleFontWeight: '600',
+    listviewDescriptionFontColor: '#6B7280',
+    listviewDescriptionFontSize: '14px',
+    listviewCounterFontColor: '#6B7280',
+    listviewCounterFontSize: '14px',
+    listviewFilterButtonBackgroundColor: '#FFFFFF',
+    listviewFilterButtonBorderColor: '#D1D5DB',
+    listviewFilterButtonFontColor: '#374151',
+    listviewFilterButtonHoverBackgroundColor: '#F9FAFB',
+    listviewArrowIconColor: '#374151',
+    listviewBackButtonBackgroundColor: '#3B82F6',
+    listviewBackButtonHoverBackgroundColor: '#2563EB',
+    listviewBackButtonFontColor: '#FFFFFF',
+    listviewMapButtonBackgroundColor: '#10B981',
+    listviewMapButtonHoverBackgroundColor: '#059669',
+    listviewMapButtonFontColor: '#FFFFFF',
   };
 }
 

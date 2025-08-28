@@ -684,6 +684,113 @@ export default function CorporateInfoWizard({
             setWeatherWarningButtonIconColor={function (color: string): void {
               updateState('weatherWarningButtonIconColor', color);
             }}
+            // ListView
+            listviewBackgroundColor={state.listviewBackgroundColor}
+            setListviewBackgroundColor={(value): void =>
+              updateState('listviewBackgroundColor', value)
+            }
+            listviewItemBackgroundColor={state.listviewItemBackgroundColor}
+            setListviewItemBackgroundColor={(value): void =>
+              updateState('listviewItemBackgroundColor', value)
+            }
+            listviewItemBorderColor={state.listviewItemBorderColor}
+            setListviewItemBorderColor={(value): void =>
+              updateState('listviewItemBorderColor', value)
+            }
+            listviewItemBorderRadius={state.listviewItemBorderRadius}
+            setListviewItemBorderRadius={(value): void =>
+              updateState('listviewItemBorderRadius', value)
+            }
+            listviewItemBorderSize={state.listviewItemBorderSize}
+            setListviewItemBorderSize={(value): void =>
+              updateState('listviewItemBorderSize', value)
+            }
+            listviewTitleFontColor={state.listviewTitleFontColor}
+            setListviewTitleFontColor={(value): void =>
+              updateState('listviewTitleFontColor', value)
+            }
+            listviewTitleFontSize={state.listviewTitleFontSize}
+            setListviewTitleFontSize={(value): void =>
+              updateState('listviewTitleFontSize', value)
+            }
+            listviewTitleFontWeight={state.listviewTitleFontWeight}
+            setListviewTitleFontWeight={(value): void =>
+              updateState('listviewTitleFontWeight', value)
+            }
+            listviewDescriptionFontColor={state.listviewDescriptionFontColor}
+            setListviewDescriptionFontColor={(value): void =>
+              updateState('listviewDescriptionFontColor', value)
+            }
+            listviewDescriptionFontSize={state.listviewDescriptionFontSize}
+            setListviewDescriptionFontSize={(value): void =>
+              updateState('listviewDescriptionFontSize', value)
+            }
+            listviewCounterFontColor={state.listviewCounterFontColor}
+            setListviewCounterFontColor={(value): void =>
+              updateState('listviewCounterFontColor', value)
+            }
+            listviewCounterFontSize={state.listviewCounterFontSize}
+            setListviewCounterFontSize={(value): void =>
+              updateState('listviewCounterFontSize', value)
+            }
+            listviewFilterButtonBackgroundColor={
+              state.listviewFilterButtonBackgroundColor
+            }
+            setListviewFilterButtonBackgroundColor={(value): void =>
+              updateState('listviewFilterButtonBackgroundColor', value)
+            }
+            listviewFilterButtonBorderColor={
+              state.listviewFilterButtonBorderColor
+            }
+            setListviewFilterButtonBorderColor={(value): void =>
+              updateState('listviewFilterButtonBorderColor', value)
+            }
+            listviewFilterButtonFontColor={state.listviewFilterButtonFontColor}
+            setListviewFilterButtonFontColor={(value): void =>
+              updateState('listviewFilterButtonFontColor', value)
+            }
+            listviewFilterButtonHoverBackgroundColor={
+              state.listviewFilterButtonHoverBackgroundColor
+            }
+            setListviewFilterButtonHoverBackgroundColor={(value): void =>
+              updateState('listviewFilterButtonHoverBackgroundColor', value)
+            }
+            listviewArrowIconColor={state.listviewArrowIconColor}
+            setListviewArrowIconColor={(value): void =>
+              updateState('listviewArrowIconColor', value)
+            }
+            listviewBackButtonBackgroundColor={
+              state.listviewBackButtonBackgroundColor
+            }
+            setListviewBackButtonBackgroundColor={(value): void =>
+              updateState('listviewBackButtonBackgroundColor', value)
+            }
+            listviewBackButtonHoverBackgroundColor={
+              state.listviewBackButtonHoverBackgroundColor
+            }
+            setListviewBackButtonHoverBackgroundColor={(value): void =>
+              updateState('listviewBackButtonHoverBackgroundColor', value)
+            }
+            listviewBackButtonFontColor={state.listviewBackButtonFontColor}
+            setListviewBackButtonFontColor={(value): void =>
+              updateState('listviewBackButtonFontColor', value)
+            }
+            listviewMapButtonBackgroundColor={
+              state.listviewMapButtonBackgroundColor
+            }
+            setListviewMapButtonBackgroundColor={(value): void =>
+              updateState('listviewMapButtonBackgroundColor', value)
+            }
+            listviewMapButtonHoverBackgroundColor={
+              state.listviewMapButtonHoverBackgroundColor
+            }
+            setListviewMapButtonHoverBackgroundColor={(value): void =>
+              updateState('listviewMapButtonHoverBackgroundColor', value)
+            }
+            listviewMapButtonFontColor={state.listviewMapButtonFontColor}
+            setListviewMapButtonFontColor={(value): void =>
+              updateState('listviewMapButtonFontColor', value)
+            }
           />
         )}
         {activeTab === 'Logo' && (

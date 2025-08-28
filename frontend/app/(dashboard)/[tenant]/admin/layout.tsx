@@ -6,12 +6,11 @@ import { JSX } from 'react';
 import Header from '@/components/Header';
 import ManagementSidebar from '@/components/ManagementSidebar';
 import { CorporateInfo } from '@/types';
-import { env } from 'next-runtime-env';
 import { SidebarItemStyle } from '@/components/SidebarItem';
 import CorporateIdentityProvider from '@/providers/CorporateIdentityProvider';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import LoginProvider from '@/providers/LoginProvider';
-// import { useAuth } from 'react-oidc-context';
+
 config.autoAddCss = false;
 
 export const metadata: Metadata = {
@@ -23,14 +22,10 @@ export default async function RootLayout(props: {
   children: React.ReactNode;
   params: Promise<{ tenant: string }>;
 }): Promise<JSX.Element> {
-  const params = await props.params;
-
   const { children } = props;
 
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
-
+  const params = await props.params;
+  const tenant = params.tenant || undefined;
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
   //Dynamic Styling

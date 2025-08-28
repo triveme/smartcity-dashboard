@@ -6,3 +6,7 @@ npm-debug.log
 cypress/
 .next/
 .next/cache/
+
+# Local environment files
+.env.local
+.env*.local

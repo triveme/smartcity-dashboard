@@ -169,7 +169,7 @@ export class AuthDataService {
       // Populate roles
       RoleUtil.populateRoles(row, rolesFromRequest);
 
-      if (row.type !== 'api') {
+      if (row.type !== 'api' && row.type !== 'internal') {
         row.appUserPassword = EncryptionUtil.encryptPassword(
           row.appUserPassword as string,
         );

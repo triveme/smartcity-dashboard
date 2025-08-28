@@ -50,14 +50,10 @@ export default function TableContent<T>(
   const pathname = usePathname();
   const auth = useAuth();
 
-  const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
   const BASEPATH = env('NEXT_PUBLIC_BASEPATH');
   const basepathRedirect = BASEPATH ? `${BASEPATH}/` : '';
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const params = useParams();
+  const tenant = (params.tenant as string) || undefined;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderFunctions: { [key: string]: (item: any) => ReactNode } = {
@@ -175,6 +171,7 @@ export default function TableContent<T>(
               ))}
               <td>
                 <button
+                  title="Delete"
                   className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
                     isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
@@ -188,6 +185,7 @@ export default function TableContent<T>(
               </td>
               <td>
                 <button
+                  title="Duplicate"
                   className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
                     isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
@@ -196,7 +194,7 @@ export default function TableContent<T>(
                     await handleDuplicateClick(event, item.id)
                   }
                 >
-                  <DashboardIcons iconName="File" color="#4CAF50" />
+                  <DashboardIcons iconName="Copy" color="#4CAF50" />
                 </button>
               </td>
             </tr>

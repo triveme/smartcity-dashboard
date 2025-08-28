@@ -156,6 +156,20 @@ data-translation-service:
         name: "trusted-ca-configmap"
     - secretRef:
         name: "postgresql-connection-secrets"
+## internal-data-service config
+internal-data-service:
+  enabled: true
+  service:
+    enabled: true
+  envFrom:
+    - configMapRef:
+        name: "internal-data-service-configmap"
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - configMapRef:
+        name: "trusted-ca-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
 ## frontend config
 frontend:
   enabled: true

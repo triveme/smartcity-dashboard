@@ -17,7 +17,6 @@ import {
 import { useAuth } from 'react-oidc-context';
 import { WizardErrors } from '@/types/errors';
 import { useParams } from 'next/navigation';
-import { env } from 'next-runtime-env';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 
 type GroupingElementWizardProps = {
@@ -54,9 +53,7 @@ export default function GroupingElementAddDashboardWizard(
   const { openSnackbar } = useSnackbar();
 
   const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? (params.tenant as string) : null;
+  const tenant = (params.tenant as string) || undefined;
 
   const [elementType, setElementType] = useState('Dashboardseite');
   const [selectedDashboard, setSelectedDashboard] = useState<Dashboard>();
@@ -87,7 +84,7 @@ export default function GroupingElementAddDashboardWizard(
         isDashboard: true,
         parentGroupingElementId: parentGroupId || null,
         position: newElementPosition,
-        tenantAbbreviation: tenant,
+        tenantAbbreviation: tenant || null,
       };
       await handleElementSave(tDashboard);
     } else {
@@ -101,7 +98,7 @@ export default function GroupingElementAddDashboardWizard(
         isDashboard: false,
         parentGroupingElementId: parentGroupId || null,
         position: newElementPosition,
-        tenantAbbreviation: tenant,
+        tenantAbbreviation: tenant || null,
         url: groupUrl,
       };
       await handleElementSave(tGroup);

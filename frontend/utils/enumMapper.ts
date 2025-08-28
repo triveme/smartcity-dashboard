@@ -45,6 +45,11 @@ export const mapComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Pin', value: tabComponentSubTypeEnum.pin },
   { label: 'Kombinierte Karte', value: tabComponentSubTypeEnum.combinedMap },
+  { label: 'GeoJSON', value: tabComponentSubTypeEnum.geoJSON },
+  {
+    label: 'GeoJSON (dynamisch)',
+    value: tabComponentSubTypeEnum.geoJSONDynamic,
+  },
   // { label: 'Parken', value: tabComponentSubTypeEnum.parking }, Temporarely disabled
 ];
 
@@ -75,6 +80,10 @@ export const chartComponentSubTypes = [
   { label: '360° Diagramm', value: tabComponentSubTypeEnum.degreeChart360 },
   { label: 'Stageable Chart', value: tabComponentSubTypeEnum.stageableChart },
   { label: 'Kuchendiagramm', value: tabComponentSubTypeEnum.pieChart },
+  {
+    label: 'Kuchendiagramm (dynamisch)',
+    value: tabComponentSubTypeEnum.pieChartDynamic,
+  },
   { label: 'Liniendiagramm', value: tabComponentSubTypeEnum.lineChart },
   { label: 'Balkendiagramm', value: tabComponentSubTypeEnum.barChart },
   { label: 'Messung', value: tabComponentSubTypeEnum.measurement },
@@ -157,4 +166,5 @@ export const dataPlatformTypes = [
   { label: 'Orchideo Connect', value: authDataTypeEnum.api },
   { label: 'Statischer Endpunkt', value: authDataTypeEnum.staticendpoint },
   { label: 'Urban Institute', value: authDataTypeEnum.usi },
+  { label: 'Intern', value: authDataTypeEnum.internal },
 ];

@@ -231,6 +231,17 @@ export type Tab = {
   mapFormSizeFactor?: number;
   mapDisplayMode?: string;
   mapFilterAttribute?: string;
+  mapGeoJSON?: string;
+  mapGeoJSONSensorBasedColors?: boolean;
+  mapGeoJSONBorderColor?: string;
+  mapGeoJSONFillColor?: string;
+  mapGeoJSONFillOpacity?: number;
+  mapGeoJSONSelectionBorderColor?: string;
+  mapGeoJSONSelectionFillColor?: string;
+  mapGeoJSONSelectionFillOpacity?: number;
+  mapGeoJSONHoverBorderColor?: string;
+  mapGeoJSONHoverFillColor?: string;
+  mapGeoJSONHoverFillOpacity?: number;
   mapIsFormColorValueBased?: boolean;
   mapIsIconColorValueBased?: boolean;
   mapLatitude?: number;
@@ -251,6 +262,33 @@ export type Tab = {
   mapCombinedWmsUrl?: string;
   mapWmsLayer?: string;
   mapCombinedWmsLayer?: string;
+  listviewName?: string;
+  listviewIsFilteringAllowed?: boolean;
+  listviewFilterAttribute?: string;
+  listviewShowAddress?: boolean;
+  listviewAddressAttribute?: string;
+  listviewShowContact?: boolean;
+  listviewContactAttribute?: string;
+  listviewShowImage?: boolean;
+  listviewImageAttribute?: string;
+  listviewShowCategory?: boolean;
+  listviewCategoryAttribute?: string;
+  listviewShowName?: boolean;
+  listviewNameAttribute?: string;
+  listviewShowContactName?: boolean;
+  listviewContactNameAttribute?: string;
+  listviewShowContactPhone?: boolean;
+  listviewContactPhoneAttribute?: string;
+  listviewShowParticipants?: boolean;
+  listviewParticipantsAttribute?: string;
+  listviewShowSupporter?: boolean;
+  listviewSupporterAttribute?: string;
+  listviewShowEmail?: boolean;
+  listviewEmailAttribute?: string;
+  listviewShowWebsite?: boolean;
+  listviewWebsiteAttribute?: string;
+  listviewShowDescription?: boolean;
+  listviewDescriptionAttribute?: string;
   queryId?: string;
   rangeStaticValuesMin?: number[];
   rangeStaticValuesMax?: number[];
@@ -504,6 +542,31 @@ export type CorporateInfo = {
   widgetSubheadlineFontSize: string;
   widgetPrimaryColor: string;
   widgetSecondaryColor: string;
+
+  // ListView styling
+  listviewBackgroundColor: string;
+  listviewItemBackgroundColor: string;
+  listviewItemBorderColor: string;
+  listviewItemBorderRadius: string;
+  listviewItemBorderSize: string;
+  listviewTitleFontColor: string;
+  listviewTitleFontSize: string;
+  listviewTitleFontWeight: string;
+  listviewDescriptionFontColor: string;
+  listviewDescriptionFontSize: string;
+  listviewCounterFontColor: string;
+  listviewCounterFontSize: string;
+  listviewFilterButtonBackgroundColor: string;
+  listviewFilterButtonBorderColor: string;
+  listviewFilterButtonFontColor: string;
+  listviewFilterButtonHoverBackgroundColor: string;
+  listviewArrowIconColor: string;
+  listviewBackButtonBackgroundColor: string;
+  listviewBackButtonHoverBackgroundColor: string;
+  listviewBackButtonFontColor: string;
+  listviewMapButtonBackgroundColor: string;
+  listviewMapButtonHoverBackgroundColor: string;
+  listviewMapButtonFontColor: string;
 };
 
 export type WidgetWithChildren = {
@@ -574,4 +637,13 @@ export type WeatherWarningType = {
   alertDescription: string;
   validFrom: string;
   validTo: string;
+};
+
+export type InternalData = {
+  id: string;
+  source: string;
+  collection: string;
+  firstDataColIndex: number;
+  firstDataRowIndex: number;
+  timeGroupRowCount: number;
 };

@@ -18,6 +18,17 @@ export interface BaseMapProps {
   mapAllowScroll?: boolean;
   mapAllowFilter?: boolean;
   mapFilterAttribute?: string;
+  mapGeoJSON?: string;
+  mapType?: string;
+  mapGeoJSONSensorBasedColors?: boolean;
+  mapGeoJSONBorderColor?: string;
+  mapGeoJSONFillColor?: string;
+  mapGeoJSONSelectionBorderColor?: string;
+  mapGeoJSONSelectionFillColor?: string;
+  mapGeoJSONHoverBorderColor?: string;
+  mapGeoJSONHoverFillColor?: string;
+  mapGeoJSONSensorData?: GeoJSONSensorData[];
+  mapGeoJSONSelectedFeatures?: string[];
   mapAllowLegend?: boolean;
   mapLegendValues?: MapModalLegend[];
   mapLegendDisclaimer?: string[];
@@ -34,6 +45,7 @@ export interface BaseMapProps {
   allowDataExport?: boolean;
   widgetDownloadId?: string;
   combinedQueryData?: QueryDataWithAttributes[];
+  sendFeaturesToDynamicMap?: (features: string[]) => void;
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {
@@ -100,4 +112,9 @@ export type MapModalChartStyle = {
   stageableChartFontSize: string;
   stageableChartTicksFontColor: string;
   stageableChartTicksFontSize: string;
+};
+
+export type GeoJSONSensorData = {
+  id: string;
+  value: number;
 };

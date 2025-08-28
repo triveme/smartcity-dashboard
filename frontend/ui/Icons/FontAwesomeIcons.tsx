@@ -64,11 +64,13 @@ import {
   faCloudArrowUp,
   faClone,
   faFont,
+  faCopy,
   faFloppyDisk,
   faImage,
   faEnvelope,
   faDownload,
   faCogs,
+  faDatabase,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const AvailableIcons = [
@@ -183,6 +185,8 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faEyeSlash} color={color} size={size} />;
     case 'File':
       return <FontAwesomeIcon icon={faFile} color={color} size={size} />;
+    case 'Copy':
+      return <FontAwesomeIcon icon={faCopy} color={color} size={size} />;
     case 'Gear':
       return <FontAwesomeIcon icon={faGear} color={color} size={size} />;
     case 'House':
@@ -338,8 +342,6 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faClone} color={color} size={size} />;
     case 'Bar':
       return <FontAwesomeIcon icon={faBars} color={color} size={size} />;
-    case 'File':
-      return <FontAwesomeIcon icon={faFile} color={color} size={size} />;
     case 'Gear':
       return <FontAwesomeIcon icon={faGear} color={color} size={size} />;
     case 'Font':
@@ -350,6 +352,8 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faDownload} color={color} size={size} />;
     case 'Cogs':
       return <FontAwesomeIcon icon={faCogs} color={color} size={size} />;
+    case 'Database':
+      return <FontAwesomeIcon icon={faDatabase} color={color} size={size} />;
     default:
       return <div></div>;
   }

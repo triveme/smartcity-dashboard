@@ -27,6 +27,26 @@ data-translation-service:
   enabled: true
   service:
     enabled: false  # Disable service creation since no endpoints are needed
+  image:
+    repository: smartcity/data-translation-service
+    tag: 'latest-dev'
+    pullPolicy: IfNotPresent
+
+internal-data-service:
+  enabled: true
+  service:
+    enabled: true
+  image:
+    repository: smartcity/internal-data-service
+    tag: 'latest-dev'
+    pullPolicy: IfNotPresent
 
 frontend:
   enabled: false
+
+migrations:
+  enabled: true
+  image:
+    repository: smartcity/migrations
+    tag: 'latest-dev'
+    pullPolicy: IfNotPresent

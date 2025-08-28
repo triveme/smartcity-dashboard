@@ -306,6 +306,61 @@ export const corporateInfos = pgTable('corporate_info', {
   widgetFontColor: text('widget_font_color').default('#FFF'),
   widgetPrimaryColor: text('widget_primary_color').default('#3D4760'),
   widgetSecondaryColor: text('widget_secondary_color').default('#3D4760'),
+
+  // ListView styling
+  listviewBackgroundColor: text('listview_background_color').default('#2D3244'),
+  listviewItemBackgroundColor: text('listview_item_background_color').default(
+    '#3D4760',
+  ),
+  listviewItemBorderColor: text('listview_item_border_color').default(
+    '#4B5563',
+  ),
+  listviewItemBorderRadius: text('listview_item_border_radius').default('8px'),
+  listviewItemBorderSize: text('listview_item_border_size').default('1px'),
+  listviewTitleFontColor: text('listview_title_font_color').default('#FCD34D'),
+  listviewTitleFontSize: text('listview_title_font_size').default('18px'),
+  listviewTitleFontWeight: text('listview_title_font_weight').default('bold'),
+  listviewDescriptionFontColor: text('listview_description_font_color').default(
+    '#D1D5DB',
+  ),
+  listviewDescriptionFontSize: text('listview_description_font_size').default(
+    '14px',
+  ),
+  listviewCounterFontColor: text('listview_counter_font_color').default(
+    '#9CA3AF',
+  ),
+  listviewCounterFontSize: text('listview_counter_font_size').default('14px'),
+  listviewFilterButtonBackgroundColor: text(
+    'listview_filter_button_background_color',
+  ).default('#4B5563'),
+  listviewFilterButtonBorderColor: text(
+    'listview_filter_button_border_color',
+  ).default('#6B7280'),
+  listviewFilterButtonFontColor: text(
+    'listview_filter_button_font_color',
+  ).default('#E5E7EB'),
+  listviewFilterButtonHoverBackgroundColor: text(
+    'listview_filter_button_hover_background_color',
+  ).default('#5B6478'),
+  listviewArrowIconColor: text('listview_arrow_icon_color').default('#E5E7EB'),
+  listviewBackButtonBackgroundColor: text(
+    'listview_back_button_background_color',
+  ).default('#6B7280'),
+  listviewBackButtonHoverBackgroundColor: text(
+    'listview_back_button_hover_background_color',
+  ).default('#4B5563'),
+  listviewBackButtonFontColor: text('listview_back_button_font_color').default(
+    '#FFFFFF',
+  ),
+  listviewMapButtonBackgroundColor: text(
+    'listview_map_button_background_color',
+  ).default('#3B82F6'),
+  listviewMapButtonHoverBackgroundColor: text(
+    'listview_map_button_hover_background_color',
+  ).default('#2563EB'),
+  listviewMapButtonFontColor: text('listview_map_button_font_color').default(
+    '#FFFFFF',
+  ),
 });
 
 export type CorporateInfo = typeof corporateInfos.$inferSelect;

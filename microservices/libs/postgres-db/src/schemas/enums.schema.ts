@@ -37,6 +37,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Wert',
   'iFrame',
   'Bild',
+  'Listview',
 ]);
 
 export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
@@ -46,12 +47,15 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   '360° Chart',
   'Stageable Chart',
   'Pie Chart',
+  'Pie Chart (dynamisch)',
   'Linien Chart',
   'Balken Chart',
   'Measurement',
   'Pin',
   'Parking',
   'Kombinierte Karte',
+  'GeoJSON',
+  'GeoJSON (dynamisch)',
   'Farbiger Slider',
   'Slider Übersicht',
 ]);
@@ -69,6 +73,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'api',
   'static-endpoint',
   'usi',
+  'internal',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [

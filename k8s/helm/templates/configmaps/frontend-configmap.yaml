@@ -17,7 +17,6 @@ data:
   NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL: {{ index .Values "frontend" "orchideoConnectServiceUrl" }}
   NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL: {{ index .Values "frontend" "usiPlatformServiceUrl" }}
   NEXT_PUBLIC_NGSI_SERVICE_URL: {{ index .Values "frontend" "ngsiServiceUrl" }}
-  NEXT_PUBLIC_MULTI_TENANCY: "true"
   NEXT_PUBLIC_MAIL_TO: {{ index .Values "frontend" "mailTo" }}
   NEXT_PUBLIC_ADMIN_ROLE: {{ index .Values "frontend" "adminRole" }}
   NEXT_PUBLIC_SUPER_ADMIN_ROLE: {{ index .Values "frontend" "superAdminRole" }}

@@ -4,7 +4,12 @@ import { MailController } from './mail.controller';
 import { MailService } from './mail.service';
 
 @Module({
-  imports: [ConfigModule.forRoot({ envFilePath: '../.env' })],
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
+  ],
   controllers: [MailController],
   providers: [MailService],
 })

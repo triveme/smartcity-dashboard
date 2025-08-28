@@ -24,16 +24,40 @@ export class DataTranslationRepo {
   }
 
   async setWidgetData(widgetId, data): Promise<void> {
-    // Update if exists
-    const updated = await this.db
-      .update(widgetData)
-      .set({ data })
+    // First check if the widget exists to avoid foreign key constraint violations
+    const widget = await this.getWidgetById(widgetId);
+    if (!widget) {
+      console.warn(
+        `Widget with ID ${widgetId} does not exist. Skipping widget data update.`,
+      );
+      return;
+    }
+
+    try {
+      // Update if exists
+      const updated = await this.db
+        .update(widgetData)
+        .set({ data })
+        .where(eq(widgetData.widgetId, widgetId));
+
+      // Insert if update did not affect any rows
+      if (updated.rowCount === 0) {
+        await this.db.insert(widgetData).values({ widgetId, data });
+      }
+    } catch (error) {
+      console.error(`Error setting widget data for widget ${widgetId}:`, error);
+      // Don't rethrow to prevent service crash
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getWidgetData(widgetId: string): Promise<any> {
+    const result = await this.db
+      .select()
+      .from(widgetData)
       .where(eq(widgetData.widgetId, widgetId));
 
-    // Insert if update did not affect any rows
-    if (updated.rowCount === 0) {
-      await this.db.insert(widgetData).values({ widgetId, data });
-    }
+    return result.length > 0 ? result[0].data : null;
   }
 
   async getQueryById(id: string): Promise<Query> {

@@ -786,10 +786,8 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/query-configs')
         .set('Authorization', `Bearer ${JWTToken}`);
       expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
-      // Only expects 5 queries, because Test Environment always creates a query config for a new Tab,
-      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
-      // So the query config of the combined component wont be duplicated
-      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(5);
+      // Queryconfigs are duplicated if exist and are linked to the appropriate widget
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(6);
     });
 
     it('/widget/duplicate/:id (Post) duplicate combined component and three childs', async () => {
@@ -856,10 +854,8 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/query-configs')
         .set('Authorization', `Bearer ${JWTToken}`);
       expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
-      // Only expects 7 queries, because Test Environment always creates a query config for a new Tab,
-      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
-      // So the query config of the combined component wont be duplicated
-      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(7);
+      // Queryconfigs are duplicated if exist and are linked to the appropriate widget
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(8);
     });
     it('/widget/duplicate/:id (Post) duplicate combined component and two childs, one tab without queryconfig', async () => {
       const combinedWid = getWidget([], []);
@@ -921,10 +917,9 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/query-configs')
         .set('Authorization', `Bearer ${JWTToken}`);
       expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
-      // Only expects 4 queries, because Test Environment always creates a query config for a new Tab,
-      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
-      // So the query configs of the combined component and the information tab wont be duplicated
-      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(4);
+      // Queryconfigs are duplicated if exist and are linked to the appropriate widget
+      // But the query config of the second child tab is not duplicated, because it has no query config
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(6);
     });
 
     it('/widget/duplicate/:id (Post) duplicate combined component with nested combined component', async () => {
@@ -1002,10 +997,8 @@ describe('DashboardServiceControllers (e2e)', () => {
         .get('/query-configs')
         .set('Authorization', `Bearer ${JWTToken}`);
       expect(responseAllQueryConfigsAfterDuplicate.body).toBeInstanceOf(Array);
-      // Only expects 8 queries, because Test Environment always creates a query config for a new Tab,
-      // but getWidgetWithChildrenById at the '/duplicate' endpoint filters the query config for tabs, which doesnt normally have a query config.
-      // So the query configs of the two combined component wont be duplicated
-      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(8);
+      // Queryconfigs are duplicated if exist and are linked to the appropriate widget
+      expect(responseAllQueryConfigsAfterDuplicate.body).toHaveLength(10);
     });
   });
 });

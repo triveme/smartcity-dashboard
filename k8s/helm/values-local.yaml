@@ -38,6 +38,12 @@ data-translation-service:
   ingress:
     enabled: false
 
+internal-data-service:
+  ingress:
+    enabled: false
+  jwks: "http://localhost:28080/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "http://localhost:3000"
+
 frontend:
   ingress:
     enabled: false

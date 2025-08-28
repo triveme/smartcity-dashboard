@@ -61,6 +61,9 @@ dependencies:
   - name: data-translation-service
     condition: data-translation-service.enabled
     version: 0.1.0
+  - name: internal-data-service
+    condition: internal-data-service.enabled
+    version: 0.1.0
   - name: frontend
     condition: frontend.enabled
     version: 0.1.0

@@ -27,10 +27,45 @@ export class PopulateMapService {
 
         // Prioritize fakePosition if it exists, otherwise use location
         if (dataObject['fakePosition']) {
-          position = dataObject['fakePosition'].value;
+          // Handle both NGSI-v2 and NGSI-LD formats
+          if (dataObject['fakePosition'].value) {
+            // NGSI-LD format
+            position = dataObject['fakePosition'].value;
+          } else {
+            // NGSI-v2 format
+            position = dataObject['fakePosition'];
+          }
         } else if (dataObject['location']) {
-          position = dataObject['location'].value;
-        } else if (dataObject['attributes'] && dataObject['attributes'][0]) {
+          // Handle FIWARE StructuredValue location format (NGSI-LD)
+          if (
+            dataObject['location'].value &&
+            dataObject['location'].value.geometry
+          ) {
+            // NGSI-LD with Feature/geometry structure
+            position = {
+              type: dataObject['location'].value.geometry.type,
+              coordinates: dataObject['location'].value.geometry.coordinates,
+            };
+          } else if (dataObject['location'].value) {
+            // NGSI-LD with direct value
+            position = dataObject['location'].value;
+          } else if (
+            dataObject['location'].type &&
+            dataObject['location'].coordinates
+          ) {
+            // NGSI-v2 with direct GeoJSON
+            position = {
+              type: dataObject['location'].type,
+              coordinates: dataObject['location'].coordinates,
+            };
+          } else {
+            // Fallback for other formats
+            position = dataObject['location'];
+          }
+        } else if (
+          dataObject['attributes'] &&
+          dataObject['attributes'].length > 0
+        ) {
           position = this.getGeoJsonFromNgsi(dataObject);
         } else if (dataObject['position']) {
           position = dataObject.position;
@@ -38,26 +73,40 @@ export class PopulateMapService {
 
         if (position) {
           let tempCoordinates: number[] = [];
-          if (position.coordinates[0] < position.coordinates[1]) {
-            tempCoordinates = [
-              position.coordinates[1],
-              position.coordinates[0],
-            ];
+
+          // Ensure coordinates exist and are valid
+          if (
+            position.coordinates &&
+            Array.isArray(position.coordinates) &&
+            position.coordinates.length >= 2
+          ) {
+            if (position.coordinates[0] < position.coordinates[1]) {
+              tempCoordinates = [
+                position.coordinates[1],
+                position.coordinates[0],
+              ];
+            } else {
+              tempCoordinates = [
+                position.coordinates[0],
+                position.coordinates[1],
+              ];
+            }
+
+            tab.mapObject.push({
+              position: {
+                type: position.type ?? 'Point',
+                coordinates: tempCoordinates,
+              },
+              ...dataObject,
+              queryId: query.id,
+              queryConfigId: query.queryConfigId,
+            });
           } else {
-            tempCoordinates = [
-              position.coordinates[0],
-              position.coordinates[1],
-            ];
+            console.warn(
+              'Invalid coordinates found for entity:',
+              dataObject.id || 'unknown',
+            );
           }
-          tab.mapObject.push({
-            position: {
-              type: position.type ?? 'Point',
-              coordinates: tempCoordinates,
-            },
-            ...dataObject,
-            queryId: query.id,
-            queryConfigId: query.queryConfigId,
-          });
         }
       }
     }
@@ -76,7 +125,16 @@ export class PopulateMapService {
 
     // Prioritize fakePosition if it exists, otherwise use location
     if (queryData && queryData['fakePosition']) {
-      const position = queryData['fakePosition'].value;
+      let position;
+
+      // Handle both NGSI-v2 and NGSI-LD formats
+      if (queryData['fakePosition'].value) {
+        // NGSI-LD format
+        position = queryData['fakePosition'].value;
+      } else {
+        // NGSI-v2 format
+        position = queryData['fakePosition'];
+      }
 
       tab.mapObject.push({
         entityId: queryData['entityId'] || '',
@@ -86,7 +144,31 @@ export class PopulateMapService {
         queryConfigId: query.queryConfigId,
       });
     } else if (queryData && queryData['location']) {
-      const position = queryData['location'].value;
+      let position;
+
+      // Handle FIWARE StructuredValue location format (NGSI-LD)
+      if (queryData['location'].value && queryData['location'].value.geometry) {
+        // NGSI-LD with Feature/geometry structure
+        position = {
+          type: queryData['location'].value.geometry.type,
+          coordinates: queryData['location'].value.geometry.coordinates,
+        };
+      } else if (queryData['location'].value) {
+        // NGSI-LD with direct value
+        position = queryData['location'].value;
+      } else if (
+        queryData['location'].type &&
+        queryData['location'].coordinates
+      ) {
+        // NGSI-v2 with direct GeoJSON
+        position = {
+          type: queryData['location'].type,
+          coordinates: queryData['location'].coordinates,
+        };
+      } else {
+        // Fallback for other formats
+        position = queryData['location'];
+      }
 
       tab.mapObject.push({
         entityId: queryData['entityId'] || '',

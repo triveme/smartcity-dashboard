@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 
 import { WidgetWithChildren, WidgetWithContent } from '@/types';
 import DashboardWidget from '@/components/DashboardElements/DashboardWidget';
-import { env } from 'next-runtime-env';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
@@ -28,9 +27,7 @@ export default async function DashboardPage(props: {
   const searchParams = await props.searchParams;
   const widgetWithChildren = await getData(searchParams.id || '');
 
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true' ? params.tenant : undefined;
+  const tenant = params.tenant || undefined;
 
   const widget: WidgetWithContent = {
     id: widgetWithChildren.widget.id,

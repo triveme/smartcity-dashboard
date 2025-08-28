@@ -1,9 +1,10 @@
 {
   "name": "frontend",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:web": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -9,6 +9,7 @@ import {
   aggregationPeriodEnum,
   tabComponentTypeEnum,
   timeframeEnum,
+  authDataTypeEnum,
 } from '@/types';
 import CollapseButton from '@/ui/Buttons/CollapseButton';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
@@ -25,6 +26,7 @@ import ReportConfigWizard from '../ReportConfigWizard';
 import QueryNgsiWizard from './QueryNgsiWizard';
 import QueryOrchideoWizard from './QueryOrchideoWizard';
 import QueryUsiWizard from './QueryUsiWizard';
+import QueryInternalDataWizard from './QueryInternalDataWizard';
 
 type QueryConfigWizardProps = {
   widgetType?: string;
@@ -42,6 +44,7 @@ type QueryConfigWizardProps = {
   backgroundColor: string;
   hoverColor: string;
   setOrigin: (selectedOrigin: string) => void;
+  tenant?: string;
 };
 
 const singleSelectWidgetTypes: string[] = [
@@ -68,6 +71,7 @@ export default function QueryConfigWizard(
     backgroundColor,
     hoverColor,
     setOrigin,
+    tenant,
   } = props;
 
   const [queryConfigFormIsOpen, setQueryConfigFormIsOpen] = useState(false);
@@ -193,64 +197,83 @@ export default function QueryConfigWizard(
                   : false
               }
             />
+          ) : datasourceOrigin === 'internal' ? (
+            <QueryInternalDataWizard
+              queryConfig={queryConfig}
+              setQueryConfig={setQueryConfig}
+              iconColor={iconColor}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+              tenant={tenant}
+              hoverColor={hoverColor}
+              isSingleWidget={
+                widgetType && singleSelectWidgetTypes.includes(widgetType)
+                  ? true
+                  : false
+              }
+            />
           ) : null}
 
           {/* Aggregation for timeseries data */}
           {widgetType === tabComponentSubTypeEnum.lineChart ||
           widgetType === tabComponentSubTypeEnum.barChart ? (
             <div>
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Aggregationsmodus" />
-                <WizardDropdownSelection
-                  currentValue={
-                    aggregationOptions.find(
-                      (option) => option.value === queryConfig?.aggrMode,
-                    )?.label || ''
-                  }
-                  selectableValues={aggregationOptions.map(
-                    (option) => option.label,
-                  )}
-                  onSelect={(label: string | number): void => {
-                    const selectedOption = aggregationOptions.find(
-                      (option) => option.label === label,
-                    );
-                    if (selectedOption) {
-                      handleQueryConfigChange({
-                        aggrMode: selectedOption.value as aggregationEnum,
-                      });
-                    }
-                  }}
-                  error={errors && errors.aggregationsError}
-                  iconColor={iconColor}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Aggregations Periode" />
-                <WizardDropdownSelection
-                  currentValue={
-                    aggregationPeriods.find(
-                      (option) => option.value === queryConfig?.aggrPeriod,
-                    )?.label || ''
-                  }
-                  selectableValues={aggregationPeriods.map(
-                    (option) => option.label,
-                  )}
-                  onSelect={(label: string | number): void => {
-                    const enumValue = aggregationPeriods.find(
-                      (option) => option.label === label,
-                    )?.value;
-                    handleQueryConfigChange({
-                      aggrPeriod: enumValue as aggregationPeriodEnum,
-                    });
-                  }}
-                  error={errors && errors.aggregationPeriodError}
-                  iconColor={iconColor}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
+              {datasourceOrigin !== authDataTypeEnum.internal && (
+                <>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Aggregationsmodus" />
+                    <WizardDropdownSelection
+                      currentValue={
+                        aggregationOptions.find(
+                          (option) => option.value === queryConfig?.aggrMode,
+                        )?.label || ''
+                      }
+                      selectableValues={aggregationOptions.map(
+                        (option) => option.label,
+                      )}
+                      onSelect={(label: string | number): void => {
+                        const selectedOption = aggregationOptions.find(
+                          (option) => option.label === label,
+                        );
+                        if (selectedOption) {
+                          handleQueryConfigChange({
+                            aggrMode: selectedOption.value as aggregationEnum,
+                          });
+                        }
+                      }}
+                      error={errors && errors.aggregationsError}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Aggregations Periode" />
+                    <WizardDropdownSelection
+                      currentValue={
+                        aggregationPeriods.find(
+                          (option) => option.value === queryConfig?.aggrPeriod,
+                        )?.label || ''
+                      }
+                      selectableValues={aggregationPeriods.map(
+                        (option) => option.label,
+                      )}
+                      onSelect={(label: string | number): void => {
+                        const enumValue = aggregationPeriods.find(
+                          (option) => option.label === label,
+                        )?.value;
+                        handleQueryConfigChange({
+                          aggrPeriod: enumValue as aggregationPeriodEnum,
+                        });
+                      }}
+                      error={errors && errors.aggregationPeriodError}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                </>
+              )}
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label="Zeitbereich" />
                 <WizardDropdownSelection

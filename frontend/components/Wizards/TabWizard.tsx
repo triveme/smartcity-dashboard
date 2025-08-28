@@ -18,6 +18,7 @@ import ColorPickerComponent from '@/ui/ColorPickerComponent';
 import StaticValuesField from '@/ui/StaticValuesFields';
 import IconSelection from '@/ui/Icons/IconSelection';
 import WizardFileUpload from '@/ui/WizardFileUpload';
+import WizardJSONUpload from '@/ui/WizardJSONUpload';
 import CollapseButton from '@/ui/Buttons/CollapseButton';
 import { WizardErrors } from '@/types/errors';
 import {
@@ -291,6 +292,24 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       }
     };
   }, [file]);
+
+  const [geoJSONFile, setGeoJSONFile] = useState<File>();
+
+  useEffect(() => {
+    const reader = new FileReader();
+    if (geoJSONFile) {
+      reader.readAsText(geoJSONFile, 'UTF-8');
+    }
+    reader.onloadend = (): void => {
+      const fileString = reader.result as string;
+      if (tab) {
+        setTab((prevTab) => ({
+          ...prevTab,
+          mapGeoJSON: fileString,
+        }));
+      }
+    };
+  }, [geoJSONFile]);
 
   return (
     <div className="flex flex-col">
@@ -739,7 +758,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   </div>
                 </div>
               )}
-              {tab?.componentSubType === tabComponentSubTypeEnum.pieChart && (
+              {(tab?.componentSubType === tabComponentSubTypeEnum.pieChart ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.pieChartDynamic) && (
                 <div className="flex flex-col w-full pb-2">
                   <div className="flex w-full items-center">
                     <div className="min-w-[200px]">
@@ -1283,31 +1304,36 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       </>
                     )}
                     <HorizontalDivider />
-                    <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Anzeigemodus" />
-                      <WizardDropdownSelection
-                        currentValue={
-                          mapDisplayModes.find(
-                            (option) => option.value === tab?.mapDisplayMode,
-                          )?.label || ''
-                        }
-                        selectableValues={mapDisplayModes.map(
-                          (option) => option.label,
-                        )}
-                        onSelect={(label: string | number): void => {
-                          const enumValue = mapDisplayModes.find(
-                            (option) => option.label === label,
-                          )?.value;
-                          handleTabChange({
-                            mapDisplayMode: enumValue,
-                          });
-                        }}
-                        error={errors && errors.mapTypeError}
-                        iconColor={iconColor}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
+                    {tab.componentSubType !== tabComponentSubTypeEnum.geoJSON &&
+                      tab.componentSubType !==
+                        tabComponentSubTypeEnum.geoJSONDynamic && (
+                        <div className="flex flex-col w-full pb-2">
+                          <WizardLabel label="Anzeigemodus" />
+                          <WizardDropdownSelection
+                            currentValue={
+                              mapDisplayModes.find(
+                                (option) =>
+                                  option.value === tab?.mapDisplayMode,
+                              )?.label || ''
+                            }
+                            selectableValues={mapDisplayModes.map(
+                              (option) => option.label,
+                            )}
+                            onSelect={(label: string | number): void => {
+                              const enumValue = mapDisplayModes.find(
+                                (option) => option.label === label,
+                              )?.value;
+                              handleTabChange({
+                                mapDisplayMode: enumValue,
+                              });
+                            }}
+                            error={errors && errors.mapTypeError}
+                            iconColor={iconColor}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
+                      )}
                     <div className="w-full pb-2">
                       {(tab.mapDisplayMode ===
                         tabComponentSubTypeEnum.combinedPinAndForm ||
@@ -1447,7 +1473,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             <>
                               <HorizontalDivider />
                               <div className="flex flex-col w-full pb-2 gap-4">
-                                <WizardLabel label="Einstellungen für sensor abhängige Farben" />
+                                <WizardLabel label="Einstellungen für Sensor abhängige Farben" />
                                 <div className="flex flex-col w-full pb-2">
                                   <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
                                   <WizardDropdownSelection
@@ -1535,6 +1561,174 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             />
                           </div>
                         </div>
+                      )}
+                      {(tab.componentSubType ==
+                        tabComponentSubTypeEnum.geoJSON ||
+                        tab.componentSubType ==
+                          tabComponentSubTypeEnum.geoJSONDynamic) && (
+                        <>
+                          <div className="flex flex-col justify-center items-center gap-4 ">
+                            <div className="w-full">
+                              <WizardLabel label="GeoJSON Upload" />
+                              {tab.mapGeoJSON && !geoJSONFile && (
+                                <WizardLabel label="GeoJSON Daten vorhanden. Zum Ersetzen neue Datei hochladen" />
+                              )}
+                              <WizardJSONUpload setFile={setGeoJSONFile} />
+                            </div>
+                          </div>
+                          <div className="flex flex-col w-full pb-2">
+                            <div className="w-full">
+                              <WizardLabel label="GeoJSON Farben" />
+                              <div className="flex flex-row items-center">
+                                <WizardSelectBox
+                                  checked={
+                                    tab?.mapGeoJSONSensorBasedColors || false
+                                  }
+                                  onChange={(value: boolean): void =>
+                                    handleTabChange({
+                                      mapGeoJSONSensorBasedColors: value,
+                                    })
+                                  }
+                                  label="Sensorwert abhängige Farbe"
+                                />
+                                <ColorPickerComponent
+                                  currentColor={
+                                    tab?.mapGeoJSONBorderColor || '#3388ff'
+                                  }
+                                  handleColorChange={(color: string): void =>
+                                    handleTabChange({
+                                      mapGeoJSONBorderColor: color,
+                                    })
+                                  }
+                                  label="Randfarbe"
+                                />
+                                {!tab.mapGeoJSONSensorBasedColors && (
+                                  <ColorPickerComponent
+                                    currentColor={
+                                      tab?.mapGeoJSONFillColor || '#3388ff'
+                                    }
+                                    handleColorChange={(color: string): void =>
+                                      handleTabChange({
+                                        mapGeoJSONFillColor: color,
+                                      })
+                                    }
+                                    label="Füllfarbe"
+                                  />
+                                )}
+                                <ColorPickerComponent
+                                  currentColor={
+                                    tab?.mapGeoJSONSelectionBorderColor ||
+                                    '#0b63de'
+                                  }
+                                  handleColorChange={(color: string): void =>
+                                    handleTabChange({
+                                      mapGeoJSONSelectionBorderColor: color,
+                                    })
+                                  }
+                                  label="Selektion Randfarbe"
+                                />
+                                {!tab.mapGeoJSONSensorBasedColors && (
+                                  <ColorPickerComponent
+                                    currentColor={
+                                      tab?.mapGeoJSONSelectionFillColor ||
+                                      '#0b63de'
+                                    }
+                                    handleColorChange={(color: string): void =>
+                                      handleTabChange({
+                                        mapGeoJSONSelectionFillColor: color,
+                                      })
+                                    }
+                                    label="Selektion Füllfarbe"
+                                  />
+                                )}
+                                <ColorPickerComponent
+                                  currentColor={
+                                    tab?.mapGeoJSONHoverBorderColor || '#0347a6'
+                                  }
+                                  handleColorChange={(color: string): void =>
+                                    handleTabChange({
+                                      mapGeoJSONHoverBorderColor: color,
+                                    })
+                                  }
+                                  label="Hover Randfarbe"
+                                />
+                                {!tab.mapGeoJSONSensorBasedColors && (
+                                  <ColorPickerComponent
+                                    currentColor={
+                                      tab?.mapGeoJSONHoverFillColor || '#0347a6'
+                                    }
+                                    handleColorChange={(color: string): void =>
+                                      handleTabChange({
+                                        mapGeoJSONHoverFillColor: color,
+                                      })
+                                    }
+                                    label="Hover Füllfarbe"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            {tab.mapGeoJSONSensorBasedColors && (
+                              <>
+                                <HorizontalDivider />
+                                <div className="flex flex-col w-full pb-2 gap-4">
+                                  <WizardLabel label="Einstellungen für Sensor abhängige Farben" />
+                                  <div className="flex flex-col w-full pb-2">
+                                    <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
+                                    <WizardDropdownSelection
+                                      currentValue={
+                                        tab?.mapAttributeForValueBased || ''
+                                      }
+                                      selectableValues={queryConfig.attributes}
+                                      error={
+                                        errors && errors.mapFilterAttributeError
+                                      }
+                                      onSelect={(
+                                        value: string | number,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapAttributeForValueBased:
+                                            value.toString(),
+                                        })
+                                      }
+                                      iconColor={iconColor}
+                                      borderColor={borderColor}
+                                      backgroundColor={backgroundColor}
+                                    />
+                                  </div>
+                                  <StaticValuesField
+                                    initialChartStaticValues={
+                                      tab?.chartStaticValues || []
+                                    }
+                                    initialStaticColors={
+                                      tab?.chartStaticValuesColors || []
+                                    }
+                                    initialStaticValuesTicks={
+                                      tab?.chartStaticValuesTicks || []
+                                    }
+                                    initialStaticValuesLogos={
+                                      tab?.chartStaticValuesLogos || []
+                                    }
+                                    initialStaticValuesTexts={
+                                      tab?.chartStaticValuesTexts || []
+                                    }
+                                    initialIconColor={
+                                      tab?.iconColor || '#000000'
+                                    }
+                                    initialLabelColor={
+                                      tab?.labelColor || '#000000'
+                                    }
+                                    handleTabChange={handleTabChange}
+                                    error={errors?.stageableColorValueError}
+                                    borderColor={borderColor}
+                                    backgroundColor={backgroundColor}
+                                    fontColor={fontColor}
+                                    type="map"
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                     <HorizontalDivider />
@@ -1797,6 +1991,440 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     error={errors && errors.imageJumpoffUrlError}
                     iconColor={iconColor}
                     borderColor={borderColor}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab?.componentType === tabComponentTypeEnum.listview && (
+            <div>
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Listview Name" />
+                <WizardTextfield
+                  value={tab?.listviewName || ''}
+                  onChange={(value: string | number): void =>
+                    handleTabChange({ listviewName: value.toString() })
+                  }
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                  error={errors?.listviewNameError}
+                />
+              </div>
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewIsFilteringAllowed || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewIsFilteringAllowed: value,
+                    ...(value ? {} : { listviewFilterAttribute: '' }), // Clear filter attribute if filtering is disabled
+                  })
+                }
+                label="Filtern erlauben"
+              />
+
+              {tab.listviewIsFilteringAllowed && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Filter Kategorien Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewFilterAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewFilterAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewFilterAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+              <WizardLabel label="Attribute Konfiguration" />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowAddress || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowAddress: value,
+                    ...(value ? {} : { listviewAddressAttribute: '' }), // Clear attribute if field is disabled
+                  })
+                }
+                label="Adresse anzeigen"
+              />
+
+              {tab.listviewShowAddress && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Adresse Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewAddressAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewAddressAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewAddressAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowContact || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowContact: value,
+                    ...(value ? {} : { listviewContactAttribute: '' }), // Clear attribute if field is disabled
+                  })
+                }
+                label="Kontakt anzeigen"
+              />
+
+              {tab.listviewShowContact && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Kontakt Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewContactAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewContactAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewContactAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowImage || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowImage: value,
+                    ...(value ? {} : { listviewImageAttribute: '' }), // Clear attribute if field is disabled
+                  })
+                }
+                label="Bild anzeigen"
+              />
+
+              {tab.listviewShowImage && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Bild Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewImageAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewImageAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewImageAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowCategory || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowCategory: value,
+                    ...(value ? {} : { listviewCategoryAttribute: '' }), // Clear attribute if field is disabled
+                  })
+                }
+                label="Kategorie anzeigen"
+              />
+
+              {tab.listviewShowCategory && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Kategorie Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewCategoryAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewCategoryAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewCategoryAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowName || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowName: value,
+                    ...(value ? {} : { listviewNameAttribute: '' }),
+                  })
+                }
+                label="Name Attribut anzeigen"
+              />
+
+              {tab.listviewShowName && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Name Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewNameAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewNameAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewNameAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowContactName || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowContactName: value,
+                    ...(value ? {} : { listviewContactNameAttribute: '' }),
+                  })
+                }
+                label="Kontakt Name anzeigen"
+              />
+
+              {tab.listviewShowContactName && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Kontakt Name Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewContactNameAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewContactNameAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewContactNameAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowContactPhone || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowContactPhone: value,
+                    ...(value ? {} : { listviewContactPhoneAttribute: '' }),
+                  })
+                }
+                label="Kontakt Telefonnummer anzeigen"
+              />
+
+              {tab.listviewShowContactPhone && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Kontakt Telefonnummer Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewContactPhoneAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewContactPhoneAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewContactPhoneAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowParticipants || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowParticipants: value,
+                    ...(value ? {} : { listviewParticipantsAttribute: '' }),
+                  })
+                }
+                label="Teilnehmer anzeigen"
+              />
+
+              {tab.listviewShowParticipants && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Teilnehmer Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewParticipantsAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewParticipantsAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewParticipantsAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowSupporter || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowSupporter: value,
+                    ...(value ? {} : { listviewSupporterAttribute: '' }),
+                  })
+                }
+                label="Unterstützer anzeigen"
+              />
+
+              {tab.listviewShowSupporter && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Unterstützer Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewSupporterAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewSupporterAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewSupporterAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowEmail || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowEmail: value,
+                    ...(value ? {} : { listviewEmailAttribute: '' }),
+                  })
+                }
+                label="E-Mail anzeigen"
+              />
+
+              {tab.listviewShowEmail && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="E-Mail Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewEmailAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewEmailAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewEmailAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowWebsite || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowWebsite: value,
+                    ...(value ? {} : { listviewWebsiteAttribute: '' }),
+                  })
+                }
+                label="Website anzeigen"
+              />
+
+              {tab.listviewShowWebsite && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Website Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewWebsiteAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewWebsiteAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewWebsiteAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              )}
+
+              <HorizontalDivider />
+
+              <WizardSelectBox
+                checked={tab?.listviewShowDescription || false}
+                onChange={(value: boolean): void =>
+                  handleTabChange({
+                    listviewShowDescription: value,
+                    ...(value ? {} : { listviewDescriptionAttribute: '' }),
+                  })
+                }
+                label="Beschreibung anzeigen"
+              />
+
+              {tab.listviewShowDescription && (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Beschreibung Attribut (nach Query Konfiguration möglich)" />
+                  <WizardDropdownSelection
+                    currentValue={tab?.listviewDescriptionAttribute || ''}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    error={errors?.listviewDescriptionAttributeError}
+                    onSelect={(value: string | number): void =>
+                      handleTabChange({
+                        listviewDescriptionAttribute: value.toString(),
+                      })
+                    }
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
                   />
                 </div>
               )}

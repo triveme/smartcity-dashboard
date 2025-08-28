@@ -18,6 +18,7 @@ import {
 import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
 import Radial360Chart from '@/ui/Charts/radial360/Radial360Chart';
 import PieChart from '@/ui/Charts/PieChart';
+import PieChartDynamic from '@/ui/Charts/PieChartDynamic';
 import LineChart from '@/ui/Charts/LineChart';
 import BarChart from '@/ui/Charts/BarChart';
 import ImageComponent from '@/ui/ImageComponent';
@@ -39,6 +40,7 @@ import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
 import NoDataWarning from '@/ui/NoDataWarning';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
+import { ListView } from '../listview/listview';
 
 type DashboardTabProps = {
   tab: Tab;
@@ -50,12 +52,14 @@ type DashboardTabProps = {
 const Map = nextDynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
 });
+const MapDynamic = nextDynamic(() => import('@/components/Map/MapDynamic'), {
+  // ssr: false,
+});
 
 export default async function DashboardTab(
   props: DashboardTabProps,
 ): Promise<ReactElement> {
   const { tab, tabData, tenant } = props;
-
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
   //Dynamic Styling
@@ -132,7 +136,6 @@ export default async function DashboardTab(
         : (combinedMapData.mapFilterAttribute as string[]),
     );
   }
-
   return (
     <div
       className={`w-full h-full justify-center items-center ${tab.componentType === tabComponentTypeEnum.combinedComponent ? 'p-4' : ''}`}
@@ -201,6 +204,13 @@ export default async function DashboardTab(
               unit={tab.chartUnit || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
               pieChartRadius={tab.chartPieRadius || 70}
+            />
+          )}
+          {tab.componentSubType === tabComponentSubTypeEnum.pieChartDynamic && (
+            <PieChartDynamic
+              tab={tab}
+              tabData={tabData}
+              corporateInfo={ciColors}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
@@ -533,101 +543,177 @@ export default async function DashboardTab(
       )}
       {tab.componentType === tabComponentTypeEnum.map && (
         <div id="map" className="h-full w-full">
-          {tab.componentSubType === tabComponentSubTypeEnum.combinedMap ? (
-            <Map
-              data={combinedMapData?.mapObject as MapObject[]}
-              combinedMapData={combinedMapData}
-              mapAllowFilter={true}
-              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
-              mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
-              mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
-              mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
-              mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
-              mapLegendValues={
-                combinedMapData?.mapLegendValues as MapModalLegend[]
-              }
-              mapLegendDisclaimer={
-                combinedMapData?.mapLegendDisclaimer as string[]
-              }
-              mapActiveMarkerColor={
-                combinedMapData?.mapActiveMarkerColor as string[]
-              }
-              mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
-              mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
-              mapMarkerIconColor={
-                combinedMapData?.mapMarkerIconColor as string[]
-              }
-              mapShapeOption={combinedMapData?.mapShapeOption as string[]}
-              mapShapeColor={combinedMapData?.mapShapeColor as string[]}
-              mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
-              mapWidgetValues={
-                combinedMapData?.mapWidgetValues as MapModalWidget[]
-              }
-              mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
-              mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
-              mapNames={(combinedMapData?.mapNames as string[]) || []}
-              isFullscreenMap={false}
-              mapAttributeForValueBased={
-                combinedMapData?.mapAttributeForValueBased as string[]
-              }
-              mapIsIconColorValueBased={
-                combinedMapData?.mapIsIconColorValueBased as boolean[]
-              }
-              staticValues={combinedMapData?.chartStaticValues as number[][]}
-              staticValuesColors={
-                combinedMapData?.chartStaticValuesColors as string[][]
-              }
+          {tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic ? (
+            <>
+              {tab.componentSubType === tabComponentSubTypeEnum.combinedMap ? (
+                <Map
+                  data={combinedMapData?.mapObject as MapObject[]}
+                  combinedMapData={combinedMapData}
+                  mapAllowFilter={true}
+                  combinedQueryData={
+                    combinedQueryData as QueryDataWithAttributes[]
+                  }
+                  mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
+                  mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
+                  mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
+                  mapAllowLegend={combinedMapData?.mapAllowLegend as boolean}
+                  mapLegendValues={
+                    combinedMapData?.mapLegendValues as MapModalLegend[]
+                  }
+                  mapLegendDisclaimer={
+                    combinedMapData?.mapLegendDisclaimer as string[]
+                  }
+                  mapActiveMarkerColor={
+                    combinedMapData?.mapActiveMarkerColor as string[]
+                  }
+                  mapMarkerColor={combinedMapData?.mapMarkerColor as string[]}
+                  mapMarkerIcon={combinedMapData?.mapMarkerIcon as string[]}
+                  mapMarkerIconColor={
+                    combinedMapData?.mapMarkerIconColor as string[]
+                  }
+                  mapShapeOption={combinedMapData?.mapShapeOption as string[]}
+                  mapShapeColor={combinedMapData?.mapShapeColor as string[]}
+                  mapDisplayMode={combinedMapData?.mapDisplayMode as string[]}
+                  mapWidgetValues={
+                    combinedMapData?.mapWidgetValues as MapModalWidget[]
+                  }
+                  mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
+                  mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
+                  mapNames={(combinedMapData?.mapNames as string[]) || []}
+                  mapGeoJSON={tab.mapGeoJSON || ''}
+                  mapGeoJSONSensorBasedColors={
+                    tab.mapGeoJSONSensorBasedColors || false
+                  }
+                  mapGeoJSONBorderColor={tab.mapGeoJSONBorderColor || '#3388ff'}
+                  mapGeoJSONFillColor={tab.mapGeoJSONFillColor || '#3388ff'}
+                  mapGeoJSONSelectionBorderColor={
+                    tab.mapGeoJSONSelectionBorderColor || '#0b63de'
+                  }
+                  mapGeoJSONSelectionFillColor={
+                    tab.mapGeoJSONSelectionFillColor || '#0b63de'
+                  }
+                  mapGeoJSONHoverBorderColor={
+                    tab.mapGeoJSONHoverBorderColor || '#0347a6'
+                  }
+                  mapGeoJSONHoverFillColor={
+                    tab.mapGeoJSONHoverFillColor || '#0347a6'
+                  }
+                  mapType={tab.componentSubType || ''}
+                  isFullscreenMap={false}
+                  mapAttributeForValueBased={
+                    combinedMapData?.mapAttributeForValueBased as string[]
+                  }
+                  mapIsIconColorValueBased={
+                    combinedMapData?.mapIsIconColorValueBased as boolean[]
+                  }
+                  staticValues={
+                    combinedMapData?.chartStaticValues as number[][]
+                  }
+                  staticValuesColors={
+                    combinedMapData?.chartStaticValuesColors as string[][]
+                  }
+                  chartStyle={chartStyle}
+                  menuStyle={menuStyle}
+                  ciColors={ciColors}
+                />
+              ) : (
+                <Map
+                  mapMaxZoom={tab.mapMaxZoom ? tab.mapMaxZoom : 18}
+                  mapMinZoom={tab.mapMinZoom ? tab.mapMinZoom : 0}
+                  mapAllowPopups={
+                    tab.mapAllowPopups ? tab.mapAllowPopups : false
+                  }
+                  mapStandardZoom={
+                    tab.mapStandardZoom ? tab.mapStandardZoom : 13
+                  }
+                  mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
+                  mapAllowScroll={
+                    tab.mapAllowScroll ? tab.mapAllowScroll : false
+                  }
+                  mapMarkerColor={
+                    tab.mapMarkerColor ? tab.mapMarkerColor : '#257dc9'
+                  }
+                  mapMarkerIcon={tab.mapMarkerIcon ? tab.mapMarkerIcon : ''}
+                  mapMarkerIconColor={
+                    tab.mapMarkerIconColor ? tab.mapMarkerIconColor : '#FFF'
+                  }
+                  mapLongitude={tab.mapLongitude ? tab.mapLongitude : 13.404954}
+                  mapLatitude={tab.mapLatitude ? tab.mapLatitude : 52.520008}
+                  mapActiveMarkerColor={
+                    tab.mapActiveMarkerColor
+                      ? tab.mapActiveMarkerColor
+                      : '#FF0000'
+                  }
+                  data={tabData?.mapObject || []}
+                  mapShapeOption={
+                    tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
+                  }
+                  mapDisplayMode={
+                    tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
+                  }
+                  mapShapeColor={
+                    tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'
+                  }
+                  isFullscreenMap={false}
+                  mapAllowFilter={tab.mapAllowFilter || false}
+                  mapFilterAttribute={tab.mapFilterAttribute || ''}
+                  mapGeoJSON={tab.mapGeoJSON || ''}
+                  mapGeoJSONSensorBasedColors={
+                    tab.mapGeoJSONSensorBasedColors || false
+                  }
+                  mapGeoJSONBorderColor={tab.mapGeoJSONBorderColor || '#3388ff'}
+                  mapGeoJSONFillColor={tab.mapGeoJSONFillColor || '#3388ff'}
+                  mapGeoJSONSelectionBorderColor={
+                    tab.mapGeoJSONSelectionBorderColor || '#0b63de'
+                  }
+                  mapGeoJSONSelectionFillColor={
+                    tab.mapGeoJSONSelectionFillColor || '#0b63de'
+                  }
+                  mapGeoJSONHoverBorderColor={
+                    tab.mapGeoJSONHoverBorderColor || '#0347a6'
+                  }
+                  mapGeoJSONHoverFillColor={
+                    tab.mapGeoJSONHoverFillColor || '#0347a6'
+                  }
+                  mapType={tab.componentSubType || ''}
+                  combinedQueryData={
+                    combinedQueryData as QueryDataWithAttributes[]
+                  }
+                  mapAllowLegend={tab.mapAllowLegend || false}
+                  mapLegendValues={
+                    tab.mapLegendValues ? tab.mapLegendValues : []
+                  }
+                  mapLegendDisclaimer={
+                    tab.mapLegendDisclaimer ? [tab.mapLegendDisclaimer] : []
+                  }
+                  mapAttributeForValueBased={
+                    tab.mapAttributeForValueBased || ''
+                  }
+                  mapFormSizeFactor={tab.mapFormSizeFactor || 1}
+                  mapIsFormColorValueBased={
+                    tab.mapIsFormColorValueBased || false
+                  }
+                  mapIsIconColorValueBased={
+                    tab.mapIsIconColorValueBased || false
+                  }
+                  staticValues={tab.chartStaticValues || []}
+                  staticValuesColors={tab.chartStaticValuesColors || []}
+                  mapWmsUrl={tab.mapWmsUrl || ''}
+                  mapWmsLayer={tab.mapWmsLayer || ''}
+                  menuStyle={menuStyle}
+                  ciColors={ciColors}
+                />
+              )}
+            </>
+          ) : (
+            <MapDynamic
+              isCombinedMap={false}
+              tabData={tabData}
               chartStyle={chartStyle}
               menuStyle={menuStyle}
               ciColors={ciColors}
-            />
-          ) : (
-            <Map
-              mapMaxZoom={tab.mapMaxZoom ? tab.mapMaxZoom : 18}
-              mapMinZoom={tab.mapMinZoom ? tab.mapMinZoom : 0}
-              mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
-              mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
-              mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
-              mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
-              mapMarkerColor={
-                tab.mapMarkerColor ? tab.mapMarkerColor : '#257dc9'
-              }
-              mapMarkerIcon={tab.mapMarkerIcon ? tab.mapMarkerIcon : ''}
-              mapMarkerIconColor={
-                tab.mapMarkerIconColor ? tab.mapMarkerIconColor : '#FFF'
-              }
-              mapLongitude={tab.mapLongitude ? tab.mapLongitude : 13.404954}
-              mapLatitude={tab.mapLatitude ? tab.mapLatitude : 52.520008}
-              mapActiveMarkerColor={
-                tab.mapActiveMarkerColor ? tab.mapActiveMarkerColor : '#FF0000'
-              }
-              data={tabData?.mapObject || []}
-              mapShapeOption={
-                tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
-              }
-              mapDisplayMode={
-                tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
-              }
-              mapShapeColor={tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'}
-              isFullscreenMap={false}
-              mapAllowFilter={tab.mapAllowFilter || false}
-              mapFilterAttribute={tab.mapFilterAttribute || ''}
-              combinedQueryData={combinedQueryData as QueryDataWithAttributes[]}
-              mapAllowLegend={tab.mapAllowLegend || false}
-              mapLegendValues={tab.mapLegendValues ? tab.mapLegendValues : []}
-              mapLegendDisclaimer={
-                tab.mapLegendDisclaimer ? [tab.mapLegendDisclaimer] : []
-              }
-              mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
-              mapFormSizeFactor={tab.mapFormSizeFactor || 1}
-              mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
-              mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
-              staticValues={tab.chartStaticValues || []}
-              staticValuesColors={tab.chartStaticValuesColors || []}
-              mapWmsUrl={tab.mapWmsUrl || ''}
-              mapWmsLayer={tab.mapWmsLayer || ''}
-              menuStyle={menuStyle}
-              ciColors={ciColors}
+              tab={tab}
+              combinedMapData={combinedMapData}
             />
           )}
         </div>
@@ -701,6 +787,66 @@ export default async function DashboardTab(
               )}
           </div>
         )}
+      {tab.componentType === tabComponentTypeEnum.listview && (
+        <ListView
+          data={tabData?.listviewData || []}
+          listName={tab.listviewName || ''}
+          isFilteringAllowed={tab.listviewIsFilteringAllowed || false}
+          poiBackgroundColor={ciColors.listviewBackgroundColor || '#F9FAFB'}
+          headlineYellowColor={ciColors.listviewTitleFontColor || '#FCD34D'}
+          headlineGrayColor={ciColors.listviewDescriptionFontColor || '#6B7280'}
+          iconColor={ciColors.listviewArrowIconColor || '#374151'}
+          listviewItemBackgroundColor={
+            ciColors.listviewItemBackgroundColor || '#FFFFFF'
+          }
+          listviewItemBorderColor={
+            ciColors.listviewItemBorderColor || '#E5E7EB'
+          }
+          listviewItemBorderRadius={ciColors.listviewItemBorderRadius || '8px'}
+          listviewItemBorderSize={ciColors.listviewItemBorderSize || '1px'}
+          listviewTitleFontSize={ciColors.listviewTitleFontSize || '16px'}
+          listviewTitleFontWeight={ciColors.listviewTitleFontWeight || '600'}
+          listviewDescriptionFontSize={
+            ciColors.listviewDescriptionFontSize || '14px'
+          }
+          listviewCounterFontColor={
+            ciColors.listviewCounterFontColor || '#6B7280'
+          }
+          listviewCounterFontSize={ciColors.listviewCounterFontSize || '14px'}
+          listviewFilterButtonBackgroundColor={
+            ciColors.listviewFilterButtonBackgroundColor || '#FFFFFF'
+          }
+          listviewFilterButtonBorderColor={
+            ciColors.listviewFilterButtonBorderColor || '#D1D5DB'
+          }
+          listviewFilterButtonFontColor={
+            ciColors.listviewFilterButtonFontColor || '#374151'
+          }
+          listviewFilterButtonHoverBackgroundColor={
+            ciColors.listviewFilterButtonHoverBackgroundColor || '#F9FAFB'
+          }
+          listviewBackButtonBackgroundColor={
+            ciColors.listviewBackButtonBackgroundColor || '#3B82F6'
+          }
+          listviewBackButtonHoverBackgroundColor={
+            ciColors.listviewBackButtonHoverBackgroundColor || '#2563EB'
+          }
+          listviewBackButtonFontColor={
+            ciColors.listviewBackButtonFontColor || '#FFFFFF'
+          }
+          listviewMapButtonBackgroundColor={
+            ciColors.listviewMapButtonBackgroundColor || '#10B981'
+          }
+          listviewMapButtonHoverBackgroundColor={
+            ciColors.listviewMapButtonHoverBackgroundColor || '#059669'
+          }
+          listviewMapButtonFontColor={
+            ciColors.listviewMapButtonFontColor || '#FFFFFF'
+          }
+          showAddress={tab.listviewShowAddress || false}
+          showCategory={tab.listviewShowCategory || false}
+        />
+      )}
     </div>
   );
 }

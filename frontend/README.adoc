@@ -26,7 +26,6 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 [options="header"]
 |===
 | Variable | Description | Example Value
-| `NEXT_PUBLIC_MULTI_TENANCY` | Variable to activate/deactivate multi tenancy. Must be a string. If "true" a systemUser and a tenant must exist for the dashboard to work. | `"true" or "false"`
 | `NEXT_PUBLIC_FRONTEND_URL` | Variable required to build certain urls within the frontend. | `http://localhost:3000`
 | `NEXT_PUBLIC_BACKEND_URL` | Connection information to the frontend-service required for API calls. | `http://localhost:8081`
 | `NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL` | Connection information to the orchideo-connect-service required for API calls. | `http://localhost:8083`

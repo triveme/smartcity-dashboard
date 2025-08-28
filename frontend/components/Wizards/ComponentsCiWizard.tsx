@@ -189,6 +189,54 @@ type Props = {
   weatherWarningButtonIconColor: string;
   setWeatherWarningButtonIconColor: (color: string) => void;
 
+  // ListView
+  listviewBackgroundColor: string;
+  setListviewBackgroundColor: (color: string) => void;
+  listviewItemBackgroundColor: string;
+  setListviewItemBackgroundColor: (color: string) => void;
+  listviewItemBorderColor: string;
+  setListviewItemBorderColor: (color: string) => void;
+  listviewItemBorderRadius: string;
+  setListviewItemBorderRadius: (value: string) => void;
+  listviewItemBorderSize: string;
+  setListviewItemBorderSize: (value: string) => void;
+  listviewTitleFontColor: string;
+  setListviewTitleFontColor: (color: string) => void;
+  listviewTitleFontSize: string;
+  setListviewTitleFontSize: (size: string) => void;
+  listviewTitleFontWeight: string;
+  setListviewTitleFontWeight: (weight: string) => void;
+  listviewDescriptionFontColor: string;
+  setListviewDescriptionFontColor: (color: string) => void;
+  listviewDescriptionFontSize: string;
+  setListviewDescriptionFontSize: (size: string) => void;
+  listviewCounterFontColor: string;
+  setListviewCounterFontColor: (color: string) => void;
+  listviewCounterFontSize: string;
+  setListviewCounterFontSize: (size: string) => void;
+  listviewFilterButtonBackgroundColor: string;
+  setListviewFilterButtonBackgroundColor: (color: string) => void;
+  listviewFilterButtonBorderColor: string;
+  setListviewFilterButtonBorderColor: (color: string) => void;
+  listviewFilterButtonFontColor: string;
+  setListviewFilterButtonFontColor: (color: string) => void;
+  listviewFilterButtonHoverBackgroundColor: string;
+  setListviewFilterButtonHoverBackgroundColor: (color: string) => void;
+  listviewArrowIconColor: string;
+  setListviewArrowIconColor: (color: string) => void;
+  listviewBackButtonBackgroundColor: string;
+  setListviewBackButtonBackgroundColor: (color: string) => void;
+  listviewBackButtonHoverBackgroundColor: string;
+  setListviewBackButtonHoverBackgroundColor: (color: string) => void;
+  listviewBackButtonFontColor: string;
+  setListviewBackButtonFontColor: (color: string) => void;
+  listviewMapButtonBackgroundColor: string;
+  setListviewMapButtonBackgroundColor: (color: string) => void;
+  listviewMapButtonHoverBackgroundColor: string;
+  setListviewMapButtonHoverBackgroundColor: (color: string) => void;
+  listviewMapButtonFontColor: string;
+  setListviewMapButtonFontColor: (color: string) => void;
+
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
@@ -380,6 +428,54 @@ export default function ComponentsCiWizard({
   weatherWarningButtonIconColor,
   setWeatherWarningButtonIconColor,
 
+  // ListView
+  listviewBackgroundColor,
+  setListviewBackgroundColor,
+  listviewItemBackgroundColor,
+  setListviewItemBackgroundColor,
+  listviewItemBorderColor,
+  setListviewItemBorderColor,
+  listviewItemBorderRadius,
+  setListviewItemBorderRadius,
+  listviewItemBorderSize,
+  setListviewItemBorderSize,
+  listviewTitleFontColor,
+  setListviewTitleFontColor,
+  listviewTitleFontSize,
+  setListviewTitleFontSize,
+  listviewTitleFontWeight,
+  setListviewTitleFontWeight,
+  listviewDescriptionFontColor,
+  setListviewDescriptionFontColor,
+  listviewDescriptionFontSize,
+  setListviewDescriptionFontSize,
+  listviewCounterFontColor,
+  setListviewCounterFontColor,
+  listviewCounterFontSize,
+  setListviewCounterFontSize,
+  listviewFilterButtonBackgroundColor,
+  setListviewFilterButtonBackgroundColor,
+  listviewFilterButtonBorderColor,
+  setListviewFilterButtonBorderColor,
+  listviewFilterButtonFontColor,
+  setListviewFilterButtonFontColor,
+  listviewFilterButtonHoverBackgroundColor,
+  setListviewFilterButtonHoverBackgroundColor,
+  listviewArrowIconColor,
+  setListviewArrowIconColor,
+  listviewBackButtonBackgroundColor,
+  setListviewBackButtonBackgroundColor,
+  listviewBackButtonHoverBackgroundColor,
+  setListviewBackButtonHoverBackgroundColor,
+  listviewBackButtonFontColor,
+  setListviewBackButtonFontColor,
+  listviewMapButtonBackgroundColor,
+  setListviewMapButtonBackgroundColor,
+  listviewMapButtonHoverBackgroundColor,
+  setListviewMapButtonHoverBackgroundColor,
+  listviewMapButtonFontColor,
+  setListviewMapButtonFontColor,
+
   iconColor,
   borderColor,
   backgroundColor,
@@ -448,6 +544,7 @@ export default function ComponentsCiWizard({
       tabComponentSubTypeEnum.lineChart,
       tabComponentSubTypeEnum.barChart,
       tabComponentSubTypeEnum.pieChart,
+      tabComponentSubTypeEnum.pieChartDynamic,
       tabComponentSubTypeEnum.measurement,
     ],
     [tabComponentTypeEnum.slider]: [
@@ -1147,8 +1244,10 @@ export default function ComponentsCiWizard({
                     </div>
                   </div>
                 )}
-                {selectedComponentSubType ===
-                  tabComponentSubTypeEnum.pieChart && (
+                {(selectedComponentSubType ===
+                  tabComponentSubTypeEnum.pieChart ||
+                  selectedComponentSubType ===
+                    tabComponentSubTypeEnum.pieChartDynamic) && (
                   <div className="flex flex-col">
                     <div className="flex flex-row">
                       <div className="flex flex-row w-1/2 mt-1">
@@ -1484,6 +1583,273 @@ export default function ComponentsCiWizard({
                 </div>
               </div>
             )}
+            {selectedComponentType === tabComponentTypeEnum.listview && (
+              <div className="flex-1">
+                {/* General ListView Background */}
+                <div className="mt-4">
+                  <WizardLabel label="Allgemeine Einstellungen" />
+                  <div className="grid grid-cols-1 gap-4 mt-2">
+                    <ColorPickerComponent
+                      currentColor={listviewBackgroundColor}
+                      handleColorChange={setListviewBackgroundColor}
+                      label="ListView Hintergrund"
+                    />
+                  </div>
+                </div>
+
+                <HorizontalDivider />
+                {/* List Item Styling */}
+                <div className="mt-6">
+                  <WizardLabel label="Listen Element Styling" />
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <ColorPickerComponent
+                      currentColor={listviewItemBackgroundColor}
+                      handleColorChange={setListviewItemBackgroundColor}
+                      label="Element Hintergrund"
+                    />
+                    <ColorPickerComponent
+                      currentColor={listviewItemBorderColor}
+                      handleColorChange={setListviewItemBorderColor}
+                      label="Element Rahmen Farbe"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <WizardLabel label="Rahmen Radius" />
+                      <WizardTextfield
+                        value={listviewItemBorderRadius}
+                        onChange={(value): void =>
+                          setListviewItemBorderRadius(value.toString())
+                        }
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <div>
+                      <WizardLabel label="Rahmen Dicke" />
+                      <WizardTextfield
+                        value={listviewItemBorderSize}
+                        onChange={(value): void =>
+                          setListviewItemBorderSize(value.toString())
+                        }
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <HorizontalDivider />
+                {/* Typography Section */}
+                <div className="mt-6">
+                  <WizardLabel label="Schrift Einstellungen" />
+
+                  {/* Title Typography */}
+                  <div className="mt-4">
+                    <WizardLabel label="Titel" />
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      <ColorPickerComponent
+                        currentColor={listviewTitleFontColor}
+                        handleColorChange={setListviewTitleFontColor}
+                        label="Titel Schriftfarbe"
+                      />
+                      <div>
+                        <WizardLabel label="Titel Schriftgröße" />
+                        <WizardTextfield
+                          value={listviewTitleFontSize}
+                          onChange={(value): void =>
+                            setListviewTitleFontSize(value.toString())
+                          }
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                      <div>
+                        <WizardLabel label="Titel Schriftgewicht" />
+                        <WizardDropdownSelection
+                          currentValue={listviewTitleFontWeight}
+                          selectableValues={[
+                            'normal',
+                            'bold',
+                            '100',
+                            '200',
+                            '300',
+                            '400',
+                            '500',
+                            '600',
+                            '700',
+                            '800',
+                            '900',
+                          ]}
+                          onSelect={(value): void =>
+                            setListviewTitleFontWeight(value.toString())
+                          }
+                          iconColor={iconColor}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <HorizontalDivider />
+                  {/* Description Typography */}
+                  <div className="mt-4">
+                    <WizardLabel label="Beschreibung" />
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <ColorPickerComponent
+                        currentColor={listviewDescriptionFontColor}
+                        handleColorChange={setListviewDescriptionFontColor}
+                        label="Beschreibung Farbe"
+                      />
+                      <div>
+                        <WizardLabel label="Beschreibung Größe" />
+                        <WizardTextfield
+                          value={listviewDescriptionFontSize}
+                          onChange={(value): void =>
+                            setListviewDescriptionFontSize(value.toString())
+                          }
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <HorizontalDivider />
+                  {/* Counter Typography */}
+                  <div className="mt-4">
+                    <WizardLabel label="Zähler" />
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <ColorPickerComponent
+                        currentColor={listviewCounterFontColor}
+                        handleColorChange={setListviewCounterFontColor}
+                        label="Zähler Farbe"
+                      />
+                      <div>
+                        <WizardLabel label="Zähler Größe" />
+                        <WizardTextfield
+                          value={listviewCounterFontSize}
+                          onChange={(value): void =>
+                            setListviewCounterFontSize(value.toString())
+                          }
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <HorizontalDivider />
+                {/* Filter Button Styling */}
+                <div className="mt-6">
+                  <WizardLabel label="Filter Button" />
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <ColorPickerComponent
+                      currentColor={listviewFilterButtonBackgroundColor}
+                      handleColorChange={setListviewFilterButtonBackgroundColor}
+                      label="Filter Button Hintergrund"
+                    />
+                    <ColorPickerComponent
+                      currentColor={listviewFilterButtonHoverBackgroundColor}
+                      handleColorChange={
+                        setListviewFilterButtonHoverBackgroundColor
+                      }
+                      label="Filter Button Hover"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <ColorPickerComponent
+                      currentColor={listviewFilterButtonBorderColor}
+                      handleColorChange={setListviewFilterButtonBorderColor}
+                      label="Filter Button Rahmen"
+                    />
+                    <ColorPickerComponent
+                      currentColor={listviewFilterButtonFontColor}
+                      handleColorChange={setListviewFilterButtonFontColor}
+                      label="Filter Button Text"
+                    />
+                  </div>
+                </div>
+
+                <HorizontalDivider />
+                {/* Navigation Buttons */}
+                <div className="mt-6">
+                  <WizardLabel label="Navigation Buttons" />
+                  <div className="grid grid-cols-2 gap-6 mt-2">
+                    {/* Back Button */}
+                    <div>
+                      <WizardLabel label="Zurück Button" />
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <ColorPickerComponent
+                          currentColor={listviewBackButtonBackgroundColor}
+                          handleColorChange={
+                            setListviewBackButtonBackgroundColor
+                          }
+                          label="Hintergrund"
+                        />
+                        <ColorPickerComponent
+                          currentColor={listviewBackButtonHoverBackgroundColor}
+                          handleColorChange={
+                            setListviewBackButtonHoverBackgroundColor
+                          }
+                          label="Hover"
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <ColorPickerComponent
+                          currentColor={listviewBackButtonFontColor}
+                          handleColorChange={setListviewBackButtonFontColor}
+                          label="Text Farbe"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Map Button */}
+                    <div>
+                      <WizardLabel label="Karte Button" />
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <ColorPickerComponent
+                          currentColor={listviewMapButtonBackgroundColor}
+                          handleColorChange={
+                            setListviewMapButtonBackgroundColor
+                          }
+                          label="Hintergrund"
+                        />
+                        <ColorPickerComponent
+                          currentColor={listviewMapButtonHoverBackgroundColor}
+                          handleColorChange={
+                            setListviewMapButtonHoverBackgroundColor
+                          }
+                          label="Hover"
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <ColorPickerComponent
+                          currentColor={listviewMapButtonFontColor}
+                          handleColorChange={setListviewMapButtonFontColor}
+                          label="Text Farbe"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <HorizontalDivider />
+                {/* Icons */}
+                <div className="mt-6">
+                  <WizardLabel label="Icons" />
+                  <div className="mt-2">
+                    <ColorPickerComponent
+                      currentColor={listviewArrowIconColor}
+                      handleColorChange={setListviewArrowIconColor}
+                      label="Pfeil Icon Farbe"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1607,6 +1973,42 @@ export default function ComponentsCiWizard({
                 weatherWarningButtonBackgroundColor
               }
               weatherWarningButtonIconColor={weatherWarningButtonIconColor}
+              // ListView
+              listviewBackgroundColor={listviewBackgroundColor}
+              listviewItemBackgroundColor={listviewItemBackgroundColor}
+              listviewItemBorderColor={listviewItemBorderColor}
+              listviewItemBorderRadius={listviewItemBorderRadius}
+              listviewItemBorderSize={listviewItemBorderSize}
+              listviewTitleFontColor={listviewTitleFontColor}
+              listviewTitleFontSize={listviewTitleFontSize}
+              listviewTitleFontWeight={listviewTitleFontWeight}
+              listviewDescriptionFontColor={listviewDescriptionFontColor}
+              listviewDescriptionFontSize={listviewDescriptionFontSize}
+              listviewCounterFontColor={listviewCounterFontColor}
+              listviewCounterFontSize={listviewCounterFontSize}
+              listviewFilterButtonBackgroundColor={
+                listviewFilterButtonBackgroundColor
+              }
+              listviewFilterButtonBorderColor={listviewFilterButtonBorderColor}
+              listviewFilterButtonFontColor={listviewFilterButtonFontColor}
+              listviewFilterButtonHoverBackgroundColor={
+                listviewFilterButtonHoverBackgroundColor
+              }
+              listviewArrowIconColor={listviewArrowIconColor}
+              listviewBackButtonBackgroundColor={
+                listviewBackButtonBackgroundColor
+              }
+              listviewBackButtonHoverBackgroundColor={
+                listviewBackButtonHoverBackgroundColor
+              }
+              listviewBackButtonFontColor={listviewBackButtonFontColor}
+              listviewMapButtonBackgroundColor={
+                listviewMapButtonBackgroundColor
+              }
+              listviewMapButtonHoverBackgroundColor={
+                listviewMapButtonHoverBackgroundColor
+              }
+              listviewMapButtonFontColor={listviewMapButtonFontColor}
             />
           </div>
         </div>

@@ -76,7 +76,10 @@ export default function DashboardWidgetWizardPreview(
                 />
               </button>
             )}
-            <button onClick={(): void => deleteRelation!(widget.id!)}>
+            <button
+              title="Delete"
+              onClick={(): void => deleteRelation!(widget.id!)}
+            >
               <DashboardIcons iconName="Trashcan" color="#FA4141" />
             </button>
           </div>

@@ -57,6 +57,11 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
     isValidDate(value)
   ) {
     const date = new Date(value);
+    console.log('Date parsing:', {
+      original: value,
+      parsed: date,
+      isValid: !isNaN(date.getTime()),
+    });
     formattedValue =
       date.getMonth() === 0 &&
       date.getDate() === 1 &&

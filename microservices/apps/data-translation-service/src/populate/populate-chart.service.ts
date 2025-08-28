@@ -14,6 +14,7 @@ import {
 import { PopulateMapService } from './populate-map.service';
 import { getGermanLabelForAttribute } from './populate.util';
 import { DataTranslationRepo } from '../data-translation.repo';
+import { parseCleanNumber } from 'apps/internal-data-service/src/helper';
 
 @Injectable()
 export class PopulateChartService {
@@ -29,9 +30,18 @@ export class PopulateChartService {
     },
   ): Promise<void> {
     const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
+    if (!query) {
+      return;
+    }
+
     const queryConfig = await this.dataTranslationRepo.getQueryConfigById(
       query.queryConfigId,
     );
+
+    if (!queryConfig) {
+      return;
+    }
+
     const datasource = await this.dataTranslationRepo.getDatasourceById(
       queryConfig.dataSourceId,
     );
@@ -70,6 +80,13 @@ export class PopulateChartService {
             query,
           );
         }
+      } else if (tab.componentType === 'Karte') {
+        console.warn(`Map tab ${tab.id} has no query data:`, {
+          hasQuery: !!query,
+          hasQueryData: !!(query && query.queryData),
+          queryId: query?.id,
+          tabId: tab.id,
+        });
       }
 
       // Track amount of attributes for labeling
@@ -77,7 +94,7 @@ export class PopulateChartService {
         queryConfig.attributes.filter((attr) => attr !== 'name').length === 1;
 
       for (const attribute of queryConfig.attributes) {
-        if (query && query.queryData && tab.componentType !== 'Karte') {
+        if (query && query.queryData) {
           if (Array.isArray(query.queryData)) {
             this.populateTabWithQueryDataArray(
               queryConfig,
@@ -201,7 +218,6 @@ export class PopulateChartService {
                 id: string;
                 [key: string]: any;
               };
-
               const sensorValue =
                 attributes[queryConfig.attributes[0]]?.value || 0;
               const sensorLabel = attributes['name']?.value || `${id} ${i}`;
@@ -338,7 +354,6 @@ export class PopulateChartService {
     isSingleAttribute: boolean,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
-
     this.populateHistoricTab(
       queryConfig,
       tab,
@@ -484,7 +499,6 @@ export class PopulateChartService {
       if (attributeObject) {
         for (const type of attributeObject.types) {
           const entities = type.entities;
-
           for (
             let entityIndex = 0;
             entityIndex < entities.length;
@@ -603,8 +617,11 @@ export class PopulateChartService {
       mapObject: MapObject[];
     },
   ): void {
-    const numberValues = attributeObject.values.map((value) =>
-      isNaN(value) ? 0.0 : Number(value),
+    // isNan('') === false [0]
+    const numberValues = attributeObject.values.map((value: number | string) =>
+      value === '' || value === null || isNaN(value as number)
+        ? parseCleanNumber(value?.toString())
+        : Number(value),
     );
     const timeValues = attributeObject.index.map((timevalue) => timevalue);
 
@@ -617,6 +634,7 @@ export class PopulateChartService {
       name: chartDataName,
       values: resultArray,
       color: null,
+      id: attributeObject.entityId,
     });
   }
 }

@@ -62,6 +62,15 @@
         "tsConfigPath": "apps/static-data-service/tsconfig.app.json"
       }
     },
+    "internal-data-service": {
+      "type": "application",
+      "root": "apps/internal-data-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/internal-data-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/internal-data-service/tsconfig.app.json"
+      }
+    },
     "mail-service": {
       "type": "application",
       "root": "apps/mail-service",

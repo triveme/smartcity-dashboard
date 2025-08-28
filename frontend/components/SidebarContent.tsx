@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import SidebarItem, { SidebarItemStyle } from './SidebarItem';
 import HorizontalDivider from '@/ui/HorizontalDivider';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { checkAvailability } from '@/api/internal-data-service';
 
 type SidebarContentProps = {
   sidebarItemStyle: SidebarItemStyle;
@@ -32,6 +33,7 @@ export default function SidebarContent(
 
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
+  const [internalDataAvailable, setIternalDataAvailable] = useState(false);
   const superAdminRole = env('NEXT_PUBLIC_SUPER_ADMIN_ROLE');
 
   const tenant = getTenantOfPage();
@@ -55,6 +57,14 @@ export default function SidebarContent(
       setRoleOptions(roles);
     }
   }, [auth]);
+
+  useEffect(() => {
+    const checker = async (): Promise<void> => {
+      const r = await checkAvailability();
+      setIternalDataAvailable(r);
+    };
+    checker();
+  }, []);
 
   return (
     <div
@@ -106,6 +116,14 @@ export default function SidebarContent(
               url={`${adminUrl}/tenantadministration`}
               componentStyle={sidebarItemStyle}
             />
+            {internalDataAvailable && (
+              <SidebarItem
+                icon="Database"
+                label="Interne Datenverwaltung"
+                url={`${adminUrl}/internaldata`}
+                componentStyle={sidebarItemStyle}
+              />
+            )}
             <HorizontalDivider />
           </>
         ) : null}

@@ -4,7 +4,6 @@ import { ReactElement, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
 import { jwtDecode } from 'jwt-decode';
 
 import WizardTextfield from '@/ui/WizardTextfield';
@@ -80,11 +79,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const paramsSearch = useSearchParams();
   const itemId = paramsSearch.get('id');
   const params = useParams();
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const tenant = (params.tenant as string) || undefined;
   const { openSnackbar } = useSnackbar();
   const router = useRouter();
 
@@ -212,11 +207,12 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
           tab.chartMaximum = 100;
         }
       }
-      // Default settings for map and weather warning
+      // Default settings for map, weather warning and listview
       if (
         (tab.componentType === tabComponentTypeEnum.map &&
           tab.componentSubType !== tabComponentSubTypeEnum.combinedMap) ||
-        tab.componentType === tabComponentTypeEnum.weatherWarning
+        tab.componentType === tabComponentTypeEnum.weatherWarning ||
+        tab.componentType === tabComponentTypeEnum.listview
       ) {
         queryConfig.aggrMode = aggregationEnum.none;
         queryConfig.timeframe = timeframeEnum.live;
@@ -235,6 +231,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
         tab.componentType === tabComponentTypeEnum.value ||
         tab.componentType === tabComponentTypeEnum.slider ||
         tab.componentSubType === tabComponentSubTypeEnum.pieChart ||
+        tab.componentSubType === tabComponentSubTypeEnum.pieChartDynamic ||
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart180 ||
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 ||
         tab.componentSubType === tabComponentSubTypeEnum.stageableChart
@@ -621,6 +618,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                   backgroundColor={backgroundColor}
                   hoverColor={hoverColor}
                   setOrigin={setDatasourceOrigin}
+                  tenant={tenant}
                 />
               </>
             )}

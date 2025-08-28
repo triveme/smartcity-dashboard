@@ -18,7 +18,6 @@ import WizardSuffixUrlTextfield from '@/ui/WizardSuffixUrlTextfield';
 import { WizardErrors } from '@/types/errors';
 import { useAuth } from 'react-oidc-context';
 import { useParams } from 'next/navigation';
-import { env } from 'next-runtime-env';
 
 type GroupingElementWizardProps = {
   groupingElement: GroupingElement | undefined;
@@ -53,9 +52,7 @@ export default function GroupingElementWizard(
 
   const handleSaveClick = async (): Promise<void> => {
     const params = useParams();
-    const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-    const tenant =
-      NEXT_PUBLIC_MULTI_TENANCY === 'true' ? (params.tenant as string) : null;
+    const tenant = (params.tenant as string) || undefined;
 
     const tGroup: GroupingElement = {
       id: groupId || undefined,
@@ -69,7 +66,7 @@ export default function GroupingElementWizard(
       children: groupingElement?.children || [],
       parentGroupingElementId: null,
       position: newPosition,
-      tenantAbbreviation: tenant,
+      tenantAbbreviation: tenant || null,
     };
 
     const textfieldErrorMessages: string[] = [];

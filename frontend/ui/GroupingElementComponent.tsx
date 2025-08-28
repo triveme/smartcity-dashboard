@@ -13,7 +13,6 @@ import {
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import '../app/globals.css';
 import { useParams } from 'next/navigation';
-import { env } from 'next-runtime-env';
 
 type GroupingElementComponentProps = {
   element: GroupingElement;
@@ -55,14 +54,10 @@ export default function GroupingElementComponent(
   const { openSnackbar } = useSnackbar();
   const cookie = Cookies.get('access_token');
   const accessToken = cookie || '';
-  const params = useParams();
   const [verticalHeight, setVerticalHeight] = useState(0);
 
-  const NEXT_PUBLIC_MULTI_TENANCY = env('NEXT_PUBLIC_MULTI_TENANCY');
-  const tenant =
-    NEXT_PUBLIC_MULTI_TENANCY === 'true'
-      ? (params.tenant as string)
-      : undefined;
+  const params = useParams();
+  const tenant = (params.tenant as string) || undefined;
 
   const { refetch } = useQuery({
     queryKey: ['menu'],
@@ -235,7 +230,10 @@ export default function GroupingElementComponent(
           <button onClick={(): void => handleEditClick(element)}>
             <DashboardIcons iconName="Pen" color={iconColor} />
           </button>
-          <button onClick={(): void => handleRemoveClick(element)}>
+          <button
+            title="Delete"
+            onClick={(): void => handleRemoveClick(element)}
+          >
             <DashboardIcons iconName="Trashcan" color="#FA4141" />
           </button>
         </div>
@@ -296,10 +294,16 @@ export default function GroupingElementComponent(
                     )}
 
                   <VerticalDivider />
-                  <button onClick={(): void => handleEditClick(el)}>
+                  <button
+                    title="Edit"
+                    onClick={(): void => handleEditClick(el)}
+                  >
                     <DashboardIcons iconName="Pen" color={iconColor} />
                   </button>
-                  <button onClick={(): void => handleRemoveClick(el)}>
+                  <button
+                    title="Delete"
+                    onClick={(): void => handleRemoveClick(el)}
+                  >
                     <DashboardIcons iconName="Trashcan" color="#FA4141" />
                   </button>
                 </div>

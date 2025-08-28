@@ -23,9 +23,14 @@ import { LogoModule } from './logo/logo.module';
 import { AuthHelperUtility } from '@app/auth-helper';
 import { LoggerModule } from './logging/logger.module';
 import { GeneralSettingsModule } from './general-settings/general-settings.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['.env.local', '.env'],
+      isGlobal: true,
+    }),
     DataSourceModule,
     QueryModule,
     QueryConfigModule,
