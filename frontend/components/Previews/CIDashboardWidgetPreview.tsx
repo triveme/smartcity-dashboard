@@ -340,7 +340,8 @@ export default function CIDashboardWidgetPreview(
               pieChartRadius={70}
             />
           )}
-          {componentSubType === tabComponentSubTypeEnum.lineChart && (
+          {(componentSubType === tabComponentSubTypeEnum.lineChart ||
+            componentSubType === tabComponentSubTypeEnum.lineChartDynamic) && (
             <LineChart
               labels={undefined}
               data={DUMMY_CHART_DATA}
@@ -381,9 +382,9 @@ export default function CIDashboardWidgetPreview(
               filterTextColor={lineChartFilterTextColor || '#1D2330'}
             />
           )}
-          {componentSubType === tabComponentSubTypeEnum.barChart && (
+          {(componentSubType === tabComponentSubTypeEnum.barChart ||
+            componentSubType === tabComponentSubTypeEnum.barChartDynamic) && (
             <BarChart
-              labels={undefined}
               data={DUMMY_CHART_DATA}
               xAxisLabel="Quarter"
               yAxisLabel="Revenue"
@@ -608,6 +609,7 @@ export default function CIDashboardWidgetPreview(
           <ListView
             data={[
               {
+                id: 'sample-location-1',
                 name: 'Sample Location 1',
                 types: ['restaurant', 'food'],
                 address: 'Musterstraße 123, 12345 Musterstadt',
@@ -622,6 +624,7 @@ export default function CIDashboardWidgetPreview(
                 zoomprio: '1',
               },
               {
+                id: 'sample-location-2',
                 name: 'Sample Location 2',
                 types: ['shop', 'retail'],
                 address: 'Beispielweg 456, 67890 Beispielstadt',
@@ -636,6 +639,7 @@ export default function CIDashboardWidgetPreview(
                 zoomprio: '2',
               },
               {
+                id: 'sample-location-3',
                 name: 'Sample Location 3',
                 types: ['service', 'business'],
                 address: 'Testplatz 789, 11223 Testdorf',

@@ -129,7 +129,6 @@ export function ListViewDetails(
     info,
     handleBackClick,
     handleDisplayOnMapClick,
-    index,
     poiBackgroundColor = '#F9FAFB',
     headlineYellowColor = '#FCD34D',
     headlineGrayColor = '#6B7280',
@@ -142,9 +141,9 @@ export function ListViewDetails(
   } = props;
 
   // Defensive programming: handle cases where location or coordinates might be undefined
-  console.log('INFO: ', info);
   const coordinates = info.location?.coordinates || [0, 0];
-  const markerId = `Marker-${coordinates[0]}-${coordinates[1]}-${index}`;
+  // const markerId = `Marker-${coordinates[0]}-${coordinates[1]}-${index}`;
+  const markerId = info.id;
   const lat = coordinates[1];
   const lng = coordinates[0];
 
@@ -173,13 +172,7 @@ export function ListViewDetails(
             <div className="pl-0 h-full flex flex-col content-start items-start justify-around">
               <div>
                 <HeadlineYellow text={info.name} color={headlineYellowColor} />
-                <p className="text-sm">
-                  {info.types && info.types.length > 0
-                    ? info.types.map((type: string) => {
-                        return type.toString() + ' ';
-                      })
-                    : null}
-                </p>
+                <p className="text-sm">{info.types?.join(', ') || ''}</p>
               </div>
               <div className="flex flex-row content-center items-center">
                 <HeadlineGray text={info.address} color={headlineGrayColor} />

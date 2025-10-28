@@ -22,7 +22,6 @@ export default function DashboardIcon(props: DashboardIcons): ReactElement {
 
   // Check if iconName is in localSvgIcons
   const isSvgIcon = localSvgIconsList.some((icon) => icon.name === iconName);
-
   if (isSvgIcon) {
     // Render local SVG icon
     return (

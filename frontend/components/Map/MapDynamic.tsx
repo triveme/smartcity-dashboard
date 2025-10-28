@@ -16,7 +16,11 @@ import {
   MapModalChartStyle,
 } from '@/types/mapRelatedModels';
 import eventBus, {
+  Event,
+  GEOJSON_FEATURE_HOVER_EVENT,
   GEOJSON_FEATURE_SELECTION_EVENT,
+  MAP_FOCUS_EVENT,
+  PLACES_FILTER_CHANGED_EVENT,
   YEAR_INDEX_SELECTION_EVENT,
 } from '@/app/EventBus';
 
@@ -53,9 +57,17 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
 
   const [queryData, setQueryData] = useState<QueryDataWithAttributes[]>([]);
   const [filteredData, setFilteredData] = useState<GeoJSONSensorData[]>([]);
+  const [mapData, setMapData] = useState<MapObject[] | undefined>(
+    isCombinedMap
+      ? (combinedMapData?.mapObject as MapObject[])
+      : tabData?.mapObject,
+  );
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [hoveredFeature, setHoveredFeature] = useState<string>('');
   const [selectedYearIndex, setSelectedYearIndex] = useState<number>(0);
-
+  const [locateOnMap, setLocateOnMap] = useState<
+    { pos: [number, number]; id: string } | undefined
+  >(undefined);
   useEffect(() => {
     if (combinedMapData.combinedQueryData) {
       setQueryData(combinedMapData.combinedQueryData);
@@ -63,13 +75,20 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
 
     eventBus.on(YEAR_INDEX_SELECTION_EVENT, handleYearIndexUpdate);
     eventBus.on(GEOJSON_FEATURE_SELECTION_EVENT, handleSelectedFeaturesUpdate);
+    eventBus.on(GEOJSON_FEATURE_HOVER_EVENT, handleHoveredFeatureUpdate);
+
+    eventBus.on(MAP_FOCUS_EVENT, handleLocateOnMap);
+    eventBus.on(PLACES_FILTER_CHANGED_EVENT, handleFilterChanged);
 
     return () => {
       eventBus.off(YEAR_INDEX_SELECTION_EVENT, handleYearIndexUpdate);
+      eventBus.off(MAP_FOCUS_EVENT, handleLocateOnMap);
+      eventBus.off(PLACES_FILTER_CHANGED_EVENT, handleFilterChanged);
       eventBus.off(
         GEOJSON_FEATURE_SELECTION_EVENT,
         handleSelectedFeaturesUpdate,
       );
+      eventBus.off(GEOJSON_FEATURE_HOVER_EVENT, handleHoveredFeatureUpdate);
     };
   }, []);
 
@@ -77,21 +96,70 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     filterData(selectedYearIndex);
   }, [selectedYearIndex]);
 
-  function handleFeaturesFromMap(features: string[]): void {
+  const handleLocateOnMap = (data: { data: unknown }): void => {
+    const location = data.data as {
+      lat: number;
+      lng: number;
+      id: string;
+    };
+    setLocateOnMap({ pos: [location.lat, location.lng], id: location.id });
+  };
+
+  const handleFilterChanged = (data: { data: unknown }): void => {
+    const filteredItems = data.data as {
+      location: { coordinates: [number, number] };
+      name: string;
+    }[];
+    if (filteredItems?.length) {
+      const newMapData = mapData?.filter(
+        (m: MapObject & { title?: { value: string } }) => {
+          const isInFilter = filteredItems.some((l) => {
+            if (
+              l.location.coordinates[0] === m.position.coordinates[1] &&
+              l.location.coordinates[1] === m.position.coordinates[0] &&
+              l.name === m.title?.value
+            ) {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          return isInFilter;
+        },
+      );
+      setMapData(newMapData);
+    } else {
+      setMapData(
+        isCombinedMap
+          ? (combinedMapData?.mapObject as MapObject[])
+          : tabData?.mapObject,
+      );
+    }
+  };
+
+  function handleSelectedFeaturesFromMap(features: string[]): void {
     eventBus.emit(GEOJSON_FEATURE_SELECTION_EVENT, {
       data: features,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleYearIndexUpdate(dataFromEvent: any): void {
+  function handleHoverFeatureFromMap(feature: string): void {
+    eventBus.emit(GEOJSON_FEATURE_HOVER_EVENT, {
+      data: feature,
+    });
+  }
+
+  function handleYearIndexUpdate(dataFromEvent: Event): void {
     setSelectedYearIndex(dataFromEvent.data);
     filterData(dataFromEvent.data);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function handleSelectedFeaturesUpdate(dataFromEvent: any): void {
+  function handleSelectedFeaturesUpdate(dataFromEvent: Event): void {
     setSelectedFeatures(dataFromEvent.data);
+  }
+
+  function handleHoveredFeatureUpdate(dataFromEvent: Event): void {
+    setHoveredFeature(dataFromEvent.data);
   }
 
   function filterData(sYearIndex: number): void {
@@ -114,7 +182,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     <>
       {isCombinedMap ? (
         <Map
-          data={combinedMapData?.mapObject as MapObject[]}
+          data={mapData || []}
           combinedMapData={combinedMapData}
           mapAllowFilter={true}
           combinedQueryData={queryData}
@@ -155,8 +223,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapGeoJSONHoverFillColor={tab?.mapGeoJSONHoverFillColor || '#0347a6'}
           mapGeoJSONSensorData={filteredData || []}
           mapGeoJSONSelectedFeatures={selectedFeatures || []}
+          mapGeoJSONHoveredFeature={hoveredFeature || ''}
           mapType={tab?.componentSubType || ''}
-          isFullscreenMap={true}
+          isFullscreenMap={false}
           mapAttributeForValueBased={
             combinedMapData?.mapAttributeForValueBased as string[]
           }
@@ -166,10 +235,15 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapIsFormColorValueBased={
             combinedMapData?.mapIsFormColorValueBased as boolean[]
           }
-          staticValues={combinedMapData?.chartStaticValues as number[][]}
+          staticValues={
+            combinedMapData?.chartStaticValuesText
+              ? ((combinedMapData?.chartStaticValuesTexts || []) as string[][])
+              : ((combinedMapData?.chartStaticValues || []) as number[][])
+          }
           staticValuesColors={
             combinedMapData?.chartStaticValuesColors as string[][]
           }
+          staticValuesLogos={combinedMapData?.chartStaticValuesLogos || []}
           chartStyle={chartStyle}
           menuStyle={menuStyle}
           ciColors={ciColors}
@@ -177,7 +251,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           dashboardId={dashboardId || ''}
           allowDataExport={allowDataExport || false}
           widgetDownloadId={widgetDownloadId || ''}
-          sendFeaturesToDynamicMap={handleFeaturesFromMap}
+          sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
+          sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
+          locateOnMap={locateOnMap}
         />
       ) : (
         <Map
@@ -193,7 +269,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapLongitude={tab?.mapLongitude ? tab?.mapLongitude : 13.404954}
           mapLatitude={tab?.mapLatitude ? tab?.mapLatitude : 52.520008}
           mapActiveMarkerColor={tab?.mapActiveMarkerColor || '#FF0000'}
-          data={tabData?.mapObject || []}
+          data={mapData || []}
           mapDisplayMode={
             tab?.mapDisplayMode ? tab?.mapDisplayMode : 'Only pin'
           }
@@ -222,6 +298,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapGeoJSONHoverFillColor={tab?.mapGeoJSONHoverFillColor || '#0347a6'}
           mapGeoJSONSensorData={filteredData || []}
           mapGeoJSONSelectedFeatures={selectedFeatures || []}
+          mapGeoJSONHoveredFeature={hoveredFeature || ''}
           mapType={tab?.componentSubType || ''}
           combinedQueryData={queryData}
           mapAllowLegend={tab?.mapAllowLegend || false}
@@ -229,14 +306,19 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapLegendDisclaimer={
             tab?.mapLegendDisclaimer ? [tab?.mapLegendDisclaimer] : []
           }
-          isFullscreenMap={true}
+          isFullscreenMap={false}
           chartStyle={chartStyle}
           menuStyle={menuStyle}
           mapAttributeForValueBased={tab?.mapAttributeForValueBased || ''}
           mapIsFormColorValueBased={tab?.mapIsFormColorValueBased || false}
           mapIsIconColorValueBased={tab?.mapIsIconColorValueBased || false}
-          staticValues={tab?.chartStaticValues || []}
+          staticValues={
+            tab?.chartStaticValuesText
+              ? tab?.chartStaticValuesTexts || []
+              : tab?.chartStaticValues || []
+          }
           staticValuesColors={tab?.chartStaticValuesColors || []}
+          staticValuesLogos={tab?.chartStaticValuesLogos || []}
           mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
           mapWmsUrl={tab?.mapWmsUrl || ''}
           mapWmsLayer={tab?.mapWmsLayer || ''}
@@ -245,7 +327,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           dashboardId={dashboardId || ''}
           allowDataExport={allowDataExport || false}
           widgetDownloadId={widgetDownloadId || ''}
-          sendFeaturesToDynamicMap={handleFeaturesFromMap}
+          sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
+          sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
+          locateOnMap={locateOnMap}
         />
       )}
     </>

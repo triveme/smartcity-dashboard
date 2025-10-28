@@ -13,10 +13,11 @@ import {
   calculateMaxYAxisValue,
   getChartDateFormatter,
   getChartDateRichText,
+  getLabelMap,
 } from '@/utils/chartHelper';
-import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
+import { generateTooltipContent } from '@/utils/chartTooltipHelper';
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -35,6 +36,8 @@ type LineChartProps = {
   showLegend?: boolean;
   staticValues: number[];
   staticValuesColors: string[];
+  staticValuesTicks?: number[];
+  staticValuesTexts?: string[];
 
   axisLabelFontColor: string;
   axisLineColor: string;
@@ -52,6 +55,9 @@ type LineChartProps = {
   showTooltip?: boolean;
   decimalPlaces?: number;
   isShownInMapModal?: boolean;
+  playAnimation?: boolean;
+  highlightedColor?: string;
+  unhighlightedColor?: string;
 };
 
 export default function LineChart(props: LineChartProps): ReactElement {
@@ -70,6 +76,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
     showLegend,
     staticValues,
     staticValuesColors,
+    staticValuesTexts = [],
+    staticValuesTicks = [],
     axisLabelFontColor,
     chartHasAutomaticZoom,
     currentValuesColors,
@@ -87,6 +95,9 @@ export default function LineChart(props: LineChartProps): ReactElement {
     showTooltip = true,
     decimalPlaces,
     isShownInMapModal = false,
+    playAnimation = true,
+    highlightedColor,
+    unhighlightedColor,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -108,7 +119,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
       const splitNumber = Math.max(5, Math.floor(containerWidth / 100));
-
       const series: echarts.LineSeriesOption[] = [];
       if (filteredData && filteredData.length > 0) {
         for (let i = 0; i < filteredData.length; i++) {
@@ -143,10 +153,17 @@ export default function LineChart(props: LineChartProps): ReactElement {
               },
             }),
           };
+          if (filteredData[i].highlighted != undefined) {
+            tempSeries.color = filteredData[i].highlighted
+              ? highlightedColor
+              : unhighlightedColor;
+            tempSeries.itemStyle = {
+              borderWidth: 2,
+            };
+          }
           series.push(tempSeries);
         }
       }
-
       // Static value series
       const staticValueSeries: echarts.LineSeriesOption[] =
         staticValues &&
@@ -164,10 +181,26 @@ export default function LineChart(props: LineChartProps): ReactElement {
               tooltip: {
                 show: false,
               },
+              endLabel: {
+                show: staticValuesTicks.includes(value),
+                // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+                formatter: function () {
+                  return staticValuesTexts[
+                    staticValuesTicks.findIndex((tick) => tick == value)
+                  ];
+                },
+                fontSize: legendFontSize,
+                color: legendFontColor,
+              },
             }))
           : [];
-
+      const hasEndLabel = staticValueSeries.find(
+        (value) => value.endLabel?.show,
+      );
+      const seriesAll = [...series, ...staticValueSeries];
+      const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
       const option: EChartsOption = {
+        animation: playAnimation,
         xAxis: {
           name: xAxisLabel,
           type: 'time',
@@ -190,7 +223,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             fontSize: axisFontSize,
             hideOverlap: true,
             formatter: chartDateRepresentation
-              ? getChartDateFormatter(chartDateRepresentation)
+              ? getChartDateFormatter(chartDateRepresentation, labelMap)
               : undefined,
             rich: chartDateRepresentation
               ? getChartDateRichText(chartDateRepresentation)
@@ -279,14 +312,14 @@ export default function LineChart(props: LineChartProps): ReactElement {
           left: isShownInMapModal
             ? 10
             : calculateLeftGrid(yAxisLabel || '', legendAlignment),
-          right: 10,
+          right: hasEndLabel ? 100 * (14 / parseInt(legendFontSize)) : 10,
           top: isShownInMapModal ? 20 : 30,
           bottom: isShownInMapModal
             ? 20
             : calculateBottomGrid(xAxisLabel || '', allowZoom),
           containLabel: true,
         },
-        series: [...series, ...staticValueSeries],
+        series: seriesAll,
         dataZoom: allowZoom
           ? [
               {
@@ -308,51 +341,11 @@ export default function LineChart(props: LineChartProps): ReactElement {
           show: showTooltip,
           trigger: 'axis',
           formatter: (params: unknown) => {
-            const paramArray = Array.isArray(params) ? params : [params];
-
-            // Get the timestamp from the first param and format it
-            const firstParam = paramArray[0] as { axisValue: string };
-            const timestamp = firstParam?.axisValue;
-            const formattedTimestamp = timestamp
-              ? new Date(timestamp).toLocaleString(
-                  navigator.language || 'de-DE',
-                  {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  },
-                )
-              : timestamp;
-            let tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px;">${formattedTimestamp}</div>`;
-
-            // Show all series values at this point
-            paramArray.forEach((param: unknown) => {
-              const typedParam = param as {
-                value: [string, number | null];
-                color: string;
-                seriesName: string;
-              };
-
-              const value = typedParam.value[1];
-              const formattedValue =
-                value !== null && value !== undefined
-                  ? applyUserLocaleToNumber(
-                      roundToDecimal(Number(value), decimalPlaces),
-                      navigator.language || 'de-DE',
-                    )
-                  : 'No data';
-
-              tooltipContent += `
-                <div style="display: flex; align-items: center; margin: 4px 0;">
-                  <span style="display: inline-block; width: 10px; height: 10px; background-color: ${typedParam.color}; border-radius: 50%; margin-right: 8px;"></span>
-                  <span style="margin-right: 8px;">${typedParam.seriesName}:</span>
-                  <span style="font-weight: bold;">${formattedValue}</span>
-                </div>
-              `;
-            });
-
+            const tooltipContent = generateTooltipContent(
+              params,
+              decimalPlaces,
+              labelMap,
+            );
             return tooltipContent;
           },
         },

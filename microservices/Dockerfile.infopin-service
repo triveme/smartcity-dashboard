@@ -1,5 +1,5 @@
 # Base image for building the application
-FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine AS builder
+FROM nexus.edag.de:8203/library/node:20.16.0-alpine AS builder
 
 # Create app directory in a more standard location
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build infopin-service
 
 # Base image for the final stage
-FROM nexus.edag.de:8206/mobit-malaysia/scs/node:20.13-alpine
+FROM nexus.edag.de:8203/library/node:20.16.0-alpine
 
 # Create app directory
 WORKDIR /usr/microservices/apps

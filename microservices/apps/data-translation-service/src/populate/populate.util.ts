@@ -327,6 +327,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Feinstaub PM10';
     case 'PM25':
       return 'Feinstaub PM2,5';
+    case 'ARIQUALITYINDEX':
+      return 'Luftqualitätsindex';
     default:
       return attribute;
   }

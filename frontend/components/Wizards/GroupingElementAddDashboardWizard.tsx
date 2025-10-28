@@ -170,7 +170,7 @@ export default function GroupingElementAddDashboardWizard(
         visibility: visibilityEnum.public,
         readRoles: [],
         writeRoles: [],
-        type: '',
+        type: null,
       });
     }
   }, [editElement]);

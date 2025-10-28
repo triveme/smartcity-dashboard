@@ -182,6 +182,12 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     coloredSliderLabelFontColor: '#FFF',
     coloredSliderArrowColor: '#FFF',
     coloredSliderUnitFontSize: '11',
+
+    tableFontColor: '#000000',
+    tableHeaderColor: '#005b9e',
+    tableOddRowColor: '#2D3244',
+    tableEvenRowColor: '#FFFFFF',
+
     wertFontSize: '20',
     wertUnitFontSize: '11',
     wertFontColor: '#FFFFF',

@@ -18,4 +18,6 @@ export type FiwareAttributeEntity = {
   entityId: string;
   index: string[];
   values: number[];
+  labels?: string[];
+  timeLabels?: string[];
 };

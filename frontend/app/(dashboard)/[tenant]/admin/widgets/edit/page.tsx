@@ -80,6 +80,10 @@ export default function Pages(): ReactElement {
         hoverColor={corporateInfo?.menuHoverColor || '#FFFFFF50'}
         widgetHeadlineColor={corporateInfo?.widgetFontColor || '#FFFFFF'}
         fontColor={corporateInfo?.dashboardFontColor || '#fff'}
+        tableFontColor={corporateInfo?.tableFontColor || '#000000'}
+        tableHeaderColor={corporateInfo?.tableHeaderColor || '#005b9e'}
+        tableOddRowColor={corporateInfo?.tableOddRowColor || '#2D3244'}
+        tableEvenRowColor={corporateInfo?.tableEvenRowColor || '#FFFFFF'}
       />
     </div>
   );

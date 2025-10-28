@@ -241,8 +241,8 @@ export class PopulateListviewService {
 
       // Set zoom priority (can be enhanced based on business logic)
       const zoomprio = '1';
-
       return {
+        id: entity.id,
         name,
         types: types.length > 0 ? types : [],
         address,

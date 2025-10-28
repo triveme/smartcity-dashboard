@@ -217,7 +217,11 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     {(widget.componentSubType ===
                       tabComponentSubTypeEnum.lineChart ||
                       widget.componentSubType ===
-                        tabComponentSubTypeEnum.barChart) && (
+                        tabComponentSubTypeEnum.lineChartDynamic ||
+                      widget.componentSubType ===
+                        tabComponentSubTypeEnum.barChart ||
+                      widget.componentSubType ===
+                        tabComponentSubTypeEnum.barChartDynamic) && (
                       <div className="flex flex-col w-full h-60">
                         {widget.title && (
                           <h2 className="text-center font-semibold">
@@ -231,7 +235,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           ciColors={ciColors || DEFAULT_CI}
                           isLinechart={
                             widget.componentSubType ===
-                            tabComponentSubTypeEnum.lineChart
+                              tabComponentSubTypeEnum.lineChart ||
+                            widget.componentSubType ===
+                              tabComponentSubTypeEnum.lineChartDynamic
                           }
                           mapWidgetValue={widget}
                         />

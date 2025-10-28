@@ -7,6 +7,7 @@ import {
   boolean,
   smallint,
   json,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { queries } from './query.schema';
 import { widgets } from './dashboard.widget.schema';
@@ -50,6 +51,8 @@ export const tabs = pgTable('tab', {
   componentType: tabComponentTypeEnum('component_type'),
   dataModelId: uuid('data_model_id').references(() => dataModels.id),
   decimalPlaces: smallint('decimal_places'),
+  dynamicHighlightColor: text('dynamic_highlight_color'),
+  dynamicUnhighlightColor: text('dynamic_unhighlight_color'),
   icon: text('icon'),
   iconColor: text('icon_color'),
   iconText: text('icon_text'),
@@ -85,6 +88,7 @@ export const tabs = pgTable('tab', {
   mapGeoJSONHoverBorderColor: text('map_geojson_hover_bordercolor'),
   mapGeoJSONHoverFillColor: text('map_geojson_hover_fillcolor'),
   mapGeoJSONHoverFillOpacity: real('map_geojson_hover_fillopacity'),
+  mapGeoJSONFeatureIdentifier: text('map_geojson_feature_identifier'),
   mapIsFormColorValueBased: boolean('map_is_form_color_value_based'),
   mapIsIconColorValueBased: boolean('map_is_icon_color_value_based'),
   mapLatitude: real('map_latitude'),
@@ -117,6 +121,10 @@ export const tabs = pgTable('tab', {
   textValue: text('text_value'),
   widgetId: uuid('widget_id').references(() => widgets.id),
   tiles: real('tiles'),
+  tableFontColor: text('table_font_color'),
+  tableHeaderColor: text('table_header_color'),
+  tableOddRowColor: text('table_odd_row_color'),
+  tableEvenRowColor: text('table_even_row_color'),
   // listview properties
   listviewName: text('listview_name'),
   listviewIsFilteringAllowed: boolean('listview_is_filtering_allowed'),
@@ -145,6 +153,11 @@ export const tabs = pgTable('tab', {
   listviewWebsiteAttribute: text('listview_website_attribute'),
   listviewShowDescription: boolean('listview_show_description'),
   listviewDescriptionAttribute: text('listview_description_attribute'),
+  chartStaticValuesText: boolean('chart_static_values_text'),
+  valuesToImages:
+    jsonb('values_to_images').$type<
+      { min: string; max: string; imageId: string }[]
+    >(),
 });
 
 export const tabsRelations = relations(tabs, ({ one }) => ({

@@ -29,6 +29,8 @@ export interface BaseMapProps {
   mapGeoJSONHoverFillColor?: string;
   mapGeoJSONSensorData?: GeoJSONSensorData[];
   mapGeoJSONSelectedFeatures?: string[];
+  mapGeoJSONHoveredFeature?: string;
+  mapGeoJSONFeatureIdentifier?: string;
   mapAllowLegend?: boolean;
   mapLegendValues?: MapModalLegend[];
   mapLegendDisclaimer?: string[];
@@ -45,7 +47,9 @@ export interface BaseMapProps {
   allowDataExport?: boolean;
   widgetDownloadId?: string;
   combinedQueryData?: QueryDataWithAttributes[];
+  locateOnMap?: { pos: [number, number]; id: string };
   sendFeaturesToDynamicMap?: (features: string[]) => void;
+  sendHoverFeatureToDynmaicMap?: (features: string) => void;
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {
@@ -60,8 +64,9 @@ export interface SingleMapProps extends BaseMapProps {
   mapFormSizeFactor: number;
   mapIsFormColorValueBased: boolean;
   mapIsIconColorValueBased: boolean;
-  staticValues: number[];
+  staticValues: (number | string)[];
   staticValuesColors: string[];
+  staticValuesLogos: string[];
   mapWmsUrl: string;
   mapWmsLayer: string;
 }
@@ -84,7 +89,8 @@ export interface CombinedMapProps extends BaseMapProps {
   mapFormSizeFactor?: number[];
   mapIsFormColorValueBased?: boolean[];
   mapIsIconColorValueBased?: boolean[];
-  staticValues?: number[][];
+  staticValues?: (number | string)[][];
+  staticValuesLogos?: string[][];
   staticValuesColors?: string[][];
 }
 
@@ -94,6 +100,7 @@ export type MarkerType = {
   details: any;
   dataSource?: number;
   color?: string;
+  iconIndex?: number;
 };
 
 export type SelectedMarker = {

@@ -542,7 +542,9 @@ export default function ComponentsCiWizard({
       tabComponentSubTypeEnum.degreeChart360,
       tabComponentSubTypeEnum.stageableChart,
       tabComponentSubTypeEnum.lineChart,
+      tabComponentSubTypeEnum.lineChartDynamic,
       tabComponentSubTypeEnum.barChart,
+      tabComponentSubTypeEnum.barChartDynamic,
       tabComponentSubTypeEnum.pieChart,
       tabComponentSubTypeEnum.pieChartDynamic,
       tabComponentSubTypeEnum.measurement,
@@ -784,8 +786,10 @@ export default function ComponentsCiWizard({
                     </div>
                   </div>
                 )}
-                {selectedComponentSubType ===
-                  tabComponentSubTypeEnum.lineChart && (
+                {(selectedComponentSubType ===
+                  tabComponentSubTypeEnum.lineChart ||
+                  selectedComponentSubType ===
+                    tabComponentSubTypeEnum.lineChartDynamic) && (
                   <div className="flex-col">
                     <WizardLabel label="Achse" />
                     <div className="flex flex-col gap-2">
@@ -916,8 +920,10 @@ export default function ComponentsCiWizard({
                     </div>
                   </div>
                 )}
-                {selectedComponentSubType ===
-                  tabComponentSubTypeEnum.barChart && (
+                {(selectedComponentSubType ===
+                  tabComponentSubTypeEnum.barChart ||
+                  selectedComponentSubType ===
+                    tabComponentSubTypeEnum.barChartDynamic) && (
                   <div className="flex-col">
                     <WizardLabel label="Achse" />
                     <div className="flex flex-col gap-2">

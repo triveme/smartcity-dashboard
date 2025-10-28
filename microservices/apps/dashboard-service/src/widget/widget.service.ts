@@ -409,45 +409,53 @@ export class WidgetService {
       // else duplicate it and set queryConfigId to null
       let duplicatedQuery: Query | null = null;
 
-      const queryToDuplicate = await this.queryService.getById(
-        widgetContentToDuplicate.tab.queryId,
-      );
-
-      // Query with queryConfig
-      if (queryToDuplicate.queryConfigId) {
-        const originalConfig = await this.queryConfigService.getById(
-          queryToDuplicate.queryConfigId,
+      if (widgetContentToDuplicate.tab.queryId != null) {
+        const queryToDuplicate = await this.queryService.getById(
+          widgetContentToDuplicate.tab.queryId,
         );
 
-        const duplicatedQueryConfig = await this.queryConfigRepo.create(
-          {
-            ...originalConfig,
-            id: uuid(),
-          },
-          trx,
-        );
+        if (queryToDuplicate) {
+          // Query with queryConfig
+          if (queryToDuplicate.queryConfigId) {
+            const originalConfig = await this.queryConfigService.getById(
+              queryToDuplicate.queryConfigId,
+            );
 
-        duplicatedStructure.queryConfig = duplicatedQueryConfig;
+            const duplicatedQueryConfig = await this.queryConfigRepo.create(
+              {
+                ...originalConfig,
+                id: uuid(),
+              },
+              trx,
+            );
 
-        duplicatedQuery = {
-          ...queryToDuplicate,
-          id: uuid(),
-          queryConfigId: duplicatedQueryConfig.id,
-        };
+            duplicatedStructure.queryConfig = duplicatedQueryConfig;
 
-        duplicatedStructure.query = await this.queryRepo.create(
-          duplicatedQuery,
-          trx,
-        );
-      }
+            duplicatedQuery = {
+              ...queryToDuplicate,
+              id: uuid(),
+              queryConfigId: duplicatedQueryConfig.id,
+            };
 
-      // Query without queryConfig
-      else {
-        duplicatedQuery = {
-          ...queryToDuplicate,
-          id: uuid(),
-          queryConfigId: null,
-        };
+            duplicatedStructure.query = await this.queryRepo.create(
+              duplicatedQuery,
+              trx,
+            );
+          }
+
+          // Query without queryConfig
+          else {
+            duplicatedQuery = {
+              ...queryToDuplicate,
+              id: uuid(),
+              queryConfigId: null,
+            };
+            duplicatedQuery = await this.queryService.create(
+              duplicatedQuery,
+              trx,
+            );
+          }
+        }
       }
 
       // Duplicate the tab if it exists

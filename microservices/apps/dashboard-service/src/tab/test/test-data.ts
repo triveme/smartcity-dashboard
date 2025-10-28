@@ -52,7 +52,8 @@ export async function getTab(
     | 'Wert'
     | 'iFrame'
     | 'Bild'
-    | 'Kombinierte Komponente',
+    | 'Kombinierte Komponente'
+    | 'Interaktive Komponente',
   componentSubType?:
     | 'Text'
     | 'Icon mit Link'
@@ -60,13 +61,18 @@ export async function getTab(
     | '360° Chart'
     | 'Stageable Chart'
     | 'Pie Chart'
+    | 'Pie Chart (dynamisch)'
     | 'Linien Chart'
+    | 'Linien Chart (dynamisch)'
     | 'Balken Chart'
+    | 'Balken Chart (dynamisch)'
     | 'Measurement'
     | 'Pin'
     | 'Parking'
     | 'Farbiger Slider'
-    | 'Slider Übersicht',
+    | 'Slider Übersicht'
+    | 'Table'
+    | 'Chart Datum Selektor',
   dataModelId?: string,
   queryId?: string,
 ): Promise<Tab> {
@@ -181,6 +187,10 @@ export async function getTab(
     mapWmsLayer: 'SomeLayer',
     mapCombinedWmsLayer: 'SomeCombinedLayer',
     tiles: 10,
+    tableFontColor: 'black',
+    tableHeaderColor: 'blue',
+    tableOddRowColor: 'grey',
+    tableEvenRowColor: 'white',
     sliderCurrentAttribute: 'currentAttribute',
     sliderMaximumAttribute: 'maximumAttribute',
     listviewName: 'listview_name',
@@ -221,6 +231,11 @@ export async function getTab(
     mapGeoJSONHoverBorderColor: '#FF0000',
     mapGeoJSONHoverFillColor: '#FF0000',
     mapGeoJSONHoverFillOpacity: 0.2,
+    mapGeoJSONFeatureIdentifier: 'ID',
+    dynamicHighlightColor: '#FF0000',
+    dynamicUnhighlightColor: '#FF0000',
+    chartStaticValuesText: false,
+    valuesToImages: [],
   };
 }
 

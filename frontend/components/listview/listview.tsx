@@ -8,6 +8,10 @@ import { ListViewMapArrow } from './listview-map-arrow';
 import { ListViewFilter } from './listview-filter';
 import { InterestingPlace } from '@/types/dataModels';
 import { EMPTY_POI } from '@/utils/objectHelper';
+import eventBus, {
+  MAP_FOCUS_EVENT,
+  PLACES_FILTER_CHANGED_EVENT,
+} from '@/app/EventBus';
 
 type ListViewProps = {
   data: InterestingPlace[];
@@ -72,8 +76,6 @@ export function ListView(props: ListViewProps): ReactElement {
     showCategory = true,
   } = props;
 
-  console.log('DATA LISTVIEW', JSON.stringify(data[0], null, 2));
-
   const [poiData, setPoiData] = useState<InterestingPlace[]>(data);
   const [pointOfInterestDetailsOpen, setPointOfInterestDetailsOpen] =
     useState(false);
@@ -84,6 +86,7 @@ export function ListView(props: ListViewProps): ReactElement {
   const [filteredInfos, setFilteredInfos] = useState<InterestingPlace[]>(data);
   const [pointOfInterestFilterOpen, setPointOfInterestFilterOpen] =
     useState(false);
+  const [lastFilter, setLastFilter] = useState<string[]>([]);
 
   // Event bus placeholder functions
   const publishShowOnMapEvent = (location: {
@@ -91,13 +94,16 @@ export function ListView(props: ListViewProps): ReactElement {
     lng: number;
     markerId: string;
   }): void => {
-    // TODO: Implement event bus communication
-    console.log('Event Bus: Show on map requested', location);
+    eventBus.emit(MAP_FOCUS_EVENT, {
+      data: {
+        ...location,
+        id: location.markerId,
+      },
+    });
   };
 
   const publishFilterChangeEvent = (filteredData: InterestingPlace[]): void => {
-    // TODO: Implement event bus communication
-    console.log('Event Bus: Filter changed', filteredData);
+    eventBus.emit(PLACES_FILTER_CHANGED_EVENT, { data: filteredData });
   };
 
   const handlePoiClick = (index: number): void => {
@@ -224,6 +230,8 @@ export function ListView(props: ListViewProps): ReactElement {
               poiBackgroundColor={poiBackgroundColor}
               headlineYellowColor={headlineYellowColor}
               iconColor={iconColor}
+              lastFilter={lastFilter}
+              setLastFilter={setLastFilter}
               listviewFilterButtonBackgroundColor={
                 listviewFilterButtonBackgroundColor
               }

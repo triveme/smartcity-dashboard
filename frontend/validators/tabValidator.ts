@@ -42,6 +42,7 @@ export function validateTab(tab: Tab): WizardErrors {
         tab.componentSubType !== tabComponentSubTypeEnum.combinedMap &&
         tab.componentSubType !== tabComponentSubTypeEnum.geoJSON &&
         tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic &&
+        tab.componentSubType !== tabComponentSubTypeEnum.pinDynamic &&
         tab.componentSubType !== tabComponentSubTypeEnum.parking)
     ) {
       errorsOccured.mapTypeError = 'Der Karten Typ muss gewählt werden.';
@@ -288,6 +289,7 @@ function tabNeedsSubType(tab: Tab): boolean {
   const typesWithSubType = [
     tabComponentTypeEnum.information,
     tabComponentTypeEnum.diagram,
+    tabComponentTypeEnum.interactiveComponent,
     tabComponentTypeEnum.slider,
     'Button',
   ];
@@ -299,6 +301,7 @@ function mapWidgetNeedsSubType(mapWidgetValues: MapModalWidget): boolean {
   const typesWithSubType = [
     tabComponentTypeEnum.information,
     tabComponentTypeEnum.diagram,
+    tabComponentTypeEnum.interactiveComponent,
     tabComponentTypeEnum.image,
     'Button',
   ];

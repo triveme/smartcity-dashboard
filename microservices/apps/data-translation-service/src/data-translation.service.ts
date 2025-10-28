@@ -33,6 +33,7 @@ export function isSingleValueTab(tab: Tab): boolean {
     tab.componentType === 'Wert' ||
     tab.componentType === 'Bild' ||
     tab.componentType === 'Wetterwarnungen' ||
+    tab.componentType === 'Werte zu Bildern' ||
     (tab.componentType === 'Slider' &&
       tab.componentSubType === 'Farbiger Slider') ||
     (tab.componentType === 'Diagramm' &&
@@ -44,7 +45,7 @@ export function isSingleValueTab(tab: Tab): boolean {
 
 export type ChartData = {
   name: string;
-  values: [string, number][];
+  values: [string, number, string?][];
   color?: string;
   id?: string;
 };
@@ -60,6 +61,7 @@ export type WeatherWarningData = {
 };
 
 export type InterestingPlace = {
+  id: string;
   name: string;
   types: string[];
   address: string;
@@ -156,6 +158,7 @@ export class DataTranslationService {
       const tabPromises = data.map(async (tab) => {
         try {
           // Skip tabs that don't have a valid widget ID
+          // console.log(`Refresh Tab ${tab.id} with widget ${tab.widgetId}`);
           if (!tab.widgetId) {
             console.warn(`Tab ${tab.id} has no widget ID. Skipping.`);
             return;
@@ -173,7 +176,6 @@ export class DataTranslationService {
           }
 
           const tabWithContent = wrapTabWithDefaultData(tab);
-
           if (isSingleValueTab(tab)) {
             await this.populateValueService.populateTab(tabWithContent);
           } else if (isCombinedWidgetTab(tab)) {
@@ -186,7 +188,8 @@ export class DataTranslationService {
             tab.componentType === 'Diagramm' ||
             tab.componentType === 'Karte' ||
             (tab.componentType === 'Slider' &&
-              tab.componentSubType === 'Slider Übersicht')
+              tab.componentSubType === 'Slider Übersicht') ||
+            tab.componentType === 'Interaktive Komponente'
           ) {
             await this.populateChartService.populateTab(tabWithContent);
           }

@@ -232,6 +232,20 @@
       "when": 1756372687384,
       "tag": "0032_boring_tarot_1.0.8",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1759758317762,
+      "tag": "0033_modern_groot_1.0.9-beta.1",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1761037946316,
+      "tag": "0034_goofy_blue_blade_1.0.9",
+      "breakpoints": true
     }
   ]
 }

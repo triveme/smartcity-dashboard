@@ -84,7 +84,8 @@ export default function StaticValuesFieldMapWidgets(
           type === tabComponentTypeEnum.information ||
           type === tabComponentTypeEnum.value ||
           type === tabComponentTypeEnum.diagram ||
-          type === tabComponentTypeEnum.image,
+          type === tabComponentTypeEnum.image ||
+          type === tabComponentTypeEnum.interactiveComponent,
       ),
       'Button', // Add manually here because dont want to create as an enum
     ];
@@ -107,10 +108,17 @@ export default function StaticValuesFieldMapWidgets(
           subType.value === tabComponentSubTypeEnum.degreeChart180 ||
           subType.value === tabComponentSubTypeEnum.stageableChart ||
           subType.value === tabComponentSubTypeEnum.lineChart ||
-          subType.value === tabComponentSubTypeEnum.barChart,
+          subType.value === tabComponentSubTypeEnum.lineChartDynamic ||
+          subType.value === tabComponentSubTypeEnum.barChart ||
+          subType.value === tabComponentSubTypeEnum.barChartDynamic,
       );
     } else if (componentType === tabComponentTypeEnum.image) {
       return widgetImageSources;
+    } else if (componentType === tabComponentTypeEnum.interactiveComponent) {
+      return chartComponentSubTypes.filter(
+        (subType) =>
+          subType.value === tabComponentSubTypeEnum.chartDateSelector,
+      );
     } else if (componentType === 'Button') {
       return [
         { label: '', value: '' },
@@ -1119,7 +1127,10 @@ export default function StaticValuesFieldMapWidgets(
                 {(value.componentSubType ===
                   tabComponentSubTypeEnum.lineChart ||
                   value.componentSubType ===
-                    tabComponentSubTypeEnum.barChart) && (
+                    tabComponentSubTypeEnum.lineChartDynamic ||
+                  value.componentSubType === tabComponentSubTypeEnum.barChart ||
+                  value.componentSubType ===
+                    tabComponentSubTypeEnum.barChartDynamic) && (
                   <div>
                     <div className="flex flex-col w-full pb-2">
                       <WizardLabel label="Achsenbeschreibung (y-Achse über x-Achse)" />
@@ -1198,8 +1209,10 @@ export default function StaticValuesFieldMapWidgets(
                       </div>
                     </div>
                     <div className="w-full flex flex-col">
-                      {value.componentSubType ===
-                        tabComponentSubTypeEnum.lineChart && (
+                      {(value.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart ||
+                        value.componentSubType ===
+                          tabComponentSubTypeEnum.lineChartDynamic) && (
                         <>
                           <div className="flex w-full items-center">
                             <div className="min-w-[220px]">
@@ -1215,8 +1228,10 @@ export default function StaticValuesFieldMapWidgets(
                           </div>
                         </>
                       )}
-                      {value.componentSubType ===
-                        tabComponentSubTypeEnum.barChart && (
+                      {(value.componentSubType ===
+                        tabComponentSubTypeEnum.barChart ||
+                        value.componentSubType ===
+                          tabComponentSubTypeEnum.barChartDynamic) && (
                         <div className="flex w-full items-center">
                           <div className="min-w-[220px]">
                             <WizardLabel label="Gestapelte Balken?" />

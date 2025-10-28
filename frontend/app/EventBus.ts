@@ -1,14 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
-/* eslint-disable @typescript-eslint/ban-types */
 class EventBus {
-  listeners: { [id: string]: ((value: any) => void)[] };
+  listeners: { [id: string]: ((value: Event) => void)[] };
 
   constructor() {
     this.listeners = {};
   }
 
-  on(event: string, callback: (value: any) => void) {
+  on(event: string, callback: (value: Event) => void): void {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
@@ -17,22 +14,27 @@ class EventBus {
     }
   }
 
-  off(event: string, callback: (value: any) => void) {
+  off(event: string, callback: (value: Event) => void): void {
     if (this.listeners[event]) {
       this.listeners[event] = this.listeners[event].filter(
-        (listener: any) => listener !== callback,
+        (listener: (value: Event) => void) => listener !== callback,
       );
     }
   }
 
-  emit(event: string, data: any) {
+  emit(event: string, data: Event): void {
     if (this.listeners[event]) {
-      this.listeners[event].forEach((listener: (value: any) => any) =>
+      this.listeners[event].forEach((listener: (value: Event) => void) =>
         listener(data),
       );
     }
   }
 }
+
+export type Event = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any;
+};
 
 const eventBus = new EventBus();
 export default eventBus;
@@ -40,4 +42,8 @@ export default eventBus;
 //Pre Defined Events
 export const GEOJSON_FEATURE_SELECTION_EVENT: string =
   'mapGeoJSONFeatureSelectionChanged';
+export const GEOJSON_FEATURE_HOVER_EVENT: string =
+  'mapGeoJSONFeatureHoverChanged';
 export const YEAR_INDEX_SELECTION_EVENT: string = 'selectedYearIndexUpdated';
+export const PLACES_FILTER_CHANGED_EVENT: string = 'filteredPlacesChanged';
+export const MAP_FOCUS_EVENT: string = 'focusLocationEvent';

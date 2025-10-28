@@ -93,7 +93,6 @@ export default function ChartMapWrapper({
         <BarChart
           chartDateRepresentation={'Default'}
           chartYAxisScale={undefined}
-          labels={undefined}
           xAxisLabel={mapWidgetValue?.chartXAxisLabel || ''}
           yAxisLabel={''}
           data={[data]}

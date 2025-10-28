@@ -6,11 +6,7 @@ import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
-import {
-  FiwareAttribute,
-  FiwareAttributeData,
-  FiwareAttributeEntity,
-} from './fiware.types';
+import { FiwareAttribute, FiwareAttributeEntity } from './fiware.types';
 import { PopulateMapService } from './populate-map.service';
 import { getGermanLabelForAttribute } from './populate.util';
 import { DataTranslationRepo } from '../data-translation.repo';
@@ -59,7 +55,6 @@ export class PopulateChartService {
         this.populateSliderOverview(query, tab);
         return;
       }
-
       if (query && query.queryData && tab.componentSubType === 'Pie Chart') {
         this.populateTabWithQueryDataArray(
           queryConfig,
@@ -363,57 +358,6 @@ export class PopulateChartService {
     );
   }
 
-  private buildChartDataArray(
-    queryConfig: QueryConfig,
-    sensorDataMap: Map<string, Array<object>>,
-    attribute: string,
-    datasource: DataSource,
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
-  ): void {
-    const chartDataMap = new Map<
-      string,
-      { values: number[]; timestamps: string[] }
-    >();
-
-    sensorDataMap.forEach((value, key) => {
-      const chartDataItem: ChartData = {
-        name: key,
-        values: [],
-        color: null,
-      };
-
-      value.sort((a, b) => {
-        if (a['timestamp'] == null && b['timestamp'] == null) {
-          return 0;
-        } else if (a['timestamp'] == null) {
-          return 1;
-        } else if (b['timestamp'] == null) {
-          return -1;
-        } else {
-          return (
-            new Date(a['timestamp']).getTime() -
-            new Date(b['timestamp']).getTime()
-          );
-        }
-      });
-
-      value.forEach((queryDataItem) => {
-        const attributeValue = queryDataItem[attribute] as FiwareAttributeData;
-        const timestamp = queryDataItem['timestamp'];
-
-        chartDataItem.values.push([timestamp, +attributeValue]);
-      });
-      tab.chartData.push(chartDataItem);
-    });
-
-    if (chartDataMap.size > 0) {
-      tab.chartLabels = Array.from(chartDataMap.values())[0].timestamps;
-    }
-  }
-
   private populateHistoricTab(
     queryConfig: QueryConfig,
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
@@ -424,7 +368,7 @@ export class PopulateChartService {
     attribute: string,
     isSingleAttribute: boolean,
   ): void {
-    if (queryConfig.entityIds.length === 1) {
+    if (queryConfig.entityIds.length === 1 && queryDataMap.has('attributes')) {
       this.populateHistoricTabWithSingleEntityId(tab, queryDataMap);
     } else {
       this.populateHistoricTabWithMultipleEntityIds(
@@ -590,25 +534,6 @@ export class PopulateChartService {
     }
   }
 
-  private buildSensorDataMap(query: Query): Map<string, object[]> {
-    const sensorDataMap = new Map<string, object[]>();
-
-    if (Array.isArray(query.queryData)) {
-      for (const dataItem of query.queryData) {
-        if (dataItem) {
-          const sensorKey = dataItem.id;
-
-          if (!sensorDataMap.get(sensorKey)) {
-            sensorDataMap.set(sensorKey, []);
-          }
-
-          sensorDataMap.get(sensorKey).push(dataItem);
-        }
-      }
-    }
-    return sensorDataMap;
-  }
-
   private pushValuesToChartData(
     attributeObject: FiwareAttributeEntity,
     chartDataName: string,
@@ -625,9 +550,12 @@ export class PopulateChartService {
     );
     const timeValues = attributeObject.index.map((timevalue) => timevalue);
 
-    const resultArray: [string, number][] = [];
+    const resultArray: [string, number, string?][] = [];
     for (let i = 0; i < timeValues.length; i++) {
-      resultArray.push([timeValues[i], numberValues[i]]);
+      const tl = attributeObject.timeLabels
+        ? attributeObject.timeLabels[i]
+        : undefined;
+      resultArray.push([timeValues[i], numberValues[i], tl]);
     }
 
     tab.chartData.push({

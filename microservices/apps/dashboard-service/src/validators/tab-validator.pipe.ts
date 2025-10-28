@@ -30,6 +30,8 @@ export class SanitizeTabDataPipe implements PipeTransform {
     'iconColor',
     'iconText',
     'iconUrl',
+    'dynamicHighlightColor',
+    'dynamicUnhighlightColor',
   ];
   declaredFields: DeclarationObject = {
     bild: [
@@ -72,6 +74,11 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'showLegend',
       'tiles',
       'decimalPlaces',
+      'tableFontColor',
+      'tableHeaderColor',
+      'tableOddRowColor',
+      'tableEvenRowColor',
+
       ...this.commonFields,
     ],
     iframe: ['iFrameUrl', ...this.commonFields],
@@ -104,6 +111,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'mapGeoJSONHoverBorderColor',
       'mapGeoJSONHoverFillColor',
       'mapGeoJSONHoverFillOpacity',
+      'mapGeoJSONFeatureIdentifier',
       'mapIsFormColorValueBased',
       'mapIsIconColorValueBased',
       'mapLatitude',
@@ -123,6 +131,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'mapCombinedWmsUrl',
       'mapWmsLayer',
       'mapCombinedWmsLayer',
+      'chartStaticValuesText',
       ...this.commonFields,
     ],
     text: ['textValue', ...this.commonFields],

@@ -64,6 +64,7 @@ keycloak/import/production-realm.json
 microservices/.env.testing
 microservices/.env
 Jenkinsfile
+/cicd
 
 # Local environment files
 .env.local
