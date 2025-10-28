@@ -200,9 +200,7 @@ export default function Header(props: HeaderProps): ReactElement {
             <HeaderLogo />
           </div>
         )}
-        <p className="text-md ml-9 sm:text-xl leading-7 capitalize">
-          {dynamicHeadline}
-        </p>
+        <p className="text-md ml-9 sm:text-xl leading-7">{dynamicHeadline}</p>
       </div>
       <div className="flex items-center z-30">
         {!isLoginHeader ? (

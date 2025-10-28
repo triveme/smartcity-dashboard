@@ -5,20 +5,23 @@ import dynamic from 'next/dynamic';
 import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
 import DashboardPanelPreview from '@/components/Previews/DashboardPanelPreview';
 import PanelWizard from '@/components/Wizards/PanelWizard';
-import { Panel, Tab } from '@/types';
+import { dashboardTypeEnum, Panel, Tab } from '@/types';
 import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
+import IFrameComponent from '@/ui/IFrameComponent';
+import Loading from '@/app/(dashboard)/[tenant]/loading';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
+  loading: () => <Loading></Loading>,
 });
 
 type DashboardPreviewProps = {
   panels: Panel[];
   handlePanelChange: (panels: Panel[]) => void;
-  dashboardType: string;
+  dashboardType: dashboardTypeEnum;
   selectedTab: Tab | undefined;
   fontColor: string;
   iconColor: string;
@@ -150,7 +153,8 @@ export default function DashboardPreview(
     <div className="h-full w-full rounded-lg">
       <div className="grid lg:grid-cols-12 sm:grid-cols-3 grid-flow-row gap-2">
         {panels &&
-          dashboardType !== 'Karte' &&
+          dashboardType !== dashboardTypeEnum.map &&
+          dashboardType !== dashboardTypeEnum.iframe &&
           panels.length > 0 &&
           panels
             .sort((a, b) => a.position - b.position)
@@ -166,13 +170,14 @@ export default function DashboardPreview(
               />
             ))}
       </div>
-      {dashboardType !== 'Karte' && (
-        <CreateDashboardElementButton
-          label="+ Panel hinzufügen"
-          handleClick={handleNewPanelClick}
-        />
-      )}
-      {dashboardType === 'Karte' && (
+      {dashboardType !== dashboardTypeEnum.map &&
+        dashboardType !== dashboardTypeEnum.iframe && (
+          <CreateDashboardElementButton
+            label="+ Panel hinzufügen"
+            handleClick={handleNewPanelClick}
+          />
+        )}
+      {dashboardType === dashboardTypeEnum.map && (
         <Map
           mapMaxZoom={selectedTab?.mapMaxZoom ? selectedTab.mapMaxZoom : 18}
           mapMinZoom={selectedTab?.mapMinZoom ? selectedTab.mapMinZoom : 0}
@@ -236,9 +241,34 @@ export default function DashboardPreview(
           staticValues={selectedTab?.chartStaticValues || []}
           staticValuesColors={selectedTab?.chartStaticValuesColors || []}
           mapFormSizeFactor={selectedTab?.mapFormSizeFactor || 1}
+          mapGeoJSON={selectedTab?.mapGeoJSON || ''}
+          mapGeoJSONSensorBasedColors={
+            selectedTab?.mapGeoJSONSensorBasedColors || false
+          }
+          mapGeoJSONBorderColor={
+            selectedTab?.mapGeoJSONBorderColor || '#3388ff'
+          }
+          mapGeoJSONFillColor={selectedTab?.mapGeoJSONFillColor || '#3388ff'}
+          mapGeoJSONSelectionBorderColor={
+            selectedTab?.mapGeoJSONSelectionBorderColor || '#0b63de'
+          }
+          mapGeoJSONSelectionFillColor={
+            selectedTab?.mapGeoJSONSelectionFillColor || '#0b63de'
+          }
+          mapGeoJSONHoverBorderColor={
+            selectedTab?.mapGeoJSONHoverBorderColor || '#0347a6'
+          }
+          mapGeoJSONHoverFillColor={
+            selectedTab?.mapGeoJSONHoverFillColor || '#0347a6'
+          }
+          staticValuesLogos={[]}
+          mapType={selectedTab?.componentSubType || ''}
           mapWmsUrl={selectedTab?.mapWmsUrl || ''}
           mapWmsLayer={selectedTab?.mapWmsLayer || ''}
         />
+      )}
+      {dashboardType === dashboardTypeEnum.iframe && selectedTab?.iFrameUrl && (
+        <IFrameComponent src={selectedTab.iFrameUrl}></IFrameComponent>
       )}
 
       {isModalOpen && activePanel && (

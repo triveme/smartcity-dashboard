@@ -642,6 +642,7 @@ export const DUMMY_CHART_DATA: ChartData[] = [
 
 export const DUMMY_POI_DATA: InterestingPlace[] = [
   {
+    id: 'Gasthof-zur-Linde',
     name: 'Gasthof zur Linde',
     types: ['restaurant', 'food'],
     address: 'Hauptstraße 15, 97753 Karlstadt',
@@ -664,6 +665,7 @@ export const DUMMY_POI_DATA: InterestingPlace[] = [
       'Traditioneller Gasthof mit regionaler fränkischer Küche und gemütlicher Atmosphäre im historischen Stadtkern.',
   },
   {
+    id: 'Bücherstube-am-Markt',
     name: 'Bücherstube am Markt',
     types: ['shop', 'retail'],
     address: 'Marktplatz 8, 97753 Karlstadt',
@@ -686,6 +688,7 @@ export const DUMMY_POI_DATA: InterestingPlace[] = [
       'Gemütliche Buchhandlung mit sorgfältig ausgewähltem Sortiment und persönlicher Beratung.',
   },
   {
+    id: 'Rechtsanwaltskanzlei-Weber',
     name: 'Rechtsanwaltskanzlei Weber',
     types: ['service', 'business'],
     address: 'Würzburger Straße 23, 97753 Karlstadt',
@@ -712,6 +715,7 @@ export const DUMMY_POI_DATA: InterestingPlace[] = [
 export const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36];
 
 export const EMPTY_POI: InterestingPlace = {
+  id: '',
   name: '',
   types: [],
   address: '',

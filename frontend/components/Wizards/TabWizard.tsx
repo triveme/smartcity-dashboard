@@ -29,6 +29,7 @@ import {
   mapComponentSubTypes,
   informationComponentSubTypes,
   sliderComponentSubTypes,
+  interactiveComponentSubTypes,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -46,6 +47,8 @@ import SearchableDropdown from '@/ui/SearchableDropdown';
 import StaticValuesFieldRange from '@/ui/StaticValuesFieldsRange';
 import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
+import TableColorPickerPanel from '@/ui/TableColorPickerPanel';
+import ValuesToImageFields from '@/ui/ValuesToImageFields';
 
 type TabWizardProps = {
   tab: Tab | undefined;
@@ -54,6 +57,10 @@ type TabWizardProps = {
   errors?: WizardErrors;
   iconColor: string;
   borderColor: string;
+  tableFontColor: string;
+  tableHeaderColor: string;
+  tableOddRowColor: string;
+  tableEvenRowColor: string;
   backgroundColor: string;
   panelFontColor: string;
   panelBorderRadius: string;
@@ -72,6 +79,10 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     errors,
     iconColor,
     borderColor,
+    tableFontColor,
+    tableHeaderColor,
+    tableOddRowColor,
+    tableEvenRowColor,
     backgroundColor,
     panelFontColor,
     panelBorderRadius,
@@ -101,6 +112,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   );
 
   const handleTabChange = (update: Partial<Tab>): void => {
+    console.log('Tab', update);
     setTab((prevTab) => {
       const newTab = { ...prevTab, ...update };
 
@@ -360,6 +372,45 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   error={errors?.tabComponentSubTypeError}
                 />
               </div>
+              {(tab?.componentSubType ===
+                tabComponentSubTypeEnum.barChartDynamic ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.lineChartDynamic ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.pieChartDynamic) && (
+                <div>
+                  <ColorPickerComponent
+                    currentColor={tab?.dynamicHighlightColor || '#0347a6'}
+                    handleColorChange={(color: string): void =>
+                      handleTabChange({
+                        dynamicHighlightColor: color,
+                      })
+                    }
+                    label="Highlight Farbe"
+                  />
+                  <ColorPickerComponent
+                    currentColor={tab?.dynamicUnhighlightColor || '#647D9E'}
+                    handleColorChange={(color: string): void =>
+                      handleTabChange({
+                        dynamicUnhighlightColor: color,
+                      })
+                    }
+                    label="Unhighlight Farbe"
+                  />
+                </div>
+              )}
+              {tab?.componentSubType ===
+                tabComponentSubTypeEnum.tableDynamic && (
+                <ColorPickerComponent
+                  currentColor={tab?.dynamicHighlightColor || '#0347a6'}
+                  handleColorChange={(color: string): void =>
+                    handleTabChange({
+                      dynamicHighlightColor: color,
+                    })
+                  }
+                  label="Highlight Farbe"
+                />
+              )}
               {(tab?.componentSubType === '180° Chart' ||
                 tab?.componentSubType === '360° Chart') && (
                 <div>
@@ -462,8 +513,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       initialStaticValuesTexts={
                         tab?.chartStaticValuesTexts || []
                       }
-                      initialIconColor={tab?.iconColor || '#000000'}
-                      initialLabelColor={tab?.labelColor || '#000000'}
                       handleTabChange={handleTabChange}
                       error={errors?.stageableColorValueError}
                       borderColor={borderColor}
@@ -475,7 +524,11 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                 </div>
               )}
               {(tab?.componentSubType === tabComponentSubTypeEnum.lineChart ||
-                tab?.componentSubType === tabComponentSubTypeEnum.barChart) && (
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.lineChartDynamic ||
+                tab?.componentSubType === tabComponentSubTypeEnum.barChart ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.barChartDynamic) && (
                 <div>
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Name der X-Achse" />
@@ -621,8 +674,10 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label=" Zoom"
                       />
                     </div>
-                    {tab?.componentSubType ===
-                      tabComponentSubTypeEnum.lineChart && (
+                    {(tab?.componentSubType ===
+                      tabComponentSubTypeEnum.lineChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) && (
                       <>
                         <div className="flex w-full items-center">
                           <div className="min-w-[220px]">
@@ -653,7 +708,11 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     {(tab?.componentSubType ===
                       tabComponentSubTypeEnum.barChart ||
                       tab?.componentSubType ===
-                        tabComponentSubTypeEnum.lineChart) && (
+                        tabComponentSubTypeEnum.barChartDynamic ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) && (
                       <div className="flex w-full items-center">
                         <div className="min-w-[220px]">
                           <WizardLabel label="Gestapelte Werte?" />
@@ -750,10 +809,28 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     <StaticValuesField
                       initialChartStaticValues={tab?.chartStaticValues || []}
                       initialStaticColors={tab?.chartStaticValuesColors || []}
+                      initialStaticValuesTicks={
+                        tab?.chartStaticValuesTicks || []
+                      }
+                      initialStaticValuesTexts={
+                        tab?.chartStaticValuesTexts || []
+                      }
                       handleTabChange={handleTabChange}
                       backgroundColor={backgroundColor}
                       borderColor={borderColor}
                       fontColor={fontColor}
+                      type={
+                        tab?.componentSubType ===
+                          tabComponentSubTypeEnum.barChart ||
+                        tab?.componentSubType ===
+                          tabComponentSubTypeEnum.barChartDynamic ||
+                        tab?.componentSubType ===
+                          tabComponentSubTypeEnum.lineChart ||
+                        tab?.componentSubType ===
+                          tabComponentSubTypeEnum.lineChartDynamic
+                          ? 'value'
+                          : ''
+                      }
                     />
                   </div>
                 </div>
@@ -870,6 +947,23 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     borderColor={borderColor}
                     backgroundColor={backgroundColor}
                   />
+                </div>
+              )}
+              {(tab?.componentSubType === tabComponentSubTypeEnum.table ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.tableDynamic) && (
+                <div>
+                  <div className="flex flex-col w-full pb-2 gap-4">
+                    <WizardLabel label="" />
+                    <TableColorPickerPanel
+                      tab={tab}
+                      handleTabChange={handleTabChange}
+                      fontColor={tableFontColor}
+                      headerColor={tableHeaderColor}
+                      oddRowColor={tableOddRowColor}
+                      evenRowColor={tableEvenRowColor}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -1136,6 +1230,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   backgroundColor={backgroundColor}
                 />
               </div>
+              {'Slider'}
               <HorizontalDivider />
               <div className="flex flex-col w-full pb-2 gap-4">
                 <WizardLabel label="Optionale Label" />
@@ -1145,8 +1240,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   initialStaticValuesTicks={tab?.chartStaticValuesTicks || []}
                   initialStaticValuesLogos={tab?.chartStaticValuesLogos || []}
                   initialStaticValuesTexts={tab?.chartStaticValuesTexts || []}
-                  initialIconColor={tab?.iconColor || '#000000'}
-                  initialLabelColor={tab?.labelColor || '#000000'}
                   handleTabChange={handleTabChange}
                   error={errors?.stageableColorValueError}
                   borderColor={borderColor}
@@ -1423,7 +1516,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                     mapIsIconColorValueBased: value,
                                   })
                                 }
-                                label="Sensorwert abhängige Farbe"
+                                label="Sensorwert abhängige Farbe / Icon"
                               />
                               {!tab.mapIsIconColorValueBased && (
                                 <ColorPickerComponent
@@ -1454,7 +1547,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               <IconSelection
                                 activeIcon={tab?.mapMarkerIcon || ''}
                                 handleIconSelect={(iconName: string): void =>
-                                  handleTabChange({ mapMarkerIcon: iconName })
+                                  handleTabChange({
+                                    mapMarkerIcon: iconName,
+                                  })
                                 }
                                 iconColor={iconColor}
                                 borderColor={borderColor}
@@ -1462,7 +1557,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               <ColorPickerComponent
                                 currentColor={tab?.mapMarkerIconColor || '#FFF'}
                                 handleColorChange={(color: string): void =>
-                                  handleTabChange({ mapMarkerIconColor: color })
+                                  handleTabChange({
+                                    mapMarkerIconColor: color,
+                                  })
                                 }
                                 label="Icon Farbe"
                               />
@@ -1498,9 +1595,24 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                     backgroundColor={backgroundColor}
                                   />
                                 </div>
+                                <div className="flex flex-col w-full pb-2">
+                                  <WizardSelectBox
+                                    checked={
+                                      tab?.chartStaticValuesText || false
+                                    }
+                                    onChange={(value: boolean): void =>
+                                      handleTabChange({
+                                        chartStaticValuesText: value,
+                                      })
+                                    }
+                                    label="Textwerte"
+                                  />
+                                </div>
                                 <StaticValuesField
                                   initialChartStaticValues={
-                                    tab?.chartStaticValues || []
+                                    tab.chartStaticValuesText
+                                      ? tab?.chartStaticValuesTexts || []
+                                      : tab?.chartStaticValues || []
                                   }
                                   initialStaticColors={
                                     tab?.chartStaticValuesColors || []
@@ -1514,15 +1626,12 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                   initialStaticValuesTexts={
                                     tab?.chartStaticValuesTexts || []
                                   }
-                                  initialIconColor={tab?.iconColor || '#000000'}
-                                  initialLabelColor={
-                                    tab?.labelColor || '#000000'
-                                  }
                                   handleTabChange={handleTabChange}
                                   error={errors?.stageableColorValueError}
                                   borderColor={borderColor}
                                   backgroundColor={backgroundColor}
                                   fontColor={fontColor}
+                                  isTextValues={tab.chartStaticValuesText}
                                   type="map"
                                 />
                               </div>
@@ -1575,6 +1684,19 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               )}
                               <WizardJSONUpload setFile={setGeoJSONFile} />
                             </div>
+                          </div>
+                          <div className="flex flex-col w-full pb-2">
+                            <WizardLabel label="GeoJSON Feature Identfier" />
+                            <WizardTextfield
+                              value={tab?.mapGeoJSONFeatureIdentifier ?? ''}
+                              onChange={(value: string | number): void => {
+                                handleTabChange({
+                                  mapGeoJSONFeatureIdentifier: value as string,
+                                });
+                              }}
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
                           </div>
                           <div className="flex flex-col w-full pb-2">
                             <div className="w-full">
@@ -1710,12 +1832,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                     }
                                     initialStaticValuesTexts={
                                       tab?.chartStaticValuesTexts || []
-                                    }
-                                    initialIconColor={
-                                      tab?.iconColor || '#000000'
-                                    }
-                                    initialLabelColor={
-                                      tab?.labelColor || '#000000'
                                     }
                                     handleTabChange={handleTabChange}
                                     error={errors?.stageableColorValueError}
@@ -2510,6 +2626,51 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   iconColor={iconColor}
                   borderColor={borderColor}
                   backgroundColor={backgroundColor}
+                />
+              </div>
+            </div>
+          )}
+
+          {tab?.componentType === tabComponentTypeEnum.interactiveComponent && (
+            <div className="div">
+              <div className="flex flex-col w-full pb-4">
+                <WizardLabel label="Typ" />
+                <WizardDropdownSelection
+                  currentValue={
+                    interactiveComponentSubTypes.find(
+                      (option) => option.value === tab?.componentSubType,
+                    )?.label || ''
+                  }
+                  selectableValues={interactiveComponentSubTypes.map(
+                    (option) => option.label,
+                  )}
+                  onSelect={(label: string | number): void => {
+                    const enumValue = interactiveComponentSubTypes.find(
+                      (option) => option.label === label,
+                    )?.value;
+                    handleTabChange({ componentSubType: enumValue });
+                  }}
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                  error={errors?.tabComponentSubTypeError}
+                />
+              </div>
+              {tab?.componentSubType ===
+                tabComponentSubTypeEnum.chartDateSelector && (
+                <div className="flex flex-col w-full pb-2"></div>
+              )}
+            </div>
+          )}
+
+          {tab?.componentType === tabComponentTypeEnum.valueToImage && (
+            <div className="div">
+              <div className="flex flex-col w-full pb-4">
+                <ValuesToImageFields
+                  initialValues={tab.valuesToImages || []}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                  handleTabChange={handleTabChange}
                 />
               </div>
             </div>

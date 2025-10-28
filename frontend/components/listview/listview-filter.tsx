@@ -17,12 +17,16 @@ type ListViewFilterProps = {
   listviewFilterButtonHoverBackgroundColor?: string;
   listviewCounterFontColor?: string;
   listviewCounterFontSize?: string;
+  lastFilter?: string[];
+  setLastFilter?: (filter: string[]) => void;
 };
 
 export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
   const {
     listData,
     setFilteredData,
+    setLastFilter,
+    lastFilter,
     handleFilterClick,
     poiBackgroundColor = '#F9FAFB',
     headlineYellowColor = '#FCD34D',
@@ -44,7 +48,9 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
   const handleFilterReset = (): void => {
     setIsChecked(new Array(uniqueInfoTypes.length).fill(false));
     setFilteredInfosCheckbox([]);
-    handleFilterClick();
+    if (setLastFilter) {
+      setLastFilter([]);
+    }
   };
 
   const handleFilterCheckboxClick = (
@@ -65,6 +71,9 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
     }
 
     setFilteredInfosCheckbox(typesToFilter);
+    if (setLastFilter) {
+      setLastFilter(typesToFilter);
+    }
   };
 
   useEffect(() => {
@@ -72,8 +81,16 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
     const allTypes = listData.flatMap((poi) => poi.types);
     const uniqueTypes = Array.from(new Set(allTypes)).sort();
     setUniqueInfoTypes(uniqueTypes);
-    setIsChecked(new Array(uniqueTypes.length).fill(false));
-  }, [listData]);
+
+    if (lastFilter !== undefined) {
+      // Initiale Checkbox-Zustände anhand lastFilter
+      const checkedArray = uniqueTypes.map((type) => lastFilter.includes(type));
+      setIsChecked(checkedArray);
+      setFilteredInfosCheckbox(lastFilter);
+    } else {
+      setIsChecked(new Array(uniqueTypes.length).fill(false));
+    }
+  }, [listData, lastFilter]);
 
   useEffect(() => {
     // Filter the data locally based on selected checkbox filters

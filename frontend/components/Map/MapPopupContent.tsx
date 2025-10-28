@@ -1,10 +1,11 @@
 import React, { JSX } from 'react';
 import { convertToLocaleNumber, roundToDecimal } from '@/utils/mathHelper';
 import {
-  getGermanLabelForSensorAttribute,
   getGermanVehicleType,
+  getGermanLabelForSensorAttribute,
   getFormattedDate,
-} from './MapUtils';
+  getValueString,
+} from './MapLabelUtils';
 
 export type Marker = {
   position: [number, number];
@@ -167,17 +168,7 @@ export default function MapPopupContent({
             return (
               <div key={key}>
                 {getGermanLabelForSensorAttribute(key.toUpperCase())}:{' '}
-                <strong>
-                  {' '}
-                  {tempValue.value === null || tempValue.value === undefined
-                    ? 'Keine Daten'
-                    : tempValue.type === 'Number' && tempValue.value
-                      ? convertToLocaleNumber(
-                          roundToDecimal(Number(tempValue.value)).toString(),
-                          decimalSeparator,
-                        )
-                      : String(tempValue.value)}
-                </strong>
+                <strong> {getValueString(tempValue, decimalSeparator)}</strong>
               </div>
             );
           } else if (value !== null && value !== undefined) {

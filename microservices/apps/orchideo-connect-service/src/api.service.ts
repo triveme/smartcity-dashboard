@@ -470,7 +470,15 @@ export class OrchideoConnectService {
 }
 
 type AggregationMode = 'none' | 'min' | 'max' | 'sum' | 'avg';
-type Timeframe = 'live' | 'day' | 'week' | 'month' | 'quarter' | 'year';
+type Timeframe =
+  | 'live'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'quarter'
+  | 'year'
+  | 'year2'
+  | 'year3';
 type AggregationPeriod =
   | 'second'
   | 'minute'

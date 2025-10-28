@@ -41,6 +41,12 @@ import WeatherWarning from '@/ui/WeatherWarning';
 import NoDataWarning from '@/ui/NoDataWarning';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
 import { ListView } from '../listview/listview';
+import Table from '@/ui/Charts/Table';
+import BarChartDynamic from '@/ui/Charts/BarChartDynamic';
+import LineChartDynamic from '@/ui/Charts/LineChartDynamic';
+import TableDynamic from '@/ui/Charts/TableDynamic';
+import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
+import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 
 type DashboardTabProps = {
   tab: Tab;
@@ -60,8 +66,8 @@ export default async function DashboardTab(
   props: DashboardTabProps,
 ): Promise<ReactElement> {
   const { tab, tabData, tenant } = props;
-  const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
+  const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
   //Dynamic Styling
   const fontStyle: CSSProperties = {
     color: ciColors.informationTextFontColor ?? '#FFF',
@@ -93,17 +99,27 @@ export default async function DashboardTab(
     tabComponentTypeEnum.combinedComponent,
   ].includes(tab.componentType as tabComponentTypeEnum);
 
+  const isValidWithoutTabData = [
+    tabComponentTypeEnum.image,
+    tabComponentTypeEnum.iframe,
+  ].includes(tab.componentType as tabComponentTypeEnum);
+
   const hasCombinedWidgetData =
     !isTabOfTypeCombinedWidget(tab) ||
     (tabData?.combinedWidgets && tabData.combinedWidgets.length > 0);
 
   if (tabData === null || (!isSpecialType && !hasCombinedWidgetData)) {
-    return (
-      <NoDataWarning
-        iconColor={ciColors.headerPrimaryColor}
-        fontColor={ciColors.widgetFontColor}
-      />
-    );
+    if (
+      (tabData === null && !isValidWithoutTabData) ||
+      (!isSpecialType && !hasCombinedWidgetData)
+    ) {
+      return (
+        <NoDataWarning
+          iconColor={ciColors.headerPrimaryColor}
+          fontColor={ciColors.widgetFontColor}
+        />
+      );
+    }
   }
 
   let combinedMapData;
@@ -136,6 +152,7 @@ export default async function DashboardTab(
         : (combinedMapData.mapFilterAttribute as string[]),
     );
   }
+
   return (
     <div
       className={`w-full h-full justify-center items-center ${tab.componentType === tabComponentTypeEnum.combinedComponent ? 'p-4' : ''}`}
@@ -206,6 +223,18 @@ export default async function DashboardTab(
               pieChartRadius={tab.chartPieRadius || 70}
             />
           )}
+          {tab.componentSubType === tabComponentSubTypeEnum.table && (
+            <Table
+              data={tabData?.chartData}
+              fontColor={tab?.tableFontColor || '#000000'}
+              headerColor={tab?.tableHeaderColor || '#005b9e'}
+              oddRowColor={tab?.tableOddRowColor || '#2D3244'}
+              evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+            />
+          )}
+          {tab.componentSubType === tabComponentSubTypeEnum.tableDynamic && (
+            <TableDynamic tab={tab} tabData={tabData} />
+          )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChartDynamic && (
             <PieChartDynamic
               tab={tab}
@@ -247,6 +276,8 @@ export default async function DashboardTab(
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
+              staticValuesTicks={tab.chartStaticValuesTicks || []}
+              staticValuesTexts={tab.chartStaticValuesTexts || []}
               axisLabelFontColor={
                 ciColors.lineChartAxisLabelFontColor || '#FFF'
               }
@@ -279,6 +310,14 @@ export default async function DashboardTab(
               chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
             />
           )}
+          {tab.componentSubType ===
+            tabComponentSubTypeEnum.lineChartDynamic && (
+            <LineChartDynamic
+              tab={tab}
+              tabData={tabData}
+              corporateInfo={ciColors}
+            />
+          )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
               chartYAxisScaleChartMinValue={
@@ -302,7 +341,6 @@ export default async function DashboardTab(
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
-              labels={tab.chartLabels}
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
@@ -311,6 +349,8 @@ export default async function DashboardTab(
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
+              staticValuesTicks={tab.chartStaticValuesTicks || []}
+              staticValuesTexts={tab.chartStaticValuesTexts || []}
               fontColor={ciColors.dashboardFontColor || '#FFFFF'}
               axisColor={ciColors.barChartAxisLineColor || '#FFFFF'}
               axisFontSize={ciColors.barChartAxisTicksFontSize || '14'}
@@ -340,6 +380,13 @@ export default async function DashboardTab(
               filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
               axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
               decimalPlaces={tab?.decimalPlaces || 0}
+            />
+          )}
+          {tab.componentSubType === tabComponentSubTypeEnum.barChartDynamic && (
+            <BarChartDynamic
+              tab={tab}
+              tabData={tabData}
+              corporateInfo={ciColors}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -543,7 +590,8 @@ export default async function DashboardTab(
       )}
       {tab.componentType === tabComponentTypeEnum.map && (
         <div id="map" className="h-full w-full">
-          {tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic ? (
+          {tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic &&
+          tab.componentSubType !== tabComponentSubTypeEnum.pinDynamic ? (
             <>
               {tab.componentSubType === tabComponentSubTypeEnum.combinedMap ? (
                 <Map
@@ -607,10 +655,18 @@ export default async function DashboardTab(
                     combinedMapData?.mapIsIconColorValueBased as boolean[]
                   }
                   staticValues={
-                    combinedMapData?.chartStaticValues as number[][]
+                    combinedMapData?.chartStaticValuesText
+                      ? ((combinedMapData?.chartStaticValuesTexts ||
+                          []) as string[][])
+                      : ((combinedMapData?.chartStaticValues ||
+                          []) as number[][])
                   }
                   staticValuesColors={
                     combinedMapData?.chartStaticValuesColors as string[][]
+                  }
+                  staticValuesLogos={
+                    (combinedMapData?.chartStaticValuesLogos as string[][]) ||
+                    []
                   }
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
@@ -696,8 +752,13 @@ export default async function DashboardTab(
                   mapIsIconColorValueBased={
                     tab.mapIsIconColorValueBased || false
                   }
-                  staticValues={tab.chartStaticValues || []}
+                  staticValues={
+                    tab?.chartStaticValuesText
+                      ? tab?.chartStaticValuesTexts || []
+                      : tab?.chartStaticValues || []
+                  }
                   staticValuesColors={tab.chartStaticValuesColors || []}
+                  staticValuesLogos={tab?.chartStaticValuesLogos || []}
                   mapWmsUrl={tab.mapWmsUrl || ''}
                   mapWmsLayer={tab.mapWmsLayer || ''}
                   menuStyle={menuStyle}
@@ -846,6 +907,25 @@ export default async function DashboardTab(
           showAddress={tab.listviewShowAddress || false}
           showCategory={tab.listviewShowCategory || false}
         />
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.interactiveComponent && (
+        <div className="h-full p-2 overflow-y-auto">
+          {tab.componentSubType ===
+            tabComponentSubTypeEnum.chartDateSelector && (
+            <ChartDateSelector
+              tab={tab}
+              tabData={tabData}
+              corporateInfo={ciColors}
+            ></ChartDateSelector>
+          )}
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.valueToImage && (
+        <div className="h-full p-2 overflow-y-auto">
+          <ValuesToImageComponent tab={tab} tabData={tabData} />
+        </div>
       )}
     </div>
   );

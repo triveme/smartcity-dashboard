@@ -74,3 +74,20 @@ z-index: 0;
 .custom-icon-wrapper * {
   font-size: 8px;
 }
+
+.geoJSONLegend{
+  text-align: left;
+  line-height: 18px;
+  color: #555;
+  padding: 6px 8px;
+  background: white;
+  border-radius: 5px;
+
+  i{
+    width: 18px; 
+    height: 18px; 
+    float: left; 
+    margin-right: 8px; 
+    opacity: 0.7;
+  }
+}

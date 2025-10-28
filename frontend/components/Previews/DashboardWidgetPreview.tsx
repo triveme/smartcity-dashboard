@@ -30,6 +30,9 @@ import {
   DUMMY_CHART_DATA_YEAR,
   DUMMY_POI_DATA,
 } from '@/utils/objectHelper';
+import Table from '@/ui/Charts/Table';
+import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
+import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -84,6 +87,16 @@ export default function DashboardWidgetPreview(
               fillColor={data?.degreeChart180FillColor || '#fff'}
             />
           )}
+          {tab.componentSubType === tabComponentSubTypeEnum.table ||
+            (tab.componentSubType === tabComponentSubTypeEnum.tableDynamic && (
+              <Table
+                data={[]}
+                fontColor={tab?.tableFontColor || '#000000ff'}
+                headerColor={tab?.tableHeaderColor || '#005b9e'}
+                oddRowColor={tab?.tableOddRowColor || '#2D3244'}
+                evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+              />
+            ))}
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
             <StageableChart
               unit={tab.chartUnit || ''}
@@ -132,7 +145,9 @@ export default function DashboardWidgetPreview(
               pieChartRadius={tab.chartPieRadius || 70}
             />
           )}
-          {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
+          {(tab.componentSubType === tabComponentSubTypeEnum.lineChart ||
+            tab.componentSubType ===
+              tabComponentSubTypeEnum.lineChartDynamic) && (
             <LineChart
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
@@ -171,6 +186,8 @@ export default function DashboardWidgetPreview(
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
+              staticValuesTicks={tab.chartStaticValuesTicks || []}
+              staticValuesTexts={tab.chartStaticValuesTexts || []}
               axisLabelFontColor={data?.lineChartAxisLabelFontColor || '#fff'}
               axisLineColor={data?.lineChartAxisLineColor || '#fff'}
               axisTicksFontColor={data?.lineChartAxisLabelFontColor || '#fff'}
@@ -200,7 +217,9 @@ export default function DashboardWidgetPreview(
               decimalPlaces={tab?.decimalPlaces || 0}
             />
           )}
-          {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
+          {(tab.componentSubType === tabComponentSubTypeEnum.barChart ||
+            tab.componentSubType ===
+              tabComponentSubTypeEnum.barChartDynamic) && (
             <BarChart
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
@@ -223,7 +242,6 @@ export default function DashboardWidgetPreview(
               chartDateRepresentation={
                 tab?.chartDateRepresentation || 'Default'
               }
-              labels={undefined}
               data={
                 tab?.chartDateRepresentation !== 'Default'
                   ? DUMMY_CHART_DATA_YEAR
@@ -236,6 +254,8 @@ export default function DashboardWidgetPreview(
               showLegend={tab.showLegend || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
+              staticValuesTicks={tab.chartStaticValuesTicks || []}
+              staticValuesTexts={tab.chartStaticValuesTexts || []}
               fontColor={data?.dashboardFontColor || '#fff'}
               axisColor={data?.barChartAxisLineColor || '#fff'}
               axisFontSize={data?.barChartAxisTicksFontSize || '11'}
@@ -269,7 +289,11 @@ export default function DashboardWidgetPreview(
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
             <MeasurementComponent
               preview={true}
-              dataValues={tab && tab.chartData ? tab.chartData[0]?.values : []}
+              dataValues={
+                tab && tab.chartData
+                  ? tab.chartData[0]?.values.map(([s, n]) => [s, n])
+                  : []
+              }
               timeValues={tab.chartLabels || []}
               valueWarning={tab.chartStaticValues?.[0] || 0}
               valueAlarm={tab.chartStaticValues?.[1] || 0}
@@ -336,6 +360,7 @@ export default function DashboardWidgetPreview(
           )}
         </div>
       )}
+
       {tab.componentType === tabComponentTypeEnum.slider && (
         <div className="w-full h-full">
           {tab.componentSubType === tabComponentSubTypeEnum.coloredSlider && (
@@ -457,6 +482,7 @@ export default function DashboardWidgetPreview(
             mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
             mapWmsUrl={tab.mapWmsUrl || ''}
             mapWmsLayer={tab.mapWmsLayer || ''}
+            staticValuesLogos={[]}
           />
         </div>
       )}
@@ -532,6 +558,25 @@ export default function DashboardWidgetPreview(
           {!tab.imageUrl && tab.imageSrc && (
             <ImageComponent imageBase64={tab.imageSrc} />
           )}
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.interactiveComponent && (
+        <div className="h-full p-2 overflow-y-auto">
+          {tab.componentSubType ===
+            tabComponentSubTypeEnum.chartDateSelector && (
+            <ChartDateSelector
+              tab={tab}
+              tabData={{ chartData: DUMMY_CHART_DATA }}
+              corporateInfo={data!}
+            ></ChartDateSelector>
+          )}
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.valueToImage && (
+        <div className="w-full h-full">
+          <ValuesToImageComponent tab={tab} tabData={{ textValue: '1' }} />
         </div>
       )}
     </div>

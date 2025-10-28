@@ -54,6 +54,7 @@ const singleSelectWidgetTypes: string[] = [
   'Stageable Chart',
   'Measurement',
   'Farbiger Slider',
+  'Werte zu Bildern',
 ];
 
 export default function QueryConfigWizard(
@@ -216,7 +217,9 @@ export default function QueryConfigWizard(
 
           {/* Aggregation for timeseries data */}
           {widgetType === tabComponentSubTypeEnum.lineChart ||
-          widgetType === tabComponentSubTypeEnum.barChart ? (
+          widgetType === tabComponentSubTypeEnum.lineChartDynamic ||
+          widgetType === tabComponentSubTypeEnum.barChart ||
+          widgetType === tabComponentSubTypeEnum.barChartDynamic ? (
             <div>
               {datasourceOrigin !== authDataTypeEnum.internal && (
                 <>

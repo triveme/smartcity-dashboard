@@ -9,6 +9,7 @@ import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { DataTranslationRepo } from '../data-translation.repo';
+import { FiwareAttribute } from './fiware.types';
 
 @Injectable()
 export class PopulateValueService {
@@ -180,6 +181,35 @@ export class PopulateValueService {
         }
       } else {
         console.warn('No Data found for attribute:', attribute);
+      }
+    } else if ('attrs' in queryData) {
+      const queryDataMap: Map<string, FiwareAttribute[]> = new Map(
+        Object.entries(queryData),
+      ) as Map<string, FiwareAttribute[]>;
+      const attributes: FiwareAttribute[] = queryDataMap.get('attrs');
+      if (attributes) {
+        const matchingAttribute = attributes.find(
+          (attributeObject) => attributeObject.attrName === attribute,
+        );
+        if (matchingAttribute) {
+          for (const type of matchingAttribute.types) {
+            const entities = type.entities;
+            for (
+              let entityIndex = 0;
+              entityIndex < entities.length;
+              entityIndex++
+            ) {
+              const entity = entities[entityIndex];
+              if (entity.values && entity.values.length > 0) {
+                tab.textValue = String(entity.values[entity.values.length - 1]);
+              }
+            }
+          }
+        } else {
+          console.warn('No Data found for attribute:', attribute);
+        }
+      } else {
+        console.warn('no attributes');
       }
     } else {
       // NGSI Data Structure

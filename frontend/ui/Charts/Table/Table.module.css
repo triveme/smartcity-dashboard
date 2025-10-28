@@ -1,0 +1,138 @@
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%; 
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+}
+
+.tableWrapper {
+  height: 100%;
+  width: 100%; 
+  overflow-y: auto;
+  overflow-x: auto;
+  font-family: Arial, sans-serif;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.tableHeader {
+  position: sticky;
+  top: 0;
+  /* background-color: #005b9e; */ 
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px 12px;
+  font-weight: bold;
+}
+
+.btnContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.btn {
+  display: block;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+
+}
+
+.tableBody .tableRow:nth-child(even) {
+  background-color: #FFFFFF;
+  color: rgb(2, 0, 0);
+}
+
+
+.nameCell,
+.valueCell {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.nameCell {
+  text-align: left; 
+  border-right: 1px solid #ccc;
+
+}
+
+.dotWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.valueCell {
+  text-align: left; 
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background-color: #999999;
+}
+
+
+.tableWrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 4px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: transparent;
+} 
+
+/* select styles */
+
+.select {
+  position: absolute;
+  outline: none;
+  color: black;
+  top: 0;
+  left: 0;
+}
+
+.select:focus {
+  outline: none;
+}
+
+.selectOption {
+  color: black;
+}
+
+/* Selection Bar */
+
+  .filterControlsBar{
+  display: flex;
+  gap: 8px;
+  padding: 6px 10px;
+  background-color: #f2f2f2;
+  border-top: 1px solid #ccc;
+  }
+  
+.bottomBtn {
+  padding: 4px 10px;
+  color: black;
+  cursor: pointer;
+}
+
+
+.bottomBtn:disabled {
+ cursor: not-allowed;
+ color: #cac6c6;
+}

@@ -7,7 +7,7 @@ import IconSelection from './Icons/IconSelection';
 import WizardLabel from './WizardLabel';
 
 type StaticValuesFieldProps = {
-  initialChartStaticValues: number[];
+  initialChartStaticValues: (number | string)[];
   initialStaticColors: string[];
   initialStaticValuesTicks?: number[];
   initialStaticValuesLogos?: string[];
@@ -20,6 +20,7 @@ type StaticValuesFieldProps = {
   borderColor: string;
   fontColor: string;
   type?: string;
+  isTextValues?: boolean;
 };
 
 export default function StaticValuesField(
@@ -31,14 +32,13 @@ export default function StaticValuesField(
     initialStaticValuesTicks = [],
     initialStaticValuesLogos = [],
     initialStaticValuesTexts = [],
-    initialIconColor,
-    initialLabelColor,
     error,
     handleTabChange,
     borderColor,
     backgroundColor,
     fontColor,
     type,
+    isTextValues,
   } = props;
 
   const [inputValues, setInputValues] = useState<string[]>(
@@ -53,44 +53,43 @@ export default function StaticValuesField(
   const [textValues, setTextValues] = useState<string[]>(
     initialStaticValuesTexts,
   );
-  const [isEditing, setIsEditing] = useState(false);
 
   // Synchronize only if no active edits are in progress
   useEffect(() => {
-    if (!isEditing) {
-      setInputValues(initialChartStaticValues.map(String));
-      setTickValues(initialStaticValuesTicks.map(String));
-      setLogoValues(initialStaticValuesLogos);
-      setTextValues(initialStaticValuesTexts);
-    }
-  }, [
-    initialChartStaticValues,
-    initialStaticValuesTicks,
-    initialStaticValuesLogos,
-    initialStaticValuesTexts,
-    initialIconColor,
-    initialLabelColor,
-    isEditing,
-  ]);
+    setInputValues(initialChartStaticValues.map(String));
+    setTickValues(initialStaticValuesTicks.map(String));
+    setLogoValues(initialStaticValuesLogos);
+    setTextValues(initialStaticValuesTexts);
+  }, []);
 
   const handleChangeValue = (value: string | number, index: number): void => {
-    setIsEditing(true);
-
     const newInputValues = [...inputValues];
     newInputValues[index] = value.toString();
     setInputValues(newInputValues);
 
     const numericValue = parseFloat(value.toString());
-    const newNumericValues = [...initialChartStaticValues];
+    const newNumericValues = initialChartStaticValues.map((v) => {
+      return isNaN(v as number) ? 0 : v;
+    });
+    const newStringValues = inputValues.map((v) => {
+      return v.toString();
+    });
+
     newNumericValues[index] = isNaN(numericValue) ? 0 : numericValue;
-    handleTabChange({ chartStaticValues: newNumericValues });
+    newStringValues[index] = value?.toString() || '';
+
+    handleTabChange({
+      chartStaticValues: newNumericValues as number[],
+      chartStaticValuesTexts: newStringValues as string[],
+    });
   };
 
   const handleAddMainValue = (): void => {
     const newValues = [...initialChartStaticValues, 0];
     const newColors = [...initialStaticColors, fontColor];
     handleTabChange({
-      chartStaticValues: newValues,
+      chartStaticValues: newValues as number[],
+      chartStaticValuesTexts: newValues as string[],
       chartStaticValuesColors: newColors,
     });
     setInputValues([...inputValues, '']);
@@ -102,16 +101,17 @@ export default function StaticValuesField(
     );
     const newColors = initialStaticColors.filter((_, idx) => idx !== index);
     handleTabChange({
-      chartStaticValues: newValues,
+      chartStaticValues: newValues as number[],
+      chartStaticValuesTexts: newValues as string[],
       chartStaticValuesColors: newColors,
     });
     setInputValues(inputValues.filter((_, idx) => idx !== index));
   };
 
   const handleAddAdditionalValue = (): void => {
-    const newTicks = [...tickValues, ''];
+    const newTicks = [...tickValues, '0'];
     const newLogos = [...logoValues, 'ChevronLeft'];
-    const newTexts = [...textValues, ''];
+    const newTexts = [...textValues, 'Label'];
     handleTabChange({
       chartStaticValuesTicks: newTicks.map(Number),
       chartStaticValuesLogos: newLogos,
@@ -185,11 +185,22 @@ export default function StaticValuesField(
               onChange={(value: string | number): void =>
                 handleChangeValue(value, index)
               }
-              isNumeric={true}
+              isNumeric={!isTextValues}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
               error={error}
             />
+
+            {type === 'map' && (
+              <IconSelection
+                activeIcon={logoValues[index] || ''}
+                handleIconSelect={(value: string): void => {
+                  handleChangeLogo(value, index);
+                }}
+                iconColor={fontColor}
+                borderColor={borderColor}
+              />
+            )}
 
             <ColorPickerComponent
               currentColor={initialStaticColors[index] || fontColor}
@@ -206,9 +217,16 @@ export default function StaticValuesField(
         </div>
       ))}
 
-      {type !== 'sliderOverview' && (
+      {type !== 'sliderOverview' && type !== 'map' && (
         <CreateDashboardElementButton
           label="+ Statischen Wert hinzufügen"
+          handleClick={handleAddMainValue}
+        />
+      )}
+
+      {type === 'map' && (
+        <CreateDashboardElementButton
+          label="+ Schwellwert hinzufügen"
           handleClick={handleAddMainValue}
         />
       )}

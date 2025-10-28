@@ -12,6 +12,7 @@ type StaticValuesFieldProps = {
   initialStaticValuesTexts?: string[];
   initialIconColor?: string;
   initialLabelColor?: string;
+  initialFontColor?: string;
   error?: string;
   handleTabChange: (update: Partial<Tab>) => void;
   initialRangeStaticValuesMin: number[];
@@ -23,6 +24,7 @@ type StaticValuesFieldProps = {
   backgroundColor: string;
   borderColor: string;
   fontColor: string;
+
   type?: string;
 };
 
@@ -54,6 +56,7 @@ export default function StaticValuesFieldRange(
     borderColor,
     backgroundColor,
     fontColor,
+
     type,
   } = props;
 

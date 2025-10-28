@@ -30,6 +30,8 @@ export const timeFrameWithLive = [
   { label: 'Monat', value: timeframeEnum.month },
   { label: 'Quartal', value: timeframeEnum.quarter },
   { label: 'Jahr', value: timeframeEnum.year },
+  // { label: '2 Jahre', value: timeframeEnum.year2 },
+  // { label: '3 Jahre', value: timeframeEnum.year3 },
 ];
 
 export const timeFrameWithoutLive = [
@@ -39,11 +41,14 @@ export const timeFrameWithoutLive = [
   { label: 'Monat', value: timeframeEnum.month },
   { label: 'Quartal', value: timeframeEnum.quarter },
   { label: 'Jahr', value: timeframeEnum.year },
+  { label: '2 Jahre', value: timeframeEnum.year2 },
+  { label: '3 Jahre', value: timeframeEnum.year3 },
 ];
 
 export const mapComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Pin', value: tabComponentSubTypeEnum.pin },
+  { label: 'Pin (dynamisch)', value: tabComponentSubTypeEnum.pinDynamic },
   { label: 'Kombinierte Karte', value: tabComponentSubTypeEnum.combinedMap },
   { label: 'GeoJSON', value: tabComponentSubTypeEnum.geoJSON },
   {
@@ -85,8 +90,18 @@ export const chartComponentSubTypes = [
     value: tabComponentSubTypeEnum.pieChartDynamic,
   },
   { label: 'Liniendiagramm', value: tabComponentSubTypeEnum.lineChart },
+  {
+    label: 'Liniendiagramm (dynamisch)',
+    value: tabComponentSubTypeEnum.lineChartDynamic,
+  },
   { label: 'Balkendiagramm', value: tabComponentSubTypeEnum.barChart },
+  {
+    label: 'Balkendiagramm (dynamisch)',
+    value: tabComponentSubTypeEnum.barChartDynamic,
+  },
   { label: 'Messung', value: tabComponentSubTypeEnum.measurement },
+  { label: 'Table', value: tabComponentSubTypeEnum.table }, //hk
+  { label: 'Table (dynamisch)', value: tabComponentSubTypeEnum.tableDynamic },
 ];
 
 export const chartDateRepresentation = [
@@ -95,6 +110,10 @@ export const chartDateRepresentation = [
   {
     label: 'nur Monat (Jahr beim Jahreswechsel)',
     value: chartDateRepresentaionEnum.onlyMonth,
+  },
+  {
+    label: 'nur Zeit-Labels (müssen im Datensatz vorhanden sein)',
+    value: chartDateRepresentaionEnum.onlyLabels,
   },
 ];
 
@@ -108,6 +127,14 @@ export const informationComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Text', value: tabComponentSubTypeEnum.text },
   { label: 'Icon mit Link', value: tabComponentSubTypeEnum.iconWithLink },
+];
+
+export const interactiveComponentSubTypes = [
+  { label: '', value: '' },
+  {
+    label: 'Chart Datum Selektor',
+    value: tabComponentSubTypeEnum.chartDateSelector,
+  },
 ];
 
 export const widgetImageSources = [

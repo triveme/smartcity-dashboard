@@ -35,7 +35,6 @@ export class AuthService {
       this.logger.error('Using old authentication method');
       throw Error('Using old authentication method');
     }
-    console.log('dataToSend', dataToSend);
     const { data } = await lastValueFrom(
       this.httpService
         .post(toSend.authUrl, dataToSend, {

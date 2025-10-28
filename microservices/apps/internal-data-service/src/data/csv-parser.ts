@@ -1,6 +1,6 @@
 export type Meta = Record<string, string | number>;
 
-interface ValueEntry {
+export interface ValueEntry {
   Meta: Meta;
   Time: Meta;
   Value: string | number;

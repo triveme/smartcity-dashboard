@@ -13,11 +13,19 @@ export enum timeframeEnum {
   month = 'month',
   quarter = 'quarter',
   year = 'year',
+  year2 = 'year2',
+  year3 = 'year3',
 }
 
 export enum visibilityEnum {
   public = 'public',
   protected = 'protected',
+}
+
+export enum dashboardTypeEnum {
+  general = 'Allgemein',
+  map = 'Karte',
+  iframe = 'iFrame',
 }
 
 export enum tabComponentTypeEnum {
@@ -32,6 +40,8 @@ export enum tabComponentTypeEnum {
   value = 'Wert',
   iframe = 'iFrame',
   image = 'Bild',
+  interactiveComponent = 'Interaktive Komponente',
+  valueToImage = 'Werte zu Bildern',
 }
 
 export enum tabComponentSubTypeEnum {
@@ -44,9 +54,14 @@ export enum tabComponentSubTypeEnum {
   pieChart = 'Pie Chart',
   pieChartDynamic = 'Pie Chart (dynamisch)',
   lineChart = 'Linien Chart',
+  lineChartDynamic = 'Linien Chart (dynamisch)',
   barChart = 'Balken Chart',
+  table = 'Table',
+  tableDynamic = 'Table (dynamisch)',
+  barChartDynamic = 'Balken Chart (dynamisch)',
   measurement = 'Measurement',
   pin = 'Pin',
+  pinDynamic = 'Pin (dynamisch)',
   parking = 'Parking',
   combinedMap = 'Kombinierte Karte',
   square = 'Square',
@@ -60,12 +75,14 @@ export enum tabComponentSubTypeEnum {
   geoJSONDynamic = 'GeoJSON (dynamisch)',
   coloredSlider = 'Farbiger Slider',
   overviewSlider = 'Slider Übersicht',
+  chartDateSelector = 'Chart Datum Selektor',
 }
 
 export enum chartDateRepresentaionEnum {
   default = 'Default',
   onlyJear = 'Only Year',
   onlyMonth = 'Only Month',
+  onlyLabels = 'Only Labels',
 }
 
 export enum widgetImageSourceEnum {

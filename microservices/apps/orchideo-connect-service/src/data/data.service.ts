@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { eq } from 'drizzle-orm';
 
-import { AuthService } from '../auth/auth.service';
+import { AuthService, KeycloakResponse } from '../auth/auth.service';
 import { QueryBatch } from '../api.service';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { dataSources } from '@app/postgres-db/schemas/data-source.schema';
@@ -13,6 +13,7 @@ import {
   systemUsers,
 } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DataService {
@@ -21,6 +22,7 @@ export class DataService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getCollections(
@@ -34,7 +36,6 @@ export class DataService {
 
       this.logger.debug('getCollections: ', url);
       this.logger.debug('getCollections: ', authorizationToken);
-
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${authorizationToken}`,
@@ -134,6 +135,22 @@ export class DataService {
     return users.length > 0 ? users[0] : null;
   }
 
+  async getTokenData(
+    auth_data: any,
+    password: any,
+    queryBatch: any,
+  ): Promise<KeycloakResponse> {
+    const tokenData = await this.authService.getTokenData({
+      username: queryBatch.system_user.username,
+      password: EncryptionUtil.decryptPassword(password as object),
+      client_id: auth_data.clientId,
+      grant_type: auth_data.grantType,
+      authUrl: auth_data.authUrl,
+    });
+
+    return tokenData;
+  }
+
   async getDataFromDataSource(
     queryBatch: QueryBatch,
   ): Promise<AxiosResponse[]> {
@@ -141,14 +158,11 @@ export class DataService {
 
     try {
       const password = queryBatch.system_user.password;
-
-      const tokenData = await this.authService.getTokenData({
-        username: queryBatch.system_user.username,
-        password: EncryptionUtil.decryptPassword(password as object),
-        client_id: auth_data.clientId,
-        grant_type: auth_data.grantType,
-        authUrl: auth_data.authUrl,
-      });
+      const tokenData = await this.getTokenData(
+        auth_data,
+        password,
+        queryBatch,
+      );
 
       let url = `${auth_data.apiUrl}/collections/${queryBatch.query_config.fiwareService}/${queryBatch.query_config.fiwareType}/data`;
 
@@ -215,6 +229,22 @@ export class DataService {
           ).toISOString();
           params.end = now.toISOString();
           break;
+        case 'year2':
+          params.start = new Date(
+            now.getFullYear() - 2,
+            now.getMonth(),
+            now.getDate(),
+          ).toISOString();
+          params.end = now.toISOString();
+          break;
+        case 'year3':
+          params.start = new Date(
+            now.getFullYear() - 3,
+            now.getMonth(),
+            now.getDate(),
+          ).toISOString();
+          params.end = now.toISOString();
+          break;
         default:
           params = {
             count: 1,
@@ -249,15 +279,41 @@ export class DataService {
 
       if (query_config.timeframe !== 'live') {
         let offset = 0;
-
-        // Loop to fetch all data in chunks of 1000
+        const max = parseInt(
+          this.configService.get('ORCHIDEO_MAX_ENTRIES', '250000'),
+        );
+        const start = new Date();
+        // Loop to fetch all data in chunks of 1000 max 500000
+        console.log(`Start fetch data from orchideo in (max ${max})`);
         do {
           params.offset = offset;
-          const response = await axios.get(url, { headers, params });
-          fetchedData = response.data;
-          allData = allData.concat(fetchedData);
-          offset += fetchedData.length;
-        } while (fetchedData.length === 1000);
+          try {
+            const response = await axios.get(url, { headers, params });
+            fetchedData = response.data;
+            allData = allData.concat(fetchedData);
+            offset += fetchedData.length;
+          } catch (error) {
+            if (error.response && error.response.status === 401) {
+              const tokenData = await this.getTokenData(
+                auth_data,
+                password,
+                queryBatch,
+              );
+              headers.Authorization = `Bearer ${tokenData.access_token}`;
+              const response2 = await axios.get(url, { headers, params });
+              fetchedData = response2.data;
+              allData = allData.concat(fetchedData);
+              offset += fetchedData.length;
+            } else {
+              throw error;
+            }
+          }
+        } while (fetchedData.length === 1000 && allData.length < max);
+        const end = new Date();
+        const timeDif = end.getTime() - start.getTime();
+        console.log(
+          `Fetched data from orchideo ${allData.length} in ${timeDif / 1000} sec`,
+        );
       } else {
         const response = await axios.get(url, { headers, params });
         fetchedData = response.data;
@@ -266,7 +322,6 @@ export class DataService {
 
       // Data cleanup because orchideo is always returning all sensor attributes
       allData = this.filterByAttribute(query_config.attributes, allData);
-
       // Change LAT LONG order if position attribute is present
       allData = allData.map((item) => {
         if (item.position && item.position.coordinates) {

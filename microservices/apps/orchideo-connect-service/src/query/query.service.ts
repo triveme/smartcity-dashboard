@@ -137,9 +137,8 @@ export class QueryService {
     const currentTime = new Date();
     const updatedAt = new Date(query.updatedAt);
     const timeDifference = currentTime.getTime() - updatedAt.getTime();
-
     // Check if the time difference is less than the queryConfig's interval (in seconds)
-    return timeDifference > interval * 1000;
+    return timeDifference > interval * 1000 || query.queryData === null;
   }
 
   private mapQueriesToTenantAbbreviation(

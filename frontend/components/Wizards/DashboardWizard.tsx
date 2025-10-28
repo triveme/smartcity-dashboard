@@ -15,6 +15,7 @@ import {
 } from '@/api/widget-service';
 import SearchableDropdown from '@/ui/SearchableDropdown';
 import {
+  dashboardTypeEnum,
   Panel,
   Tab,
   tabComponentTypeEnum,
@@ -51,8 +52,8 @@ type DashboardWizardProps = {
   setDashboardWriteRoles: (dashboardWriteRoles: string[]) => void;
   dashboardIcon: string;
   setDashboardIcon: (icon: string) => void;
-  dashboardType: string;
-  setDashboardType: (type: string) => void;
+  dashboardType: dashboardTypeEnum;
+  setDashboardType: (type: dashboardTypeEnum) => void;
   dashboardAllowShare: boolean;
   setDashboardAllowShare: (type: boolean) => void;
   dashboardAllowDataExport: boolean;
@@ -68,8 +69,8 @@ type DashboardWizardProps = {
   borderColor: string;
   backgroundColor: string;
   hoverColor: string;
-  dashboardMap?: Widget;
-  originalDashboardType?: string;
+  dashboardWidget?: Widget;
+  originalDashboardType?: dashboardTypeEnum;
 };
 
 export default function DashboardWizard(
@@ -104,15 +105,17 @@ export default function DashboardWizard(
     borderColor,
     backgroundColor,
     hoverColor,
-    dashboardMap,
+    dashboardWidget,
     originalDashboardType,
+    setSelectedTab,
   } = props;
 
   // Keycloak roles
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState([]);
-  let origianlMapIdIsSet: boolean = false;
-  const [originalMapId, setOriginalMapId] = useState<string>();
+  const [previousWidgetId, setPreviousWidgetId] = useState<string | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (auth && auth.user && auth.user?.access_token) {
@@ -123,11 +126,17 @@ export default function DashboardWizard(
     }
   }, [auth]);
 
-  const [selectedWidgetInDropdown, setSelectedWidgetInDropdown] = useState('');
+  const [selectedWidgetInDropdown, setSelectedWidgetInDropdown] = useState(
+    dashboardWidget ? dashboardWidget.name : '',
+  );
   const [allWidgets, setAllWidgets] = useState<Widget[]>([]);
+  const [prevDashboardType, setprevDashboardType] = useState<
+    dashboardTypeEnum | undefined
+  >(undefined);
   const [mapWidgets, setMapWidgets] = useState<WidgetWithChildren[]>([]);
-  const [selectedWidget, setSelectedWidget] = dashboardMap
-    ? useState<Widget>(dashboardMap)
+  const [iframeWidgets, setIFrameWidgets] = useState<WidgetWithChildren[]>([]);
+  const [selectedWidget, setSelectedWidget] = dashboardWidget
+    ? useState<Widget>(dashboardWidget)
     : useState<Widget>();
 
   const { data: widgets } = useQuery({
@@ -145,6 +154,27 @@ export default function DashboardWizard(
       ),
   });
 
+  const { data: widgetsWithIFrameType } = useQuery({
+    queryKey: ['widgetsWithIFrameType'],
+    queryFn: async () => {
+      const response = await getWidgetsByTenantAndTabComponentType(
+        auth?.user?.access_token,
+        tabComponentTypeEnum.iframe,
+        tenant,
+      );
+      if (dashboardWidget && dashboardType === dashboardTypeEnum.iframe) {
+        const widget = response.find(
+          (x) => x.widget.name === dashboardWidget.name,
+        );
+        if (widget) {
+          setSelectedTab(widget.tab);
+        }
+      }
+      setIFrameWidgets(response);
+      return response;
+    },
+  });
+
   useEffect(() => {
     if (widgets) {
       setAllWidgets(widgets);
@@ -156,6 +186,12 @@ export default function DashboardWizard(
       setMapWidgets(widgetsWithMapType);
     }
   }, [widgetsWithMapType]);
+
+  useEffect(() => {
+    if (widgetsWithIFrameType) {
+      setIFrameWidgets(widgetsWithIFrameType);
+    }
+  }, [widgetsWithIFrameType]);
 
   useEffect(() => {
     allWidgets.map((widget) => {
@@ -181,30 +217,36 @@ export default function DashboardWizard(
   useEffect(() => {
     const fetchPanel = async (): Promise<void> => {
       // delete previously attached panels when user changes dashboardType
-      if (dashboardType !== originalDashboardType) {
+      if (
+        originalDashboardType !== dashboardType ||
+        prevDashboardType == dashboardTypeEnum.general
+      ) {
         await clearPanels();
+        setPreviousWidgetId(undefined);
       }
-      // only runs when user changes dashboardType to Karte
-      // either when creating a new dashboard or editing type from Allgemein to Karte
-      if (originalDashboardType !== 'Karte' && dashboardType === 'Karte') {
+      // only runs when user changes dashboardType to Karte or iFrame
+      // either when creating a new dashboard or editing type from Allgemein to Karte/iFrame
+      const isCurrentSpecial =
+        dashboardType === dashboardTypeEnum.map ||
+        dashboardType === dashboardTypeEnum.iframe;
+      if (prevDashboardType === dashboardTypeEnum.general && isCurrentSpecial) {
         try {
           const newPanel = await postPanel(
             auth.user?.access_token,
             EMPTY_PANEL,
           );
+
           setPanels([newPanel]);
         } catch (error) {
           console.error('Failed to post panel:', error);
         }
       }
     };
-    if (!origianlMapIdIsSet) {
-      setOriginalMapId(selectedWidget?.id);
-      origianlMapIdIsSet = true;
-    }
+    setPreviousWidgetId(selectedWidget?.id);
+    setprevDashboardType(dashboardType);
 
     fetchPanel();
-  }, [dashboardType, auth.user?.access_token, setPanels]);
+  }, [dashboardType, auth.user?.access_token]);
 
   useEffect(() => {
     const handleWidgetClick = async (): Promise<void> => {
@@ -214,11 +256,12 @@ export default function DashboardWizard(
               (widget: Widget) => widget.name === selectedWidgetInDropdown,
             )
           : undefined;
+
       if (match && match.id && panels && panels.length > 0 && panels[0].id) {
-        if (originalMapId) {
+        if (previousWidgetId) {
           await patchWidgetToPanelRelation(
             auth?.user?.access_token,
-            originalMapId!,
+            previousWidgetId!,
             match.id!,
             panels[0].id,
           );
@@ -230,6 +273,15 @@ export default function DashboardWizard(
             0,
           );
         }
+        if (dashboardType === dashboardTypeEnum.iframe) {
+          const widget = iframeWidgets.find(
+            (x) => x.widget.name === match.name,
+          );
+          if (widget) {
+            setSelectedTab(widget.tab);
+          }
+        }
+        setPreviousWidgetId(match?.id);
       }
     };
     handleWidgetClick();
@@ -249,8 +301,39 @@ export default function DashboardWizard(
       }
       setMapWidgets(response || []);
     };
-    if (dashboardType === 'Karte') {
+    const getWidgetsWithIFrameType = async (): Promise<void> => {
+      let response;
+      try {
+        response = await getWidgetsByTenantAndTabComponentType(
+          auth?.user?.access_token,
+          tabComponentTypeEnum.iframe,
+          tenant,
+        );
+      } catch (error) {
+        console.error('Failed to get widgets with map type:', error);
+      }
+      setIFrameWidgets(response || []);
+    };
+    if (dashboardType === dashboardTypeEnum.map) {
       getWidgetsWithMapType();
+      if (originalDashboardType !== dashboardTypeEnum.map) {
+        setSelectedWidgetInDropdown('');
+      } else if (
+        originalDashboardType === dashboardTypeEnum.map &&
+        dashboardWidget
+      ) {
+        setSelectedWidgetInDropdown(dashboardWidget.name);
+      }
+    } else if (dashboardType === dashboardTypeEnum.iframe) {
+      getWidgetsWithIFrameType();
+      if (originalDashboardType !== dashboardTypeEnum.iframe) {
+        setSelectedWidgetInDropdown('');
+      } else if (
+        originalDashboardType === dashboardTypeEnum.iframe &&
+        dashboardWidget
+      ) {
+        setSelectedWidgetInDropdown(dashboardWidget.name);
+      }
     }
   }, [dashboardType]);
 
@@ -342,21 +425,37 @@ export default function DashboardWizard(
         <WizardLabel label="Type" />
         <WizardDropdownSelection
           currentValue={dashboardType}
-          selectableValues={['Allgemein', 'Karte']}
+          selectableValues={Object.values(dashboardTypeEnum)}
           onSelect={(value: string | number): void =>
-            setDashboardType(value.toString())
+            setDashboardType(value as dashboardTypeEnum)
           }
           iconColor={iconColor}
           borderColor={borderColor}
           backgroundColor={backgroundColor}
         />
       </div>
-      {dashboardType === 'Karte' && (
+      {dashboardType === dashboardTypeEnum.map && (
         <div className="flex flex-col w-full pb-2 z-0">
           <SearchableDropdown
-            value={dashboardMap?.name || ''}
+            value={selectedWidgetInDropdown}
             options={
               mapWidgets ? mapWidgets.map((widget) => widget.widget.name) : []
+            }
+            onSelect={setSelectedWidgetInDropdown}
+            backgroundColor={backgroundColor}
+            borderColor={borderColor}
+            hoverColor={hoverColor}
+          />
+        </div>
+      )}
+      {dashboardType === dashboardTypeEnum.iframe && (
+        <div className="flex flex-col w-full pb-2 z-0">
+          <SearchableDropdown
+            value={selectedWidgetInDropdown}
+            options={
+              iframeWidgets
+                ? iframeWidgets.map((widget) => widget.widget.name)
+                : []
             }
             onSelect={setSelectedWidgetInDropdown}
             backgroundColor={backgroundColor}

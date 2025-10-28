@@ -37,9 +37,9 @@ internal-data-service:
   service:
     enabled: true
   image:
-    repository: smartcity/internal-data-service
-    tag: 'latest-dev'
-    pullPolicy: IfNotPresent
+    repository: ghcr.io/triveme/smartcity-dashboard/internal-data-service
+    tag: 1.0.9
+    pullPolicy: Always
 
 frontend:
   enabled: false
@@ -47,6 +47,6 @@ frontend:
 migrations:
   enabled: true
   image:
-    repository: smartcity/migrations
-    tag: 'latest-dev'
-    pullPolicy: IfNotPresent
+    repository: ghcr.io/triveme/smartcity-dashboard/migrations
+    tag: 1.0.9
+    pullPolicy: Always

@@ -272,6 +272,10 @@ export const corporateInfos = pgTable('corporate_info', {
   stageableChartTicksFontSize: text('stageable_chart_ticks_font_size').default(
     '10',
   ),
+  tableFontColor: text('table_font_color').default('#000000'),
+  tableHeaderColor: text('table_header_color').default('#005b9e'),
+  tableEvenRowColor: text('table_even_row_color').default('#FFFFFF'),
+  tableOddRowColor: text('table_odd_row_color').default('#2D3244'),
   useColorTransitionHeader: boolean('use_color_transition_header').default(
     false,
   ),

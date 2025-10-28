@@ -182,7 +182,6 @@ export default async function DashboardWidget({
           widget.tabs.map((tab: Tab, index: number) => {
             // Determine what data to pass to the tab based on available properties
             let tabData;
-
             // First check if we have widgetData
             if (widget?.widgetData?.data) {
               tabData = widget.widgetData.data;

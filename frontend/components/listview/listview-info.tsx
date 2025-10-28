@@ -49,11 +49,7 @@ export function ListViewInfo(props: ListViewInfoProps): React.JSX.Element {
           </h3>
           {showCategory && (
             <p className="truncate" style={{ fontSize: descriptionFontSize }}>
-              {info.types
-                ? info.types.map((type: string) => {
-                    return type.toString() + ' ';
-                  })
-                : null}
+              {info.types?.join(', ') || ''}
             </p>
           )}
         </div>

@@ -10,7 +10,13 @@ import CancelButton from '@/ui/Buttons/CancelButton';
 import SaveButton from '@/ui/Buttons/SaveButton';
 import DashboardWizard from '@/components/Wizards/DashboardWizard';
 import DashboardPreview from '@/components/Previews/DashboardPreview';
-import { Dashboard, Panel, Tab, visibilityEnum } from '@/types';
+import {
+  Dashboard,
+  dashboardTypeEnum,
+  Panel,
+  Tab,
+  visibilityEnum,
+} from '@/types';
 import {
   getDashboardByIdWithStructure,
   postDashboard,
@@ -54,7 +60,9 @@ export default function Pages(): ReactElement {
   const [dashboardReadRoles, setDashboardReadRoles] = useState<string[]>([]);
   const [dashboardWriteRoles, setDashboardWriteRoles] = useState<string[]>([]);
   const [dashboardIcon, setDashboardIcon] = useState('');
-  const [dashboardType, setDashboardType] = useState('');
+  const [dashboardType, setDashboardType] = useState<dashboardTypeEnum | null>(
+    null,
+  );
   const [dashboardAllowShare, setDashboardAllowShare] = useState(false);
   const [dashboardAllowDataExport, setDashboardAllowDataExport] =
     useState(false);
@@ -132,9 +140,8 @@ export default function Pages(): ReactElement {
       setDashboardWriteRoles(dashboardData.writeRoles || []);
       setDashboardIcon(dashboardData.icon || '');
       // setPanels(dashboardData.panels || []);
-      setDashboardType(dashboardData.type || '');
       setPanels(dashboardData.panels || []);
-      setDashboardType(dashboardData.type || 'Allgemein');
+      setDashboardType(dashboardData.type || dashboardTypeEnum.general);
       setDashboardAllowShare(dashboardData.allowShare || false);
       setDashboardAllowDataExport(dashboardData.allowDataExport || false);
       if (dashboardData.headlineColor) {
@@ -328,7 +335,7 @@ export default function Pages(): ReactElement {
           <DashboardPreview
             panels={panels}
             handlePanelChange={setPanels}
-            dashboardType={dashboardType}
+            dashboardType={dashboardType ?? dashboardTypeEnum.general}
             selectedTab={selectedTab}
             fontColor={data?.dashboardFontColor || '#fff'}
             iconColor={data?.dashboardFontColor || '#fff'}
@@ -361,7 +368,7 @@ export default function Pages(): ReactElement {
             setDashboardWriteRoles={setDashboardWriteRoles}
             dashboardIcon={dashboardIcon}
             setDashboardUrl={setDashboardUrl}
-            dashboardType={dashboardType || 'Allgemein'}
+            dashboardType={dashboardType || dashboardTypeEnum.general}
             setDashboardType={setDashboardType}
             dashboardAllowShare={dashboardAllowShare}
             setDashboardAllowShare={setDashboardAllowShare}
@@ -378,12 +385,15 @@ export default function Pages(): ReactElement {
             backgroundColor={data?.dashboardPrimaryColor || '#2B3244'}
             borderColor={data?.widgetBorderColor || '#2B3244'}
             hoverColor={data?.menuHoverColor || '#59647D'}
-            dashboardMap={
-              dashboardData?.type === 'Karte'
+            dashboardWidget={
+              dashboardData?.type === dashboardTypeEnum.map ||
+              dashboardData?.type === dashboardTypeEnum.iframe
                 ? dashboardData?.panels[0]?.widgets[0]
                 : undefined
             }
-            originalDashboardType={dashboardData?.type || 'Allgemein'}
+            originalDashboardType={
+              dashboardData?.type || dashboardTypeEnum.general
+            }
           />
         </div>
       </div>

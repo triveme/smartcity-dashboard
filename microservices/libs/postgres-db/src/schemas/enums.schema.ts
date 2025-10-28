@@ -15,6 +15,8 @@ export const timeframeEnum = pgEnum('timeframe', [
   'month',
   'quarter',
   'year',
+  'year2',
+  'year3',
 ]);
 
 export const aggregationPeriodEnum = pgEnum('aggregation_period', [
@@ -38,6 +40,8 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'iFrame',
   'Bild',
   'Listview',
+  'Interaktive Komponente',
+  'Werte zu Bildern',
 ]);
 
 export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
@@ -49,21 +53,28 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Pie Chart',
   'Pie Chart (dynamisch)',
   'Linien Chart',
+  'Linien Chart (dynamisch)',
   'Balken Chart',
+  'Balken Chart (dynamisch)',
   'Measurement',
   'Pin',
+  'Pin (dynamisch)',
   'Parking',
   'Kombinierte Karte',
   'GeoJSON',
   'GeoJSON (dynamisch)',
   'Farbiger Slider',
   'Slider Übersicht',
+  'Table',
+  'Table (dynamisch)',
+  'Chart Datum Selektor',
 ]);
 
 export const chartDateRepresentationEnum = pgEnum('chart_date_representation', [
   'Default',
   'Only Year',
   'Only Month',
+  'Only Labels',
 ]);
 
 export const authDataTypeEnum = pgEnum('auth_data_type', [

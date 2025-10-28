@@ -1,6 +1,32 @@
 import { ChartData } from '@/types';
 import { Dictionary } from 'lodash';
 
+type LabelMap = Map<number, [number, number, string]>;
+
+function isSameDay(ts1: number, ts2: number): boolean {
+  const d1 = new Date(ts1);
+  const d2 = new Date(ts2);
+
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+}
+function getSameDayLabel(
+  labelsMap: LabelMap,
+  value: number,
+): string | undefined {
+  const keys = labelsMap.keys().toArray();
+  for (let index = 0; index < keys.length; index++) {
+    const element = keys[index];
+    const sameDay = isSameDay(value, element);
+    if (sameDay) {
+      return labelsMap.get(element)![2];
+    }
+  }
+}
+
 export function getLabelName(text: string, index: number): string {
   if (text) {
     const parts = text.split('|');
@@ -194,9 +220,33 @@ export const getChartDateRichText = (
       return undefined;
   }
 };
+export const getLabelMap = (
+  representation: string | undefined,
+  series: (echarts.LineSeriesOption | echarts.BarSeriesOption)[],
+): Map<number, [number, number, string]> | undefined => {
+  if (representation === 'Only Labels') {
+    const labelMap = new Map();
+    series.forEach((serie) => {
+      if (serie.data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        serie.data.forEach((dataset: any) => {
+          const time = dataset[0];
+          const timestamp = new Date(time).getTime();
+          if (!labelMap.has(timestamp)) {
+            labelMap.set(timestamp, [timestamp, dataset[1], dataset[2]]);
+          }
+        });
+      }
+    });
+    return labelMap;
+  } else {
+    return undefined;
+  }
+};
 
 export const getChartDateFormatter = (
   representation: string,
+  labelsMap?: LabelMap,
 ):
   | {
       year: string;
@@ -205,7 +255,8 @@ export const getChartDateFormatter = (
       hour?: string;
       second?: string;
     }
-  | undefined => {
+  | undefined
+  | ((value: number) => string) => {
   switch (representation) {
     case 'Default':
       return {
@@ -228,6 +279,26 @@ export const getChartDateFormatter = (
         month: '{monthStyle|{MMM}}',
         day: '',
       };
+    case 'Only Labels':
+      if (labelsMap) {
+        return (value: number): string => {
+          if (labelsMap.has(value)) {
+            return labelsMap.get(value)![2];
+          } else {
+            const r = getSameDayLabel(labelsMap, value);
+            if (r) {
+              return r;
+            }
+            return '';
+          }
+        };
+      } else {
+        return {
+          year: '',
+          month: '',
+          day: '',
+        };
+      }
 
     /* If the representation not known, deactivate the date formatter */
     default:

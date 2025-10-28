@@ -328,6 +328,8 @@ export function getGermanLabelForAttribute(attribute: string): string {
       return 'Feinstaub PM2,5';
     case 'RELATIV_FREI':
       return 'Frei (%)';
+    case 'ARIQUALITYINDEX':
+      return 'Luftqualitätsindex';
     default:
       return attribute;
   }

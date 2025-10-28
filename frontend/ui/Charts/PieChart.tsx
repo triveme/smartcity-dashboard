@@ -39,6 +39,10 @@ type PieChartProps = {
   currentValuesColors: string[];
   allowImageDownload?: boolean;
   pieChartRadius?: number;
+  playAnimation?: boolean;
+  highlightedIndex?: number;
+  highlightedColor?: string;
+  unhighlightedColor?: string;
 };
 
 export default function PieChart(props: PieChartProps): ReactElement {
@@ -51,9 +55,13 @@ export default function PieChart(props: PieChartProps): ReactElement {
     currentValuesColors,
     allowImageDownload,
     pieChartRadius,
+    playAnimation = true,
+    highlightedColor,
+    unhighlightedColor,
   } = props;
 
   const chartRef = useRef<HTMLDivElement>(null);
+  const highlightedIndex = useRef<number>(-1);
   let myChart: ECharts | null = null;
 
   const dataToDisplay: PieChartDataItem[] = data.map((value, index) => ({
@@ -61,7 +69,12 @@ export default function PieChart(props: PieChartProps): ReactElement {
     name: labels[index] || `Sensor ${index + 1}`,
     unit: unit,
     itemStyle: {
-      color: currentValuesColors[index % currentValuesColors.length],
+      color:
+        props.highlightedIndex != undefined && props.highlightedIndex >= 0
+          ? index == props.highlightedIndex
+            ? highlightedColor!
+            : unhighlightedColor!
+          : currentValuesColors[index % currentValuesColors.length],
     },
   }));
 
@@ -69,7 +82,12 @@ export default function PieChart(props: PieChartProps): ReactElement {
     if (chartRef.current) {
       myChart = echarts.init(chartRef.current);
 
+      if (props.highlightedIndex != undefined) {
+        highlightedIndex.current = props.highlightedIndex;
+      }
+
       const option: EChartsOption = {
+        animation: playAnimation,
         tooltip: {
           trigger: 'item',
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -131,7 +149,6 @@ export default function PieChart(props: PieChartProps): ReactElement {
           },
         },
       };
-
       myChart.setOption(option);
     }
   };

@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import PageHeadline from '@/ui/PageHeadline';
 import {
   CorporateInfo,
+  dashboardTypeEnum,
   DashboardWithContent,
   MapModalLegend,
   MapModalWidget,
@@ -28,6 +29,7 @@ import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
 import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
+import IFrameComponent from '@/ui/IFrameComponent';
 
 type DashboardProps = {
   dashboard: DashboardWithContent;
@@ -76,7 +78,7 @@ export default async function Dashboard(
   let tab;
   let combinedMapData;
   let combinedQueryData;
-  if (dashboard.type === 'Karte') {
+  if (dashboard.type === dashboardTypeEnum.map) {
     tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
 
     if (tab?.componentType === tabComponentTypeEnum.map) {
@@ -143,65 +145,68 @@ export default async function Dashboard(
 
   return (
     <div style={dashboardStyle} className="w-full h-full overflow-auto">
-      {dashboard.type !== 'Karte' && (
-        <div className="p-4 w-full">
-          <div className="w-full flex justify-between items-center">
-            <div className="w-full flex justify-start items-center gap-x-2">
-              <div>
-                <PageHeadline
-                  headline={dashboard.name || 'Dashboardseite'}
-                  fontColor={ciColors.dashboardFontColor}
-                  fontSize={generateResponsiveFontSize(
-                    parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
-                  )}
-                />
+      {dashboard.type !== dashboardTypeEnum.map &&
+        dashboard.type !== dashboardTypeEnum.iframe && (
+          <div className="p-4 w-full">
+            <div className="w-full flex justify-between items-center">
+              <div className="w-full flex justify-start items-center gap-x-2">
+                <div>
+                  <PageHeadline
+                    headline={dashboard.name || 'Dashboardseite'}
+                    fontColor={ciColors.dashboardFontColor}
+                    fontSize={generateResponsiveFontSize(
+                      parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
+                    )}
+                  />
+                </div>
+                {dashboard.allowShare ? (
+                  <ShareLinkButton
+                    type="dashboard"
+                    id={dashboard.id || ''}
+                    widgetPrimaryColor={ciColors?.dashboardPrimaryColor}
+                    widgetFontColor={ciColors?.dashboardFontColor}
+                  />
+                ) : null}
+                {isEditable ? (
+                  <RedirectPageButton
+                    url={`/${tenant}/admin/pages/edit?id=${dashboard?.id}`}
+                    isShortStyle={true}
+                    headerPrimaryColor={ciColors.headerPrimaryColor}
+                    headerFontColor={ciColors.headerFontColor}
+                  />
+                ) : null}
               </div>
-              {dashboard.allowShare ? (
-                <ShareLinkButton
-                  type="dashboard"
+              {dashboard.allowDataExport && (
+                <DataExportButton
                   id={dashboard.id || ''}
-                  widgetPrimaryColor={ciColors?.dashboardPrimaryColor}
-                  widgetFontColor={ciColors?.dashboardFontColor}
+                  type="dashboard"
+                  headerPrimaryColor={ciColors?.headerPrimaryColor}
+                  headerFontColor={ciColors?.headerFontColor}
+                  panelFontColor={ciColors?.panelFontColor}
+                  widgetFontColor={ciColors?.widgetFontColor}
                 />
-              ) : null}
-              {isEditable ? (
-                <RedirectPageButton
-                  url={`/${tenant}/admin/pages/edit?id=${dashboard?.id}`}
-                  isShortStyle={true}
-                  headerPrimaryColor={ciColors.headerPrimaryColor}
-                  headerFontColor={ciColors.headerFontColor}
-                />
-              ) : null}
+              )}
             </div>
-            {dashboard.allowDataExport && (
-              <DataExportButton
-                id={dashboard.id || ''}
-                type="dashboard"
-                headerPrimaryColor={ciColors?.headerPrimaryColor}
-                headerFontColor={ciColors?.headerFontColor}
-                panelFontColor={ciColors?.panelFontColor}
-                widgetFontColor={ciColors?.widgetFontColor}
-              />
-            )}
-          </div>
 
-          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-12 gap-1 pt-2">
-            {dashboard.panels?.length > 0 &&
-              dashboard.panels.map((panel) => (
-                <DashboardPanel
-                  key={`dashboardPanel-${panel.id}`}
-                  panel={panel}
-                  tenant={tenant}
-                  dashboardId={dashboard.id!}
-                />
-              ))}
+            <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-12 gap-1 pt-2">
+              {dashboard.panels?.length > 0 &&
+                dashboard.panels.map((panel) => (
+                  <DashboardPanel
+                    key={`dashboardPanel-${panel.id}`}
+                    panel={panel}
+                    tenant={tenant}
+                    dashboardId={dashboard.id!}
+                  />
+                ))}
+            </div>
           </div>
-        </div>
-      )}
-      {dashboard.type === 'Karte' && (
+        )}
+      {dashboard.type === dashboardTypeEnum.map && (
         <div id="map" className="w-full h-full">
           {dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType !==
-          tabComponentSubTypeEnum.geoJSONDynamic ? (
+            tabComponentSubTypeEnum.geoJSONDynamic &&
+          dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType !==
+            tabComponentSubTypeEnum.pinDynamic ? (
             <>
               {dashboard?.panels?.[0].widgets?.[0].tabs?.[0]
                 .componentSubType === tabComponentSubTypeEnum.combinedMap ? (
@@ -466,6 +471,7 @@ export default async function Dashboard(
                   }
                   staticValues={tab?.chartStaticValues || []}
                   staticValuesColors={tab?.chartStaticValuesColors || []}
+                  staticValuesLogos={tab?.chartStaticValuesLogos || []}
                   mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
                   mapWmsUrl={tab?.mapWmsUrl || ''}
                   mapWmsLayer={tab?.mapWmsLayer || ''}
@@ -501,6 +507,11 @@ export default async function Dashboard(
             />
           )}
         </div>
+      )}
+      {dashboard.type === dashboardTypeEnum.iframe && (
+        <IFrameComponent
+          src={dashboard?.panels?.[0].widgets?.[0].tabs?.[0].iFrameUrl ?? ''}
+        ></IFrameComponent>
       )}
     </div>
   );

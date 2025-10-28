@@ -61,6 +61,10 @@ type WidgetWizardProps = {
   hoverColor: string;
   widgetHeadlineColor: string;
   fontColor: string;
+  tableFontColor: string;
+  tableHeaderColor: string;
+  tableOddRowColor: string;
+  tableEvenRowColor: string;
 };
 
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
@@ -74,6 +78,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     hoverColor,
     widgetHeadlineColor,
     fontColor,
+    tableFontColor,
+    tableHeaderColor,
+    tableOddRowColor,
+    tableEvenRowColor,
   } = props;
 
   const paramsSearch = useSearchParams();
@@ -103,7 +111,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const [reportConfig, setReportConfig] =
     useState<ReportConfig>(EMPTY_REPORT_CONFIG);
   // TAB
-  const [tab, setTab] = useState<Tab>();
+  const [tab, setTab] = useState<Tab>({} as Tab);
 
   // ERROR State
   const [errors, setErrors] = useState<WizardErrors>({});
@@ -601,6 +609,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
               queryConfig={queryConfig}
               fontColor={fontColor}
               tenant={tenant}
+              tableFontColor={tableFontColor}
+              tableHeaderColor={tableHeaderColor}
+              tableOddRowColor={tableOddRowColor}
+              tableEvenRowColor={tableEvenRowColor}
             />
             {widgetHasQueryConfig && (
               <>

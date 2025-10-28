@@ -5,6 +5,7 @@ import {
   reportThresholdTriggerTypeEnum,
   QueryData,
   menuArrowDirectionEnum,
+  dashboardTypeEnum,
 } from '.';
 
 export type Dashboard = {
@@ -15,7 +16,7 @@ export type Dashboard = {
   headlineColor?: string;
   icon: string | null;
   readRoles: string[] | null;
-  type: string | null;
+  type: dashboardTypeEnum | null;
   url: string | null;
   visibility: visibilityEnum;
   writeRoles: string[] | null;
@@ -29,7 +30,7 @@ export type DashboardWithContent = {
   icon: string | null;
   panels: PanelWithContent[];
   readRoles: string[] | null;
-  type: string | null;
+  type: dashboardTypeEnum | null;
   url: string | null;
   visibility: visibilityEnum;
   writeRoles: string[] | null;
@@ -207,6 +208,8 @@ export type Tab = {
   componentType?: string;
   dataModelId?: string;
   decimalPlaces?: number;
+  dynamicHighlightColor?: string;
+  dynamicUnhighlightColor?: string;
   icon?: string;
   iconColor?: string;
   iconText?: string;
@@ -244,6 +247,7 @@ export type Tab = {
   mapGeoJSONHoverFillOpacity?: number;
   mapIsFormColorValueBased?: boolean;
   mapIsIconColorValueBased?: boolean;
+  mapGeoJSONFeatureIdentifier?: string;
   mapLatitude?: number;
   mapLegendDisclaimer?: string;
   mapLegendValues?: MapModalLegend[];
@@ -301,8 +305,14 @@ export type Tab = {
   sliderMaximumAttribute?: string;
   textValue?: string;
   tiles?: number;
+  tableFontColor?: string; //table
+  tableHeaderColor?: string; //table
+  tableOddRowColor?: string; //table
+  tableEvenRowColor?: string; //table
   widgetId?: string;
   weatherWarnings?: WeatherWarningType[];
+  chartStaticValuesText?: boolean;
+  valuesToImages?: ValueToImageData[];
 };
 
 export type TabWithQuery = Tab & {
@@ -520,6 +530,10 @@ export type CorporateInfo = {
   stageableChartTicksFontColor: string;
   stageableChartTicksFontSize: string;
   titleBar: string;
+  tableFontColor?: string;
+  tableHeaderColor?: string;
+  tableOddRowColor?: string;
+  tableEvenRowColor?: string;
   useColorTransitionHeader: boolean;
   useColorTransitionMenu: boolean;
 
@@ -603,8 +617,10 @@ export type AuthData = {
 
 export type ChartData = {
   name: string;
-  values: [string, number][];
+  values: [string, number, string?][];
   color?: string;
+  highlighted?: boolean;
+  id?: string;
 };
 
 export type Mail = {
@@ -646,4 +662,17 @@ export type InternalData = {
   firstDataColIndex: number;
   firstDataRowIndex: number;
   timeGroupRowCount: number;
+};
+
+export type ValueToImageData = {
+  min: string;
+  max: string;
+  imageId: string;
+};
+
+export type TabImage = {
+  id?: string;
+  tenantId: string | undefined;
+  imageBase64: string;
+  name: string;
 };

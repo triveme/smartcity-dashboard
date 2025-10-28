@@ -548,7 +548,6 @@ export class DataService {
         result.attrs.push(attribute);
       }
     }
-
     return result;
   }
 
@@ -670,7 +669,15 @@ export class DataService {
   }
 
   private getFromDate(
-    timeframe: 'hour' | 'day' | 'week' | 'month' | 'quarter' | 'year',
+    timeframe:
+      | 'hour'
+      | 'day'
+      | 'week'
+      | 'month'
+      | 'quarter'
+      | 'year'
+      | 'year2'
+      | 'year3',
   ): Date {
     const now = new Date();
     let fromDate: Date;
@@ -687,6 +694,10 @@ export class DataService {
       fromDate = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000);
     } else if (timeframe === 'year') {
       fromDate = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'year2') {
+      fromDate = new Date(now.getTime() - 24 * 30 * 24 * 60 * 60 * 1000);
+    } else if (timeframe === 'year3') {
+      fromDate = new Date(now.getTime() - 36 * 30 * 24 * 60 * 60 * 1000);
     }
 
     return fromDate;
@@ -816,7 +827,40 @@ export class DataService {
         }
       });
     }
-    // Case 3: Single value property
+    // Case 3: Aggregated data with sum array
+    else if (attr?.type === 'Property' && attr.sum && Array.isArray(attr.sum)) {
+      const sortedSum = [...attr.sum].sort((a, b) => a[1].localeCompare(b[1]));
+
+      sortedSum.forEach((item) => {
+        if (Array.isArray(item) && item.length >= 2) {
+          timestamps.push(item[1]);
+          values.push(item[0]);
+        }
+      });
+    }
+    // Case 4: Aggregated data with min array
+    else if (attr?.type === 'Property' && attr.min && Array.isArray(attr.min)) {
+      const sortedMin = [...attr.min].sort((a, b) => a[1].localeCompare(b[1]));
+
+      sortedMin.forEach((item) => {
+        if (Array.isArray(item) && item.length >= 2) {
+          timestamps.push(item[1]);
+          values.push(item[0]);
+        }
+      });
+    }
+    // Case 5: Aggregated data with max array
+    else if (attr?.type === 'Property' && attr.max && Array.isArray(attr.max)) {
+      const sortedMax = [...attr.max].sort((a, b) => a[1].localeCompare(b[1]));
+
+      sortedMax.forEach((item) => {
+        if (Array.isArray(item) && item.length >= 2) {
+          timestamps.push(item[1]);
+          values.push(item[0]);
+        }
+      });
+    }
+    // Case 6: Single value property
     else if (attr?.type === 'Property' && attr.value !== undefined) {
       timestamps.push(new Date().toISOString());
       values.push(attr.value);
