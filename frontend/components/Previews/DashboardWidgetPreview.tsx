@@ -566,9 +566,17 @@ export default function DashboardWidgetPreview(
           {tab.componentSubType ===
             tabComponentSubTypeEnum.chartDateSelector && (
             <ChartDateSelector
-              tab={tab}
-              tabData={{ chartData: DUMMY_CHART_DATA }}
-              corporateInfo={data!}
+              data={DUMMY_CHART_DATA_YEAR}
+              dateSelectorBorderColor={data!.dateSelectorBorderColor}
+              dateSelectorBackgroundColorSelected={
+                data!.dateSelectorBackgroundColorSelected
+              }
+              dateSelectorFontColorSelected={
+                data!.dateSelectorFontColorSelected
+              }
+              dateSelectorFontColorUnselected={
+                data!.dateSelectorFontColorUnselected
+              }
             ></ChartDateSelector>
           )}
         </div>

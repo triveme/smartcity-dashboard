@@ -72,7 +72,7 @@ export class PopulateValueService {
           const weatherWarning: WeatherWarningData = {
             category: data.category.value,
             subCategory: data.subCategory.value,
-            alertDescription: data.AlertDescription.value,
+            alertDescription: data.alertDescription.value,
             instructions: data.instruction.value,
             severity: data.severity.value,
             validFrom: data.validFrom.value,

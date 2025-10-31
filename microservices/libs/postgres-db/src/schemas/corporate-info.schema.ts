@@ -365,6 +365,18 @@ export const corporateInfos = pgTable('corporate_info', {
   listviewMapButtonFontColor: text('listview_map_button_font_color').default(
     '#FFFFFF',
   ),
+
+  //date selector
+  dateSelectorBorderColor: text('dateselector_border_color').default('#3D4760'),
+  dateSelectorBackgroundColorSelected: text(
+    'dateselector_background_color_selected',
+  ).default('#3D4760'),
+  dateSelectorFontColorSelected: text(
+    'dateselector_font_color_selected',
+  ).default('#2D3244'),
+  dateSelectorFontColorUnselected: text(
+    'dateselector_font_color_unselected',
+  ).default('#3D4760'),
 });
 
 export type CorporateInfo = typeof corporateInfos.$inferSelect;

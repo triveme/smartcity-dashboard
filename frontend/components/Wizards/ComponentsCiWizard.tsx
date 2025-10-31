@@ -236,6 +236,14 @@ type Props = {
   setListviewMapButtonHoverBackgroundColor: (color: string) => void;
   listviewMapButtonFontColor: string;
   setListviewMapButtonFontColor: (color: string) => void;
+  dateSelectorBorderColor: string;
+  setDateSelectorBorderColor: (color: string) => void;
+  dateSelectorBackgroundColorSelected: string;
+  setDateSelectorBackgroundColorSelected: (color: string) => void;
+  dateSelectorFontColorSelected: string;
+  setDateSelectorFontColorSelected: (color: string) => void;
+  dateSelectorFontColorUnselected: string;
+  setDateSelectorFontColorUnselected: (color: string) => void;
 
   iconColor: string;
   borderColor: string;
@@ -475,6 +483,14 @@ export default function ComponentsCiWizard({
   setListviewMapButtonHoverBackgroundColor,
   listviewMapButtonFontColor,
   setListviewMapButtonFontColor,
+  dateSelectorBorderColor,
+  setDateSelectorBorderColor,
+  dateSelectorBackgroundColorSelected,
+  setDateSelectorBackgroundColorSelected,
+  dateSelectorFontColorSelected,
+  setDateSelectorFontColorSelected,
+  dateSelectorFontColorUnselected,
+  setDateSelectorFontColorUnselected,
 
   iconColor,
   borderColor,
@@ -557,6 +573,10 @@ export default function ComponentsCiWizard({
     [tabComponentTypeEnum.information]: [
       '',
       tabComponentSubTypeEnum.iconWithLink,
+    ],
+    [tabComponentTypeEnum.interactiveComponent]: [
+      '',
+      tabComponentSubTypeEnum.chartDateSelector,
     ],
   };
 
@@ -1856,6 +1876,54 @@ export default function ComponentsCiWizard({
                 </div>
               </div>
             )}
+            {selectedComponentType ===
+              tabComponentTypeEnum.interactiveComponent && (
+              <div className="flex-1">
+                {selectedComponentSubType ===
+                  tabComponentSubTypeEnum.chartDateSelector && (
+                  <div className="flex-col">
+                    <div className="flex flex-row">
+                      <div className="flex flex-row w-1/2 mt-2 ml-4">
+                        <ColorPickerComponent
+                          currentColor={dateSelectorBorderColor}
+                          handleColorChange={setDateSelectorBorderColor}
+                          label="Randfarbe"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-row">
+                      <div className="flex flex-row w-1/2 mt-2 ml-4">
+                        <ColorPickerComponent
+                          currentColor={dateSelectorBackgroundColorSelected}
+                          handleColorChange={
+                            setDateSelectorBackgroundColorSelected
+                          }
+                          label="Hintergrundfarbe Ausgewählt"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-row">
+                      <div className="flex flex-row w-1/2 mt-2 ml-4">
+                        <ColorPickerComponent
+                          currentColor={dateSelectorFontColorSelected}
+                          handleColorChange={setDateSelectorFontColorSelected}
+                          label="Schriftfarbe Ausgewählt"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-row">
+                      <div className="flex flex-row w-1/2 mt-2 ml-4">
+                        <ColorPickerComponent
+                          currentColor={dateSelectorFontColorUnselected}
+                          handleColorChange={setDateSelectorFontColorUnselected}
+                          label="Schriftfarbe Nicht Ausgewählt"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -2015,6 +2083,12 @@ export default function ComponentsCiWizard({
                 listviewMapButtonHoverBackgroundColor
               }
               listviewMapButtonFontColor={listviewMapButtonFontColor}
+              dateSelectorBorderColor={dateSelectorBorderColor}
+              dateSelectorBackgroundColorSelected={
+                dateSelectorBackgroundColorSelected
+              }
+              dateSelectorFontColorSelected={dateSelectorFontColorSelected}
+              dateSelectorFontColorUnselected={dateSelectorFontColorUnselected}
             />
           </div>
         </div>

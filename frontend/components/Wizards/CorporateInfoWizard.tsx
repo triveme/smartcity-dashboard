@@ -791,6 +791,26 @@ export default function CorporateInfoWizard({
             setListviewMapButtonFontColor={(value): void =>
               updateState('listviewMapButtonFontColor', value)
             }
+            dateSelectorBorderColor={state.dateSelectorBorderColor}
+            setDateSelectorBorderColor={(value): void =>
+              updateState('dateSelectorBorderColor', value)
+            }
+            dateSelectorBackgroundColorSelected={
+              state.dateSelectorBackgroundColorSelected
+            }
+            setDateSelectorBackgroundColorSelected={(value): void =>
+              updateState('dateSelectorBackgroundColorSelected', value)
+            }
+            dateSelectorFontColorSelected={state.dateSelectorFontColorSelected}
+            setDateSelectorFontColorSelected={(value): void =>
+              updateState('dateSelectorFontColorSelected', value)
+            }
+            dateSelectorFontColorUnselected={
+              state.dateSelectorFontColorUnselected
+            }
+            setDateSelectorFontColorUnselected={(value): void =>
+              updateState('dateSelectorFontColorUnselected', value)
+            }
           />
         )}
         {activeTab === 'Logo' && (

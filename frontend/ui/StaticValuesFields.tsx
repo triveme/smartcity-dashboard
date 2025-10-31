@@ -321,7 +321,7 @@ export default function StaticValuesField(
               <div className="flex gap-4 h-14">
                 <div className="w-64">
                   <WizardTextfield
-                    value={tickValues[index] || 0}
+                    value={tickValues[index]}
                     onChange={(value): void => handleChangeTick(value, index)}
                     isNumeric={false}
                     borderColor={borderColor}
@@ -331,7 +331,7 @@ export default function StaticValuesField(
                 </div>
                 <div className="w-full">
                   <WizardTextfield
-                    value={textValues[index] || 'Label'}
+                    value={textValues[index]}
                     onChange={(value): void =>
                       handleChangeText(value.toString(), index)
                     }

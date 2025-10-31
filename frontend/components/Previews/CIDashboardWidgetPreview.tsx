@@ -12,10 +12,11 @@ import IconWithLink from '@/ui/IconWithLink';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import React from 'react';
-import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
+import { DUMMY_CHART_DATA, DUMMY_CHART_DATA_YEAR } from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
 import { ListView } from '@/components/listview/listview';
+import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 
 type CIDashboardWidgetPreviewProps = {
   componentType: string;
@@ -140,6 +141,12 @@ type CIDashboardWidgetPreviewProps = {
   listviewMapButtonBackgroundColor: string;
   listviewMapButtonHoverBackgroundColor: string;
   listviewMapButtonFontColor: string;
+
+  // Date Selector
+  dateSelectorBorderColor: string;
+  dateSelectorBackgroundColorSelected: string;
+  dateSelectorFontColorSelected: string;
+  dateSelectorFontColorUnselected: string;
 };
 
 export default function CIDashboardWidgetPreview(
@@ -266,6 +273,12 @@ export default function CIDashboardWidgetPreview(
     listviewMapButtonBackgroundColor,
     listviewMapButtonHoverBackgroundColor,
     listviewMapButtonFontColor,
+
+    // Date Selector
+    dateSelectorBorderColor,
+    dateSelectorBackgroundColorSelected,
+    dateSelectorFontColorSelected,
+    dateSelectorFontColorUnselected,
   } = props;
 
   // Static styling values
@@ -690,6 +703,21 @@ export default function CIDashboardWidgetPreview(
             }
             listviewMapButtonFontColor={listviewMapButtonFontColor}
           />
+        </div>
+      )}
+      {componentType === tabComponentTypeEnum.interactiveComponent && (
+        <div className="w-full h-full">
+          {componentSubType === tabComponentSubTypeEnum.chartDateSelector && (
+            <ChartDateSelector
+              data={DUMMY_CHART_DATA_YEAR}
+              dateSelectorBorderColor={dateSelectorBorderColor}
+              dateSelectorBackgroundColorSelected={
+                dateSelectorBackgroundColorSelected
+              }
+              dateSelectorFontColorSelected={dateSelectorFontColorSelected}
+              dateSelectorFontColorUnselected={dateSelectorFontColorUnselected}
+            />
+          )}
         </div>
       )}
     </div>

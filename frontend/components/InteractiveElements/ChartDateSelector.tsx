@@ -1,20 +1,27 @@
 'use client';
 
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import { CorporateInfo, Tab } from '@/types';
+import { ChartData } from '@/types';
 import eventBus, { Event, YEAR_INDEX_SELECTION_EVENT } from '@/app/EventBus';
 
 type ChartDateSelectorProps = {
-  tab: Tab;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tabData: any;
-  corporateInfo: CorporateInfo;
+  data: ChartData[];
+  dateSelectorBorderColor: string;
+  dateSelectorBackgroundColorSelected: string;
+  dateSelectorFontColorSelected: string;
+  dateSelectorFontColorUnselected: string;
 };
 
 export default function ChartDateSelector(
   props: ChartDateSelectorProps,
 ): ReactElement {
-  const { tabData, corporateInfo } = props;
+  const {
+    data,
+    dateSelectorBorderColor,
+    dateSelectorBackgroundColorSelected,
+    dateSelectorFontColorSelected,
+    dateSelectorFontColorUnselected,
+  } = props;
 
   const selectedYearIndex = useRef<number>(0);
   const [years, setYears] = useState<string[]>([]);
@@ -44,10 +51,14 @@ export default function ChartDateSelector(
   }
 
   function filterData(): void {
-    if (tabData?.chartData) {
-      const years = tabData.chartData[0].values.map(
-        (v: string) => v[0].split('-')[0],
-      );
+    if (data) {
+      const years: string[] = [];
+      data[0].values.forEach((value) => {
+        const valueConverted = value[0].split('-')[0];
+        if (years.indexOf(valueConverted) > -1) {
+          years.push(valueConverted);
+        }
+      });
       setYears(years);
     }
   }
@@ -65,15 +76,15 @@ export default function ChartDateSelector(
                 cursor:
                   index == selectedYearIndex.current ? 'inherit' : 'pointer',
                 marginRight: '-1px',
-                border: '1px solid ' + corporateInfo.fontColor,
+                border: '1px solid ' + dateSelectorBorderColor,
                 background:
                   index == selectedYearIndex.current
-                    ? corporateInfo.fontColor
+                    ? dateSelectorBackgroundColorSelected
                     : 'inherit',
                 color:
                   index == selectedYearIndex.current
-                    ? corporateInfo.widgetPrimaryColor
-                    : 'inherit',
+                    ? dateSelectorFontColorSelected
+                    : dateSelectorFontColorUnselected,
                 width: 100 / years.length + '%',
               }}
               key={d}
