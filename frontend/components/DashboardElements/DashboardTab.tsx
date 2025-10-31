@@ -914,10 +914,20 @@ export default async function DashboardTab(
           {tab.componentSubType ===
             tabComponentSubTypeEnum.chartDateSelector && (
             <ChartDateSelector
-              tab={tab}
-              tabData={tabData}
-              corporateInfo={ciColors}
-            ></ChartDateSelector>
+              data={tabData.chartData || []}
+              dateSelectorBorderColor={
+                ciColors.dateSelectorBorderColor || '#FFFFFF'
+              }
+              dateSelectorBackgroundColorSelected={
+                ciColors.dateSelectorBackgroundColorSelected || '#FFFFFF'
+              }
+              dateSelectorFontColorSelected={
+                ciColors.dateSelectorFontColorSelected || '#000000'
+              }
+              dateSelectorFontColorUnselected={
+                ciColors.dateSelectorFontColorUnselected || '#FFFFFF'
+              }
+            />
           )}
         </div>
       )}

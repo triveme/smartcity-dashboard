@@ -541,6 +541,22 @@ export default function CorporateIdentity(): ReactElement {
         'listviewMapButtonFontColor',
         corporateInfo.listviewMapButtonFontColor,
       );
+      updateState(
+        'dateSelectorBorderColor',
+        corporateInfo.dateSelectorBorderColor,
+      );
+      updateState(
+        'dateSelectorBackgroundColorSelected',
+        corporateInfo.dateSelectorBackgroundColorSelected,
+      );
+      updateState(
+        'dateSelectorFontColorSelected',
+        corporateInfo.dateSelectorFontColorSelected,
+      );
+      updateState(
+        'dateSelectorFontColorUnselected',
+        corporateInfo.dateSelectorFontColorUnselected,
+      );
 
       // LOGO
       updateState('showHeaderLogo', corporateInfo.showHeaderLogo);

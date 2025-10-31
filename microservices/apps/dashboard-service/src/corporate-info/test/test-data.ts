@@ -224,6 +224,11 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     listviewMapButtonBackgroundColor: '#10B981',
     listviewMapButtonHoverBackgroundColor: '#059669',
     listviewMapButtonFontColor: '#FFFFFF',
+
+    dateSelectorBorderColor: '#3D4760',
+    dateSelectorBackgroundColorSelected: '#3D4760',
+    dateSelectorFontColorSelected: '#2D3244',
+    dateSelectorFontColorUnselected: '#3D4760',
   };
 }
 

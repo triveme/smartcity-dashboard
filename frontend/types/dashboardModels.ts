@@ -581,6 +581,12 @@ export type CorporateInfo = {
   listviewMapButtonBackgroundColor: string;
   listviewMapButtonHoverBackgroundColor: string;
   listviewMapButtonFontColor: string;
+
+  // Date Selector
+  dateSelectorBorderColor: string;
+  dateSelectorBackgroundColorSelected: string;
+  dateSelectorFontColorSelected: string;
+  dateSelectorFontColorUnselected: string;
 };
 
 export type WidgetWithChildren = {
