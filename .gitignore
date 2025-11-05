@@ -49,7 +49,7 @@ k8s/helm/secrets.yaml
 k8s/helm/*
 
 # Migrationfiles
-database/migrations/generated/*
+database/migrations/generated/meta/*
 
 # Ignore everything in the hcloud folder
 hcloud/*
