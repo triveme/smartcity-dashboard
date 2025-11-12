@@ -186,6 +186,11 @@ export function validateTab(tab: Tab): WizardErrors {
       errorsOccured.listviewDescriptionAttributeError =
         'Beschreibung Attribut ist erforderlich wenn Beschreibung angezeigt wird!';
     }
+  } else if (tab?.componentType === tabComponentTypeEnum.sensorStatus) {
+    const error = validateSensorStatusValues(tab);
+    if (error) {
+      errorsOccured.typeError = error;
+    }
   }
   return errorsOccured;
 }
@@ -279,6 +284,34 @@ function validateChartValues(tab: Tab): string | undefined {
           return `Wert ${tab.rangeStaticValuesMin[i + 1]} muss größer oder gleich ${maxValue} sein.`;
         }
       }
+    }
+  }
+
+  return undefined;
+}
+
+function validateSensorStatusValues(tab: Tab): string | undefined {
+  if (tab.sensorStatusMinThreshold === undefined)
+    return 'Minimum ist erforderlich!';
+  if (
+    tab.sensorStatusLightCount == 3 &&
+    tab.sensorStatusMaxThreshold === undefined
+  )
+    return 'Maximum ist erforderlich!';
+
+  if (tab.sensorStatusMaxThreshold !== undefined) {
+    const isMinNum = Number(tab.sensorStatusMinThreshold);
+    const isMaxNum = Number(tab.sensorStatusMaxThreshold);
+
+    // Both number and min larger than max
+    if (!isNaN(isMinNum) && !isNaN(isMaxNum) && isMinNum >= isMaxNum) {
+      return `Wert ${tab.sensorStatusMaxThreshold} muss größer oder gleich ${tab.sensorStatusMinThreshold} sein.`;
+      // One of them not a number
+    } else if (
+      (!isNaN(isMinNum) && isNaN(isMaxNum)) ||
+      (isNaN(isMinNum) && !isNaN(isMaxNum))
+    ) {
+      return `Die Bedingungen müssen vom gleichen Typ sein.`;
     }
   }
 

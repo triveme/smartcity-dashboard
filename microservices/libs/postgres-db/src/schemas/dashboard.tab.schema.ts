@@ -46,6 +46,11 @@ export const tabs = pgTable('tab', {
   chartYAxisScale: real('chart_y_axis_scale'),
   chartYAxisScaleChartMinValue: real('chart_y_axis_scale_chart_min_value'),
   chartYAxisScaleChartMaxValue: real('chart_y_axis_scale_chart_max_value'),
+  chartHoverSingleValue: boolean('chart_hover_single_value'),
+  chartDynamicOnlyShowHover: boolean('chart_dynamic_show_only_hover'),
+  chartDynamicNoSelectionDisplayAll: boolean(
+    'chart_dynamic_noselection_displayall',
+  ),
   childWidgets: text('child_widgets').array(),
   componentSubType: tabComponentSubTypeEnum('component_sub_type'),
   componentType: tabComponentTypeEnum('component_type'),
@@ -79,6 +84,9 @@ export const tabs = pgTable('tab', {
   mapFilterAttribute: text('map_filter_attribute'),
   mapGeoJSON: json('map_geojson'),
   mapGeoJSONSensorBasedColors: boolean('map_geojson_sensorcolors'),
+  mapGeoJSONSensorBasedNoDataColor: text(
+    'map_geojson_sensorcolors_nodatacolor',
+  ),
   mapGeoJSONBorderColor: text('map_geojson_bordercolor'),
   mapGeoJSONFillColor: text('map_geojson_fillcolor'),
   mapGeoJSONFillOpacity: real('map_geojson_fillopacity'),
@@ -108,6 +116,7 @@ export const tabs = pgTable('tab', {
   mapCombinedWmsUrl: text('map_combined_wms_url'),
   mapWmsLayer: text('map_wms_layer'),
   mapCombinedWmsLayer: text('map_combined_wms_layer'),
+  mapUnitsTexts: text('map_units_texts').array(),
   queryId: uuid('query_id').references(() => queries.id),
   rangeStaticValuesMin: real('range_static_values_min').array(),
   rangeStaticValuesMax: real('range_static_values_max').array(),
@@ -115,6 +124,10 @@ export const tabs = pgTable('tab', {
   rangeStaticValuesLogos: text('range_static_values_logos').array(),
   rangeStaticValuesLabels: text('range_static_values_labels').array(),
   setYAxisInterval: boolean('set_y_axis_interval'),
+  setSortAscending: boolean('set_sort_ascending'),
+  setSortDescending: boolean('set_sort_descending'),
+  setValueLimit: boolean('set_value_limit'),
+  userDefinedLimit: real('user_defined_limit'),
   showLegend: boolean('show_legend'),
   sliderCurrentAttribute: text('slider_current_attribute'),
   sliderMaximumAttribute: text('slider_maximum_attribute'),
@@ -158,6 +171,15 @@ export const tabs = pgTable('tab', {
     jsonb('values_to_images').$type<
       { min: string; max: string; imageId: string }[]
     >(),
+  // Sensorstatus properties
+  sensorStatusLightCount: smallint('sensor_status_light_count'),
+  sensorStatusMinThreshold: text('sensor_status_min_threshold'),
+  sensorStatusMaxThreshold: text('sensor_status_max_threshold'),
+  sensorStatusDefaultColor: text('sensor_status_default_color'),
+  sensorStatusColor1: text('sensor_status_color1'),
+  sensorStatusColor2: text('sensor_status_color2'),
+  sensorStatusColor3: text('sensor_status_color3'),
+  sensorStatusLayoutVertical: boolean('sensor_status_layout_vertical'),
 });
 
 export const tabsRelations = relations(tabs, ({ one }) => ({

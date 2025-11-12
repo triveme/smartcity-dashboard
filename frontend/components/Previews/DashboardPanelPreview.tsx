@@ -253,7 +253,13 @@ export default function DashboardPanelPreview(
                 index={index}
                 widget={widget}
                 widgetCount={widgets.length}
-                tab={{}}
+                tab={{
+                  setSortAscending: false,
+                  setSortDescending: false,
+                  setValueLimit: false,
+                  userDefinedLimit: 10,
+                  chartHoverSingleValue: false,
+                }}
                 moveWidget={moveWidget}
                 deleteRelation={handleDeleteClick}
                 hideControlIcons={false}

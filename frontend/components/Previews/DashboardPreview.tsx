@@ -245,6 +245,9 @@ export default function DashboardPreview(
           mapGeoJSONSensorBasedColors={
             selectedTab?.mapGeoJSONSensorBasedColors || false
           }
+          mapGeoJSONSensorBasedNoDataColor={
+            selectedTab?.mapGeoJSONSensorBasedNoDataColor || '#ff0000'
+          }
           mapGeoJSONBorderColor={
             selectedTab?.mapGeoJSONBorderColor || '#3388ff'
           }
@@ -265,6 +268,7 @@ export default function DashboardPreview(
           mapType={selectedTab?.componentSubType || ''}
           mapWmsUrl={selectedTab?.mapWmsUrl || ''}
           mapWmsLayer={selectedTab?.mapWmsLayer || ''}
+          mapUnitsTexts={selectedTab?.mapUnitsTexts || []}
         />
       )}
       {dashboardType === dashboardTypeEnum.iframe && selectedTab?.iFrameUrl && (

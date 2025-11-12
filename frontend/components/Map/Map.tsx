@@ -411,6 +411,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         dataSource: mapObject.dataSource,
         color: color,
         iconIndex: iconIndex + 1, // +1 bc of default icon at index 0
+        unitsTexts: props.mapUnitsTexts,
       };
     },
   );
@@ -484,6 +485,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
             (props.staticValuesColors as string[]) || [],
           );
         }
+      } else if (props.mapGeoJSONSensorBasedNoDataColor) {
+        return props.mapGeoJSONSensorBasedNoDataColor;
       }
     }
 
@@ -650,6 +653,14 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     const labels = [];
     let from;
     let to;
+
+    if (props.mapGeoJSONSensorBasedNoDataColor) {
+      labels.push(
+        '<i style="background:' +
+          props.mapGeoJSONSensorBasedNoDataColor +
+          '"></i> Keine Daten',
+      );
+    }
 
     for (let i = 0; i < staticValues.length; i++) {
       from = staticValues[i];
@@ -877,12 +888,10 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       }
 
       if (
-        mapGeoJSONHoveredFeature &&
+        mapGeoJSONHoveredFeature != undefined &&
         mapGeoJSONHoveredFeature != hoveredMapFeature.current
       ) {
         hoveredMapFeature.current = mapGeoJSONHoveredFeature;
-      } else {
-        hoveredMapFeature.current = '';
       }
     } else {
       setIconSvgMarkup(isCombinedMap ? [] : '');

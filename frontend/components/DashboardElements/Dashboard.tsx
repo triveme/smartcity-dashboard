@@ -258,6 +258,10 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapGeoJSONSensorBasedColors || false
                   }
+                  mapGeoJSONSensorBasedNoDataColor={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapGeoJSONSensorBasedNoDataColor || '#ff0000'
+                  }
                   mapGeoJSONBorderColor={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapGeoJSONBorderColor || '#3388ff'
@@ -367,6 +371,10 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapActiveMarkerColor || '#FF0000'
                   }
+                  mapUnitsTexts={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapUnitsTexts || []
+                  }
                   data={
                     dashboard.panels?.[0]?.widgets?.[0].widgetData?.data
                       ?.mapObject || []
@@ -411,6 +419,10 @@ export default async function Dashboard(
                   mapGeoJSONSensorBasedColors={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapGeoJSONSensorBasedColors || false
+                  }
+                  mapGeoJSONSensorBasedNoDataColor={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapGeoJSONSensorBasedNoDataColor || '#ff0000'
                   }
                   mapGeoJSONBorderColor={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]

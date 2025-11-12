@@ -84,15 +84,26 @@ export default function BarChartDynamic(
     hFeature: string,
   ): void {
     if (tabData?.chartData) {
-      const filteredData =
-        sFeatures.length > 0
-          ? tabData?.chartData?.filter(
-              (item: { id: string }) =>
-                sFeatures.includes(item.id) ||
-                sFeatures.includes('0' + item.id) ||
-                hFeature.includes(item.id),
+      let filteredData = [];
+      if (tab.chartDynamicOnlyShowHover) {
+        filteredData = hFeature
+          ? tabData?.chartData?.filter((item: { id: string }) =>
+              hFeature.includes(item.id),
             )
-          : tabData?.chartData;
+          : [];
+      } else {
+        filteredData =
+          sFeatures.length > 0
+            ? tabData?.chartData?.filter(
+                (item: { id: string }) =>
+                  sFeatures.includes(item.id) ||
+                  sFeatures.includes('0' + item.id) ||
+                  hFeature.includes(item.id),
+              )
+            : tab.chartDynamicNoSelectionDisplayAll === true
+              ? tabData?.chartData
+              : [];
+      }
 
       const data: ChartData[] =
         filteredData.map(
@@ -138,7 +149,7 @@ export default function BarChartDynamic(
             : undefined
         }
         chartDateRepresentation={tab?.chartDateRepresentation || 'Default'}
-        data={data || DUMMY_CHART_DATA}
+        data={data === undefined ? DUMMY_CHART_DATA : data}
         xAxisLabel={tab.chartXAxisLabel || ''}
         yAxisLabel={tab.chartYAxisLabel || ''}
         allowImageDownload={tab.chartAllowImageDownload || false}

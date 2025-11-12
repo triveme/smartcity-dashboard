@@ -71,7 +71,6 @@ export class TabRepo {
     transaction?: DbType,
   ): Promise<Tab> {
     const dbActor = transaction === undefined ? this.db : transaction;
-    console.log('VA', values);
     const result = await dbActor
       .update(tabs)
       .set(values)

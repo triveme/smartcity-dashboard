@@ -15,6 +15,7 @@ import {
   menuArrowDirectionEnum,
 } from '@/types';
 import { InterestingPlace } from '@/types/dataModels';
+import { PieChartDataItem } from '@/types/dashboardModels';
 import { MarkerType } from '@/types/mapRelatedModels';
 
 export const EMPTY_PANEL: Panel = {
@@ -644,6 +645,27 @@ export const DUMMY_CHART_DATA: ChartData[] = [
     ],
   },
 ];
+
+export const DUMMY_PIE_CHART_DATA: PieChartDataItem[] = [
+  {
+    value: 5,
+    name: 'Bsp. 1',
+    unit: 'cm',
+  },
+  {
+    value: 10,
+    name: 'Bsp. 2',
+    unit: 'cm',
+  },
+  {
+    value: 20,
+    name: 'Bsp. 3',
+    unit: 'cm',
+  },
+];
+
+export const DUMMY_PIE_CHART_VALUES: number[] = [5, 10, 20];
+export const DUMMY_PIE_CHART_LABELS: string[] = ['Bsp. 1', 'Bsp. 2', 'Bsp. 3'];
 
 export const DUMMY_POI_DATA: InterestingPlace[] = [
   {
