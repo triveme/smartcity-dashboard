@@ -28,11 +28,15 @@ import { ListView } from '@/components/listview/listview';
 import {
   DUMMY_CHART_DATA,
   DUMMY_CHART_DATA_YEAR,
+  DUMMY_PIE_CHART_LABELS,
+  DUMMY_PIE_CHART_VALUES,
   DUMMY_POI_DATA,
 } from '@/utils/objectHelper';
 import Table from '@/ui/Charts/Table';
+import BarChartHorizontal from '@/ui/Charts/BarChartHorizonal/BarChartHorizontal';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
+import SensorStatusComponent from '@/ui/SensorStatus';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -87,6 +91,85 @@ export default function DashboardWidgetPreview(
               fillColor={data?.degreeChart180FillColor || '#fff'}
             />
           )}
+          {tab.componentSubType === tabComponentSubTypeEnum.table && (
+            <Table
+              data={[]}
+              fontColor={tab?.tableFontColor || '#000000ff'}
+              headerColor={tab?.tableHeaderColor || '#005b9e'}
+              oddRowColor={tab?.tableOddRowColor || '#2D3244'}
+              evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+            />
+          )}
+          {tab.componentSubType ===
+            tabComponentSubTypeEnum.barChartHorizontal && (
+            <BarChartHorizontal
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined &&
+                tab?.chartYAxisScaleChartMinValue !== null
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined &&
+                tab?.chartYAxisScaleChartMaxValue !== null
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined &&
+                tab?.chartYAxisScale !== null
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
+              data={
+                tab?.chartDateRepresentation !== 'Default'
+                  ? DUMMY_CHART_DATA_YEAR
+                  : DUMMY_CHART_DATA
+              }
+              xAxisLabel={tab.chartXAxisLabel || ''}
+              yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
+              allowZoom={tab.mapAllowZoom || false}
+              showLegend={tab.showLegend || false}
+              staticValues={tab.chartStaticValues || []}
+              staticValuesColors={tab.chartStaticValuesColors || []}
+              fontColor={data?.dashboardFontColor || '#fff'}
+              axisColor={data?.barChartAxisLineColor || '#fff'}
+              axisFontSize={data?.barChartAxisTicksFontSize || '11'}
+              currentValuesColors={
+                data?.barChartCurrentValuesColors || [
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                  '#FFDE21',
+                ]
+              }
+              gridColor={data?.barChartGridColor || '#3D4760'}
+              legendFontSize={data?.barChartLegendFontSize || '11'}
+              axisLabelSize={data?.barChartAxisLabelSize || '11'}
+              legendAlignment={tab.chartLegendAlign || 'Top'}
+              legendFontColor={data?.barChartLegendFontColor || '#FFFFF'}
+              hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
+              isStackedChart={tab.isStackedChart || false}
+              filterColor={data?.barChartFilterColor || '#F1B434'}
+              filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
+              axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
+              decimalPlaces={tab?.decimalPlaces || 0}
+              setSortAscending={tab?.setSortAscending || false}
+              setSortDescending={tab?.setSortDescending || false}
+              setValueLimit={tab?.setValueLimit || false}
+              userDefinedLimit={tab?.userDefinedLimit || 10}
+            />
+          )}
           {tab.componentSubType === tabComponentSubTypeEnum.table ||
             (tab.componentSubType === tabComponentSubTypeEnum.tableDynamic && (
               <Table
@@ -127,8 +210,8 @@ export default function DashboardWidgetPreview(
             tab.componentSubType ===
               tabComponentSubTypeEnum.pieChartDynamic) && (
             <PieChart
-              labels={tab.chartLabels || []}
-              data={tab.chartValues || []}
+              labels={tab.chartLabels || DUMMY_PIE_CHART_LABELS}
+              data={tab.chartValues || DUMMY_PIE_CHART_VALUES}
               fontSize={data?.pieChartFontSize || '11'}
               fontColor={data?.pieChartFontColor || '#fff'}
               unit={tab.chartUnit || ''}
@@ -284,6 +367,7 @@ export default function DashboardWidgetPreview(
               filterTextColor={data?.barChartFilterTextColor || '#1D2330'}
               axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
               decimalPlaces={tab?.decimalPlaces || 0}
+              chartHoverSingleValue={tab?.chartHoverSingleValue || false}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -482,6 +566,7 @@ export default function DashboardWidgetPreview(
             mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
             mapWmsUrl={tab.mapWmsUrl || ''}
             mapWmsLayer={tab.mapWmsLayer || ''}
+            mapUnitsTexts={tab.mapUnitsTexts || []}
             staticValuesLogos={[]}
           />
         </div>
@@ -585,6 +670,29 @@ export default function DashboardWidgetPreview(
       {tab.componentType === tabComponentTypeEnum.valueToImage && (
         <div className="w-full h-full">
           <ValuesToImageComponent tab={tab} tabData={{ textValue: '1' }} />
+        </div>
+      )}
+      {tab.componentType === tabComponentTypeEnum.sensorStatus && (
+        <div className="w-full h-full">
+          <SensorStatusComponent
+            count={tab.sensorStatusLightCount || 2}
+            isLayoutVertical={tab.sensorStatusLayoutVertical || false}
+            size={widget?.height || 200}
+            defaultColor={tab.sensorStatusDefaultColor || '#808080'}
+            color1={tab.sensorStatusColor1 || '#FF0000'}
+            color2={
+              tab.sensorStatusColor2 ||
+              (tab.sensorStatusLightCount == 2 ? '#00FF00' : '#FFFF00')
+            }
+            color3={tab.sensorStatusColor3 || '#00FF00'}
+            value={
+              tab.chartValues && tab.chartValues.length > 0
+                ? tab.chartValues[0]
+                : 65
+            }
+            thresholdMin={tab.sensorStatusMinThreshold || '25'}
+            thresholdMax={tab.sensorStatusMaxThreshold || '65'}
+          />
         </div>
       )}
     </div>

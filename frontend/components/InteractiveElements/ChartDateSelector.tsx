@@ -55,7 +55,7 @@ export default function ChartDateSelector(
       const years: string[] = [];
       data[0].values.forEach((value) => {
         const valueConverted = value[0].split('-')[0];
-        if (years.indexOf(valueConverted) > -1) {
+        if (years.indexOf(valueConverted) == -1) {
           years.push(valueConverted);
         }
       });
@@ -67,32 +67,34 @@ export default function ChartDateSelector(
     <>
       <table className="w-full">
         <tbody className="flex justify-between w-full">
-          {years.map((d, index) => (
-            <span
-              className="text-center p-5 text-lg"
-              style={{
-                fontWeight:
-                  index == selectedYearIndex.current ? '800' : 'inherit',
-                cursor:
-                  index == selectedYearIndex.current ? 'inherit' : 'pointer',
-                marginRight: '-1px',
-                border: '1px solid ' + dateSelectorBorderColor,
-                background:
-                  index == selectedYearIndex.current
-                    ? dateSelectorBackgroundColorSelected
-                    : 'inherit',
-                color:
-                  index == selectedYearIndex.current
-                    ? dateSelectorFontColorSelected
-                    : dateSelectorFontColorUnselected,
-                width: 100 / years.length + '%',
-              }}
-              key={d}
-              onClick={() => updateYearIndex(index)}
-            >
-              {d}
-            </span>
-          ))}
+          <tr>
+            {years.map((d, index) => (
+              <td
+                className="text-center p-5 text-lg"
+                style={{
+                  fontWeight:
+                    index == selectedYearIndex.current ? '800' : 'inherit',
+                  cursor:
+                    index == selectedYearIndex.current ? 'inherit' : 'pointer',
+                  marginRight: '-1px',
+                  border: '1px solid ' + dateSelectorBorderColor,
+                  background:
+                    index == selectedYearIndex.current
+                      ? dateSelectorBackgroundColorSelected
+                      : 'inherit',
+                  color:
+                    index == selectedYearIndex.current
+                      ? dateSelectorFontColorSelected
+                      : dateSelectorFontColorUnselected,
+                  width: 100 / years.length + '%',
+                }}
+                key={d}
+                onClick={() => updateYearIndex(index)}
+              >
+                {d}
+              </td>
+            ))}
+          </tr>
         </tbody>
       </table>
     </>

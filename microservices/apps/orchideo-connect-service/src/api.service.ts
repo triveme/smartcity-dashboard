@@ -296,6 +296,32 @@ export class OrchideoConnectService {
         }
         break;
 
+      case 'year2':
+        for (const sensorValues of sensorDataMap.values()) {
+          const aggregatedValues = this.aggregateTimeframe(
+            sensorValues,
+            365 * 2,
+            this.getIntervalStep(aggregationPeriod),
+            attributes,
+            aggregationMode,
+          );
+          aggregatedData = [...aggregatedData, ...aggregatedValues];
+        }
+        break;
+
+      case 'year3':
+        for (const sensorValues of sensorDataMap.values()) {
+          const aggregatedValues = this.aggregateTimeframe(
+            sensorValues,
+            365 * 3,
+            this.getIntervalStep(aggregationPeriod),
+            attributes,
+            aggregationMode,
+          );
+          aggregatedData = [...aggregatedData, ...aggregatedValues];
+        }
+        break;
+
       case 'live':
         return aggregatedData;
 

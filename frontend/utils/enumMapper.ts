@@ -101,6 +101,10 @@ export const chartComponentSubTypes = [
   },
   { label: 'Messung', value: tabComponentSubTypeEnum.measurement },
   { label: 'Table', value: tabComponentSubTypeEnum.table }, //hk
+  {
+    label: 'Bar Chart - Horizontal',
+    value: tabComponentSubTypeEnum.barChartHorizontal,
+  }, //hk
   { label: 'Table (dynamisch)', value: tabComponentSubTypeEnum.tableDynamic },
 ];
 

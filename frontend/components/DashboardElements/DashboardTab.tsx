@@ -36,7 +36,11 @@ import {
   combineQueryData,
   combineWidgetAttributes,
 } from '@/utils/combinedMapDataHelper';
-import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
+import {
+  DUMMY_CHART_DATA,
+  DUMMY_PIE_CHART_LABELS,
+  DUMMY_PIE_CHART_VALUES,
+} from '@/utils/objectHelper';
 import WeatherWarning from '@/ui/WeatherWarning';
 import NoDataWarning from '@/ui/NoDataWarning';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
@@ -44,9 +48,11 @@ import { ListView } from '../listview/listview';
 import Table from '@/ui/Charts/Table';
 import BarChartDynamic from '@/ui/Charts/BarChartDynamic';
 import LineChartDynamic from '@/ui/Charts/LineChartDynamic';
+import BarChartHorizontal from '@/ui/Charts/BarChartHorizonal/BarChartHorizontal';
 import TableDynamic from '@/ui/Charts/TableDynamic';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
+import SensorStatusComponent from '@/ui/SensorStatus';
 
 type DashboardTabProps = {
   tab: Tab;
@@ -54,6 +60,7 @@ type DashboardTabProps = {
   tabData: any;
   tenant: string | undefined;
   isCombinedWidget?: boolean;
+  widget?: WidgetWithContent;
 };
 const Map = nextDynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -65,7 +72,7 @@ const MapDynamic = nextDynamic(() => import('@/components/Map/MapDynamic'), {
 export default async function DashboardTab(
   props: DashboardTabProps,
 ): Promise<ReactElement> {
-  const { tab, tabData, tenant } = props;
+  const { tab, tabData, tenant, widget } = props;
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
   //Dynamic Styling
@@ -91,7 +98,7 @@ export default async function DashboardTab(
     stageableChartTicksFontSize: ciColors.stageableChartTicksFontSize,
   };
 
-  // Stop if no data exists for tab
+  // stop if no data exists for tab
   const isSpecialType = [
     tabComponentTypeEnum.information,
     tabComponentTypeEnum.iframe,
@@ -121,6 +128,25 @@ export default async function DashboardTab(
       );
     }
   }
+
+  // // If the data is not defined yet, interrupt the component rendering
+  // if (typeof tabData === 'undefined') return <></>;
+
+  // //"A non-empty combined widgets array is required for combined widgets
+  // if (isTabOfTypeCombinedWidget(tab)) {
+  //   const hasCombinedWidgetData =
+  //     Array.isArray(tabData?.combinedWidgets) &&
+  //     tabData.combinedWidgets.length > 0;
+
+  //   if (!hasCombinedWidgetData) {
+  //     return (
+  //       <NoDataWarning
+  //         iconColor={ciColors.headerPrimaryColor}
+  //         fontColor={ciColors.widgetFontColor}
+  //       />
+  //     );
+  //   }
+  // }
 
   let combinedMapData;
   let combinedQueryData;
@@ -197,7 +223,7 @@ export default async function DashboardTab(
                   (item: { name: string }) => item.name,
                 ) ||
                 tab.chartLabels ||
-                []
+                DUMMY_PIE_CHART_LABELS
               }
               data={
                 tabData?.chartData?.map(
@@ -205,7 +231,7 @@ export default async function DashboardTab(
                   (item: { values: any[][] }) => item.values[0]?.[1],
                 ) ||
                 tabData?.chartValues ||
-                []
+                DUMMY_PIE_CHART_VALUES
               }
               fontSize={ciColors.pieChartFontSize}
               fontColor={ciColors.pieChartFontColor}
@@ -380,6 +406,7 @@ export default async function DashboardTab(
               filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
               axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
               decimalPlaces={tab?.decimalPlaces || 0}
+              chartHoverSingleValue={tab?.chartHoverSingleValue || false}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChartDynamic && (
@@ -387,6 +414,73 @@ export default async function DashboardTab(
               tab={tab}
               tabData={tabData}
               corporateInfo={ciColors}
+            />
+          )}
+          {tab.componentSubType ===
+            tabComponentSubTypeEnum.barChartHorizontal && (
+            <BarChartHorizontal
+              chartYAxisScaleChartMinValue={
+                tab?.chartYAxisScaleChartMinValue !== undefined &&
+                tab?.chartYAxisScaleChartMinValue !== null
+                  ? tab.chartYAxisScaleChartMinValue
+                  : undefined
+              }
+              chartYAxisScaleChartMaxValue={
+                tab?.chartYAxisScaleChartMaxValue !== undefined &&
+                tab?.chartYAxisScaleChartMaxValue !== null
+                  ? tab.chartYAxisScaleChartMaxValue
+                  : undefined
+              }
+              chartYAxisScale={
+                tab?.chartYAxisScale !== undefined &&
+                tab?.chartYAxisScale !== null
+                  ? tab.chartYAxisScale
+                  : undefined
+              }
+              chartDateRepresentation={
+                tab?.chartDateRepresentation || 'Default'
+              }
+              data={tabData.chartData || DUMMY_CHART_DATA}
+              xAxisLabel={tab.chartXAxisLabel || ''}
+              yAxisLabel={tab.chartYAxisLabel || ''}
+              allowImageDownload={tab.chartAllowImageDownload || false}
+              allowZoom={tab.mapAllowZoom || false}
+              showLegend={tab.showLegend || false}
+              staticValues={tab.chartStaticValues || []}
+              staticValuesColors={tab.chartStaticValuesColors || []}
+              fontColor={ciColors.dashboardFontColor || '#FFFFF'}
+              axisColor={ciColors.barChartAxisLineColor || '#FFFFF'}
+              axisFontSize={ciColors.barChartAxisTicksFontSize || '14'}
+              gridColor={ciColors.barChartGridColor || '#FFFFF'}
+              legendFontSize={ciColors.barChartLegendFontSize || '14'}
+              axisLabelSize={ciColors.barChartAxisLabelSize || '14'}
+              currentValuesColors={
+                ciColors.barChartCurrentValuesColors || [
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                  '#70AAFF',
+                ]
+              }
+              showGrid={false}
+              legendAlignment={tab.chartLegendAlign || 'Top'}
+              hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
+              isStackedChart={tab.isStackedChart || false}
+              legendFontColor={ciColors.lineChartLegendFontColor || '#FFFFFF'}
+              filterColor={ciColors.barChartFilterColor || '#F1B434'}
+              filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
+              axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
+              decimalPlaces={tab?.decimalPlaces || 0}
+              setSortAscending={tab?.setSortAscending || false}
+              setSortDescending={tab?.setSortDescending || false}
+              setValueLimit={tab?.setValueLimit || false}
+              userDefinedLimit={tab?.userDefinedLimit || 10}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -528,7 +622,6 @@ export default async function DashboardTab(
               />
             </div>
           )}
-
           {tab.componentSubType === tabComponentSubTypeEnum.overviewSlider && (
             <SliderOverview
               data={tabData?.chartData || []}
@@ -632,6 +725,9 @@ export default async function DashboardTab(
                   mapGeoJSONSensorBasedColors={
                     tab.mapGeoJSONSensorBasedColors || false
                   }
+                  mapGeoJSONSensorBasedNoDataColor={
+                    tab?.mapGeoJSONSensorBasedNoDataColor || '#ff0000'
+                  }
                   mapGeoJSONBorderColor={tab.mapGeoJSONBorderColor || '#3388ff'}
                   mapGeoJSONFillColor={tab.mapGeoJSONFillColor || '#3388ff'}
                   mapGeoJSONSelectionBorderColor={
@@ -710,12 +806,16 @@ export default async function DashboardTab(
                   mapShapeColor={
                     tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'
                   }
+                  mapUnitsTexts={tab.mapUnitsTexts || []}
                   isFullscreenMap={false}
                   mapAllowFilter={tab.mapAllowFilter || false}
                   mapFilterAttribute={tab.mapFilterAttribute || ''}
                   mapGeoJSON={tab.mapGeoJSON || ''}
                   mapGeoJSONSensorBasedColors={
                     tab.mapGeoJSONSensorBasedColors || false
+                  }
+                  mapGeoJSONSensorBasedNoDataColor={
+                    tab?.mapGeoJSONSensorBasedNoDataColor || '#ff0000'
                   }
                   mapGeoJSONBorderColor={tab.mapGeoJSONBorderColor || '#3388ff'}
                   mapGeoJSONFillColor={tab.mapGeoJSONFillColor || '#3388ff'}
@@ -935,6 +1035,28 @@ export default async function DashboardTab(
       {tab.componentType === tabComponentTypeEnum.valueToImage && (
         <div className="h-full p-2 overflow-y-auto">
           <ValuesToImageComponent tab={tab} tabData={tabData} />
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.sensorStatus && (
+        <div className="h-full p-2 overflow-y-auto">
+          <SensorStatusComponent
+            count={tab.sensorStatusLightCount || 2}
+            isLayoutVertical={tab.sensorStatusLayoutVertical || false}
+            size={widget?.height || 200}
+            defaultColor={tab.sensorStatusDefaultColor || '#808080'}
+            color1={tab.sensorStatusColor1 || '#FF0000'}
+            color2={
+              tab.sensorStatusColor2 ||
+              (tab.sensorStatusLightCount == 2 ? '#00FF00' : '#FFFF00')
+            }
+            color3={tab.sensorStatusColor3 || '#00FF00'}
+            value={
+              tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 65
+            }
+            thresholdMin={tab.sensorStatusMinThreshold || '25'}
+            thresholdMax={tab.sensorStatusMaxThreshold || '65'}
+          />
         </div>
       )}
     </div>

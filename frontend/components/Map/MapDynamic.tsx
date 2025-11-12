@@ -209,6 +209,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapGeoJSONSensorBasedColors={
             tab?.mapGeoJSONSensorBasedColors || false
           }
+          mapGeoJSONSensorBasedNoDataColor={
+            tab?.mapGeoJSONSensorBasedNoDataColor || '#ff0000'
+          }
           mapGeoJSONBorderColor={tab?.mapGeoJSONBorderColor || '#3388ff'}
           mapGeoJSONFillColor={tab?.mapGeoJSONFillColor || '#3388ff'}
           mapGeoJSONSelectionBorderColor={
@@ -284,6 +287,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapGeoJSONSensorBasedColors={
             tab?.mapGeoJSONSensorBasedColors || false
           }
+          mapGeoJSONSensorBasedNoDataColor={
+            tab?.mapGeoJSONSensorBasedNoDataColor || '#ff0000'
+          }
           mapGeoJSONBorderColor={tab?.mapGeoJSONBorderColor || '#3388ff'}
           mapGeoJSONFillColor={tab?.mapGeoJSONFillColor || '#3388ff'}
           mapGeoJSONSelectionBorderColor={
@@ -322,6 +328,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
           mapWmsUrl={tab?.mapWmsUrl || ''}
           mapWmsLayer={tab?.mapWmsLayer || ''}
+          mapUnitsTexts={tab?.mapUnitsTexts || []}
           ciColors={ciColors}
           allowShare={allowShare || false}
           dashboardId={dashboardId || ''}

@@ -253,6 +253,13 @@
       "when": 1761836293959,
       "tag": "0035_wise_scarlet_witch_1.0.10",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1762944393062,
+      "tag": "0036_fair_electro_1.1.0",
+      "breakpoints": true
     }
   ]
 }

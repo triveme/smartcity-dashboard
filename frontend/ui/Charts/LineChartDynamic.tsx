@@ -56,15 +56,26 @@ export default function LineChartDynamic(
 
   function filterData(sFeatures: string[], hFeature: string): void {
     if (tabData?.chartData) {
-      const filteredData =
-        sFeatures.length > 0
-          ? tabData?.chartData?.filter(
-              (item: { id: string }) =>
-                sFeatures.includes(item.id) ||
-                sFeatures.includes('0' + item.id) ||
-                hFeature.includes(item.id),
+      let filteredData = [];
+      if (tab.chartDynamicOnlyShowHover) {
+        filteredData = hFeature
+          ? tabData?.chartData?.filter((item: { id: string }) =>
+              hFeature.includes(item.id),
             )
-          : tabData?.chartData;
+          : [];
+      } else {
+        filteredData =
+          sFeatures.length > 0
+            ? tabData?.chartData?.filter(
+                (item: { id: string }) =>
+                  sFeatures.includes(item.id) ||
+                  sFeatures.includes('0' + item.id) ||
+                  hFeature.includes(item.id),
+              )
+            : tab.chartDynamicNoSelectionDisplayAll === true
+              ? tabData?.chartData
+              : [];
+      }
 
       const labels =
         filteredData.map((item: { name: string }) => item.name) ||
@@ -111,7 +122,7 @@ export default function LineChartDynamic(
         }
         chartDateRepresentation={tab?.chartDateRepresentation || 'Default'}
         labels={labels}
-        data={data || DUMMY_CHART_DATA}
+        data={data === undefined ? DUMMY_CHART_DATA : data}
         xAxisLabel={tab.chartXAxisLabel || ''}
         yAxisLabel={tab.chartYAxisLabel || ''}
         allowImageDownload={tab.chartAllowImageDownload || false}

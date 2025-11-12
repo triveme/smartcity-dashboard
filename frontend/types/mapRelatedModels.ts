@@ -21,6 +21,7 @@ export interface BaseMapProps {
   mapGeoJSON?: string;
   mapType?: string;
   mapGeoJSONSensorBasedColors?: boolean;
+  mapGeoJSONSensorBasedNoDataColor?: string;
   mapGeoJSONBorderColor?: string;
   mapGeoJSONFillColor?: string;
   mapGeoJSONSelectionBorderColor?: string;
@@ -36,6 +37,7 @@ export interface BaseMapProps {
   mapLegendDisclaimer?: string[];
   mapLatitude?: number;
   mapLongitude?: number;
+  mapUnitsTexts?: string[];
   data?: any[];
   mapWidgetValues?: MapModalWidget[];
   isFullscreenMap?: boolean;

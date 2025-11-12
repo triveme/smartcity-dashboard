@@ -214,6 +214,7 @@ export default async function DashboardWidget({
                 tabData={tabData}
                 tenant={tenant}
                 isCombinedWidget={isCombinedWidget}
+                widget={widget}
               />
             );
           })}

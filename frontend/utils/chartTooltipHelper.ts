@@ -1,12 +1,20 @@
 import { applyUserLocaleToNumber, roundToDecimal } from './mathHelper';
 
+interface ChartParam {
+  axisValue: string;
+  data: [string, number, string];
+}
+
 const formatTimestamp = (
   paramArray: unknown[],
   labelMap?: Map<number, [number, number, string]> | undefined,
 ): string => {
   // Get the timestamp from the first param and format it
-  const firstParam = paramArray[0] as { axisValue: string };
-  const timestamp = firstParam?.axisValue;
+  const firstParam = paramArray[0] as ChartParam;
+  const timestamp = firstParam?.axisValue
+    ? firstParam.axisValue
+    : new Date(firstParam.data[0]).getTime();
+
   let formattedTimestamp: string;
   if (labelMap?.has(+timestamp)) {
     formattedTimestamp = labelMap.get(+timestamp)![2] || '';
@@ -19,7 +27,7 @@ const formatTimestamp = (
           hour: '2-digit',
           minute: '2-digit',
         })
-      : timestamp;
+      : timestamp.toString();
   }
   return formattedTimestamp;
 };

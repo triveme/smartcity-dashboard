@@ -246,7 +246,7 @@ export default function DashboardWizard(
     setprevDashboardType(dashboardType);
 
     fetchPanel();
-  }, [dashboardType, auth.user?.access_token]);
+  }, [dashboardType]);
 
   useEffect(() => {
     const handleWidgetClick = async (): Promise<void> => {

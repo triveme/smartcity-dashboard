@@ -42,6 +42,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Listview',
   'Interaktive Komponente',
   'Werte zu Bildern',
+  'Sensorstatus',
 ]);
 
 export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
@@ -66,6 +67,7 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Farbiger Slider',
   'Slider Übersicht',
   'Table',
+  'Bar Chart - Horizontal',
   'Table (dynamisch)',
   'Chart Datum Selektor',
 ]);

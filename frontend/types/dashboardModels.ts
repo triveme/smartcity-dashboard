@@ -204,6 +204,9 @@ export type Tab = {
   chartYAxisScale?: number | null;
   chartYAxisScaleChartMinValue?: number | null;
   chartYAxisScaleChartMaxValue?: number | null;
+  chartHoverSingleValue: boolean;
+  chartDynamicOnlyShowHover?: boolean;
+  chartDynamicNoSelectionDisplayAll?: boolean;
   componentSubType?: string;
   componentType?: string;
   dataModelId?: string;
@@ -236,6 +239,7 @@ export type Tab = {
   mapFilterAttribute?: string;
   mapGeoJSON?: string;
   mapGeoJSONSensorBasedColors?: boolean;
+  mapGeoJSONSensorBasedNoDataColor?: string;
   mapGeoJSONBorderColor?: string;
   mapGeoJSONFillColor?: string;
   mapGeoJSONFillOpacity?: number;
@@ -266,6 +270,7 @@ export type Tab = {
   mapCombinedWmsUrl?: string;
   mapWmsLayer?: string;
   mapCombinedWmsLayer?: string;
+  mapUnitsTexts?: string[];
   listviewName?: string;
   listviewIsFilteringAllowed?: boolean;
   listviewFilterAttribute?: string;
@@ -300,19 +305,33 @@ export type Tab = {
   rangeStaticValuesLogos?: string[];
   rangeStaticValuesLabels?: string[];
   setYAxisInterval?: boolean;
+  setSortAscending: boolean;
+  setSortDescending: boolean;
+  setValueLimit: boolean;
+  userDefinedLimit: number;
   showLegend?: boolean;
   sliderCurrentAttribute?: string;
   sliderMaximumAttribute?: string;
   textValue?: string;
   tiles?: number;
-  tableFontColor?: string; //table
-  tableHeaderColor?: string; //table
-  tableOddRowColor?: string; //table
-  tableEvenRowColor?: string; //table
+  tableFontColor?: string;
+  tableHeaderColor?: string;
+  tableOddRowColor?: string;
+  tableEvenRowColor?: string;
   widgetId?: string;
   weatherWarnings?: WeatherWarningType[];
   chartStaticValuesText?: boolean;
   valuesToImages?: ValueToImageData[];
+  sensorStatusValue?: number;
+  sensorStatusLightCount?: number;
+  sensorStatusMinThreshold?: string;
+  sensorStatusMaxThreshold?: string;
+  sensorStatusDefaultColor?: string;
+  sensorStatusColor1?: string;
+  sensorStatusColor2?: string;
+  sensorStatusColor3?: string;
+  sensorStatusLayoutVertical?: boolean;
+  sensorStatusIsNumericType?: boolean;
 };
 
 export type TabWithQuery = Tab & {
@@ -627,6 +646,13 @@ export type ChartData = {
   color?: string;
   highlighted?: boolean;
   id?: string;
+};
+
+export type PieChartDataItem = {
+  value: number;
+  name: string;
+  unit: string;
+  itemStyle?: { color: string };
 };
 
 export type Mail = {

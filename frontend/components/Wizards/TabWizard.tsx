@@ -12,6 +12,7 @@ import {
   Widget,
   WidgetWithChildren,
   combinedComponentLayoutEnum,
+  componentLayoutEnum,
 } from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
@@ -49,6 +50,7 @@ import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementBut
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import TableColorPickerPanel from '@/ui/TableColorPickerPanel';
 import ValuesToImageFields from '@/ui/ValuesToImageFields';
+import UnitsField from '@/ui/UnitsField';
 
 type TabWizardProps = {
   tab: Tab | undefined;
@@ -112,7 +114,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   );
 
   const handleTabChange = (update: Partial<Tab>): void => {
-    console.log('Tab', update);
     setTab((prevTab) => {
       const newTab = { ...prevTab, ...update };
 
@@ -378,24 +379,50 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   tabComponentSubTypeEnum.lineChartDynamic ||
                 tab?.componentSubType ===
                   tabComponentSubTypeEnum.pieChartDynamic) && (
-                <div>
-                  <ColorPickerComponent
-                    currentColor={tab?.dynamicHighlightColor || '#0347a6'}
-                    handleColorChange={(color: string): void =>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Interaktions Farben" />
+                  <div className="flex flex-row items-center">
+                    <ColorPickerComponent
+                      currentColor={tab?.dynamicHighlightColor || '#0347a6'}
+                      handleColorChange={(color: string): void =>
+                        handleTabChange({
+                          dynamicHighlightColor: color,
+                        })
+                      }
+                      label="Highlight Farbe"
+                    />
+                    <ColorPickerComponent
+                      currentColor={tab?.dynamicUnhighlightColor || '#647D9E'}
+                      handleColorChange={(color: string): void =>
+                        handleTabChange({
+                          dynamicUnhighlightColor: color,
+                        })
+                      }
+                      label="Unhighlight Farbe"
+                    />
+                  </div>
+                  <WizardSelectBox
+                    checked={tab?.chartDynamicOnlyShowHover || false}
+                    onChange={(value: boolean): void =>
                       handleTabChange({
-                        dynamicHighlightColor: color,
+                        chartDynamicOnlyShowHover: value,
                       })
                     }
-                    label="Highlight Farbe"
+                    label="Nur Hover Daten anzeigen"
                   />
-                  <ColorPickerComponent
-                    currentColor={tab?.dynamicUnhighlightColor || '#647D9E'}
-                    handleColorChange={(color: string): void =>
+                  <WizardSelectBox
+                    checked={
+                      tab?.chartDynamicNoSelectionDisplayAll === undefined
+                        ? true
+                        : tab?.chartDynamicNoSelectionDisplayAll
+                    }
+                    onChange={(value: boolean): void =>
                       handleTabChange({
-                        dynamicUnhighlightColor: color,
+                        chartDynamicNoSelectionDisplayAll: value,
                       })
                     }
-                    label="Unhighlight Farbe"
+                    disabled={tab?.chartDynamicOnlyShowHover === true}
+                    label="Alle Daten ohne Auswahl darstellen"
                   />
                 </div>
               )}
@@ -528,7 +555,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   tabComponentSubTypeEnum.lineChartDynamic ||
                 tab?.componentSubType === tabComponentSubTypeEnum.barChart ||
                 tab?.componentSubType ===
-                  tabComponentSubTypeEnum.barChartDynamic) && (
+                  tabComponentSubTypeEnum.barChartDynamic ||
+                tab?.componentSubType ===
+                  tabComponentSubTypeEnum.barChartHorizontal) && (
                 <div>
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Name der X-Achse" />
@@ -650,6 +679,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     </div>
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
+                        <WizardLabel label="Nur einzelne Werte beim Hover anzeigen?" />
+                      </div>
+                      <WizardSelectBox
+                        checked={tab?.chartHoverSingleValue || false}
+                        onChange={(value: boolean): void =>
+                          handleTabChange({
+                            chartHoverSingleValue: value,
+                          })
+                        }
+                        label=" Zusammenfassung"
+                      />
+                    </div>
+                    <div className="flex w-full items-center">
+                      <div className="min-w-[220px]">
                         <WizardLabel label="Bilddownload erlauben?" />
                       </div>
                       <WizardSelectBox
@@ -712,7 +755,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       tab?.componentSubType ===
                         tabComponentSubTypeEnum.lineChart ||
                       tab?.componentSubType ===
-                        tabComponentSubTypeEnum.lineChartDynamic) && (
+                        tabComponentSubTypeEnum.lineChartDynamic ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.barChartHorizontal) && (
                       <div className="flex w-full items-center">
                         <div className="min-w-[220px]">
                           <WizardLabel label="Gestapelte Werte?" />
@@ -752,6 +797,66 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label=" Interval"
                       />
                     </div>
+                    {tab?.componentSubType ===
+                      tabComponentSubTypeEnum.barChartHorizontal && (
+                      <>
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Aufsteigend sortieren?" />
+                          </div>
+                          <WizardSelectBox
+                            checked={tab?.setSortAscending || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ setSortAscending: value })
+                            }
+                            disabled={tab?.setSortDescending || false}
+                            label=" Aufsteigend"
+                          />
+                        </div>
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Absteigend sortieren?" />
+                          </div>
+                          <WizardSelectBox
+                            checked={tab?.setSortDescending || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ setSortDescending: value })
+                            }
+                            disabled={tab?.setSortAscending || false}
+                            label=" Absteigend"
+                          />
+                        </div>
+                        <div className="flex w-full items-center">
+                          <div className="min-w-[220px]">
+                            <WizardLabel label="Werteanzahl begrenzen?" />
+                          </div>
+                          <WizardSelectBox
+                            checked={tab?.setValueLimit || false}
+                            onChange={(value: boolean): void =>
+                              handleTabChange({ setValueLimit: value })
+                            }
+                            label={`Nur Top ${tab?.userDefinedLimit || 10} anzeigen`}
+                            // label="Nur Top 10 anzeigen"
+                          />
+                          {tab?.setValueLimit && (
+                            <div className="flex-grow">
+                              <WizardLabel label="Konkrete Anzahl der Werte" />
+                              <WizardTextfield
+                                isNumeric={true}
+                                value={tab?.userDefinedLimit || 10}
+                                onChange={(value: string | number): void =>
+                                  handleTabChange({
+                                    userDefinedLimit: value as number,
+                                  })
+                                }
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
                     <div className="flex flex-col w-full pb-2">
                       {tab.setYAxisInterval && (
                         <>
@@ -1340,6 +1445,18 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             accessToken={accessToken}
                           />
                         </div>
+                        <HorizontalDivider />
+                        <div className="flex flex-col w-full pb-2 gap-4">
+                          <WizardLabel label="Einheiten zum Popup hinzufügen" />
+                          <UnitsField
+                            initialUnitsTexts={tab?.mapUnitsTexts || []}
+                            handleTabChange={handleTabChange}
+                            error={errors?.stageableColorValueError}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                            fontColor={fontColor}
+                          />
+                        </div>
                       </>
                     )}
                     {tab.mapAllowFilter && (
@@ -1735,6 +1852,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                       })
                                     }
                                     label="Füllfarbe"
+                                  />
+                                )}
+                                {tab.mapGeoJSONSensorBasedColors && (
+                                  <ColorPickerComponent
+                                    currentColor={
+                                      tab?.mapGeoJSONSensorBasedNoDataColor ||
+                                      '#ff0000'
+                                    }
+                                    handleColorChange={(color: string): void =>
+                                      handleTabChange({
+                                        mapGeoJSONSensorBasedNoDataColor: color,
+                                      })
+                                    }
+                                    label="Füllfarbe keine Daten"
                                   />
                                 )}
                                 <ColorPickerComponent
@@ -2610,19 +2741,19 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                 <WizardLabel label="Layout" />
                 <WizardDropdownSelection
                   currentValue={
-                    (tab?.isLayoutVertical ?? true)
+                    (tab?.isLayoutVertical ?? false)
                       ? combinedComponentLayoutEnum.Vertical
                       : combinedComponentLayoutEnum.Horizontal
                   }
                   selectableValues={Object.values(combinedComponentLayoutEnum)}
-                  onSelect={(value): void =>
+                  onSelect={(value): void => {
                     handleTabChange({
                       isLayoutVertical:
                         value === combinedComponentLayoutEnum.Vertical
                           ? true
                           : false,
-                    })
-                  }
+                    });
+                  }}
                   iconColor={iconColor}
                   borderColor={borderColor}
                   backgroundColor={backgroundColor}
@@ -2630,7 +2761,129 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
               </div>
             </div>
           )}
+          {tab?.componentType === tabComponentTypeEnum.sensorStatus && (
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Anzahl der Anzeigen" />
+              <WizardDropdownSelection
+                currentValue={tab?.sensorStatusLightCount ?? 0}
+                selectableValues={[2, 3]}
+                error={errors?.listviewContactPhoneAttributeError}
+                onSelect={(value: string | number): void =>
+                  handleTabChange({
+                    sensorStatusLightCount: value as number,
+                  })
+                }
+                iconColor={iconColor}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
 
+              <div className="flex w-full pb-2">
+                <div
+                  className={`flex flex-col w-full ${tab?.sensorStatusLightCount == 3 ? 'pr-2' : ''}`}
+                >
+                  <WizardLabel label="Bedingung 1" />
+                  <WizardTextfield
+                    value={tab?.sensorStatusMinThreshold ?? 0}
+                    onChange={(value: string | number): void =>
+                      handleTabChange({
+                        sensorStatusMinThreshold: value.toString(),
+                      })
+                    }
+                    isNumeric={false}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+                {tab?.sensorStatusLightCount == 3 && (
+                  <div className="flex flex-col w-full pl-2">
+                    <WizardLabel label="Bedingung 2" />
+                    <WizardTextfield
+                      value={tab?.sensorStatusMaxThreshold ?? 0}
+                      onChange={(value: string | number): void =>
+                        handleTabChange({
+                          sensorStatusMaxThreshold: value.toString(),
+                        })
+                      }
+                      isNumeric={false}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex w-full pb-2">
+                <div
+                  className={`flex flex-row w-full ${tab?.sensorStatusLightCount == 3 ? 'pr-2' : ''}`}
+                  style={{ justifyContent: 'space-between' }}
+                >
+                  <ColorPickerComponent
+                    currentColor={tab?.sensorStatusDefaultColor || '#808080'}
+                    handleColorChange={(color: string): void =>
+                      handleTabChange({
+                        sensorStatusDefaultColor: color,
+                      })
+                    }
+                    label="Default Farbe"
+                  />
+                  <ColorPickerComponent
+                    currentColor={tab?.sensorStatusColor1 || '#FF0000'}
+                    handleColorChange={(color: string): void =>
+                      handleTabChange({
+                        sensorStatusColor1: color,
+                      })
+                    }
+                    label="Farbe 1"
+                  />
+                  <ColorPickerComponent
+                    currentColor={
+                      tab?.sensorStatusColor2 ||
+                      ((tab?.sensorStatusLightCount ?? 2) == 2
+                        ? '#00FF00'
+                        : '#FFFF00')
+                    }
+                    handleColorChange={(color: string): void =>
+                      handleTabChange({
+                        sensorStatusColor2: color,
+                      })
+                    }
+                    label="Farbe 2"
+                  />
+                  {tab?.sensorStatusLightCount == 3 && (
+                    <ColorPickerComponent
+                      currentColor={tab?.sensorStatusColor3 || '#00FF00'}
+                      handleColorChange={(color: string): void =>
+                        handleTabChange({
+                          sensorStatusColor3: color,
+                        })
+                      }
+                      label="Farbe 3"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <WizardLabel label="Layout" />
+              <WizardDropdownSelection
+                currentValue={
+                  (tab?.sensorStatusLayoutVertical ?? false)
+                    ? componentLayoutEnum.Vertical
+                    : componentLayoutEnum.Horizontal
+                }
+                selectableValues={Object.values(componentLayoutEnum)}
+                onSelect={(value): void =>
+                  handleTabChange({
+                    sensorStatusLayoutVertical:
+                      value === componentLayoutEnum.Vertical ? true : false,
+                  })
+                }
+                iconColor={iconColor}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          )}
           {tab?.componentType === tabComponentTypeEnum.interactiveComponent && (
             <div className="div">
               <div className="flex flex-col w-full pb-4">

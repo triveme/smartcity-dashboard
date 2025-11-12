@@ -34,6 +34,7 @@ export function isSingleValueTab(tab: Tab): boolean {
     tab.componentType === 'Bild' ||
     tab.componentType === 'Wetterwarnungen' ||
     tab.componentType === 'Werte zu Bildern' ||
+    tab.componentType === 'Sensorstatus' ||
     (tab.componentType === 'Slider' &&
       tab.componentSubType === 'Farbiger Slider') ||
     (tab.componentType === 'Diagramm' &&
@@ -199,6 +200,7 @@ export class DataTranslationService {
             tabWithContent.weatherWarnings.length > 0 ||
             tabWithContent.mapObject.length > 0 ||
             tabWithContent.listviewData.length > 0 ||
+            tabWithContent.combinedWidgets.length > 0 ||
             (tabWithContent.chartValues &&
               tabWithContent.chartValues.length > 0) ||
             (tabWithContent.textValue && tabWithContent.textValue !== '')

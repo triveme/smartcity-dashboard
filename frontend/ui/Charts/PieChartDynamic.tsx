@@ -9,6 +9,10 @@ import eventBus, {
   GEOJSON_FEATURE_SELECTION_EVENT,
   YEAR_INDEX_SELECTION_EVENT,
 } from '@/app/EventBus';
+import {
+  DUMMY_PIE_CHART_LABELS,
+  DUMMY_PIE_CHART_VALUES,
+} from '@/utils/objectHelper';
 
 type PieChartDynamicProps = {
   tab: Tab;
@@ -90,15 +94,26 @@ export default function PieChartDynamic(
     hFeature: string,
   ): void {
     if (tabData?.chartData) {
-      const filteredData =
-        sFeatures.length > 0
-          ? tabData?.chartData?.filter(
-              (item: { id: string }) =>
-                sFeatures.includes(item.id) ||
-                sFeatures.includes('0' + item.id) ||
-                hFeature.includes(item.id),
+      let filteredData = [];
+      if (tab.chartDynamicOnlyShowHover) {
+        filteredData = hFeature
+          ? tabData?.chartData?.filter((item: { id: string }) =>
+              hFeature.includes(item.id),
             )
-          : tabData?.chartData;
+          : [];
+      } else {
+        filteredData =
+          sFeatures.length > 0
+            ? tabData?.chartData?.filter(
+                (item: { id: string }) =>
+                  sFeatures.includes(item.id) ||
+                  sFeatures.includes('0' + item.id) ||
+                  hFeature.includes(item.id),
+              )
+            : tab.chartDynamicNoSelectionDisplayAll === true
+              ? tabData?.chartData
+              : [];
+      }
 
       const labels =
         filteredData.map((item: { name: string }) => item.name) ||
@@ -136,8 +151,8 @@ export default function PieChartDynamic(
       {error && <p>Keine Daten.</p>}
       {!error && (
         <PieChart
-          labels={labels}
-          data={data}
+          labels={labels === undefined ? DUMMY_PIE_CHART_LABELS : labels}
+          data={data === undefined ? DUMMY_PIE_CHART_VALUES : data}
           fontSize={corporateInfo.pieChartFontSize}
           fontColor={corporateInfo.pieChartFontColor}
           currentValuesColors={

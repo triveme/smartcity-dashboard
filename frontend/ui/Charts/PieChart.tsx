@@ -4,31 +4,7 @@ import { ReactElement, useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 import { ECharts, EChartsOption } from 'echarts';
 import { applyUserLocaleToNumber } from '@/utils/mathHelper';
-
-type PieChartDataItem = {
-  value: number;
-  name: string;
-  unit: string;
-  itemStyle?: { color: string };
-};
-
-const dummyData: PieChartDataItem[] = [
-  {
-    value: 5,
-    name: 'Bsp. 1',
-    unit: 'cm',
-  },
-  {
-    value: 10,
-    name: 'Bsp. 2',
-    unit: 'cm',
-  },
-  {
-    value: 20,
-    name: 'Bsp. 3',
-    unit: 'cm',
-  },
-];
+import { PieChartDataItem } from '@/types/dashboardModels';
 
 type PieChartProps = {
   labels: string[];
@@ -107,7 +83,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
           {
             type: 'pie',
             radius: pieChartRadius ? `${pieChartRadius}%` : '70%',
-            data: dataToDisplay.length ? dataToDisplay : dummyData,
+            data: dataToDisplay.length ? dataToDisplay : [],
             label: {
               show: true,
               position: 'outside',

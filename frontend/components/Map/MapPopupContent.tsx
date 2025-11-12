@@ -13,6 +13,7 @@ export type Marker = {
   details: Record<string, unknown>;
   dataSource?: number;
   color?: string;
+  unitsTexts?: string[];
 };
 
 interface MapPopupContentProps {
@@ -26,6 +27,7 @@ export default function MapPopupContent({
   isCombinedMap,
   decimalSeparator,
 }: MapPopupContentProps): JSX.Element {
+  let index = -1;
   return (
     <div style={{ fontSize: '14px', color: '#000000' }}>
       {Object.entries(marker.details).map(([key, value]) => {
@@ -40,7 +42,6 @@ export default function MapPopupContent({
           key === 'type'
         )
           return;
-
         if (isCombinedMap) {
           // Combined map popup logic
           if (value && tempValue.value) {
@@ -94,6 +95,7 @@ export default function MapPopupContent({
                 </div>
               );
             }
+            index++;
             return (
               <div key={key}>
                 {getGermanLabelForSensorAttribute(key.toUpperCase())}:{' '}
@@ -107,7 +109,8 @@ export default function MapPopupContent({
                     : convertToLocaleNumber(
                         roundToDecimal(Number(tempValue)).toString(),
                         decimalSeparator,
-                      )}
+                      )}{' '}
+                  {marker.unitsTexts?.[index]}
                 </strong>
               </div>
             );
@@ -165,13 +168,19 @@ export default function MapPopupContent({
                 </div>
               );
             }
+            index++;
             return (
               <div key={key}>
                 {getGermanLabelForSensorAttribute(key.toUpperCase())}:{' '}
-                <strong> {getValueString(tempValue, decimalSeparator)}</strong>
+                <strong>
+                  {' '}
+                  {getValueString(tempValue, decimalSeparator)}{' '}
+                  {marker.unitsTexts?.[index]}
+                </strong>
               </div>
             );
           } else if (value !== null && value !== undefined) {
+            index++;
             return (
               <div key={key}>
                 {key}:{' '}
@@ -181,7 +190,8 @@ export default function MapPopupContent({
                         roundToDecimal(value).toString(),
                         decimalSeparator,
                       )
-                    : String(value)}
+                    : String(value)}{' '}
+                  {marker.unitsTexts?.[index]}
                 </strong>
               </div>
             );

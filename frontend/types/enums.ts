@@ -42,6 +42,7 @@ export enum tabComponentTypeEnum {
   image = 'Bild',
   interactiveComponent = 'Interaktive Komponente',
   valueToImage = 'Werte zu Bildern',
+  sensorStatus = 'Sensorstatus',
 }
 
 export enum tabComponentSubTypeEnum {
@@ -75,6 +76,7 @@ export enum tabComponentSubTypeEnum {
   geoJSONDynamic = 'GeoJSON (dynamisch)',
   coloredSlider = 'Farbiger Slider',
   overviewSlider = 'Slider Übersicht',
+  barChartHorizontal = 'Bar Chart - Horizontal',
   chartDateSelector = 'Chart Datum Selektor',
 }
 
@@ -163,6 +165,11 @@ export enum menuArrowDirectionEnum {
 export enum combinedComponentLayoutEnum {
   Vertical = 'Nebeneinander',
   Horizontal = 'Untereinander',
+}
+
+export enum componentLayoutEnum {
+  Vertical = 'Untereinander',
+  Horizontal = 'Nebeneinander',
 }
 
 export enum themeEnum {
