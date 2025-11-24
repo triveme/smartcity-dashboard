@@ -161,7 +161,10 @@ export default function Table(props: TableProps): ReactElement {
               </th>
             </tr>
           </thead>
-          <tbody className={s.tableBody}>
+          <tbody
+            className={s.tableBody}
+            style={{ border: '2px solid transparent' }}
+          >
             {formatedData.map((row, index) => {
               const attrObj: Record<string, string> = row.attributes.reduce(
                 (acc, attr) => {

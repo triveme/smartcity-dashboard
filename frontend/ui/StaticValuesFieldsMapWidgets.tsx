@@ -388,6 +388,27 @@ export default function StaticValuesFieldMapWidgets(
                         />
                       </div>
                     </div>
+                    <div className="flex flex-row justify-between gap-x-2 pb-4">
+                      <WizardSelectBox
+                        label={'Uhrzeit anzeigen bei Datumswerten'}
+                        checked={value.showTimeOnDatetimeValues || false}
+                        onChange={(isSelected: boolean) => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    showTimeOnDatetimeValues: isSelected,
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                      />
+                    </div>
                     <div className="gap-x-2 pb-4">
                       <div className="pb-4">Statische Werte</div>
                       {value.chartStaticValues?.map(
@@ -1001,6 +1022,54 @@ export default function StaticValuesFieldMapWidgets(
                           setMapWidgetValues(updatedMapWidgetValues);
                         }}
                         label="Achsenbeschriftungen anzeigen"
+                      />
+                    </div>
+                    <div className="flex flex-col w-full">
+                      <WizardLabel label="Minimum" />
+                      <WizardTextfield
+                        value={value.chartMinimum ?? ''}
+                        onChange={(value: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    chartMinimum: parseInt(value.toString()),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        isNumeric={true}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <div className="flex flex-col w-full pb-4">
+                      <WizardLabel label="Maximum" />
+                      <WizardTextfield
+                        value={value.chartMaximum ?? ''}
+                        onChange={(value: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    chartMaximum: parseInt(value.toString()),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        isNumeric={true}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
                       />
                     </div>
                     <div>Statische Werte</div>

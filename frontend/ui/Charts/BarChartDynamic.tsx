@@ -93,7 +93,7 @@ export default function BarChartDynamic(
           : [];
       } else {
         filteredData =
-          sFeatures.length > 0
+          sFeatures.length > 0 || hFeature != ''
             ? tabData?.chartData?.filter(
                 (item: { id: string }) =>
                   sFeatures.includes(item.id) ||
@@ -113,7 +113,10 @@ export default function BarChartDynamic(
             highlighted?: boolean;
           }) => {
             const newItem = { ...item };
-            newItem.values = [item.values[sYearIndex]];
+            newItem.values =
+              item.values.length > sYearIndex
+                ? [item.values[sYearIndex]]
+                : [item.values[0]];
             newItem.highlighted = hFeature
               ? hFeature.includes(item.id)
               : undefined;
@@ -192,6 +195,7 @@ export default function BarChartDynamic(
         playAnimation={hoveredFeature.current == ''}
         highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
+        chartHoverSingleValue={tab?.chartHoverSingleValue || false}
       />
     </>
   );

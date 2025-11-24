@@ -65,7 +65,7 @@ export default function LineChartDynamic(
           : [];
       } else {
         filteredData =
-          sFeatures.length > 0
+          sFeatures.length > 0 || hFeature != ''
             ? tabData?.chartData?.filter(
                 (item: { id: string }) =>
                   sFeatures.includes(item.id) ||

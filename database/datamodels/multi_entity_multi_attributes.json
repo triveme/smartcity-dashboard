@@ -1,7 +1,7 @@
 {
   "attrs": [
     {
-      "attrName": "RainRateInterval",
+      "attrName": "rainRateInterval",
       "types": [
         {
           "entities": [

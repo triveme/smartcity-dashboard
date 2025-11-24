@@ -380,12 +380,9 @@ export class FiwareWizardService {
         ? entitiesUrl.replace('entities', 'types')
         : entitiesUrl;
 
-      const entitiesResponse = await axios.get(
-        `${typesUrl}/${entityType}?limit=1000`,
-        {
-          headers: headers,
-        },
-      );
+      const entitiesResponse = await axios.get(`${typesUrl}/${entityType}`, {
+        headers: headers,
+      });
 
       const attributesSet: Set<string> = new Set();
       const filteredEntities = entitiesResponse.data;
@@ -427,12 +424,9 @@ export class FiwareWizardService {
         ? entitiesUrl.replace('entities', 'types')
         : entitiesUrl;
 
-      const entitiesResponse = await axios.get(
-        `${typesUrl}/${entityType}?limit=1000`,
-        {
-          headers: headers,
-        },
-      );
+      const entitiesResponse = await axios.get(`${typesUrl}/${entityType}`, {
+        headers: headers,
+      });
 
       const attributesSet: Set<string> = new Set();
       const filteredEntities = entitiesResponse.data.attributeDetails;

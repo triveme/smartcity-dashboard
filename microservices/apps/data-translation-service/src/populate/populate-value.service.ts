@@ -209,7 +209,7 @@ export class PopulateValueService {
           console.warn('No Data found for attribute:', attribute);
         }
       } else {
-        console.warn('no attributes');
+        console.warn('No attributes');
       }
     } else {
       // NGSI Data Structure

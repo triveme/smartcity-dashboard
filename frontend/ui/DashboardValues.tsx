@@ -17,6 +17,7 @@ type DashboardValuesProps = {
   fontColor: string;
   fontSize: string;
   unitFontSize: string;
+  showTime: boolean;
 };
 
 export function DashboardValues(props: DashboardValuesProps): ReactElement {
@@ -31,6 +32,7 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
     fontColor,
     fontSize,
     unitFontSize,
+    showTime,
   } = props;
 
   const [label, setLabel] = useState<string>('');
@@ -62,17 +64,32 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
       parsed: date,
       isValid: !isNaN(date.getTime()),
     });
+
+    let cfg: Intl.DateTimeFormatOptions;
+    if (showTime) {
+      cfg = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      };
+    } else {
+      cfg = {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+      };
+    }
+
     formattedValue =
       date.getMonth() === 0 &&
       date.getDate() === 1 &&
       date.getHours() === 1 &&
       date.getMinutes() === 0
         ? date.getFullYear().toString()
-        : date.toLocaleString(navigator.language || 'de-DE', {
-            year: '2-digit',
-            month: '2-digit',
-            day: '2-digit',
-          });
+        : date.toLocaleString(navigator.language || 'de-DE', cfg);
   } else {
     formattedValue = value;
   }

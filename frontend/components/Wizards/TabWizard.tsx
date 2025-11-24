@@ -677,20 +677,23 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label=" Filter"
                       />
                     </div>
-                    <div className="flex w-full items-center">
-                      <div className="min-w-[220px]">
-                        <WizardLabel label="Nur einzelne Werte beim Hover anzeigen?" />
+                    {tab.componentSubType ===
+                      tabComponentSubTypeEnum.barChartDynamic && (
+                      <div className="flex w-full items-center">
+                        <div className="min-w-[220px]">
+                          <WizardLabel label="Nur einzelne Werte beim Hover anzeigen?" />
+                        </div>
+                        <WizardSelectBox
+                          checked={tab?.chartHoverSingleValue || false}
+                          onChange={(value: boolean): void =>
+                            handleTabChange({
+                              chartHoverSingleValue: value,
+                            })
+                          }
+                          label=" Einzelwerte"
+                        />
                       </div>
-                      <WizardSelectBox
-                        checked={tab?.chartHoverSingleValue || false}
-                        onChange={(value: boolean): void =>
-                          handleTabChange({
-                            chartHoverSingleValue: value,
-                          })
-                        }
-                        label=" Zusammenfassung"
-                      />
-                    </div>
+                    )}
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
                         <WizardLabel label="Bilddownload erlauben?" />
@@ -836,7 +839,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               handleTabChange({ setValueLimit: value })
                             }
                             label={`Nur Top ${tab?.userDefinedLimit || 10} anzeigen`}
-                            // label="Nur Top 10 anzeigen"
                           />
                           {tab?.setValueLimit && (
                             <div className="flex-grow">

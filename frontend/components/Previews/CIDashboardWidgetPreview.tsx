@@ -551,6 +551,7 @@ export default function CIDashboardWidgetPreview(
           fontSize={wertFontSize || '50'}
           unitFontSize={wertUnitFontSize || '30'}
           fontColor={wertFontColor || '#FFFFF'}
+          showTime={false}
         />
       )}
       {componentType === tabComponentTypeEnum.information && (

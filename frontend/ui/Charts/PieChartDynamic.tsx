@@ -103,7 +103,7 @@ export default function PieChartDynamic(
           : [];
       } else {
         filteredData =
-          sFeatures.length > 0
+          sFeatures.length > 0 || hFeature != ''
             ? tabData?.chartData?.filter(
                 (item: { id: string }) =>
                   sFeatures.includes(item.id) ||
@@ -127,7 +127,10 @@ export default function PieChartDynamic(
             id: string;
             values: [string, number][];
             highlighted?: boolean;
-          }) => item.values[sYearIndex]?.[1],
+          }) =>
+            item.values.length > sYearIndex
+              ? item.values[sYearIndex]?.[1]
+              : item.values[0]?.[1],
         ) ||
         tabData?.chartValues ||
         [];
