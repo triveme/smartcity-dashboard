@@ -171,6 +171,7 @@ export type MapModalWidget = {
   chartYAxisScale?: number;
   chartYAxisScaleChartMinValue?: number;
   chartYAxisScaleChartMaxValue?: number;
+  showTimeOnDatetimeValues?: boolean;
 };
 
 export type MapModalLegend = {

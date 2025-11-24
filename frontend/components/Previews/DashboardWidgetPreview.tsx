@@ -507,6 +507,7 @@ export default function DashboardWidgetPreview(
           fontSize={data?.wertFontSize || '50'}
           fontColor={data?.wertFontColor || '#fff'}
           unitFontSize={data?.wertUnitFontSize || '30'}
+          showTime={false}
         />
       )}
       {tab.componentType === tabComponentTypeEnum.information && (

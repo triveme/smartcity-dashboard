@@ -1,0 +1,5 @@
+= Useful SQL Queries
+
+== copy_color_scheme.sql
+Used to copy all colors from theme to another. Usefull for copying themes between mandators (tenants)
+

@@ -152,6 +152,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                             getAttributeValue(widget.attributes) || 0,
                           )}
                           fontColor={ciColors?.wertFontColor || '#FFF'}
+                          showTime={widget.showTimeOnDatetimeValues || false}
                         />
                       </div>
                     )}

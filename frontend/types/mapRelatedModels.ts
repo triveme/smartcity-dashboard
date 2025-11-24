@@ -103,6 +103,7 @@ export type MarkerType = {
   dataSource?: number;
   color?: string;
   iconIndex?: number;
+  unitsTexts?: string[];
 };
 
 export type SelectedMarker = {

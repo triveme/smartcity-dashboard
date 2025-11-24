@@ -658,6 +658,7 @@ export default async function DashboardTab(
           fontSize={ciColors.wertFontSize || '50'}
           unitFontSize={ciColors.wertUnitFontSize || '30'}
           fontColor={ciColors.wertFontColor || '#FFF'}
+          showTime={false}
         />
       )}
       {tab.componentType === tabComponentTypeEnum.information && (

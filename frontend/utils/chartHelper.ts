@@ -48,10 +48,14 @@ export function getUniqueField(
     const tempName = chartData[i].name;
     if (tempName) {
       const splitName = tempName.split('|');
-      if (splitName && splitName.length && splitName.length > 0) {
+      if (splitName && splitName.length && splitName.length > 1) {
         const attribute = splitName[isName ? 0 : 1];
         if (!uniqueAttributes.includes(attribute)) {
           uniqueAttributes.push(attribute);
+        }
+      } else if (splitName && splitName.length && splitName.length == 1) {
+        if (!uniqueAttributes.includes(splitName[0])) {
+          uniqueAttributes.push(splitName[0]);
         }
       }
     }

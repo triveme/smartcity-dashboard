@@ -202,6 +202,7 @@ export class DataService {
 
     try {
       let url: string;
+      let staticUrl: string;
       let headers;
       let params;
       const batchSize = 50;
@@ -243,6 +244,10 @@ export class DataService {
           /\/entities\/?$/,
           '/temporal/entities',
         );
+        const staticBaseUrl = auth_data.timeSeriesUrl.replace(
+          /\/entities\/?$/,
+          '/entities',
+        );
 
         headers = {
           'NGSILD-Tenant': auth_data.ngsildTenant,
@@ -273,10 +278,12 @@ export class DataService {
         if (query_config.entityIds.length > 1) {
           // Use the baseUrl with entity id parameter
           url = baseUrl;
+          staticUrl = staticBaseUrl;
           params.id = query_config.entityIds.join(',');
         } else {
           // For a single entity, use the entityId in the URL
           url = `${baseUrl}/${query_config.entityIds[0]}`;
+          staticUrl = `${staticBaseUrl}/${query_config.entityIds[0]}`;
         }
 
         // Workaround for aggregation attributes with a name attribute included
@@ -298,16 +305,31 @@ export class DataService {
 
           const [aggrResponse, nameResponse] = await Promise.all([
             axios.get(url, { headers, params: aggrParams }),
-            axios.get(url, { headers, params: nameParams }),
+            axios.get(staticUrl, { headers, params: nameParams }),
           ]);
 
-          const combinedAttrs = [
-            ...aggrResponse.data.attrs,
-            ...nameResponse.data.attrs,
-          ];
-          return {
-            attrs: [...combinedAttrs],
-          };
+          if (aggrResponse.data.attrs && nameResponse.data.attrs) {
+            const combinedAttrs = [
+              ...aggrResponse.data.attrs,
+              ...nameResponse.data.attrs,
+            ];
+            return {
+              attrs: [...combinedAttrs],
+            };
+          } else {
+            const combinedData = aggrResponse.data.map((dataElement) => {
+              const newData = { ...dataElement };
+              const nameData = nameResponse.data.find(
+                (nameElement) => nameElement.id == dataElement.id,
+              );
+              if (nameData) {
+                newData.name = nameData.name;
+              }
+              return newData;
+            });
+
+            return combinedData;
+          }
         }
 
         const response = await axios.get(url, { headers, params });
@@ -436,7 +458,7 @@ export class DataService {
     return v2Entity;
   }
 
-  mapNgsiLdToMultiAttributeTimeSeries(ngsiData): {
+  mapNgsiLdToMultiAttributeTimeSeries(ngsiData: object): {
     attributes: any[];
     entityId: any;
     index: any[];
@@ -614,10 +636,13 @@ export class DataService {
           axios.get(url, { headers, params: aggrParams }),
         ]);
 
-        const combinedAttrs = [...aggrResponse.data.attrs];
-        return {
-          attrs: [...combinedAttrs],
-        };
+        if (aggrResponse.data.attrs) {
+          const combinedAttrs = [...aggrResponse.data.attrs];
+          return {
+            attrs: [...combinedAttrs],
+          };
+        }
+        return aggrResponse.data;
       }
       const response = await axios.get(url, { headers, params });
 
@@ -733,7 +758,43 @@ export class DataService {
         attr.avg &&
         Array.isArray(attr.avg)
       ) {
-        attr.avg.forEach((item) => {
+        attr.avg.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            allTimestamps.add(item[1]);
+          }
+        });
+      }
+      // Case 3: Property with sum array (aggregated data)
+      else if (
+        attr?.type === 'Property' &&
+        attr.sum &&
+        Array.isArray(attr.sum)
+      ) {
+        attr.sum.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            allTimestamps.add(item[1]);
+          }
+        });
+      }
+      // Case 4: Property with min array (aggregated data)
+      else if (
+        attr?.type === 'Property' &&
+        attr.min &&
+        Array.isArray(attr.min)
+      ) {
+        attr.min.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            allTimestamps.add(item[1]);
+          }
+        });
+      }
+      // Case 5: Property with max array (aggregated data)
+      else if (
+        attr?.type === 'Property' &&
+        attr.max &&
+        Array.isArray(attr.max)
+      ) {
+        attr.max.forEach((item: any[]) => {
           if (Array.isArray(item) && item.length >= 2) {
             allTimestamps.add(item[1]);
           }
@@ -767,15 +828,41 @@ export class DataService {
       timestamps.forEach((timestamp) => {
         values.push(valueMap.has(timestamp) ? valueMap.get(timestamp) : null);
       });
-    }
-    // Case 2: Aggregated data with avg array
-    else if (attr?.type === 'Property' && attr.avg && Array.isArray(attr.avg)) {
+      // Case 2: Aggregated data
+    } else if (
+      attr?.type === 'Property' &&
+      ((attr.avg && Array.isArray(attr.avg)) ||
+        (attr.sum && Array.isArray(attr.sum)) ||
+        (attr.min && Array.isArray(attr.min)) ||
+        (attr.max && Array.isArray(attr.max)))
+    ) {
       const valueMap = new Map();
-      attr.avg.forEach((item) => {
-        if (Array.isArray(item) && item.length >= 2) {
-          valueMap.set(item[1], item[0]);
-        }
-      });
+
+      if (attr.avg) {
+        attr.avg.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            valueMap.set(item[1], item[0]);
+          }
+        });
+      } else if (attr.sum) {
+        attr.sum.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            valueMap.set(item[1], item[0]);
+          }
+        });
+      } else if (attr.min) {
+        attr.min.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            valueMap.set(item[1], item[0]);
+          }
+        });
+      } else if (attr.max) {
+        attr.max.forEach((item: any[]) => {
+          if (Array.isArray(item) && item.length >= 2) {
+            valueMap.set(item[1], item[0]);
+          }
+        });
+      }
 
       timestamps.forEach((timestamp) => {
         values.push(valueMap.has(timestamp) ? valueMap.get(timestamp) : null);
