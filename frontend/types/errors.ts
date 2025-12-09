@@ -7,6 +7,7 @@ export type WizardErrors = {
   attributeError?: string;
   authUrlError?: string;
   chartDateRepresentationError?: string;
+  chartAggregationError?: string;
   clientError?: string;
   coloredSliderValueError?: string;
   colorError?: string;

@@ -6,8 +6,8 @@ import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { WidgetToPanelService } from '../../widget-to-panel/widget-to-panel.service';
-import { FlatDashboardData } from '../dashboard.repo';
 import { reduceDashboard } from './populate.util';
+import { FlatDashboardData } from '../dashboard.model';
 
 @Injectable()
 export class PopulateService {

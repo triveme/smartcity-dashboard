@@ -8,13 +8,13 @@ import {
   WidgetData,
 } from '@app/postgres-db/schemas';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
-import { PopulateValueService } from './populate/populate-value.service';
 import { PopulateChartService } from './populate/populate-chart.service';
 import { PopulateCombinedWidgetService } from './populate/populate-combined-widget.service';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataTranslationRepo } from './data-translation.repo';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { PopulateListviewService } from './populate/populate-listview';
+import { PopulateValueService } from './populate/populate-value.service';
 
 export type QueryDataWidthWidgetId = {
   widgetId: string;
@@ -34,7 +34,7 @@ export function isSingleValueTab(tab: Tab): boolean {
     tab.componentType === 'Bild' ||
     tab.componentType === 'Wetterwarnungen' ||
     tab.componentType === 'Werte zu Bildern' ||
-    tab.componentType === 'Sensorstatus' ||
+    tab.componentType === 'Ampelstatus' ||
     (tab.componentType === 'Slider' &&
       tab.componentSubType === 'Farbiger Slider') ||
     (tab.componentType === 'Diagramm' &&

@@ -260,6 +260,13 @@
       "when": 1762944393062,
       "tag": "0036_fair_electro_1.1.0",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1765184784447,
+      "tag": "0037_parched_terrax_1.1.5",
+      "breakpoints": true
     }
   ]
 }

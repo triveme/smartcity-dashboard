@@ -10,6 +10,7 @@ import {
   tabComponentTypeEnum,
   timeframeEnum,
   authDataTypeEnum,
+  roundingModeEnum,
 } from '@/types';
 import CollapseButton from '@/ui/Buttons/CollapseButton';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
@@ -20,6 +21,7 @@ import { WizardErrors } from '@/types/errors';
 import {
   aggregationOptions,
   aggregationPeriods,
+  roundingModes,
   timeFrameWithoutLive,
 } from '@/utils/enumMapper';
 import ReportConfigWizard from '../ReportConfigWizard';
@@ -87,6 +89,50 @@ export default function QueryConfigWizard(
     handleQueryConfigChange({ isReporting: isSelected });
   };
 
+  const handleRoundingModeChange = (isSelected: boolean): void => {
+    if (!isSelected) {
+      handleQueryConfigChange({
+        roundingMode: '',
+        roundingTarget: 0,
+      });
+    } else {
+      handleQueryConfigChange({
+        roundingMode: 'standard',
+      });
+    }
+  };
+
+  const roundingExcludedSubTypes: tabComponentSubTypeEnum[] = [
+    tabComponentSubTypeEnum.default,
+    tabComponentSubTypeEnum.text,
+    tabComponentSubTypeEnum.degreeChart180,
+    tabComponentSubTypeEnum.degreeChart360,
+    tabComponentSubTypeEnum.stageableChart,
+    tabComponentSubTypeEnum.table,
+    tabComponentSubTypeEnum.tableDynamic,
+    tabComponentSubTypeEnum.pin,
+    tabComponentSubTypeEnum.pinDynamic,
+    tabComponentSubTypeEnum.parking,
+    tabComponentSubTypeEnum.combinedMap,
+    tabComponentSubTypeEnum.square,
+    tabComponentSubTypeEnum.rectangle,
+    tabComponentSubTypeEnum.circle,
+    tabComponentSubTypeEnum.hexagon,
+    tabComponentSubTypeEnum.onlyPin,
+    tabComponentSubTypeEnum.onlyFormArea,
+    tabComponentSubTypeEnum.combinedPinAndForm,
+    tabComponentSubTypeEnum.geoJSON,
+    tabComponentSubTypeEnum.geoJSONDynamic,
+    tabComponentSubTypeEnum.coloredSlider,
+    tabComponentSubTypeEnum.overviewSlider,
+    tabComponentSubTypeEnum.barChartHorizontal,
+    tabComponentSubTypeEnum.chartDateSelector,
+  ];
+
+  const showRoundingOptions =
+    widgetType !== undefined &&
+    !roundingExcludedSubTypes.includes(widgetType as tabComponentSubTypeEnum);
+
   useEffect(() => {
     if (!queryConfig) {
       handleQueryConfigChange({
@@ -110,7 +156,7 @@ export default function QueryConfigWizard(
     <>
       <div className="flex flex-col w-full pb-2">
         <div className="flex gap-2 place-items-center">
-          <WizardLabel label="Query Konfiguration" />
+          <WizardLabel label="Datenquelle" />
           <CollapseButton
             isOpen={queryConfigFormIsOpen}
             setIsOpen={setQueryConfigFormIsOpen}
@@ -120,7 +166,7 @@ export default function QueryConfigWizard(
       {queryConfigFormIsOpen ? (
         <>
           <div className="flex flex-col w-full pb-2">
-            <WizardLabel label="Datenquelle" />
+            <WizardLabel label="Datenplattform" />
             <DataSourceDropdownSelection
               selectedDataSource={queryConfig?.dataSourceId}
               onSelectDataSource={(
@@ -304,11 +350,60 @@ export default function QueryConfigWizard(
               </div>
             </div>
           ) : null}
-
+          {showRoundingOptions && (
+            <div className="flex flex-col w-full pb-2 mt-4">
+              <CheckBox
+                label="Wert Rundung aktivieren"
+                value={!!queryConfig?.roundingMode}
+                handleSelectChange={handleRoundingModeChange}
+              />
+            </div>
+          )}
+          {showRoundingOptions && queryConfig?.roundingMode && (
+            <>
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Rundungsmodus" />
+                <WizardDropdownSelection
+                  currentValue={
+                    roundingModes.find(
+                      (option) => option.value === queryConfig?.roundingMode,
+                    )?.label || ''
+                  }
+                  selectableValues={roundingModes
+                    .map((option) => option.label)
+                    .filter((label) => label.trim() !== '')}
+                  onSelect={(label: string | number): void => {
+                    const enumValue = roundingModes.find(
+                      (option) => option.label === label,
+                    )?.value;
+                    handleQueryConfigChange({
+                      roundingMode: enumValue as roundingModeEnum,
+                    });
+                  }}
+                  error={errors && errors.timeValueError}
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Schritt" />
+                <WizardTextfield
+                  value={queryConfig?.roundingTarget || ''}
+                  onChange={(value) =>
+                    handleQueryConfigChange({ roundingTarget: Number(value) })
+                  }
+                  error={errors && errors.updateIntervalError}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+            </>
+          )}
           <div className="flex flex-col w-full pb-2">
-            <WizardLabel label="Report Threshold Exceedings" />
+            <WizardLabel label="Meldung von Schwellenwertüberschreitungen" />
             <CheckBox
-              label="Enable Reporting"
+              label="Meldung aktivieren"
               value={queryConfig?.isReporting || false}
               handleSelectChange={handleCheckboxChange}
             />

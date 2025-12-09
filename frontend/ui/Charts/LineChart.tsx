@@ -2,7 +2,7 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { ECharts, EChartsOption } from 'echarts';
-import { ChartData } from '@/types';
+import { aggregationEnum, ChartData } from '@/types';
 import {
   formatYAxisLabel,
   calculateYAxisNameGap,
@@ -18,6 +18,12 @@ import {
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
 import { generateTooltipContent } from '@/utils/chartTooltipHelper';
+import {
+  getIntervalDaysFromChart,
+  downsampleValues,
+  getXMinMax,
+} from '@/utils/lineChartUtil';
+import { debounce } from 'lodash';
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -36,6 +42,7 @@ type LineChartProps = {
   showLegend?: boolean;
   staticValues: number[];
   staticValuesColors: string[];
+  chartAggregationMode?: aggregationEnum;
   staticValuesTicks?: number[];
   staticValuesTexts?: string[];
 
@@ -53,6 +60,7 @@ type LineChartProps = {
   filterColor?: string;
   filterTextColor?: string;
   showTooltip?: boolean;
+  hideTimeDetails?: boolean;
   decimalPlaces?: number;
   isShownInMapModal?: boolean;
   playAnimation?: boolean;
@@ -93,11 +101,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
     filterColor,
     filterTextColor,
     showTooltip = true,
+    hideTimeDetails = false,
     decimalPlaces,
     isShownInMapModal = false,
     playAnimation = true,
     highlightedColor,
     unhighlightedColor,
+    chartAggregationMode = aggregationEnum.none,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -108,6 +118,15 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const chartInstance = useRef<ECharts | null>(null);
 
   const attributes = getUniqueField(data, false);
+  const xRange = getXMinMax(filteredData); // TODO This should maybe update on filter
+
+  const update = debounce(() => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+    const daysIntervall = getIntervalDaysFromChart(chart, 20);
+    const allSeries = getAllSeries(daysIntervall);
+    chart.setOption({ series: allSeries }, false);
+  }, 200);
 
   const initializeChart = (): void => {
     if (chartRef.current) {
@@ -116,91 +135,20 @@ export default function LineChart(props: LineChartProps): ReactElement {
       }
       chartInstance.current = echarts.init(chartRef.current);
 
+      const seriesAll = getAllSeries(0);
+      const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
+      const hasEndLabel = seriesAll.find((value) => value.endLabel?.show);
+
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
       const splitNumber = Math.max(5, Math.floor(containerWidth / 100));
-      const series: echarts.LineSeriesOption[] = [];
-      if (filteredData && filteredData.length > 0) {
-        for (let i = 0; i < filteredData.length; i++) {
-          const dataArray = filteredData[i].values;
-          const tempSeries: echarts.LineSeriesOption = {
-            data: dataArray,
-            type: 'line',
-            symbolSize: isShownInMapModal ? 0 : 6,
-            step: isStepline ? 'start' : undefined,
-            name: filteredData[i].name,
-            color: currentValuesColors[i % 10] || 'black',
-            ...(isStackedChart && { stack: 'a' }),
-            ...(isStackedChart && {
-              areaStyle: {
-                opacity: 0.8,
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  {
-                    offset: 0,
-                    color: echarts.color.lift(
-                      currentValuesColors[i % currentValuesColors.length],
-                      -1,
-                    ),
-                  },
-                  {
-                    offset: 1,
-                    color: echarts.color.lift(
-                      currentValuesColors[i % currentValuesColors.length],
-                      0.2,
-                    ),
-                  },
-                ]),
-              },
-            }),
-          };
-          if (filteredData[i].highlighted != undefined) {
-            tempSeries.color = filteredData[i].highlighted
-              ? highlightedColor
-              : unhighlightedColor;
-            tempSeries.itemStyle = {
-              borderWidth: 2,
-            };
-          }
-          series.push(tempSeries);
-        }
-      }
-      // Static value series
-      const staticValueSeries: echarts.LineSeriesOption[] =
-        staticValues &&
-        staticValues.length > 0 &&
-        filteredData &&
-        filteredData.length > 0
-          ? staticValues.map((value, index) => ({
-              data: filteredData[0].values.map((label) => [label[0], value]),
-              type: 'line',
-              symbol: 'none',
-              lineStyle: {
-                color: staticValuesColors[index],
-                type: 'solid',
-              },
-              tooltip: {
-                show: false,
-              },
-              endLabel: {
-                show: staticValuesTicks.includes(value),
-                // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-                formatter: function () {
-                  return staticValuesTexts[
-                    staticValuesTicks.findIndex((tick) => tick == value)
-                  ];
-                },
-                fontSize: legendFontSize,
-                color: legendFontColor,
-              },
-            }))
-          : [];
-      const hasEndLabel = staticValueSeries.find(
-        (value) => value.endLabel?.show,
-      );
-      const seriesAll = [...series, ...staticValueSeries];
-      const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
       const option: EChartsOption = {
         animation: playAnimation,
+        animationDuration: 2000,
+        animationEasing: 'cubicOut',
+        animationDelay: 0,
+        animationDurationUpdate: 500,
+        animationEasingUpdate: 'cubicOut',
         xAxis: {
           name: xAxisLabel,
           type: 'time',
@@ -232,6 +180,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
           axisTick: {
             show: false,
           },
+          min: xRange?.min?.toISOString(),
+          max: xRange?.max?.toISOString(),
         },
         yAxis: {
           name: formatYAxisLabel(yAxisLabel || ''),
@@ -319,13 +269,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
             : calculateBottomGrid(xAxisLabel || '', allowZoom),
           containLabel: true,
         },
-        series: seriesAll,
         dataZoom: allowZoom
           ? [
               {
                 type: 'slider',
                 xAxisIndex: 0,
-                filterMode: 'filter',
+                filterMode: 'none',
                 start: 0,
                 end: 100,
               },
@@ -344,6 +293,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             const tooltipContent = generateTooltipContent(
               params,
               decimalPlaces,
+              hideTimeDetails,
               labelMap,
             );
             return tooltipContent;
@@ -352,6 +302,14 @@ export default function LineChart(props: LineChartProps): ReactElement {
       };
 
       chartInstance.current.setOption(option);
+
+      update();
+
+      chartInstance.current.on('datazoom', update);
+      // Clean up previous listeners on dispose
+      chartRef.current.addEventListener('dispose', () => {
+        chartInstance.current?.off('datazoom', update);
+      });
     }
   };
 
@@ -463,7 +421,96 @@ export default function LineChart(props: LineChartProps): ReactElement {
           ></FilterButton>
         </>
       )}
-      <div className="w-full h-full" ref={chartRef} />
+      <div className="w-full h-full flex flex-col sm:flex-col">
+        <div className="w-full h-full" ref={chartRef} />
+      </div>
     </div>
   );
+
+  function getAllSeries(intervallDays: number): echarts.LineSeriesOption[] {
+    const series: echarts.LineSeriesOption[] = [];
+    if (filteredData && filteredData.length > 0) {
+      for (let i = 0; i < filteredData.length; i++) {
+        const dataArray =
+          chartAggregationMode && chartAggregationMode != aggregationEnum.none
+            ? downsampleValues(
+                filteredData[i].values,
+                intervallDays,
+                chartAggregationMode,
+              )
+            : filteredData[i].values;
+        const tempSeries: echarts.LineSeriesOption = {
+          data: dataArray,
+          type: 'line',
+          symbolSize: isShownInMapModal ? 0 : 6,
+          step: isStepline ? 'start' : undefined,
+          name: filteredData[i].name,
+          color: currentValuesColors[i % 10] || 'black',
+          ...(isStackedChart && { stack: 'a' }),
+          ...(isStackedChart && {
+            areaStyle: {
+              opacity: 0.8,
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                  offset: 0,
+                  color: echarts.color.lift(
+                    currentValuesColors[i % currentValuesColors.length],
+                    -1,
+                  ),
+                },
+                {
+                  offset: 1,
+                  color: echarts.color.lift(
+                    currentValuesColors[i % currentValuesColors.length],
+                    0.2,
+                  ),
+                },
+              ]),
+            },
+          }),
+        };
+        if (filteredData[i].highlighted != undefined) {
+          tempSeries.color = filteredData[i].highlighted
+            ? highlightedColor
+            : unhighlightedColor;
+          tempSeries.itemStyle = {
+            borderWidth: 2,
+          };
+        }
+        series.push(tempSeries);
+      }
+    }
+    // Static value series
+    const staticValueSeries: echarts.LineSeriesOption[] =
+      staticValues &&
+      staticValues.length > 0 &&
+      filteredData &&
+      filteredData.length > 0
+        ? staticValues.map((value, index) => ({
+            data: filteredData[0].values.map((label) => [label[0], value]),
+            type: 'line',
+            symbol: 'none',
+            lineStyle: {
+              color: staticValuesColors[index],
+              type: 'solid',
+            },
+            tooltip: {
+              show: false,
+            },
+            endLabel: {
+              show: staticValuesTicks.includes(value),
+              // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+              formatter: function () {
+                return staticValuesTexts[
+                  staticValuesTicks.findIndex((tick) => tick == value)
+                ];
+              },
+              fontSize: legendFontSize,
+              color: legendFontColor,
+            },
+          }))
+        : [];
+    const seriesAll = [...series, ...staticValueSeries];
+    return seriesAll;
+  }
 }

@@ -334,6 +334,7 @@ export default async function DashboardTab(
               filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
               chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
+              chartAggregationMode={tab?.chartAggregationMode}
             />
           )}
           {tab.componentSubType ===
@@ -407,6 +408,11 @@ export default async function DashboardTab(
               axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
               decimalPlaces={tab?.decimalPlaces || 0}
               chartHoverSingleValue={tab?.chartHoverSingleValue || false}
+              showTimestampOnHover={
+                tab?.barChartShowTimestampOnHover !== undefined
+                  ? tab.barChartShowTimestampOnHover
+                  : true
+              }
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChartDynamic && (
@@ -655,8 +661,14 @@ export default async function DashboardTab(
           staticValuesColors={tab.chartStaticValuesColors || []}
           staticValuesTexts={tab.chartStaticValuesTexts || []}
           staticValuesLogos={tab.chartStaticValuesLogos || []}
-          fontSize={ciColors.wertFontSize || '50'}
-          unitFontSize={ciColors.wertUnitFontSize || '30'}
+          fontSize={
+            tab.valueFontSize?.toString() || ciColors.wertFontSize || '50'
+          }
+          unitFontSize={
+            tab.valueUnitFontSize?.toString() ||
+            ciColors.wertUnitFontSize ||
+            '30'
+          }
           fontColor={ciColors.wertFontColor || '#FFF'}
           showTime={false}
         />
@@ -744,6 +756,7 @@ export default async function DashboardTab(
                     tab.mapGeoJSONHoverFillColor || '#0347a6'
                   }
                   mapType={tab.componentSubType || ''}
+                  mapSearch={tab.mapSearch}
                   isFullscreenMap={false}
                   mapAttributeForValueBased={
                     combinedMapData?.mapAttributeForValueBased as string[]
@@ -768,6 +781,13 @@ export default async function DashboardTab(
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
                   ciColors={ciColors}
+                  isCustomMap={
+                    tab.customMapImageId
+                      ? tab.customMapImageId.length > 0
+                      : false
+                  }
+                  customMapImageId={tab.customMapImageId}
+                  customMapSensorValues={tab.customMapSensorData}
                 />
               ) : (
                 <Map
@@ -833,6 +853,7 @@ export default async function DashboardTab(
                     tab.mapGeoJSONHoverFillColor || '#0347a6'
                   }
                   mapType={tab.componentSubType || ''}
+                  mapSearch={tab.mapSearch}
                   combinedQueryData={
                     combinedQueryData as QueryDataWithAttributes[]
                   }
@@ -864,6 +885,13 @@ export default async function DashboardTab(
                   mapWmsLayer={tab.mapWmsLayer || ''}
                   menuStyle={menuStyle}
                   ciColors={ciColors}
+                  isCustomMap={
+                    tab.customMapImageId
+                      ? tab.customMapImageId.length > 0
+                      : false
+                  }
+                  customMapImageId={tab.customMapImageId}
+                  customMapSensorValues={tab.customMapSensorData}
                 />
               )}
             </>
@@ -1045,13 +1073,13 @@ export default async function DashboardTab(
             count={tab.sensorStatusLightCount || 2}
             isLayoutVertical={tab.sensorStatusLayoutVertical || false}
             size={widget?.height || 200}
-            defaultColor={tab.sensorStatusDefaultColor || '#808080'}
-            color1={tab.sensorStatusColor1 || '#FF0000'}
+            defaultColor={tab.sensorStatusDefaultColor || '#c4c4c4'}
+            color1={tab.sensorStatusColor1 || '#c40505'}
             color2={
               tab.sensorStatusColor2 ||
-              (tab.sensorStatusLightCount == 2 ? '#00FF00' : '#FFFF00')
+              (tab.sensorStatusLightCount == 2 ? '#47d708' : '#f9b30d')
             }
-            color3={tab.sensorStatusColor3 || '#00FF00'}
+            color3={tab.sensorStatusColor3 || '#47d708'}
             value={
               tabData?.chartValues?.length > 0 ? tabData.chartValues[0] : 65
             }

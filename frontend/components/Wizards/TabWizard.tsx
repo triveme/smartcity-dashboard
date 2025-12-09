@@ -12,6 +12,7 @@ import {
   Widget,
   WidgetWithChildren,
   combinedComponentLayoutEnum,
+  aggregationEnum,
   componentLayoutEnum,
 } from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
@@ -31,6 +32,7 @@ import {
   informationComponentSubTypes,
   sliderComponentSubTypes,
   interactiveComponentSubTypes,
+  aggregationOptions,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -50,6 +52,8 @@ import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementBut
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import TableColorPickerPanel from '@/ui/TableColorPickerPanel';
 import ValuesToImageFields from '@/ui/ValuesToImageFields';
+import CustomMapUpload from '@/components/Map/CustomMap/CustomMapUpload';
+import CustomMapSensorConfigurator from '@/components/Map/CustomMap/CustomMapSensorConfigurator';
 import UnitsField from '@/ui/UnitsField';
 
 type TabWizardProps = {
@@ -124,7 +128,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       ) {
         handleWidgetChange({ height: 0 });
       }
-
+      console.log(newTab);
       return newTab;
     });
   };
@@ -254,6 +258,18 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   }, [tab]);
 
   useEffect(() => {
+    if (
+      tab &&
+      tab.componentType == tabComponentTypeEnum.map &&
+      tab.componentSubType == tabComponentSubTypeEnum.custom_map
+    ) {
+      tab.mapDisplayMode = mapDisplayModes.find(
+        (x) => x.label == 'Nur Pin',
+      )?.value;
+    }
+  }, [tab?.componentType, tab?.componentSubType]);
+
+  useEffect(() => {
     if (tab) {
       if (tab.componentType === tabComponentTypeEnum.map) {
         if (tab.mapLongitude && tab.mapLatitude) {
@@ -267,6 +283,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
             mapLatitude: 50.585075277802574,
           });
         }
+      }
+      if (tab.componentType === tabComponentTypeEnum.sensorStatus) {
+        tab.sensorStatusLightCount = 2;
       }
     }
   }, [tab?.componentType]);
@@ -328,7 +347,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     <div className="flex flex-col">
       <div className="flex flex-col w-full pb-2">
         <div className="flex gap-2 place-items-center">
-          <WizardLabel label="Tab Konfiguration" />
+          <WizardLabel label="Widget Konfiguration" />
           <CollapseButton isOpen={tabFormIsOpen} setIsOpen={setTabFormIsOpen} />
         </div>
       </div>
@@ -423,6 +442,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     }
                     disabled={tab?.chartDynamicOnlyShowHover === true}
                     label="Alle Daten ohne Auswahl darstellen"
+                  />
+                  <WizardSelectBox
+                    checked={
+                      tab?.barChartShowTimestampOnHover === undefined ||
+                      tab?.barChartShowTimestampOnHover === null
+                        ? true
+                        : tab?.barChartShowTimestampOnHover
+                    }
+                    label="Zeitstempel bei Hover anzeigen"
+                    onChange={(value: boolean): void =>
+                      handleTabChange({
+                        barChartShowTimestampOnHover: value,
+                      })
+                    }
                   />
                 </div>
               )}
@@ -622,6 +655,37 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       />
                     </div>
                   </div>
+                  {(tab?.componentSubType ===
+                    tabComponentSubTypeEnum.lineChart ||
+                    tab?.componentSubType ===
+                      tabComponentSubTypeEnum.lineChartDynamic) && (
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Graph vereinfachen" />
+                      <WizardDropdownSelection
+                        currentValue={
+                          aggregationOptions.find(
+                            (option) =>
+                              option.value === tab?.chartAggregationMode,
+                          )?.label || ''
+                        }
+                        selectableValues={aggregationOptions
+                          .map((option) => option.label)
+                          .slice(1)}
+                        onSelect={(label: string | number): void => {
+                          const enumValue = aggregationOptions.find(
+                            (option) => option.label === label,
+                          )?.value;
+                          handleTabChange({
+                            chartAggregationMode: enumValue as aggregationEnum,
+                          });
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                        error={errors?.chartAggregationError}
+                      />
+                    </div>
+                  )}
                   <div className="w-full flex flex-col">
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
@@ -1324,18 +1388,48 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   backgroundColor={backgroundColor}
                 />
               </div>
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Dezimalstellen" />
-                <WizardIntegerfield
-                  value={tab?.decimalPlaces || '0'}
-                  onChange={(value: string | number): void =>
-                    handleTabChange({
-                      decimalPlaces: value as number,
-                    })
-                  }
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
+              <div className="flex w-full pb-2">
+                <div className="w-full pr-2">
+                  <WizardLabel label="Schriftgröße" />
+                  <WizardTextfield
+                    value={tab?.valueFontSize || '50'}
+                    onChange={(value: string | number): void =>
+                      handleTabChange({
+                        valueFontSize: value as number,
+                      })
+                    }
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                    isNumeric={true}
+                  />
+                </div>
+                <div className="w-full pr-2">
+                  <WizardLabel label="Einheit Schriftgröße" />
+                  <WizardTextfield
+                    value={tab?.valueUnitFontSize || '50'}
+                    onChange={(value: string | number): void =>
+                      handleTabChange({
+                        valueUnitFontSize: value as number,
+                      })
+                    }
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                    isNumeric={true}
+                  />
+                </div>
+                <div className="w-full pl-2">
+                  <WizardLabel label="Dezimalstellen" />
+                  <WizardIntegerfield
+                    value={tab?.decimalPlaces || '0'}
+                    onChange={(value: string | number): void =>
+                      handleTabChange({
+                        decimalPlaces: value as number,
+                      })
+                    }
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
               </div>
               {'Slider'}
               <HorizontalDivider />
@@ -1412,6 +1506,13 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       label="Zoomen"
                     />
                     <WizardSelectBox
+                      checked={tab?.mapSearch || false}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({ mapSearch: value })
+                      }
+                      label=" Suchen"
+                    />
+                    <WizardSelectBox
                       checked={tab?.mapAllowFilter || false}
                       onChange={(value: boolean): void => {
                         handleTabChange({
@@ -1428,6 +1529,19 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       }
                       label="Legend"
                     />
+                    {tab.componentSubType ==
+                      tabComponentSubTypeEnum.custom_map && (
+                      <div className="flex flex-col w-full pt-8 pb-2 gap-4">
+                        <CustomMapUpload
+                          customMapImageId={tab.customMapImageId || ''}
+                          backgroundColor={backgroundColor}
+                          borderColor={borderColor}
+                          handleTabChange={(update: Partial<Tab>): void =>
+                            handleTabChange(update)
+                          }
+                        />
+                      </div>
+                    )}
 
                     {/* add widget to show in map modal */}
                     {tab.mapAllowPopups && (
@@ -1515,10 +1629,12 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         </div>
                       </>
                     )}
-                    <HorizontalDivider />
+
                     {tab.componentSubType !== tabComponentSubTypeEnum.geoJSON &&
                       tab.componentSubType !==
-                        tabComponentSubTypeEnum.geoJSONDynamic && (
+                        tabComponentSubTypeEnum.geoJSONDynamic &&
+                      tab.componentSubType !==
+                        tabComponentSubTypeEnum.custom_map && (
                         <div className="flex flex-col w-full pb-2">
                           <WizardLabel label="Anzeigemodus" />
                           <WizardDropdownSelection
@@ -1690,30 +1806,36 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               <HorizontalDivider />
                               <div className="flex flex-col w-full pb-2 gap-4">
                                 <WizardLabel label="Einstellungen für Sensor abhängige Farben" />
-                                <div className="flex flex-col w-full pb-2">
-                                  <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
-                                  <WizardDropdownSelection
-                                    currentValue={
-                                      tab?.mapAttributeForValueBased || ''
-                                    }
-                                    selectableValues={[
-                                      '',
-                                      ...queryConfig.attributes,
-                                    ]}
-                                    error={
-                                      errors && errors.mapFilterAttributeError
-                                    }
-                                    onSelect={(value: string | number): void =>
-                                      handleTabChange({
-                                        mapAttributeForValueBased:
-                                          value.toString(),
-                                      })
-                                    }
-                                    iconColor={iconColor}
-                                    borderColor={borderColor}
-                                    backgroundColor={backgroundColor}
-                                  />
-                                </div>
+                                {tab.componentSubType !==
+                                  tabComponentSubTypeEnum.custom_map && (
+                                  <div className="flex flex-col w-full">
+                                    <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
+                                    <WizardDropdownSelection
+                                      currentValue={
+                                        tab?.mapAttributeForValueBased || ''
+                                      }
+                                      selectableValues={[
+                                        '',
+                                        ...queryConfig.attributes,
+                                      ]}
+                                      error={
+                                        errors && errors.mapFilterAttributeError
+                                      }
+                                      onSelect={(
+                                        value: string | number,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapAttributeForValueBased:
+                                            value.toString(),
+                                        })
+                                      }
+                                      iconColor={iconColor}
+                                      borderColor={borderColor}
+                                      backgroundColor={backgroundColor}
+                                    />
+                                  </div>
+                                )}
+
                                 <div className="flex flex-col w-full pb-2">
                                   <WizardSelectBox
                                     checked={
@@ -1756,39 +1878,62 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               </div>
                             </>
                           )}
-                          <HorizontalDivider />
-                          <WizardLabel label="Optionale WMS Einstellungen" />
-                          <div className="w-full">
-                            <WizardLabel label="WMS Layer URL" />
-                            <WizardUrlTextfield
-                              value={tab.mapWmsUrl || 'https://'}
-                              onChange={function (
-                                value: string | number,
-                              ): void {
-                                handleTabChange({
-                                  mapWmsUrl: value.toString(),
-                                });
-                              }}
-                              iconColor={iconColor}
-                              borderColor={borderColor}
-                            />
-                          </div>
-                          <div className="w-full">
-                            <WizardLabel label="WMS Layer" />
-                            <WizardUrlTextfield
-                              value={tab.mapWmsLayer || ''}
-                              onChange={function (
-                                value: string | number,
-                              ): void {
-                                handleTabChange({
-                                  mapWmsLayer: value.toString(),
-                                });
-                              }}
-                              iconColor={iconColor}
-                              borderColor={borderColor}
-                            />
-                          </div>
+
+                          {tab.componentSubType !==
+                            tabComponentSubTypeEnum.custom_map && (
+                            <>
+                              <HorizontalDivider />
+                              <WizardLabel label="Optionale WMS Einstellungen" />
+                              <div className="w-full">
+                                <WizardLabel label="WMS Layer URL" />
+                                <WizardUrlTextfield
+                                  value={tab.mapWmsUrl || 'https://'}
+                                  onChange={function (
+                                    value: string | number,
+                                  ): void {
+                                    handleTabChange({
+                                      mapWmsUrl: value.toString(),
+                                    });
+                                  }}
+                                  iconColor={iconColor}
+                                  borderColor={borderColor}
+                                />
+                              </div>
+                              <div className="w-full">
+                                <WizardLabel label="WMS Layer" />
+                                <WizardUrlTextfield
+                                  value={tab.mapWmsLayer || ''}
+                                  onChange={function (
+                                    value: string | number,
+                                  ): void {
+                                    handleTabChange({
+                                      mapWmsLayer: value.toString(),
+                                    });
+                                  }}
+                                  iconColor={iconColor}
+                                  borderColor={borderColor}
+                                />
+                              </div>
+                            </>
+                          )}
                         </div>
+                      )}
+                      {tab.componentSubType ===
+                        tabComponentSubTypeEnum.custom_map && (
+                        <>
+                          {/* <div className='flex flex-col w-full pb-2 mb-4'>
+                                <WizardLabel label='Marker Konfiguration'/>
+                              </div> */}
+                          <CustomMapSensorConfigurator
+                            queryConfig={queryConfig}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                            customMapSensorValues={
+                              tab.customMapSensorData || []
+                            }
+                            handleTabChange={handleTabChange}
+                          />
+                        </>
                       )}
                       {(tab.componentSubType ==
                         tabComponentSubTypeEnum.geoJSON ||
@@ -2013,36 +2158,41 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         backgroundColor={backgroundColor}
                       />
                     </div>
-                    <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Latitude" />
-                      <WizardTextfield
-                        value={latitude}
-                        onChange={(value: string | number): void => {
-                          handleTabChange({
-                            mapLatitude: value as number,
-                          });
-                          setLatitude(value as number);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
-                    <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Longitude" />
-                      <WizardTextfield
-                        value={longitude}
-                        onChange={(value: string | number): void => {
-                          handleTabChange({
-                            mapLongitude: value as number,
-                          });
-                          setLongitude(value as number);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
-                    </div>
+                    {tab.componentSubType !==
+                      tabComponentSubTypeEnum.custom_map && (
+                      <>
+                        <div className="flex flex-col w-full pb-2">
+                          <WizardLabel label="Latitude" />
+                          <WizardTextfield
+                            value={latitude}
+                            onChange={(value: string | number): void => {
+                              handleTabChange({
+                                mapLatitude: value as number,
+                              });
+                              setLatitude(value as number);
+                            }}
+                            isNumeric={true}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
+                        <div className="flex flex-col w-full pb-2">
+                          <WizardLabel label="Longitude" />
+                          <WizardTextfield
+                            value={longitude}
+                            onChange={(value: string | number): void => {
+                              handleTabChange({
+                                mapLongitude: value as number,
+                              });
+                              setLongitude(value as number);
+                            }}
+                            isNumeric={true}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
               {tab.componentType === tabComponentTypeEnum.map &&
@@ -2071,8 +2221,16 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         }
                         label="Zoomen"
                       />
+                      <WizardSelectBox
+                        checked={tab?.mapSearch || false}
+                        onChange={(value: boolean): void =>
+                          handleTabChange({ mapSearch: value })
+                        }
+                        label=" Suchen"
+                      />
                     </div>
                     <HorizontalDivider />
+
                     <WizardLabel label="Optionale WMS Einstellungen" />
                     <div className="w-full">
                       <WizardLabel label="WMS Layer URL" />
@@ -2821,7 +2979,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   style={{ justifyContent: 'space-between' }}
                 >
                   <ColorPickerComponent
-                    currentColor={tab?.sensorStatusDefaultColor || '#808080'}
+                    currentColor={tab?.sensorStatusDefaultColor || '#c4c4c4'}
                     handleColorChange={(color: string): void =>
                       handleTabChange({
                         sensorStatusDefaultColor: color,
@@ -2830,7 +2988,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     label="Default Farbe"
                   />
                   <ColorPickerComponent
-                    currentColor={tab?.sensorStatusColor1 || '#FF0000'}
+                    currentColor={tab?.sensorStatusColor1 || '#c40505'}
                     handleColorChange={(color: string): void =>
                       handleTabChange({
                         sensorStatusColor1: color,
@@ -2842,8 +3000,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     currentColor={
                       tab?.sensorStatusColor2 ||
                       ((tab?.sensorStatusLightCount ?? 2) == 2
-                        ? '#00FF00'
-                        : '#FFFF00')
+                        ? '#47d708'
+                        : '#f9b30d')
                     }
                     handleColorChange={(color: string): void =>
                       handleTabChange({
@@ -2854,7 +3012,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   />
                   {tab?.sensorStatusLightCount == 3 && (
                     <ColorPickerComponent
-                      currentColor={tab?.sensorStatusColor3 || '#00FF00'}
+                      currentColor={tab?.sensorStatusColor3 || '#47d708'}
                       handleColorChange={(color: string): void =>
                         handleTabChange({
                           sensorStatusColor3: color,

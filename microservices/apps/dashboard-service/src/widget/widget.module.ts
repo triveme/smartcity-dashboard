@@ -38,6 +38,10 @@ import { DataService as OrchideoDataService } from '../../../orchideo-connect-se
 import { AuthService } from '../../../orchideo-connect-service/src/auth/auth.service';
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { QueryService as OrchideoQueryService } from '../../../orchideo-connect-service/src/query/query.service';
+import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
+import { DataService } from 'apps/internal-data-service/src/data/data.service';
+import { QueryService as InternalDataQueryService } from '../../../internal-data-service/src/query/query.service';
+import { TransformationService } from 'apps/internal-data-service/src/transformation/transformation.service';
 
 @Module({
   imports: [HttpModule],
@@ -74,6 +78,10 @@ import { QueryService as OrchideoQueryService } from '../../../orchideo-connect-
     AuthService,
     OrchideoConnectService,
     OrchideoQueryService,
+    InternalDataService,
+    DataService,
+    InternalDataQueryService,
+    TransformationService,
   ],
   controllers: [WidgetController],
 })

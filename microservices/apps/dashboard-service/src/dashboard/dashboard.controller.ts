@@ -192,7 +192,8 @@ export class DashboardController {
   @Get('/download-data/:dashboardId')
   async downloadData(
     @Param('dashboardId') dashboardId: string,
+    @Query('ids') ids: string[],
   ): Promise<string> {
-    return this.dashboardDataService.downloadDashboardData(dashboardId);
+    return this.dashboardDataService.downloadDashboardData(dashboardId, ids);
   }
 }

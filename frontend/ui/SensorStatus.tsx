@@ -17,10 +17,10 @@ type SensorStatusProps = {
 
 const SensorStatusComponent: React.FC<SensorStatusProps> = ({
   count = 2,
-  defaultColor = '#808080',
-  color1 = '#FF0000',
-  color3 = '#00FF00',
-  color2 = count == 2 ? color3 : '#ffff00',
+  defaultColor = '#c4c4c4',
+  color1 = '#c40505',
+  color3 = '#47d708',
+  color2 = count == 2 ? color3 : '#f9b30d',
   isLayoutVertical = false,
   size = 66,
   thresholdMin,

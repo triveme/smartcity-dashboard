@@ -18,35 +18,18 @@ import {
   NewDashboard,
 } from '@app/postgres-db/schemas/dashboard.schema';
 import {
-  Widget,
-  WidgetData,
   widgetData,
   widgets,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
-import { Tab, tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
-import { Panel, panels } from '@app/postgres-db/schemas/dashboard.panel.schema';
-import { queries, Query } from '@app/postgres-db/schemas/query.schema';
-import {
-  widgetsToPanels,
-  WidgetToPanel,
-} from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
-import {
-  DataModel,
-  dataModels,
-} from '@app/postgres-db/schemas/data-model.schema';
+import { tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import { panels } from '@app/postgres-db/schemas/dashboard.panel.schema';
+import { queries } from '@app/postgres-db/schemas/query.schema';
+import { widgetsToPanels } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
+import { dataModels } from '@app/postgres-db/schemas/data-model.schema';
 import { dashboardsToTenants } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
 import { PaginatedResult, PaginationMeta } from '../widget/widget.model';
-
-export type FlatDashboardData = {
-  dashboard: Dashboard;
-  panel: Panel;
-  widget_to_panel: WidgetToPanel;
-  widget: Widget;
-  widget_data?: WidgetData | null;
-  tab: Tab;
-  data_model: DataModel;
-  query: Query;
-};
+import { CustomMapSensorDataHelper } from '../helper/custom-map-sensor-data.helper';
+import { FlatDashboardData } from './dashboard.model';
 
 @Injectable()
 export class DashboardRepo {
@@ -55,7 +38,7 @@ export class DashboardRepo {
   async getDashboardsWithContent(
     rolesFromRequest: string[],
   ): Promise<FlatDashboardData[]> {
-    return this.db
+    const dashboardContent = await this.db
       .select()
       .from(dashboards)
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
@@ -80,13 +63,20 @@ export class DashboardRepo {
         asc(data.panel.position),
         asc(data.widget_to_panel.position),
       ]);
+
+    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+      this.db,
+      dashboardContent,
+    );
+
+    return enrichedRows;
   }
 
   async getDashboardWithContentById(
     id: string,
     rolesFromRequest: string[],
   ): Promise<FlatDashboardData[]> {
-    return this.db
+    const dashboardContent = await this.db
       .select()
       .from(dashboards)
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
@@ -114,6 +104,13 @@ export class DashboardRepo {
         asc(data.panel.position),
         asc(data.widget_to_panel.position),
       ]);
+
+    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+      this.db,
+      dashboardContent,
+    );
+
+    return enrichedRows;
   }
 
   async getDashboardWithContent(
@@ -128,7 +125,7 @@ export class DashboardRepo {
       .from(dashboardsToTenants)
       .where(eq(dashboardsToTenants.tenantId, tenantId));
 
-    return this.db
+    const dashboardContent = await this.db
       .select()
       .from(dashboards)
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
@@ -157,6 +154,13 @@ export class DashboardRepo {
         asc(data.panel.position),
         asc(data.widget_to_panel.position),
       ]);
+
+    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+      this.db,
+      dashboardContent,
+    );
+
+    return enrichedRows;
   }
 
   async getAll(rolesFromRequest: string[]): Promise<Dashboard[]> {
@@ -340,7 +344,12 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    return dbDashboards;
+    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+      this.db,
+      dbDashboards,
+    );
+
+    return enrichedRows;
   }
 
   async getByUrls(
@@ -391,7 +400,7 @@ export class DashboardRepo {
       .from(dashboardsToTenants)
       .where(eq(dashboardsToTenants.tenantId, tenantId));
 
-    return this.db
+    const dashboardContent = await this.db
       .select()
       .from(dashboards)
       .leftJoin(panels, eq(dashboards.id, panels.dashboardId))
@@ -419,6 +428,13 @@ export class DashboardRepo {
         asc(data.panel.position),
         asc(data.widget_to_panel.position),
       ]);
+
+    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+      this.db,
+      dashboardContent,
+    );
+
+    return enrichedRows;
   }
 
   async create(row: NewDashboard): Promise<Dashboard> {

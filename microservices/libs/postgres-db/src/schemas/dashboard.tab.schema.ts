@@ -7,7 +7,6 @@ import {
   boolean,
   smallint,
   json,
-  jsonb,
 } from 'drizzle-orm/pg-core';
 import { queries } from './query.schema';
 import { widgets } from './dashboard.widget.schema';
@@ -17,7 +16,11 @@ import {
   chartDateRepresentationEnum,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
+  aggregationEnum,
 } from './enums.schema';
+import { customMapImages } from './dashboard.tab.custom_map_image.schema';
+import { customMapSensorDataTable } from './custom-map-sensor-data.schema';
+import { tabValuesToImageTable } from './dashboard.tab.values_to_image.schema';
 
 export const tabs = pgTable('tab', {
   id: uuid('id')
@@ -46,6 +49,7 @@ export const tabs = pgTable('tab', {
   chartYAxisScale: real('chart_y_axis_scale'),
   chartYAxisScaleChartMinValue: real('chart_y_axis_scale_chart_min_value'),
   chartYAxisScaleChartMaxValue: real('chart_y_axis_scale_chart_max_value'),
+  chartAggregationMode: aggregationEnum('chart_aggregation_mode'),
   chartHoverSingleValue: boolean('chart_hover_single_value'),
   chartDynamicOnlyShowHover: boolean('chart_dynamic_show_only_hover'),
   chartDynamicNoSelectionDisplayAll: boolean(
@@ -56,6 +60,8 @@ export const tabs = pgTable('tab', {
   componentType: tabComponentTypeEnum('component_type'),
   dataModelId: uuid('data_model_id').references(() => dataModels.id),
   decimalPlaces: smallint('decimal_places'),
+  valueFontSize: smallint('value_font_size'),
+  valueUnitFontSize: smallint('value_unit_font_size'),
   dynamicHighlightColor: text('dynamic_highlight_color'),
   dynamicUnhighlightColor: text('dynamic_unhighlight_color'),
   icon: text('icon'),
@@ -78,6 +84,7 @@ export const tabs = pgTable('tab', {
   mapAllowPopups: boolean('map_allow_popups'),
   mapAllowScroll: boolean('map_allow_scroll'),
   mapAllowZoom: boolean('map_allow_zoom'),
+  mapSearch: boolean('map_search'),
   mapAttributeForValueBased: text('map_attribute_for_value_based'),
   mapFormSizeFactor: smallint('map_form_size_factor'),
   mapDisplayMode: text('map_display_mode'),
@@ -166,11 +173,14 @@ export const tabs = pgTable('tab', {
   listviewWebsiteAttribute: text('listview_website_attribute'),
   listviewShowDescription: boolean('listview_show_description'),
   listviewDescriptionAttribute: text('listview_description_attribute'),
+  customMapImageId: uuid('custom_map_image_id').references(
+    () => customMapImages.id,
+    {
+      onDelete: 'set null',
+      onUpdate: 'cascade',
+    },
+  ),
   chartStaticValuesText: boolean('chart_static_values_text'),
-  valuesToImages:
-    jsonb('values_to_images').$type<
-      { min: string; max: string; imageId: string }[]
-    >(),
   // Sensorstatus properties
   sensorStatusLightCount: smallint('sensor_status_light_count'),
   sensorStatusMinThreshold: text('sensor_status_min_threshold'),
@@ -180,9 +190,10 @@ export const tabs = pgTable('tab', {
   sensorStatusColor2: text('sensor_status_color2'),
   sensorStatusColor3: text('sensor_status_color3'),
   sensorStatusLayoutVertical: boolean('sensor_status_layout_vertical'),
+  barChartShowTimestampOnHover: boolean('bar_chart_show_timestamp_on_hover'),
 });
 
-export const tabsRelations = relations(tabs, ({ one }) => ({
+export const tabsRelations = relations(tabs, ({ one, many }) => ({
   widget: one(widgets, {
     fields: [tabs.widgetId],
     references: [widgets.id],
@@ -195,7 +206,54 @@ export const tabsRelations = relations(tabs, ({ one }) => ({
     fields: [tabs.dataModelId],
     references: [dataModels.id],
   }),
+  customMapImage: one(customMapImages, {
+    fields: [tabs.customMapImageId],
+    references: [customMapImages.id],
+  }),
+  customMapSensorData: many(customMapSensorDataTable),
+  valuesToImages: many(tabValuesToImageTable),
 }));
+
+export const customMapImageRelations = relations(
+  customMapImages,
+  ({ many }) => ({
+    tabs: many(tabs),
+  }),
+);
 
 export type Tab = typeof tabs.$inferSelect;
 export type NewTab = typeof tabs.$inferInsert;
+
+export type EnrichedTab = Tab & {
+  customMapSensorData?: {
+    id: string;
+    tabId: string;
+    entityId: string;
+    attribute: string;
+    positionX: number;
+    positionY: number;
+  }[];
+  valuesToImages?: {
+    id: string;
+    min: string;
+    max: string;
+    imageId: string;
+  }[];
+};
+
+export type NewEnrichedTab = NewTab & {
+  customMapSensorData?: {
+    id: string;
+    tabId: string;
+    entityId: string;
+    attribute: string;
+    positionX: number;
+    positionY: number;
+  }[];
+  valuesToImages?: {
+    id: string;
+    min: string;
+    max: string;
+    imageId: string;
+  }[];
+};

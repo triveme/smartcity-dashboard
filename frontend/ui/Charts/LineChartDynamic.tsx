@@ -165,6 +165,7 @@ export default function LineChartDynamic(
         playAnimation={hoveredFeature.current == ''}
         highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
+        chartAggregationMode={tab?.chartAggregationMode}
       />
     </>
   );

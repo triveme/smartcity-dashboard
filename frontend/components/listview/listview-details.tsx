@@ -19,6 +19,11 @@ type ListViewDetailsProps = {
   listviewMapButtonBackgroundColor?: string;
   listviewMapButtonHoverBackgroundColor?: string;
   listviewMapButtonFontColor?: string;
+  //
+  listviewFilterButtonBackgroundColor?: string;
+  listviewFilterButtonBorderColor?: string;
+  listviewFilterButtonFontColor?: string;
+  listviewFilterButtonHoverBackgroundColor?: string;
 };
 
 // Headline Yellow Component
@@ -138,6 +143,10 @@ export function ListViewDetails(
     listviewMapButtonBackgroundColor = '#3B82F6',
     listviewMapButtonHoverBackgroundColor = '#2563EB',
     listviewMapButtonFontColor = '#FFFFFF',
+    listviewFilterButtonBackgroundColor = '#FFFFFF',
+    listviewFilterButtonBorderColor = '#D1D5DB',
+    listviewFilterButtonFontColor = '#374151',
+    listviewFilterButtonHoverBackgroundColor = '#F9FAFB',
   } = props;
 
   // Defensive programming: handle cases where location or coordinates might be undefined
@@ -153,32 +162,56 @@ export function ListViewDetails(
         className="overflow-y-auto flex flex-col gap-3 p-3 justify-between"
         style={{ backgroundColor: poiBackgroundColor }}
       >
-        <div className="flex flex-row p-0">
-          {info.image && info.image !== 'none' ? (
-            <div className="flex flex-col flex-grow pr-3 flex-[0_0_35%] relative max-w-32">
-              <img
-                src={info.image}
-                alt={
-                  info.creator !== null
-                    ? `${info.name} - ${info.creator}`
-                    : `POI Bild: ${info.name}`
-                }
-                className="rounded-lg w-full min-w-28"
-              />
-              {info.creator && <CopyrightElement creator={info.creator} />}
-            </div>
-          ) : null}
-          <div className="h-full flex flex-col flex-[0_0_65%] justify-between">
-            <div className="pl-0 h-full flex flex-col content-start items-start justify-around">
-              <div>
-                <HeadlineYellow text={info.name} color={headlineYellowColor} />
-                <p className="text-sm">{info.types?.join(', ') || ''}</p>
+        <div className="flex justify-between">
+          <div className="flex flex-row p-0">
+            {info.image && info.image !== 'none' ? (
+              <div className="flex flex-col flex-grow pr-3 flex-[0_0_35%] relative max-w-32">
+                <img
+                  src={info.image}
+                  alt={
+                    info.creator !== null
+                      ? `${info.name} - ${info.creator}`
+                      : `POI Bild: ${info.name}`
+                  }
+                  className="rounded-lg w-full min-w-28"
+                />
+                {info.creator && <CopyrightElement creator={info.creator} />}
               </div>
-              <div className="flex flex-row content-center items-center">
-                <HeadlineGray text={info.address} color={headlineGrayColor} />
+            ) : null}
+            <div className="h-full flex flex-col flex-[0_0_65%] justify-between">
+              <div className="pl-0 h-full flex flex-col content-start items-start justify-around">
+                <div>
+                  <HeadlineYellow
+                    text={info.name}
+                    color={headlineYellowColor}
+                  />
+                  <p className="text-sm">{info.types?.join(', ') || ''}</p>
+                </div>
+                <div className="flex flex-row content-center items-center">
+                  <HeadlineGray text={info.address} color={headlineGrayColor} />
+                </div>
               </div>
             </div>
           </div>
+          <button
+            onClick={handleBackClick}
+            className="border-2 h-7 min-w-7 rounded transition-colors flex items-center justify-center"
+            style={{
+              borderColor: listviewFilterButtonBorderColor,
+              backgroundColor: listviewFilterButtonBackgroundColor,
+              color: listviewFilterButtonFontColor,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor =
+                listviewFilterButtonHoverBackgroundColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor =
+                listviewFilterButtonBackgroundColor;
+            }}
+          >
+            <span style={{}}>✕</span>
+          </button>
         </div>
 
         {info.description && info.description.trim() && (
@@ -202,7 +235,7 @@ export function ListViewDetails(
                 className="font-semibold text-sm"
                 style={{ color: headlineYellowColor }}
               >
-                Kontakt Name:
+                Kontakt:
               </h4>
               <p className="text-sm" style={{ color: headlineGrayColor }}>
                 {info.contactName}
@@ -272,7 +305,7 @@ export function ListViewDetails(
                 className="font-semibold text-sm"
                 style={{ color: headlineYellowColor }}
               >
-                Teilnehmer:
+                Akteure:
               </h4>
               <p className="text-sm" style={{ color: headlineGrayColor }}>
                 {info.participants}
@@ -286,7 +319,7 @@ export function ListViewDetails(
                 className="font-semibold text-sm"
                 style={{ color: headlineYellowColor }}
               >
-                Unterstützer:
+                Träger/Förderinstitutionen:
               </h4>
               <p className="text-sm" style={{ color: headlineGrayColor }}>
                 {info.supporter}
@@ -298,18 +331,18 @@ export function ListViewDetails(
         {/* Buttons */}
         <div>
           <div className="flex flex-col md:flex-row gap-2">
+            <DisplayOnMapButton
+              onClick={() => handleDisplayOnMapClick(markerId, lat, lng)}
+              backgroundColor={listviewMapButtonBackgroundColor}
+              hoverBackgroundColor={listviewMapButtonHoverBackgroundColor}
+              fontColor={listviewMapButtonFontColor}
+            />
             <BackButton
               onClick={handleBackClick}
               text={'ZURÜCK'}
               backgroundColor={listviewBackButtonBackgroundColor}
               hoverBackgroundColor={listviewBackButtonHoverBackgroundColor}
               fontColor={listviewBackButtonFontColor}
-            />
-            <DisplayOnMapButton
-              onClick={() => handleDisplayOnMapClick(markerId, lat, lng)}
-              backgroundColor={listviewMapButtonBackgroundColor}
-              hoverBackgroundColor={listviewMapButtonHoverBackgroundColor}
-              fontColor={listviewMapButtonFontColor}
             />
           </div>
         </div>

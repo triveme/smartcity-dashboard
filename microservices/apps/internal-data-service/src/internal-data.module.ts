@@ -9,6 +9,7 @@ import { QueryModule } from './query/query.module';
 import { InternalDataWizardController } from './internal-data-wizard.controller';
 import { AuthHelperMiddleware, AuthHelperUtility } from '@app/auth-helper';
 import { ConfigModule } from '@nestjs/config';
+import { TransformationService } from './transformation/transformation.service';
 
 @Module({
   imports: [
@@ -22,7 +23,12 @@ import { ConfigModule } from '@nestjs/config';
     QueryModule,
   ],
   controllers: [InternalDataController, InternalDataWizardController],
-  providers: [InternalDataService, ScheduleService, AuthHelperUtility],
+  providers: [
+    InternalDataService,
+    ScheduleService,
+    AuthHelperUtility,
+    TransformationService,
+  ],
 })
 export class InternalDataModule {
   configure(consumer: MiddlewareConsumer): void {

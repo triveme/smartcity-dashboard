@@ -10,6 +10,7 @@ import { SidebarItemStyle } from '@/components/SidebarItem';
 import CorporateIdentityProvider from '@/providers/CorporateIdentityProvider';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import LoginProvider from '@/providers/LoginProvider';
+import sanitizeCSSInjection from '@/utils/sanitizeHtml';
 
 config.autoAddCss = false;
 
@@ -39,6 +40,8 @@ export default async function RootLayout(props: {
     menuFontColor: ciColors.menuFontColor,
   };
 
+  const fontHtml = sanitizeCSSInjection(ciColors.cssStyleInjectionValue);
+
   return (
     <>
       <style>
@@ -56,6 +59,13 @@ export default async function RootLayout(props: {
           }
         `}
       </style>
+      {fontHtml && (
+        <div
+          style={{ display: 'none' }}
+          dangerouslySetInnerHTML={{ __html: fontHtml }}
+          suppressHydrationWarning
+        />
+      )}
       <LoginProvider>
         <CorporateIdentityProvider tenant={tenant}>
           <div className="flex h-screen">

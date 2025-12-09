@@ -52,6 +52,12 @@ export default async function Dashboard(
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
+  //
+  // console.log();
+  // const result = Object.keys(ciColors).filter((key) => key.includes(''));
+  // console.log(result);
+  //
+
   //Dynamic Styling
   const dashboardStyle: CSSProperties = {
     backgroundColor: ciColors.dashboardPrimaryColor || '#2B3244',
@@ -180,6 +186,7 @@ export default async function Dashboard(
                 <DataExportButton
                   id={dashboard.id || ''}
                   type="dashboard"
+                  ciColors={ciColors}
                   headerPrimaryColor={ciColors?.headerPrimaryColor}
                   headerFontColor={ciColors?.headerFontColor}
                   panelFontColor={ciColors?.panelFontColor}
@@ -316,6 +323,22 @@ export default async function Dashboard(
                     dashboard.panels?.[0].widgets?.[0].allowDataExport
                   }
                   widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
+                  isCustomMap={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapImageId
+                      ? dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                          .customMapImageId.length > 0
+                      : false
+                  }
+                  customMapImageId={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapImageId
+                  }
+                  customMapSensorValues={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapSensorData
+                  }
+                  mapSearch={tab?.mapSearch || false}
                 />
               ) : (
                 <Map
@@ -495,6 +518,22 @@ export default async function Dashboard(
                     dashboard.panels?.[0].widgets?.[0].allowDataExport
                   }
                   widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
+                  isCustomMap={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapImageId
+                      ? dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                          .customMapImageId.length > 0
+                      : false
+                  }
+                  customMapImageId={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapImageId
+                  }
+                  customMapSensorValues={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .customMapSensorData
+                  }
+                  mapSearch={tab?.mapSearch || false}
                 />
               )}
             </>

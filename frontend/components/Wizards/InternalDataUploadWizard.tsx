@@ -97,7 +97,7 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
           ...toSave,
           data: fileText,
         });
-        openSnackbar('Date wurde erfolgreich hochgeladen!', 'success');
+        openSnackbar('Datei wurde erfolgreich hochgeladen!', 'success');
       }
       router.back();
     } catch (error: unknown) {

@@ -310,6 +310,10 @@ export default function CorporateInfoWizard({
         )}
         {activeTab === 'Component' && (
           <ComponentsCiWizard
+            widgetPreviewBackgroundColor={state.widgetPreviewBackgroundColor}
+            setWidgetPreviewBackgroundColor={(value): void =>
+              updateState('widgetPreviewBackgroundColor', value)
+            }
             informationTextFontSize={state.informationTextFontSize}
             setInformationTextFontSize={(value): void =>
               updateState('informationTextFontSize', value)
@@ -859,6 +863,11 @@ export default function CorporateInfoWizard({
             }
             dashboardSecondaryColor={
               corporateInfo?.dashboardSecondaryColor || '#3D4760'
+            }
+            cssStyleInjectionValue={state.cssStyleInjectionValue}
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            setCssStyleInjectionValue={(cssStyle): void =>
+              updateState('cssStyleInjectionValue', cssStyle)
             }
           />
         )}

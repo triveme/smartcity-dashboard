@@ -10,10 +10,14 @@ import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { DataTranslationRepo } from '../data-translation.repo';
 import { FiwareAttribute } from './fiware.types';
+import { RoundingService } from '../transformation/rounding.service';
 
 @Injectable()
 export class PopulateValueService {
-  constructor(private readonly dataTranslationRepo: DataTranslationRepo) {}
+  constructor(
+    private readonly dataTranslationRepo: DataTranslationRepo,
+    private readonly roundingService: RoundingService,
+  ) {}
 
   async populateTab(
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
@@ -119,12 +123,16 @@ export class PopulateValueService {
               tab,
               query.queryData[0],
               attribute,
+              queryConfig.roundingMode,
+              queryConfig.roundingTarget,
             );
           } else {
             this.populateSingleValueTabFromQueryData(
               tab,
               query.queryData as object,
               attribute,
+              queryConfig.roundingMode,
+              queryConfig.roundingTarget,
             );
           }
         }
@@ -139,6 +147,8 @@ export class PopulateValueService {
     },
     queryData: object,
     attribute: string,
+    roundingMode: string,
+    roundingTarget: number,
   ): void {
     // Orchideo Data Structure
     if (
@@ -150,6 +160,7 @@ export class PopulateValueService {
         attrName: string;
         values: any[];
       }>;
+
       const matchingAttribute = attributes.find(
         (attr) => attr.attrName === attribute,
       );
@@ -243,5 +254,24 @@ export class PopulateValueService {
         tab.chartValues.push(attributeValue);
       }
     }
+
+    this.postProcessData(tab.chartValues, roundingMode, roundingTarget);
+  }
+
+  private postProcessData(
+    chartValues: number[],
+    roundingMode: string,
+    roundingTarget: number,
+  ): void {
+    if (!roundingMode) return;
+
+    chartValues.forEach((value, index) => {
+      const roundedValue = this.roundingService.round(
+        value,
+        roundingTarget,
+        this.roundingService.parseRoundingMode(roundingMode),
+      );
+      chartValues[index] = roundedValue;
+    });
   }
 }

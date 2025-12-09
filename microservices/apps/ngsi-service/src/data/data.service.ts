@@ -256,7 +256,6 @@ export class DataService {
         };
 
         params = {
-          type: query_config.fiwareType,
           timerel: 'between',
           timeAt: this.getFromDate(query_config.timeframe),
           endTimeAt: new Date(Date.now()),
@@ -280,6 +279,7 @@ export class DataService {
           url = baseUrl;
           staticUrl = staticBaseUrl;
           params.id = query_config.entityIds.join(',');
+          params.type = query_config.fiwareType;
         } else {
           // For a single entity, use the entityId in the URL
           url = `${baseUrl}/${query_config.entityIds[0]}`;

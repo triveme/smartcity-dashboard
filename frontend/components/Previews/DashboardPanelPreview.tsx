@@ -259,6 +259,7 @@ export default function DashboardPanelPreview(
                   setValueLimit: false,
                   userDefinedLimit: 10,
                   chartHoverSingleValue: false,
+                  mapSearch: false,
                 }}
                 moveWidget={moveWidget}
                 deleteRelation={handleDeleteClick}

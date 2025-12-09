@@ -9,6 +9,7 @@ import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
+import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
 
 @Injectable()
 export class WidgetDataService {
@@ -17,6 +18,7 @@ export class WidgetDataService {
     private readonly ngsiDataService: NgsiDataService,
     private readonly ngsiQueryService: NgsiQueryService,
     private readonly orchideoDataService: OrchideoDataService,
+    private readonly internalDataService: InternalDataService,
     private readonly orchideoConnectService: OrchideoConnectService,
     private readonly tabService: TabService,
   ) {}
@@ -246,6 +248,10 @@ export class WidgetDataService {
           ? orchideoData
           : [orchideoData];
         newData = this.orchideoConnectService.transformToTargetModel(dataArray);
+      } else if (queryBatch.auth_data.type === 'internal') {
+        newData =
+          await this.internalDataService.getDataFromDataSource(queryBatch);
+        await this.internalDataService.updateFiwareQueries();
       }
 
       if (newData) {

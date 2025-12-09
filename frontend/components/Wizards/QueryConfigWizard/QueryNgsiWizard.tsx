@@ -328,7 +328,7 @@ export default function QueryNgsiWizard(
               </div>
             ) : (
               <div className="flex flex-col w-full pb-2">
-                <WizardLabel label={'Entitäts-IDs / Sources'} />
+                <WizardLabel label={'Entitäten / Sensoren'} />
                 <div className="flex flex-row items-center">
                   <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection
@@ -473,7 +473,7 @@ export default function QueryNgsiWizard(
               </div>
             ) : (
               <div className="flex flex-col w-full pb-2">
-                <WizardLabel label={'Entitäts-IDs / Sources'} />
+                <WizardLabel label={'Entitäten / Sensoren'} />
                 <div className="flex flex-row items-center">
                   <div className="flex-1 min-w-0">
                     <WizardMultipleDropdownSelection

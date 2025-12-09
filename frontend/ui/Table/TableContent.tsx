@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ReactElement, ReactNode, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
@@ -5,7 +6,7 @@ import { env } from 'next-runtime-env';
 
 import { GenericTableContentItem, TableColumn } from '@/types';
 import VisibilityDisplay from '@/ui/VisibilityDisplay';
-import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import DashboardIcons from '@/ui/Icons/DashboardIcon'; // Temporarily unused because the copy & delete buttons don’t work
 import { deleteGenericItemById } from '@/utils/apiHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -45,7 +46,7 @@ export default function TableContent<T>(
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { openSnackbar } = useSnackbar();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [isActiveTransaction, setIsActiveTransaction] = useState(false);
+  const [isActiveTransaction, setIsActiveTransaction] = useState(false); // Temporarily unused because the copy & delete buttons don’t work
 
   const pathname = usePathname();
   const auth = useAuth();
@@ -105,6 +106,7 @@ export default function TableContent<T>(
     }
   };
 
+  // Temporarily unused because the copy & delete buttons don’t work
   const handleClickDeleteIcon = (
     event: React.MouseEvent,
     itemId: string | undefined,
@@ -114,6 +116,7 @@ export default function TableContent<T>(
     if (itemId) setSelectedItemId(itemId);
   };
 
+  // Temporarily unused because the copy & delete buttons don’t work
   const handleDuplicateClick = async (
     event: React.MouseEvent,
     itemId: string | undefined,
@@ -169,7 +172,7 @@ export default function TableContent<T>(
                   {renderCell(item, column.name)}
                 </td>
               ))}
-              <td>
+              {/* <td>
                 <button
                   title="Delete"
                   className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
@@ -196,7 +199,7 @@ export default function TableContent<T>(
                 >
                   <DashboardIcons iconName="Copy" color="#4CAF50" />
                 </button>
-              </td>
+              </td> */}
             </tr>
           ))
         )}

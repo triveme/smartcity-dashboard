@@ -106,7 +106,7 @@ export default function SidebarContent(
             />
             <SidebarItem
               icon="ChartSimple"
-              label="Datenanbindung"
+              label="Datenplattformen"
               url={`${adminUrl}/dataplatform`}
               componentStyle={sidebarItemStyle}
             />
@@ -141,7 +141,7 @@ export default function SidebarContent(
         />
         <SidebarItem
           icon="Menu"
-          label="Menu"
+          label="Menü"
           url={`${adminUrl}/menu`}
           componentStyle={sidebarItemStyle}
         />

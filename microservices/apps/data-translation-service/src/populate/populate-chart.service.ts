@@ -11,12 +11,14 @@ import { PopulateMapService } from './populate-map.service';
 import { getGermanLabelForAttribute } from './populate.util';
 import { DataTranslationRepo } from '../data-translation.repo';
 import { parseCleanNumber } from 'apps/internal-data-service/src/helper';
+import { RoundingService } from '../transformation/rounding.service';
 
 @Injectable()
 export class PopulateChartService {
   constructor(
     private readonly dataTranslationRepo: DataTranslationRepo,
     private readonly populateMapService: PopulateMapService,
+    private readonly roundingService: RoundingService,
   ) {}
 
   async populateTab(
@@ -53,6 +55,11 @@ export class PopulateChartService {
         tab.componentSubType === 'Slider Übersicht'
       ) {
         this.populateSliderOverview(query, tab);
+        this.postProcessValue(
+          tab.chartData,
+          queryConfig.roundingMode,
+          queryConfig.roundingTarget,
+        );
         return;
       }
       if (query && query.queryData && tab.componentSubType === 'Pie Chart') {
@@ -62,6 +69,11 @@ export class PopulateChartService {
           queryConfig.attributes[0],
           datasource,
           tab,
+        );
+        this.postProcessValue(
+          tab.chartData,
+          queryConfig.roundingMode,
+          queryConfig.roundingTarget,
         );
         return;
       }
@@ -110,6 +122,11 @@ export class PopulateChartService {
         }
       }
     }
+    this.postProcessValue(
+      tab.chartData,
+      queryConfig.roundingMode,
+      queryConfig.roundingTarget,
+    );
   }
 
   private populateSliderOverview(
@@ -555,6 +572,7 @@ export class PopulateChartService {
       const tl = attributeObject.timeLabels
         ? attributeObject.timeLabels[i]
         : undefined;
+
       resultArray.push([timeValues[i], numberValues[i], tl]);
     }
 
@@ -563,6 +581,25 @@ export class PopulateChartService {
       values: resultArray,
       color: null,
       id: attributeObject.entityId,
+    });
+  }
+
+  private postProcessValue(
+    chartData: ChartData[],
+    roundingMode: string,
+    roundingTarget: number,
+  ): void {
+    if (!roundingMode) return;
+
+    chartData.forEach((entry) => {
+      entry.values = entry.values.map(([label, value, note]) => {
+        const rounded = this.roundingService.round(
+          value,
+          roundingTarget,
+          this.roundingService.parseRoundingMode(roundingMode),
+        );
+        return [label, rounded, note];
+      });
     });
   }
 }

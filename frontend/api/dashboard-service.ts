@@ -122,6 +122,7 @@ export async function searchDashboards(
 
 export async function getDashboardDownloadData(
   accessToken: string | undefined,
+  widgetsIds?: string[],
   dashboardId?: string,
 ): Promise<string> {
   try {
@@ -132,10 +133,12 @@ export async function getDashboardDownloadData(
           ? { Authorization: `Bearer ${accessToken}` }
           : undefined,
         responseType: 'blob',
+        params: { ids: widgetsIds ? widgetsIds : [] },
       },
     );
 
     const csvData = await response.data.text();
+
     return csvData;
   } catch (err) {
     console.error('Error fetching CSV data:', err);

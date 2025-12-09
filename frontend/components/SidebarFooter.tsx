@@ -35,6 +35,10 @@ export default function SidebarFooter(): ReactElement {
 
   const showMenuLogo = data ? data.showMenuLogo : false;
 
+  const linkStyle = {
+    minHeight: '24px',
+  };
+
   const renderLogo = (): JSX.Element | null => {
     const basepath = env('NEXT_PUBLIC_BASEPATH');
     if (data?.sidebarLogos && data.sidebarLogos.length > 0) {
@@ -79,6 +83,7 @@ export default function SidebarFooter(): ReactElement {
           className={`flex`}
           href={`${generalSetting?.information}`}
           target={'_blank'}
+          style={linkStyle}
         >
           <p
             className="underline"
@@ -94,6 +99,7 @@ export default function SidebarFooter(): ReactElement {
           className={`flex`}
           href={`${generalSetting?.imprint}`}
           target={'_blank'}
+          style={linkStyle}
         >
           <p
             className="underline"
@@ -108,6 +114,7 @@ export default function SidebarFooter(): ReactElement {
           className={`flex`}
           href={`${generalSetting?.privacy}`}
           target={'_blank'}
+          style={linkStyle}
         >
           <p
             className="underline"

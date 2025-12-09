@@ -116,14 +116,17 @@ export default function DashboardSidebar(
                     onDashboardClick={toggleSidebar}
                   />
                 ) : (
-                  <DashboardSidebarGroup
-                    key={'SidebarItem-' + element.id}
-                    groupElement={element}
-                    index={0}
-                    url={element.url!}
-                    onDashboardClick={toggleSidebar}
-                    menuArrowDirection={menuArrowDirection}
-                  />
+                  element.children &&
+                  element.children.length > 0 && (
+                    <DashboardSidebarGroup
+                      key={'SidebarItem-' + element.id}
+                      groupElement={element}
+                      index={0}
+                      url={element.url!}
+                      onDashboardClick={toggleSidebar}
+                      menuArrowDirection={menuArrowDirection}
+                    />
+                  )
                 ),
               )}
           </div>

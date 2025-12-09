@@ -72,7 +72,7 @@ export default function WidgetCiWizard({
         </div>
         <div className="flex flex-col gap-y-6 w-1/2 px-2">
           <div>
-            <WizardLabel label="Widget Border Size (0-12px)" />
+            <WizardLabel label="Widget Rahmenbreite (0-12px)" />
             <WizardTextfield
               value={widgetBorderSize ?? '8'}
               onChange={(value): void => {
@@ -83,7 +83,7 @@ export default function WidgetCiWizard({
             />
           </div>
           <div>
-            <WizardLabel label="Widget Border Radius (0-12px)" />
+            <WizardLabel label="Widget Rahmen-Radius (0-12px)" />
             <WizardTextfield
               value={widgetBorderRadius ?? '8'}
               onChange={(value): void => {
@@ -94,7 +94,7 @@ export default function WidgetCiWizard({
             />
           </div>
           <div>
-            <WizardLabel label="Widget Headline Fontsize" />
+            <WizardLabel label="Widget Überschrift Schriftgröße" />
             <WizardDropdownSelection
               currentValue={widgetHeadlineFontSize}
               selectableValues={['', ...fontSizes.map((size) => size + 'px')]}
@@ -107,7 +107,7 @@ export default function WidgetCiWizard({
             />
           </div>
           <div className="">
-            <WizardLabel label="Widget Subheadline Fontsize" />
+            <WizardLabel label="Widget Unterüberschrift Schriftgröße" />
             <WizardDropdownSelection
               currentValue={widgetSubheadlineFontSize}
               selectableValues={['', ...fontSizes.map((size) => size + 'px')]}

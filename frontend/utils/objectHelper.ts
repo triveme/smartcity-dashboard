@@ -140,6 +140,7 @@ export const DEFAULT_CI: CorporateInfo = {
   widgetSubheadlineFontSize: '14px',
   widgetPrimaryColor: '#3D4760',
   widgetSecondaryColor: '#3D4760',
+  widgetPreviewBackgroundColor: '#1A1A1D',
   sidebarLogos: [],
   informationTextFontSize: '11',
   informationTextFontColor: '#3D4760',
@@ -295,6 +296,8 @@ export const DEFAULT_CI: CorporateInfo = {
   dateSelectorBackgroundColorSelected: '#3D4760',
   dateSelectorFontColorSelected: '#2D3244',
   dateSelectorFontColorUnselected: '#3D4760',
+
+  cssStyleInjectionValue: '',
 };
 
 export const EMPTY_REPORT_CONFIG: ReportConfig = {
@@ -376,112 +379,56 @@ export const DUMMY_GEOJSON = {
   ],
 };
 
-export const DUMMY_CHART_DATA_YEAR: ChartData[] = [
-  {
-    name: 'Series-1 | Temperature',
-    values: [
-      ['2024-07-11', 14.123456],
-      ['2024-08-01', 53.623456],
-      ['2024-09-05', 93.123456],
-      ['2024-09-10', 60.623456],
-      ['2024-09-13', 28.123456],
-      ['2024-09-23', 32.123456],
-      ['2024-10-14', 36.123456],
-      ['2024-10-24', 56.623456],
-      ['2024-11-15', 77.123456],
-      ['2024-11-25', 68.623456],
-      ['2024-12-16', 60.123456],
-      ['2024-12-26', 54.623456],
-      ['2025-01-17', 49.123456],
-      ['2025-01-27', 67.123456],
-      ['2025-02-18', 85.123456],
-      ['2025-02-27', 55.123456],
-      ['2025-03-19', 25.123456],
-      ['2025-03-29', 37.623456],
-      ['2025-04-20', 50.123456],
-      ['2025-04-30', 59.123456],
-      ['2025-05-20', 68.123456],
-    ],
-  },
-  {
-    name: 'Series-2 | Temperature',
-    values: [
-      ['2024-07-11', 8.123456],
-      ['2024-08-01', 37.623456],
-      ['2024-09-05', 67.123456],
-      ['2024-09-10', 49.623456],
-      ['2024-09-13', 32.123456],
-      ['2024-09-23', 49.623456],
-      ['2024-10-14', 47.123456],
-      ['2024-10-24', 66.623456],
-      ['2024-11-15', 85.123456],
-      ['2024-11-25', 54.623456],
-      ['2024-12-16', 24.123456],
-      ['2024-12-26', 54.623456],
-      ['2025-01-17', 13.123456],
-      ['2025-01-27', 33.623456],
-      ['2025-02-18', 54.123456],
-      ['2025-02-27', 66.623456],
-      ['2025-03-19', 79.123456],
-      ['2025-03-29', 49.623456],
-      ['2025-04-20', 19.123456],
-      ['2025-04-30', 33.623456],
-      ['2025-05-20', 76.123456],
-    ],
-  },
-  {
-    name: 'Series-3 | Temperature',
-    values: [
-      ['2024-07-11', 31.123456],
-      ['2024-08-01', 21.623456],
-      ['2024-09-05', 12.123456],
-      ['2024-09-10', 54.623456],
-      ['2024-09-13', 97.123456],
-      ['2024-09-23', 51.623456],
-      ['2024-10-14', 5.123456],
-      ['2024-10-24', 35.623456],
-      ['2024-11-15', 66.123456],
-      ['2024-11-25', 77.623456],
-      ['2024-12-16', 89.123456],
-      ['2024-12-26', 54.623456],
-      ['2025-01-17', 21.123456],
-      ['2025-01-27', 43.623456],
-      ['2025-02-18', 73.123456],
-      ['2025-02-27', 40.123456],
-      ['2025-03-19', 58.123456],
-      ['2025-03-29', 22.623456],
-      ['2025-04-20', 6.123456],
-      ['2025-04-30', 33.623456],
-      ['2025-05-20', 61.123456],
-    ],
-  },
-  {
-    name: 'Series-4 | Temperature',
-    values: [
-      ['2024-07-11', 47.123456],
-      ['2024-08-01', 37.623456],
-      ['2024-09-05', 28.123456],
-      ['2024-09-10', 56.123456],
-      ['2024-09-13', 84.123456],
-      ['2024-09-23', 48.623456],
-      ['2024-10-14', 13.123456],
-      ['2024-10-24', 26.623456],
-      ['2024-11-15', 40.123456],
-      ['2024-11-25', 66.123456],
-      ['2024-12-16', 92.123456],
-      ['2024-12-26', 54.123456],
-      ['2025-01-17', 16.123456],
-      ['2025-01-27', 43.623456],
-      ['2025-02-18', 71.123456],
-      ['2025-02-27', 40.123456],
-      ['2025-03-19', 9.123456],
-      ['2025-03-29', 22.623456],
-      ['2025-04-20', 36.123456],
-      ['2025-04-30', 58.623456],
-      ['2025-05-20', 81.123456],
-    ],
-  },
-];
+/**
+ * Generate dummy chart data with equally spaced timestamps and random values.
+ */
+function generateDummyChartData(
+  seriesCount: number,
+  startDateStr: string,
+  endDateStr: string,
+  pointsPerSeries: number,
+  minValue = 0,
+  maxValue = 100,
+): ChartData[] {
+  const startDate = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const totalDays = (endDate.getTime() - startDate.getTime()) / msPerDay;
+  const intervalDays = totalDays / (pointsPerSeries - 1);
+
+  // Generate evenly spaced dates
+  const generateDates = (): string[] => {
+    return Array.from({ length: pointsPerSeries }, (_, i) => {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i * intervalDays);
+      return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    });
+  };
+
+  const generateRandomValue = (): number =>
+    parseFloat((Math.random() * (maxValue - minValue) + minValue).toFixed(6));
+
+  const dates = generateDates();
+
+  const chartData: ChartData[] = Array.from(
+    { length: seriesCount },
+    (_, i) => ({
+      name: `Series-${i + 1} | Temperature`,
+      values: dates.map((date) => [date, generateRandomValue()]),
+    }),
+  );
+
+  return chartData;
+}
+
+export const DUMMY_CHART_DATA_YEAR: ChartData[] = generateDummyChartData(
+  5, // number of series
+  '2024-01-01', // start date
+  '2024-12-31', // end date
+  7, // number of points per series
+  -5, // min temperature
+  40, // max temperature
+);
 
 export const DUMMY_CHART_DATA: ChartData[] = [
   {

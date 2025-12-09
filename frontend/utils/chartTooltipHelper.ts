@@ -7,6 +7,7 @@ interface ChartParam {
 
 const formatTimestamp = (
   paramArray: unknown[],
+  hideTimeDetails: boolean,
   labelMap?: Map<number, [number, number, string]> | undefined,
 ): string => {
   // Get the timestamp from the first param and format it
@@ -24,8 +25,8 @@ const formatTimestamp = (
           year: 'numeric',
           month: '2-digit',
           day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
+          hour: hideTimeDetails ? undefined : '2-digit',
+          minute: hideTimeDetails ? undefined : '2-digit',
         })
       : timestamp.toString();
   }
@@ -35,11 +36,20 @@ const formatTimestamp = (
 export const generateTooltipContent = (
   params: unknown,
   decimalPlaces: number | undefined,
+  hideTimeDetails: boolean,
   labelMap?: Map<number, [number, number, string]> | undefined,
+  showTimestamp: boolean = true,
 ): string => {
   const paramArray = Array.isArray(params) ? params : [params];
-  const formattedTimestamp = formatTimestamp(paramArray, labelMap);
-  let tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px;">${formattedTimestamp}</div>`;
+  let tooltipContent = ``;
+  if (showTimestamp) {
+    const formattedTimestamp = formatTimestamp(
+      paramArray,
+      hideTimeDetails,
+      labelMap,
+    );
+    tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px;">${formattedTimestamp}</div>`;
+  }
 
   // Show all series values at this point
   paramArray.forEach((param: unknown) => {

@@ -42,7 +42,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Listview',
   'Interaktive Komponente',
   'Werte zu Bildern',
-  'Sensorstatus',
+  'Ampelstatus',
 ]);
 
 export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
@@ -62,6 +62,7 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
   'Pin (dynamisch)',
   'Parking',
   'Kombinierte Karte',
+  'Eigene Karte',
   'GeoJSON',
   'GeoJSON (dynamisch)',
   'Farbiger Slider',

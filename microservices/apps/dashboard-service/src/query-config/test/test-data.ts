@@ -25,6 +25,8 @@ export function getQueryConfig(dataSourceId: string): QueryConfig {
     aggrMode: 'none',
     timeframe: 'live',
     isReporting: false,
+    roundingMode: null,
+    roundingTarget: null,
     hash: '',
     createdAt: undefined,
     updatedAt: undefined,

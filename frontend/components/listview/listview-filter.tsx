@@ -106,7 +106,7 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
 
   return (
     <div
-      className="h-full w-full flex-[0_0_33%] flex flex-col p-5 rounded-2xl"
+      className="h-full w-full flex-[0_0_33%] flex flex-col p-5 pt-0 rounded-2xl"
       style={{ backgroundColor: poiBackgroundColor }}
     >
       <div className="py-2 flex justify-between items-center">
@@ -118,7 +118,7 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
         </h3>
         <button
           onClick={handleFilterClick}
-          className="mr-1 border-2 h-7 w-7 rounded transition-colors flex items-center justify-center"
+          className=" border-2 h-7 w-7 rounded transition-colors flex items-center justify-center"
           style={{
             borderColor: listviewFilterButtonBorderColor,
             backgroundColor: listviewFilterButtonBackgroundColor,
@@ -185,25 +185,6 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
       <div className="py-2 pr-1">
         <div className="flex flex-col md:flex-row gap-2">
           <button
-            onClick={handleFilterClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-2xl transition-colors"
-            style={{
-              backgroundColor: listviewFilterButtonBackgroundColor,
-              color: listviewFilterButtonFontColor,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor =
-                listviewFilterButtonHoverBackgroundColor;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor =
-                listviewFilterButtonBackgroundColor;
-            }}
-          >
-            <span className="text-lg">←</span>
-            Filter anwenden
-          </button>
-          <button
             onClick={handleFilterReset}
             className="px-4 py-2 border rounded-2xl transition-colors"
             style={{
@@ -220,7 +201,27 @@ export function ListViewFilter(props: ListViewFilterProps): React.JSX.Element {
                 listviewFilterButtonBackgroundColor;
             }}
           >
-            Filter Zurücksetzen
+            Filter zurücksetzen
+          </button>
+          <button
+            onClick={handleFilterClick}
+            className="flex items-center gap-2 px-4 py-2 border rounded-2xl transition-colors"
+            style={{
+              backgroundColor: listviewFilterButtonBackgroundColor,
+              borderColor: listviewFilterButtonBorderColor,
+              color: listviewFilterButtonFontColor,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor =
+                listviewFilterButtonHoverBackgroundColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor =
+                listviewFilterButtonBackgroundColor;
+            }}
+          >
+            <span className="flex justify-center items-start text-lg">←</span>
+            Zurück
           </button>
         </div>
       </div>

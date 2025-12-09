@@ -3,7 +3,7 @@ import {
   NewTabImage,
   TabImage,
   tabImages,
-} from '@app/postgres-db/schemas/dashboard.tab.values-to-images.schema';
+} from '@app/postgres-db/schemas/tab-images.schema';
 import { Inject, Injectable } from '@nestjs/common';
 import { eq, inArray } from 'drizzle-orm';
 
