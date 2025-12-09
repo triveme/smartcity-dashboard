@@ -196,6 +196,11 @@ export default function BarChartDynamic(
         highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
         chartHoverSingleValue={tab?.chartHoverSingleValue || false}
+        showTimestampOnHover={
+          tab?.barChartShowTimestampOnHover !== undefined
+            ? tab.barChartShowTimestampOnHover
+            : true
+        }
       />
     </>
   );

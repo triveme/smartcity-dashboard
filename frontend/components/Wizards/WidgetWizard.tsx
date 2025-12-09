@@ -238,6 +238,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       if (
         tab.componentType === tabComponentTypeEnum.value ||
         tab.componentType === tabComponentTypeEnum.slider ||
+        tab.componentType === tabComponentTypeEnum.sensorStatus ||
         tab.componentSubType === tabComponentSubTypeEnum.pieChart ||
         tab.componentSubType === tabComponentSubTypeEnum.pieChartDynamic ||
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart180 ||

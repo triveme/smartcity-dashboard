@@ -162,11 +162,11 @@ const CIUploadLogoWizard: FC<Props> = () => {
         <div className="flex flex-col w-full pt-4 pb-2 justify-start">
           <div>Logo-Anforderungen:</div>
           <ul className="list-disc">
-            <li className="ml-8">File size should be less than 100 KB</li>
+            <li className="ml-8">Dateigröße nicht größer als 100 KB</li>
+            <li className="ml-8">Empfohlene Auflösung: 200px x 200px</li>
             <li className="ml-8">
-              Recommended image dimensions: 200px x 200px
+              Akzeptierte Dateiformate: svg, jpeg, jpg, png
             </li>
-            <li className="ml-8">Accepted file formats: SVG, JPEG, JPG, PNG</li>
           </ul>
         </div>
       </div>

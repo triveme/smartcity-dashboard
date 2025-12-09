@@ -43,6 +43,7 @@ export function validateTab(tab: Tab): WizardErrors {
         tab.componentSubType !== tabComponentSubTypeEnum.geoJSON &&
         tab.componentSubType !== tabComponentSubTypeEnum.geoJSONDynamic &&
         tab.componentSubType !== tabComponentSubTypeEnum.pinDynamic &&
+        tab.componentSubType !== tabComponentSubTypeEnum.custom_map &&
         tab.componentSubType !== tabComponentSubTypeEnum.parking)
     ) {
       errorsOccured.mapTypeError = 'Der Karten Typ muss gewählt werden.';
@@ -304,7 +305,12 @@ function validateSensorStatusValues(tab: Tab): string | undefined {
     const isMaxNum = Number(tab.sensorStatusMaxThreshold);
 
     // Both number and min larger than max
-    if (!isNaN(isMinNum) && !isNaN(isMaxNum) && isMinNum >= isMaxNum) {
+    if (
+      tab.sensorStatusLightCount == 3 &&
+      !isNaN(isMinNum) &&
+      !isNaN(isMaxNum) &&
+      isMinNum >= isMaxNum
+    ) {
       return `Wert ${tab.sensorStatusMaxThreshold} muss größer oder gleich ${tab.sensorStatusMinThreshold} sein.`;
       // One of them not a number
     } else if (

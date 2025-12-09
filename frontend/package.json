@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.1.2",
+  "version": "1.1.6",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -19,6 +19,7 @@
     "@uiw/react-color": "^2.3.0",
     "axios": "^1.6.2",
     "cookies": "^0.9.1",
+    "css-tree": "^3.1.0",
     "draft-js": "^0.11.7",
     "draftjs-to-html": "^0.9.1",
     "echarts": "^5.4.3",
@@ -28,6 +29,7 @@
     "keycloak-js": "^22.0.5",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
+    "leaflet-geosearch": "^4.2.2",
     "leaflet.markercluster": "^1.5.3",
     "lodash": "^4.17.21",
     "next": "^15.3.3",
@@ -39,10 +41,12 @@
     "react-leaflet": "^5.0.0",
     "react-leaflet-cluster": "^2.1.0",
     "react-oidc-context": "^2.3.1",
+    "sanitize-html": "^2.17.0",
     "tailwind-merge": "^2.0.0"
   },
   "devDependencies": {
     "@types/cookies": "^0.9.0",
+    "@types/css-tree": "^2.3.11",
     "@types/draftjs-to-html": "^0.8.4",
     "@types/html-to-draftjs": "^1.5.0",
     "@types/js-cookie": "^3.0.6",
@@ -54,6 +58,7 @@
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
     "@types/react-draft-wysiwyg": "^1.13.8",
+    "@types/sanitize-html": "^2.16.0",
     "autoprefixer": "^10",
     "cypress": "^13.16.1",
     "eslint": "^8",

@@ -3,6 +3,7 @@
 import { CSSProperties } from 'react';
 import {
   CorporateInfo,
+  CustomMapSensor,
   MapModalLegend,
   MapModalWidget,
 } from './dashboardModels';
@@ -20,6 +21,7 @@ export interface BaseMapProps {
   mapFilterAttribute?: string;
   mapGeoJSON?: string;
   mapType?: string;
+  mapSearch: boolean;
   mapGeoJSONSensorBasedColors?: boolean;
   mapGeoJSONSensorBasedNoDataColor?: string;
   mapGeoJSONBorderColor?: string;
@@ -52,6 +54,10 @@ export interface BaseMapProps {
   locateOnMap?: { pos: [number, number]; id: string };
   sendFeaturesToDynamicMap?: (features: string[]) => void;
   sendHoverFeatureToDynmaicMap?: (features: string) => void;
+  handleOnMarkerClick?: (data: string) => void;
+  customMapImageId?: string;
+  customMapSensorValues?: CustomMapSensor[];
+  isCustomMap: boolean;
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {

@@ -14,9 +14,9 @@ import {
   isSingleValueTab,
   reduceWidget,
 } from './populate.util';
-import { PopulateValueService } from './populate-value.service';
 import { PopulateChartService } from './populate-chart.service';
 import { DataTranslationRepo } from '../data-translation.repo';
+import { PopulateValueService } from './populate-value.service';
 
 @Injectable()
 export class PopulateCombinedWidgetService {

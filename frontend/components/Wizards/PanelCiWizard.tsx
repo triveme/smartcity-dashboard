@@ -68,7 +68,7 @@ export default function PanelCiWizard({
         </div>
         <div className="flex flex-col gap-y-6 w-1/2 px-2">
           <div>
-            <WizardLabel label="Panel Rahmen Größe  (0-12px)" />
+            <WizardLabel label="Panel Rahmenbreite (0-12px)" />
             <WizardTextfield
               value={panelBorderSize ?? '8'}
               onChange={(value): void => {
@@ -79,7 +79,7 @@ export default function PanelCiWizard({
             />
           </div>
           <div>
-            <WizardLabel label="Panel Rahmen Radius  (0-12px)" />
+            <WizardLabel label="Panel Rahmen-Radius​  (0-12px)" />
             <WizardTextfield
               value={panelBorderRadius ?? '8'}
               onChange={(value): void => {

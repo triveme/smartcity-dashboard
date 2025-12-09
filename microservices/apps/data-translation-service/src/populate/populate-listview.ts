@@ -585,10 +585,16 @@ export class PopulateListviewService {
   private extractAttributeNGSILD(
     entity: any,
     attributeNames: string[],
+    ignoreObjects: boolean = false,
   ): string | null {
     for (const attrName of attributeNames) {
       if (entity[attrName] !== undefined && entity[attrName] !== null) {
         // Handle NGSI-LD attribute structure { type: "Property", value: "..." }
+
+        if (ignoreObjects && typeof entity[attrName] === 'object') {
+          return null;
+        }
+
         if (
           typeof entity[attrName] === 'object' &&
           entity[attrName].value !== undefined
@@ -760,7 +766,11 @@ export class PopulateListviewService {
     contactProperty: string,
   ): string | null {
     // First try to get the configured attribute using NGSI-LD extraction
-    const standardValue = this.extractAttributeNGSILD(entity, [attributeName]);
+    const standardValue = this.extractAttributeNGSILD(
+      entity,
+      [attributeName],
+      true,
+    );
     if (standardValue) {
       return standardValue;
     }

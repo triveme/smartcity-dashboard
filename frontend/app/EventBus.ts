@@ -47,3 +47,4 @@ export const GEOJSON_FEATURE_HOVER_EVENT: string =
 export const YEAR_INDEX_SELECTION_EVENT: string = 'selectedYearIndexUpdated';
 export const PLACES_FILTER_CHANGED_EVENT: string = 'filteredPlacesChanged';
 export const MAP_FOCUS_EVENT: string = 'focusLocationEvent';
+export const DETAILS_PAGE_OPEN_EVENT: string = 'detailsPageOpenEvent';

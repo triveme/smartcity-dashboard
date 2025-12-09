@@ -13,7 +13,7 @@ export default function PageHeadline(props: PageHeadlineProps): ReactElement {
   return (
     <div
       style={{ color: fontColor || 'white', fontSize: fontSize || '1.5rem' }}
-      className={`mr-auto ${isHeadlineBold === false ? '' : 'font-bold'}`}
+      className={`mx-auto ${isHeadlineBold === false ? '' : 'font-bold'}`}
     >
       {headline}
     </div>

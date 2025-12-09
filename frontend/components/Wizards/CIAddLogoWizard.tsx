@@ -129,7 +129,7 @@ const CIAddLogoWizard: FC<Props> = ({
     <div>
       {/* Header Logo Selection */}
       <div className="flex flex-col w-full pb-2">
-        <WizardLabel label="Select Header Logo" />
+        <WizardLabel label="Logo im Header" />
         <WizardDropdownSelection
           currentValue={selectedHeaderLogoName}
           selectableValues={
@@ -161,7 +161,7 @@ const CIAddLogoWizard: FC<Props> = ({
 
       {/* Sidebar Logos Selection */}
       <div className="flex flex-col w-full pb-2">
-        <WizardLabel label="Select Sidebar Logos" />
+        <WizardLabel label="Logo der Seitenleiste hinzufügen" />
         <WizardDropdownSelection
           currentValue={selectedLogoName}
           selectableValues={
@@ -231,7 +231,7 @@ const CIAddLogoWizard: FC<Props> = ({
                   onClick={(): void => handleDeleteLogo(index)}
                   className="px-2 py-1 mx-1 bg-red-500 text-white rounded"
                 >
-                  Remove
+                  Löschen
                 </button>
               </div>
             </div>

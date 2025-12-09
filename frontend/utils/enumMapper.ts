@@ -5,6 +5,7 @@ import {
   chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
   menuArrowDirectionEnum,
+  roundingModeEnum,
   tabComponentSubTypeEnum,
   themeEnum,
   timeframeEnum,
@@ -20,6 +21,13 @@ export const aggregationOptions = [
   { label: 'Maximum', value: aggregationEnum.maximum },
   { label: 'Durchschnitt', value: aggregationEnum.average },
   { label: 'Keine', value: aggregationEnum.none },
+];
+
+export const roundingModes = [
+  { label: '', value: '' },
+  { label: 'Mathematisch', value: roundingModeEnum.math },
+  { label: 'Abrunden', value: roundingModeEnum.floor },
+  { label: 'Aufrunden', value: roundingModeEnum.ceil },
 ];
 
 export const timeFrameWithLive = [
@@ -55,6 +63,7 @@ export const mapComponentSubTypes = [
     label: 'GeoJSON (dynamisch)',
     value: tabComponentSubTypeEnum.geoJSONDynamic,
   },
+  { label: 'Eigene Karte', value: tabComponentSubTypeEnum.custom_map },
   // { label: 'Parken', value: tabComponentSubTypeEnum.parking }, Temporarely disabled
 ];
 

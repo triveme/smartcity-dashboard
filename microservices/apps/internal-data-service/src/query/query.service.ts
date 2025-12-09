@@ -4,6 +4,7 @@ import {
   QueryBatch,
   QueryWithAllInfos,
 } from '../../../orchideo-connect-service/src/api.service';
+import { QueryBatch as InternalDataQueryBatch } from '../data/data.service';
 import { queries, Query } from '@app/postgres-db/schemas/query.schema';
 import { queryConfigs } from '@app/postgres-db/schemas/query-config.schema';
 import { eq, inArray } from 'drizzle-orm';
@@ -12,6 +13,7 @@ import { authData } from '@app/postgres-db/schemas/auth-data.schema';
 import { systemUsers } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { DataService } from '../data/data.service';
 import { TransformationService } from '../transformation/transformation.service';
+import { OutputEntry } from '../data/csv-parser';
 
 @Injectable()
 export class QueryService {
@@ -38,12 +40,16 @@ export class QueryService {
     }
   }
 
-  private async getQueriesToUpdate(): Promise<Map<string, QueryBatch>> {
-    const queriesWithAllInfos = await this.getAllQueriesWithAllInfos();
+  async getDataFromDataSource(
+    queryBatch: InternalDataQueryBatch,
+  ): Promise<OutputEntry[]> {
+    return await this.dataService.getDataFromDataSource(queryBatch);
+  }
 
+  async getQueriesToUpdate(): Promise<Map<string, QueryBatch>> {
+    const queriesWithAllInfos = await this.getAllQueriesWithAllInfos();
     // Only keep the queries that need to be updated (depending on their interval)
     const queriesToUpdate = this.filterQueriesToUpdate(queriesWithAllInfos);
-
     // Create a dictionary with the query_config hashes as keys so that we can
     // only fetch the data once for all queries with the same query_config hash
     return this.buildQueryHashMap(queriesToUpdate);

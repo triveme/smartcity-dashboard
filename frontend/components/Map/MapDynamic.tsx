@@ -16,6 +16,7 @@ import {
   MapModalChartStyle,
 } from '@/types/mapRelatedModels';
 import eventBus, {
+  DETAILS_PAGE_OPEN_EVENT,
   Event,
   GEOJSON_FEATURE_HOVER_EVENT,
   GEOJSON_FEATURE_SELECTION_EVENT,
@@ -104,6 +105,16 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     };
     setLocateOnMap({ pos: [location.lat, location.lng], id: location.id });
   };
+
+  //
+  const openDetailsPageEvent = (markerId: string): void => {
+    eventBus.emit(DETAILS_PAGE_OPEN_EVENT, { data: markerId });
+  };
+
+  const handleOnMarkerClick = (markerId: string): void => {
+    openDetailsPageEvent(markerId);
+  };
+  //
 
   const handleFilterChanged = (data: { data: unknown }): void => {
     const filteredItems = data.data as {
@@ -257,6 +268,15 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
           sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
           locateOnMap={locateOnMap}
+          isCustomMap={
+            tab && tab.customMapImageId
+              ? tab.customMapImageId.length > 0
+              : false
+          }
+          customMapImageId={tab?.customMapImageId}
+          customMapSensorValues={tab?.customMapSensorData}
+          mapSearch={tab?.mapSearch || false}
+          handleOnMarkerClick={handleOnMarkerClick}
         />
       ) : (
         <Map
@@ -337,6 +357,15 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
           sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
           locateOnMap={locateOnMap}
+          isCustomMap={
+            tab && tab.customMapImageId
+              ? tab.customMapImageId.length > 0
+              : false
+          }
+          customMapImageId={tab?.customMapImageId}
+          customMapSensorValues={tab?.customMapSensorData}
+          mapSearch={tab?.mapSearch || false}
+          handleOnMarkerClick={handleOnMarkerClick}
         />
       )}
     </>

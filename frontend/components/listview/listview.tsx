@@ -9,6 +9,7 @@ import { ListViewFilter } from './listview-filter';
 import { InterestingPlace } from '@/types/dataModels';
 import { EMPTY_POI } from '@/utils/objectHelper';
 import eventBus, {
+  DETAILS_PAGE_OPEN_EVENT,
   MAP_FOCUS_EVENT,
   PLACES_FILTER_CHANGED_EVENT,
 } from '@/app/EventBus';
@@ -131,6 +132,25 @@ export function ListView(props: ListViewProps): ReactElement {
     setPointOfInterestFilterOpen(!pointOfInterestFilterOpen);
   };
 
+  //
+  const handleOpenDetailsPage = (data: { data: string }): void => {
+    const index = filteredInfos.findIndex(
+      (element) => element.id === data.data,
+    );
+    if (index === -1) {
+      return;
+    }
+    handlePoiClick(index);
+  };
+
+  useEffect(() => {
+    eventBus.on(DETAILS_PAGE_OPEN_EVENT, handleOpenDetailsPage);
+    return () => {
+      eventBus.off(DETAILS_PAGE_OPEN_EVENT, handleOpenDetailsPage);
+    };
+  }, []);
+  //
+
   useEffect(() => {
     setPoiData(data);
     setFilteredInfos(data);
@@ -155,7 +175,9 @@ export function ListView(props: ListViewProps): ReactElement {
                 borderRadius: listviewItemBorderRadius,
                 borderWidth: listviewItemBorderSize,
                 borderStyle: 'solid',
+                cursor: 'pointer',
               }}
+              onClick={() => handlePoiClick(index)}
             >
               <ListViewImage key={`Listview-Image-Box-${index}`} info={info} />
               <ListViewInfo
@@ -173,9 +195,7 @@ export function ListView(props: ListViewProps): ReactElement {
               />
               <ListViewMapArrow
                 key={`Listview-Map-Arrow-${index}`}
-                index={index}
-                handlePoiClick={handlePoiClick}
-                iconColor={iconColor}
+                iconColor={headlineYellowColor}
               />
             </div>
           );
@@ -219,6 +239,14 @@ export function ListView(props: ListViewProps): ReactElement {
             listviewMapButtonHoverBackgroundColor
           }
           listviewMapButtonFontColor={listviewMapButtonFontColor}
+          listviewFilterButtonBackgroundColor={
+            listviewFilterButtonBackgroundColor
+          }
+          listviewFilterButtonBorderColor={listviewFilterButtonBorderColor}
+          listviewFilterButtonFontColor={listviewFilterButtonFontColor}
+          listviewFilterButtonHoverBackgroundColor={
+            listviewFilterButtonHoverBackgroundColor
+          }
         />
       ) : (
         <div className="h-full w-full flex flex-col">

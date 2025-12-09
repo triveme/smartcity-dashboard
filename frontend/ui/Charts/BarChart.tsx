@@ -54,6 +54,7 @@ type BarChartProps = {
   highlightedColor?: string;
   unhighlightedColor?: string;
   chartHoverSingleValue?: boolean;
+  showTimestampOnHover?: boolean;
 };
 
 export default function BarChart(props: BarChartProps): ReactElement {
@@ -93,6 +94,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
     highlightedColor,
     unhighlightedColor,
     chartHoverSingleValue,
+    showTimestampOnHover,
   } = props;
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
@@ -315,7 +317,9 @@ export default function BarChart(props: BarChartProps): ReactElement {
             const tooltipContent = generateTooltipContent(
               params,
               decimalPlaces,
-              labelMap,
+              false,
+              undefined,
+              showTimestampOnHover,
             );
             return tooltipContent;
           },

@@ -1,0 +1,43 @@
+/* Override leaflet-geosearch font & colors */
+.leaflet-control-geosearch {
+  font-family: 'Inter', 'Roboto', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Input field */
+.leaflet-control-geosearch input {
+  font-family: inherit;
+  font-size: 14px;
+  color: #111;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  outline: none;
+}
+
+.leaflet-control-geosearch input::placeholder {
+  color: #888;
+  font-style: italic;
+}
+
+/* Search results dropdown */
+.leaflet-control-geosearch .results {
+  font-family: inherit;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.leaflet-control-geosearch .results li {
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.leaflet-control-geosearch .results li:hover,
+.leaflet-control-geosearch .results li.active {
+  background: #007bff;
+  color: white;
+}

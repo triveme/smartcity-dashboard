@@ -268,7 +268,9 @@ export default function DashboardPreview(
           mapType={selectedTab?.componentSubType || ''}
           mapWmsUrl={selectedTab?.mapWmsUrl || ''}
           mapWmsLayer={selectedTab?.mapWmsLayer || ''}
+          isCustomMap={false}
           mapUnitsTexts={selectedTab?.mapUnitsTexts || []}
+          mapSearch={selectedTab?.mapSearch || false}
         />
       )}
       {dashboardType === dashboardTypeEnum.iframe && selectedTab?.iFrameUrl && (

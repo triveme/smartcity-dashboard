@@ -11,6 +11,8 @@ import {
   WMSTileLayer,
   Marker,
   GeoJSON,
+  ImageOverlay,
+  useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
@@ -24,7 +26,7 @@ import { env } from 'next-runtime-env';
 import '@/components/Map/map.css';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import SetViewToBounds from './SetViewToBounds';
-import { tabComponentSubTypeEnum } from '@/types';
+import { CustomMapImage, tabComponentSubTypeEnum } from '@/types';
 import MapModal from './MapModal';
 import MapPopupContent from './MapPopupContent';
 import { DEFAULT_MARKERS, DUMMY_GEOJSON } from '@/utils/objectHelper';
@@ -50,16 +52,48 @@ import {
   SingleMapProps,
 } from '@/types/mapRelatedModels';
 import { MapRef } from 'react-leaflet/MapContainer';
+import { getCustomMapImageById } from '@/api/tab.custom-map-image.service';
+import { useAuth } from 'react-oidc-context';
+import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
+import SearchControl from './SearchControl/SearchControl';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const defaultSearchIcon = L.icon({
+  iconUrl: markerIcon.src,
+  iconRetinaUrl: markerIcon2x.src,
+  shadowUrl: markerShadow.src,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 // Union type for the component props
 type MapNewProps = SingleMapProps | CombinedMapProps;
 
 // Type guard to check if props are for a combined map
 function isCombinedMapProps(props: MapNewProps): props is CombinedMapProps {
-  return Array.isArray((props as CombinedMapProps).mapActiveMarkerColor);
+  return (
+    (props.mapActiveMarkerColor != null &&
+      Array.isArray((props as CombinedMapProps).mapActiveMarkerColor)) ||
+    props.mapType === tabComponentSubTypeEnum.combinedMap
+  );
 }
 
+const FitBounds = ({ bounds }: { bounds: L.LatLngBoundsExpression }): null => {
+  const map = useMap();
+  React.useEffect(() => {
+    map.fitBounds(bounds);
+  }, []);
+  return null;
+};
+
 export default function MapNew(props: MapNewProps): JSX.Element {
+  const auth = useAuth();
+  const { openSnackbar } = useSnackbar();
+
   const {
     isFullscreenMap,
     menuStyle,
@@ -71,6 +105,10 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     mapGeoJSONSelectedFeatures,
     mapGeoJSONHoveredFeature,
     locateOnMap,
+    isCustomMap,
+    customMapImageId,
+    customMapSensorValues,
+    handleOnMarkerClick,
   } = props;
 
   const isCombinedMap = isCombinedMapProps(props);
@@ -102,6 +140,69 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     [],
   );
   const [selectedDataSources, setSelectedDataSources] = useState<number[]>([]);
+  const [searchMarker, setSearchMarker] = useState<{
+    position: LatLngExpression;
+    label: string;
+  } | null>(null);
+
+  const [customMapImage, setCustomMapImage] = useState<
+    CustomMapImage | undefined
+  >();
+  const [customMapImageWidth, setCustomMapImageWidth] = useState(0);
+  const [customMapImageHeight, setCustomMapImageHeight] = useState(0);
+  const [customMapBounds, setCustomMapBounds] = useState<
+    L.LatLngBoundsExpression | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (
+      isCustomMap &&
+      customMapImageId &&
+      customMapImageId.length > 0 &&
+      (customMapImage === undefined ||
+        (customMapImage !== undefined &&
+          customMapImageId !== customMapImage.id))
+    ) {
+      getCustomMapImage(customMapImageId)
+        .then((image: CustomMapImage | undefined) => {
+          if (image) {
+            setCustomMapBounds(undefined);
+            setCustomMapImage(image);
+          } else {
+            openSnackbar('Karten Bild nicht in Datenbank gefunden', 'error');
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          openSnackbar('Karten Bild nicht in Datenbank gefunden', 'error');
+        });
+    }
+  }, [isCustomMap, customMapImageId, customMapImage, setCustomMapImage]);
+
+  useEffect(() => {
+    if (
+      isCustomMap &&
+      customMapImage !== undefined &&
+      customMapBounds === undefined
+    ) {
+      setCustomMapImageWidth(customMapImage.width);
+      setCustomMapImageHeight(customMapImage.height);
+      const bounds: L.LatLngBoundsExpression = [
+        [0, 0],
+        [customMapImage.height, customMapImage.width],
+      ];
+      setCustomMapBounds(bounds);
+    }
+  }, [
+    isCustomMap,
+    customMapImage,
+    customMapImageWidth,
+    customMapImageHeight,
+    customMapBounds,
+    setCustomMapImageWidth,
+    setCustomMapImageHeight,
+    setCustomMapBounds,
+  ]);
 
   useEffect(() => {
     if (locateOnMap) {
@@ -416,40 +517,127 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     },
   );
 
-  const getFilteredMarkers = (): MarkerType[] => {
-    return markerPositions.filter((marker) => {
-      // Filter by attribute and value
-      if (selectedFilters.length > 0) {
-        const filterAttribute = isCombinedMap
-          ? selectedMapFilterAttribute
-          : props.mapFilterAttribute;
-        if (!filterAttribute) return false;
-        const attributeDetails = marker.details[filterAttribute];
-        if (!attributeDetails) return false;
+  const customMarkerPositions: MarkerType[] = (customMapSensorValues || []).map(
+    (markerObject, index) => {
+      //use attribute from markerobject instead of combinedProps and singleProps attributes
 
-        let propertyValue;
-        if (attributeDetails.value !== undefined) {
-          propertyValue = attributeDetails.value;
-        } else {
-          propertyValue = attributeDetails;
+      const mapObject = props.data?.find((x) => x.id === markerObject.entityId);
+      let markerValue;
+      let title;
+      let color = '#000000';
+      if (isCombinedMap) {
+        // Combined map logic
+        const combinedProps = props as CombinedMapProps;
+        title = mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`;
+
+        // Extract marker value for combined maps if value-based coloring is enabled
+        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
+
+        if (
+          combinedProps.mapIsIconColorValueBased?.[dataSource] ||
+          combinedProps.mapIsFormColorValueBased?.[dataSource]
+        ) {
+          const valueAttribute =
+            combinedProps.mapAttributeForValueBased?.[dataSource];
+          if (valueAttribute) {
+            if (mapObject[valueAttribute]?.value !== undefined) {
+              markerValue = mapObject[valueAttribute].value;
+            } else if (mapObject[valueAttribute] !== undefined) {
+              markerValue = mapObject[valueAttribute];
+            }
+          }
         }
 
-        const normalizedValue =
-          parseFloat(propertyValue) === 0 ? 0 : propertyValue;
-        if (!selectedFilters.includes(normalizedValue)) return false;
-      }
+        color = getColorForMarker(
+          { ...mapObject, dataSource: dataSource },
+          markerValue,
+        );
+      } else {
+        // Single map logic
+        const singleProps = props as SingleMapProps;
+        // Handle different data structures for the attribute value
+        // Only extract markerValue if value-based coloring is enabled
+        if (mapObject) {
+          if (
+            singleProps.mapIsIconColorValueBased ||
+            singleProps.mapIsFormColorValueBased
+          ) {
+            if (mapObject[markerObject.attribute]?.value !== undefined) {
+              markerValue = mapObject[markerObject.attribute].value;
+            } else {
+              markerValue = mapObject[markerObject.attribute];
+            }
+          }
+        }
 
-      // Filter by dataSource (map selection) - only for combined maps
-      if (
-        isCombinedMap &&
-        selectedDataSources.length > 0 &&
-        !selectedDataSources.includes(marker.dataSource ?? -1)
-      ) {
-        return false;
-      }
+        // Handle different data structures for the name/title
+        if (mapObject?.name?.value) {
+          title = mapObject.name.value;
+        } else if (mapObject?.name) {
+          title = mapObject.name;
+        } else {
+          title = `Sensor ${index + 1}`;
+        }
 
-      return true;
-    });
+        color = getColorForMarker(mapObject, markerValue);
+      }
+      const icon = getIconForMarker(mapObject, markerValue);
+      let iconIndex = 0;
+      if (isCombinedMap) {
+        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
+        const staticValuesLogos = props.staticValuesLogos?.[dataSource] ?? [];
+        iconIndex = staticValuesLogos.indexOf(icon);
+      } else {
+        iconIndex = props.staticValuesLogos?.indexOf(icon);
+      }
+      return {
+        // position: mapObject.position.coordinates ?? [52.520008, 13.404954],
+        position: [markerObject.positionY, markerObject.positionX],
+        title: title,
+        details: mapObject,
+        dataSource: mapObject?.dataSource || 0,
+        color: color,
+        iconIndex: iconIndex + 1, // +1 bc of default icon at index 0
+      };
+    },
+  );
+
+  const getFilteredMarkers = (): MarkerType[] => {
+    return (isCustomMap ? customMarkerPositions : markerPositions).filter(
+      (marker) => {
+        // Filter by attribute and value
+        if (selectedFilters.length > 0) {
+          const filterAttribute = isCombinedMap
+            ? selectedMapFilterAttribute
+            : props.mapFilterAttribute;
+          if (!filterAttribute) return false;
+          const attributeDetails = marker.details[filterAttribute];
+          if (!attributeDetails) return false;
+
+          let propertyValue;
+          if (attributeDetails.value !== undefined) {
+            propertyValue = attributeDetails.value;
+          } else {
+            propertyValue = attributeDetails;
+          }
+
+          const normalizedValue =
+            parseFloat(propertyValue) === 0 ? 0 : propertyValue;
+          if (!selectedFilters.includes(normalizedValue)) return false;
+        }
+
+        // Filter by dataSource (map selection) - only for combined maps
+        if (
+          isCombinedMap &&
+          selectedDataSources.length > 0 &&
+          !selectedDataSources.includes(marker.dataSource ?? -1)
+        ) {
+          return false;
+        }
+
+        return true;
+      },
+    );
   };
 
   const getColorForGeoJSONFeature = (
@@ -903,96 +1091,385 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     mapGeoJSONSelectedFeatures,
   ]);
 
+  const getCustomMapImage = async (
+    id: string,
+  ): Promise<CustomMapImage | undefined> => {
+    const found = await getCustomMapImageById(auth?.user?.access_token, id);
+    if (found) {
+      return found;
+    }
+    return undefined;
+  };
+
   return (
     <div className="w-full h-full">
       <div className="w-full h-full relative">
-        <MapContainer
-          key={`map-container-${props.mapAllowZoom}-${props.mapAllowScroll}-${props.mapMaxZoom}-${props.mapMinZoom}-${props.mapStandardZoom}`}
-          style={{ height: '100%', width: '100%' }}
-          center={
-            props.data && props.data.length > 0
-              ? [
-                  props.data[0]?.position.coordinates[0],
-                  props.data[0]?.position.coordinates[1],
-                ]
-              : [
-                  props.mapLatitude || 52.520008,
-                  props.mapLongitude || 13.404954,
-                ]
-          }
-          zoom={props.mapStandardZoom}
-          zoomControl={props.mapAllowZoom}
-          scrollWheelZoom={props.mapAllowZoom}
-          touchZoom={props.mapAllowZoom}
-          ref={mapRef}
-          doubleClickZoom={props.mapAllowZoom}
-          dragging={props.mapAllowScroll}
-        >
-          {((): JSX.Element => {
-            const wmsConfig = findValidWmsConfig(
-              isCombinedMap ? undefined : (props as SingleMapProps).mapWmsUrl,
-              isCombinedMap ? undefined : (props as SingleMapProps).mapWmsLayer,
-              isCombinedMap
-                ? (props as CombinedMapProps).mapCombinedWmsUrl
-                : undefined,
-              isCombinedMap
-                ? (props as CombinedMapProps).mapCombinedWmsLayer
-                : undefined,
-              isCombinedMap,
-            );
-            return wmsConfig ? (
-              <WMSTileLayer
-                url={wmsConfig.url}
-                layers={wmsConfig.layer}
-                transparent={true}
-                version="1.3.0"
-              />
-            ) : (
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
-                url={mapboxUrl}
-              />
-            );
-          })()}
+        {!isCustomMap && (
+          <MapContainer
+            key={`map-container-${props.mapAllowZoom}-${props.mapAllowScroll}-${props.mapMaxZoom}-${props.mapMinZoom}-${props.mapStandardZoom}`}
+            style={{ height: '100%', width: '100%' }}
+            center={
+              props.data && props.data.length > 0
+                ? [
+                    props.data[0]?.position.coordinates[0],
+                    props.data[0]?.position.coordinates[1],
+                  ]
+                : [
+                    props.mapLatitude || 52.520008,
+                    props.mapLongitude || 13.404954,
+                  ]
+            }
+            zoom={props.mapStandardZoom}
+            zoomControl={props.mapAllowZoom}
+            scrollWheelZoom={props.mapAllowZoom}
+            touchZoom={props.mapAllowZoom}
+            ref={mapRef}
+            doubleClickZoom={props.mapAllowZoom}
+            dragging={props.mapAllowScroll}
+          >
+            {((): JSX.Element => {
+              const wmsConfig = findValidWmsConfig(
+                isCombinedMap ? undefined : (props as SingleMapProps).mapWmsUrl,
+                isCombinedMap
+                  ? undefined
+                  : (props as SingleMapProps).mapWmsLayer,
+                isCombinedMap
+                  ? (props as CombinedMapProps).mapCombinedWmsUrl
+                  : undefined,
+                isCombinedMap
+                  ? (props as CombinedMapProps).mapCombinedWmsLayer
+                  : undefined,
+                isCombinedMap,
+              );
+              return wmsConfig ? (
+                <WMSTileLayer
+                  url={wmsConfig.url}
+                  layers={wmsConfig.layer}
+                  transparent={true}
+                  version="1.3.0"
+                />
+              ) : (
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>'
+                  url={mapboxUrl}
+                />
+              );
+            })()}
 
-          <ZoomHandler onZoomChange={setMapZoom} />
-
-          {(props.mapType === tabComponentSubTypeEnum.geoJSON ||
-            props.mapType === tabComponentSubTypeEnum.geoJSONDynamic) && (
-            <>
-              <GeoJSON
-                onEachFeature={geoJSONOnEachFeature}
-                data={geoJSONData ? geoJSONData : DUMMY_GEOJSON}
-                style={geoJSONStyle}
+            {props.mapSearch && (
+              <SearchControl
+                position="topright"
+                onResultSelect={(result) => {
+                  setSearchMarker(result);
+                  if (result)
+                    mapRef.current?.panTo(result.position, { duration: 1.2 });
+                }}
               />
-              {props.mapGeoJSONSensorBasedColors && <GeoJSONLegend />}
-            </>
-          )}
+            )}
 
-          {((!isCombinedMap &&
-            props.mapType !== tabComponentSubTypeEnum.geoJSON &&
-            props.mapType !== tabComponentSubTypeEnum.geoJSONDynamic) ||
-            (isCombinedMap &&
-              (props as CombinedMapProps).mapDisplayMode?.[0] !==
-                tabComponentSubTypeEnum.onlyFormArea)) && (
-            <MarkerClusterGroup
-              iconCreateFunction={(cluster: L.MarkerCluster) =>
-                createClusterCustomIcon(
-                  cluster,
-                  isCombinedMap
-                    ? (props as CombinedMapProps).mapMarkerColor || []
-                    : (props as SingleMapProps).mapMarkerColor || '',
-                  isCombinedMap
-                    ? (props as CombinedMapProps).mapMarkerIconColor || []
-                    : (props as SingleMapProps).mapMarkerIconColor || '',
-                  isCombinedMap,
+            <ZoomHandler onZoomChange={setMapZoom} />
+
+            {(props.mapType === tabComponentSubTypeEnum.geoJSON ||
+              props.mapType === tabComponentSubTypeEnum.geoJSONDynamic) && (
+              <>
+                <GeoJSON
+                  onEachFeature={geoJSONOnEachFeature}
+                  data={geoJSONData ? geoJSONData : DUMMY_GEOJSON}
+                  style={geoJSONStyle}
+                />
+                {props.mapGeoJSONSensorBasedColors && <GeoJSONLegend />}
+              </>
+            )}
+
+            {((!isCombinedMap &&
+              props.mapType !== tabComponentSubTypeEnum.geoJSON &&
+              props.mapType !== tabComponentSubTypeEnum.geoJSONDynamic) ||
+              (isCombinedMap &&
+                (props as CombinedMapProps).mapDisplayMode?.[0] !==
+                  tabComponentSubTypeEnum.onlyFormArea)) && (
+              <MarkerClusterGroup
+                iconCreateFunction={(cluster: L.MarkerCluster) =>
+                  createClusterCustomIcon(
+                    cluster,
+                    isCombinedMap
+                      ? (props as CombinedMapProps).mapMarkerColor || []
+                      : (props as SingleMapProps).mapMarkerColor || '',
+                    isCombinedMap
+                      ? (props as CombinedMapProps).mapMarkerIconColor || []
+                      : (props as SingleMapProps).mapMarkerIconColor || '',
+                    isCombinedMap,
+                  )
+                }
+                disableClusteringAtZoom={
+                  props.mapMaxZoom ? props.mapMaxZoom : 16
+                }
+              >
+                {(markerPositions.length > 0
+                  ? getFilteredMarkers()
+                  : DEFAULT_MARKERS
+                ).map((marker, index) => {
+                  const dataSource = marker.dataSource || 0;
+                  const markerProps = getMarkerProps(
+                    dataSource,
+                    selectedMarker.id === index,
+                  );
+
+                  // Determine the correct color to use
+                  // Priority: 1) Active color if selected, 2) Value-based color if enabled, 3) Default marker color
+                  const isSelected = selectedMarker.id === index;
+                  let finalColor = markerProps.color; // This already handles active vs default color
+
+                  // Only use value-based color if not selected and value-based coloring is enabled
+                  if (!isSelected) {
+                    if (isCombinedMap) {
+                      const combinedProps = props as CombinedMapProps;
+                      if (
+                        combinedProps.mapIsIconColorValueBased?.[dataSource] ||
+                        combinedProps.mapIsFormColorValueBased?.[dataSource]
+                      ) {
+                        finalColor = marker.color || markerProps.color;
+                      }
+                    } else {
+                      const singleProps = props as SingleMapProps;
+                      if (
+                        singleProps.mapIsIconColorValueBased ||
+                        singleProps.mapIsFormColorValueBased
+                      ) {
+                        finalColor = marker.color || markerProps.color;
+                      }
+                    }
+                  }
+                  return (
+                    markerProps.displayMode !==
+                      tabComponentSubTypeEnum.onlyFormArea && (
+                      <Marker
+                        key={index}
+                        position={marker.position as LatLngExpression}
+                        icon={createCustomIcon(
+                          finalColor,
+                          iconSvgMarkup,
+                          markerProps.iconIndex ?? 0,
+                          isCombinedMap,
+                          isCombinedMap
+                            ? (props as CombinedMapProps).mapMarkerIcon?.[
+                                markerProps.iconIndex
+                              ]
+                            : (props as SingleMapProps).mapMarkerIcon,
+                        )}
+                        eventHandlers={{
+                          click: (e): void => {
+                            e.originalEvent.stopPropagation();
+                            if (selectedMarker.id === index) {
+                              setSelectedMarker({
+                                id: null,
+                                data: null,
+                                dataSource: null,
+                              });
+                            } else {
+                              setSelectedMarker({
+                                id: index,
+                                data: marker,
+                                dataSource: dataSource,
+                              });
+                            }
+                            if (handleOnMarkerClick) {
+                              handleOnMarkerClick(marker.details.id);
+                            }
+                          },
+                          popupclose: handleOnCloseModal,
+                        }}
+                      >
+                        {props.mapAllowPopups && !isFullscreenMap && (
+                          <Popup
+                            maxWidth={200}
+                            // ref={(popup: L.Popup | null) => {
+                            //   if (popup)
+                            //     popupRefsMap.current.set(
+                            //       `${marker.details.id}`,
+                            //       popup,
+                            //     );
+                            // }}
+                          >
+                            <div
+                              style={{
+                                textAlign: 'center',
+                                fontSize: '16px',
+                                marginBottom: '10px',
+                                color: '#000000',
+                              }}
+                            >
+                              <strong>{marker.title}</strong>
+                            </div>
+                            {renderPopupContent(marker)}
+                          </Popup>
+                        )}
+
+                        {markerProps.displayMode !==
+                          tabComponentSubTypeEnum.onlyPin &&
+                          mapZoom > 15 &&
+                          (!Array.isArray(marker) || marker.length === 1) &&
+                          renderShape(
+                            marker.position,
+                            markerProps.shapeType,
+                            finalColor,
+                            dataSource,
+                          )}
+                      </Marker>
+                    )
+                  );
+                })}
+              </MarkerClusterGroup>
+            )}
+
+            <SetViewToBounds
+              markerPositions={markerPositions}
+              centerPosition={[
+                isNaN(
+                  props.data?.[0]?.position.coordinates[0] ||
+                    props.mapLatitude ||
+                    52.520008,
                 )
-              }
-              disableClusteringAtZoom={15}
+                  ? 52.520008
+                  : props.data?.[0]?.position.coordinates[0] ||
+                    props.mapLatitude ||
+                    52.520008,
+                isNaN(
+                  props.data?.[0]?.position.coordinates[1] ||
+                    props.mapLongitude ||
+                    13.404954,
+                )
+                  ? 13.404954
+                  : props.data?.[0]?.position.coordinates[1] ||
+                    props.mapLongitude ||
+                    13.404954,
+              ]}
+            />
+
+            {/* filter and legend button toggle */}
+            <div className="flex flex-row gap-x-2 ml-3" style={getDivStyle()}>
+              {props.mapAllowFilter && (
+                <div
+                  className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                  onClick={toggleFilterModal}
+                  style={menuStyle}
+                >
+                  <h2 className="font-bold pr-1">Filter</h2>
+                  <FontAwesomeIcon
+                    icon={faAnglesRight}
+                    className={`transform ${
+                      isFilterModalOpen ? 'rotate-180' : 'rotate-0'
+                    } transition-transform ease-in-out duration-300`}
+                  />
+                </div>
+              )}
+              {props.mapAllowLegend && (
+                <div
+                  className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                  onClick={toggleLegendModal}
+                  style={menuStyle}
+                >
+                  <h2 className="font-bold pr-1">Legende</h2>
+                  <FontAwesomeIcon
+                    icon={faAnglesRight}
+                    className={`transform ${
+                      isLegendModalOpen ? 'rotate-180' : 'rotate-0'
+                    } transition-transform ease-in-out duration-300`}
+                  />
+                </div>
+              )}
+              {allowShare && (
+                <div
+                  className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                  style={menuStyle}
+                >
+                  <ShareLinkButton
+                    type="dashboard"
+                    id={dashboardId || ''}
+                    widgetPrimaryColor={ciColors?.widgetPrimaryColor}
+                    widgetFontColor={ciColors?.widgetFontColor}
+                  />
+                </div>
+              )}
+              {allowDataExport && (
+                <div className="shadow-lg">
+                  <DataExportButton
+                    id={widgetDownloadId || ''}
+                    type="widget"
+                    menuStyle={{ ...menuStyle, fontWeight: 'bold' }}
+                    ciColors={ciColors!}
+                    headerPrimaryColor={ciColors?.headerPrimaryColor}
+                    headerFontColor={ciColors?.headerFontColor}
+                    panelFontColor={ciColors?.panelFontColor}
+                    widgetFontColor={ciColors?.widgetFontColor}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* filter and legend modals */}
+            {props.mapAllowFilter && isFilterModalOpen && (
+              <MapFilterModal
+                combinedQueryData={props.combinedQueryData || []}
+                selectedFilters={selectedFilters}
+                onFilterChange={handleFilterChange}
+                menuStyle={menuStyle}
+                onCloseModal={closeFilterModal}
+                isLegendModalOpen={isLegendModalOpen}
+                isFullscreenMap={isFullscreenMap}
+                mapNames={
+                  isCombinedMap
+                    ? (props as CombinedMapProps).mapNames || []
+                    : []
+                }
+                handleMapNameFilterChange={handleDataSourceFilterChange}
+                selectedDataSources={selectedDataSources}
+                isCombinedMap={isCombinedMap}
+              />
+            )}
+            {props.mapAllowLegend && isLegendModalOpen && (
+              <MapLegendModal
+                mapLegendValues={props.mapLegendValues}
+                mapLegendDisclaimer={props.mapLegendDisclaimer}
+                menuStyle={menuStyle}
+                onCloseModal={closeLegendModal}
+                isFilterModalOpen={isFilterModalOpen}
+                isFullscreenMap={isFullscreenMap}
+              />
+            )}
+          </MapContainer>
+        )}
+
+        {isCustomMap &&
+          customMapImage &&
+          customMapBounds &&
+          customMapImageWidth &&
+          customMapImageHeight && (
+            <MapContainer
+              className="transparent-bg"
+              crs={L.CRS.Simple}
+              center={[customMapImageHeight / 2, customMapImageWidth / 2]}
+              style={{ height: '100%', width: '100%' }}
+              zoom={props.mapStandardZoom}
+              zoomControl={props.mapAllowZoom}
+              minZoom={props.mapMinZoom}
+              scrollWheelZoom={props.mapAllowZoom}
+              touchZoom={props.mapAllowZoom}
+              ref={mapRef}
+              doubleClickZoom={props.mapAllowZoom}
+              dragging={props.mapAllowScroll}
             >
-              {(markerPositions.length > 0
+              <ImageOverlay
+                url={customMapImage.imageBase64}
+                bounds={customMapBounds}
+              />
+
+              <FitBounds bounds={customMapBounds} />
+
+              {/* <ZoomHandler onZoomChange={setMapZoom} /> */}
+
+              {(customMarkerPositions.length > 0
                 ? getFilteredMarkers()
-                : DEFAULT_MARKERS
+                : []
               ).map((marker, index) => {
                 const dataSource = marker.dataSource || 0;
                 const markerProps = getMarkerProps(
@@ -1034,7 +1511,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       icon={createCustomIcon(
                         finalColor,
                         iconSvgMarkup,
-                        marker.iconIndex ?? 0,
+                        markerProps.iconIndex ?? 0,
                         isCombinedMap,
                         isCombinedMap
                           ? (props as CombinedMapProps).mapMarkerIcon?.[
@@ -1089,7 +1566,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
                       {markerProps.displayMode !==
                         tabComponentSubTypeEnum.onlyPin &&
-                        mapZoom > 15 &&
+                        mapZoom > 16 &&
                         (!Array.isArray(marker) || marker.length === 1) &&
                         renderShape(
                           marker.position,
@@ -1101,122 +1578,18 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   )
                 );
               })}
-            </MarkerClusterGroup>
+
+              {props.mapSearch && searchMarker && (
+                <Marker
+                  position={searchMarker.position}
+                  icon={defaultSearchIcon}
+                >
+                  <Popup>{searchMarker.label}</Popup>
+                </Marker>
+              )}
+            </MapContainer>
           )}
 
-          <SetViewToBounds
-            markerPositions={markerPositions}
-            centerPosition={[
-              isNaN(
-                props.data?.[0]?.position.coordinates[0] ||
-                  props.mapLatitude ||
-                  52.520008,
-              )
-                ? 52.520008
-                : props.data?.[0]?.position.coordinates[0] ||
-                  props.mapLatitude ||
-                  52.520008,
-              isNaN(
-                props.data?.[0]?.position.coordinates[1] ||
-                  props.mapLongitude ||
-                  13.404954,
-              )
-                ? 13.404954
-                : props.data?.[0]?.position.coordinates[1] ||
-                  props.mapLongitude ||
-                  13.404954,
-            ]}
-          />
-
-          {/* filter and legend button toggle */}
-          <div className="flex flex-row gap-x-2 ml-3" style={getDivStyle()}>
-            {props.mapAllowFilter && (
-              <div
-                className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
-                onClick={toggleFilterModal}
-                style={menuStyle}
-              >
-                <h2 className="font-bold pr-1">Filter</h2>
-                <FontAwesomeIcon
-                  icon={faAnglesRight}
-                  className={`transform ${
-                    isFilterModalOpen ? 'rotate-180' : 'rotate-0'
-                  } transition-transform ease-in-out duration-300`}
-                />
-              </div>
-            )}
-            {props.mapAllowLegend && (
-              <div
-                className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
-                onClick={toggleLegendModal}
-                style={menuStyle}
-              >
-                <h2 className="font-bold pr-1">Legende</h2>
-                <FontAwesomeIcon
-                  icon={faAnglesRight}
-                  className={`transform ${
-                    isLegendModalOpen ? 'rotate-180' : 'rotate-0'
-                  } transition-transform ease-in-out duration-300`}
-                />
-              </div>
-            )}
-            {allowShare && (
-              <div
-                className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
-                style={menuStyle}
-              >
-                <ShareLinkButton
-                  type="dashboard"
-                  id={dashboardId || ''}
-                  widgetPrimaryColor={ciColors?.widgetPrimaryColor}
-                  widgetFontColor={ciColors?.widgetFontColor}
-                />
-              </div>
-            )}
-            {allowDataExport && (
-              <div className="shadow-lg">
-                <DataExportButton
-                  id={widgetDownloadId || ''}
-                  type="widget"
-                  menuStyle={{ ...menuStyle, fontWeight: 'bold' }}
-                  headerPrimaryColor={ciColors?.headerPrimaryColor}
-                  headerFontColor={ciColors?.headerFontColor}
-                  panelFontColor={ciColors?.panelFontColor}
-                  widgetFontColor={ciColors?.widgetFontColor}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* filter and legend modals */}
-          {props.mapAllowFilter && isFilterModalOpen && (
-            <MapFilterModal
-              combinedQueryData={props.combinedQueryData || []}
-              selectedFilters={selectedFilters}
-              onFilterChange={handleFilterChange}
-              menuStyle={menuStyle}
-              onCloseModal={closeFilterModal}
-              isLegendModalOpen={isLegendModalOpen}
-              isFullscreenMap={isFullscreenMap}
-              mapNames={
-                isCombinedMap ? (props as CombinedMapProps).mapNames || [] : []
-              }
-              handleMapNameFilterChange={handleDataSourceFilterChange}
-              selectedDataSources={selectedDataSources}
-              isCombinedMap={isCombinedMap}
-            />
-          )}
-          {props.mapAllowLegend && isLegendModalOpen && (
-            <MapLegendModal
-              mapLegendValues={props.mapLegendValues}
-              mapLegendDisclaimer={props.mapLegendDisclaimer}
-              menuStyle={menuStyle}
-              onCloseModal={closeLegendModal}
-              isFilterModalOpen={isFilterModalOpen}
-              isFullscreenMap={isFullscreenMap}
-            />
-          )}
-        </MapContainer>
         <div ref={iconRef} style={{ display: 'none' }}>
           {isCombinedMap
             ? (props as CombinedMapProps).mapMarkerIcon?.map(

@@ -36,6 +36,7 @@ export const edagTemplate: NewCorporateInfo = {
   widgetFontColor: '#FFF',
   widgetPrimaryColor: '#3D4760',
   widgetSecondaryColor: '#3D4760',
+  widgetPreviewBackgroundColor: '#1A1A1D',
   scrollbarBackground: '#b9c2ee',
   scrollbarColor: '#3D4760',
   menuActiveFontColor: '#1d2330',

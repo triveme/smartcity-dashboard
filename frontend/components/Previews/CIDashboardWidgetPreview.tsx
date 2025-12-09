@@ -24,6 +24,8 @@ type CIDashboardWidgetPreviewProps = {
   informationTextFontSize: string;
   informationTextFontColor: string;
 
+  widgetPreviewBackgroundColor: string;
+
   iconWithLinkFontSize: string;
   iconWithLinkFontColor: string;
   iconWithLinkIconSize: string;
@@ -155,6 +157,9 @@ export default function CIDashboardWidgetPreview(
   const {
     componentType,
     componentSubType,
+
+    widgetPreviewBackgroundColor,
+
     informationTextFontSize,
     informationTextFontColor,
     iconWithLinkFontSize,
@@ -285,7 +290,8 @@ export default function CIDashboardWidgetPreview(
   const widgetStyle = {
     height: '400px',
     maxHeight: '100%',
-    backgroundColor: '#1A1A1D',
+    // backgroundColor: '#1A1A1D',
+    backgroundColor: widgetPreviewBackgroundColor,
     color: '#FFFFFF',
     borderColor: '#59647D',
   };
@@ -433,6 +439,7 @@ export default function CIDashboardWidgetPreview(
               filterTextColor={barChartFilterTextColor || '#1D2330'}
               axisFontColor={barChartAxisLabelFontColor}
               isStackedChart={false}
+              showTimestampOnHover={false}
             />
           )}
           {componentSubType === tabComponentSubTypeEnum.measurement && (

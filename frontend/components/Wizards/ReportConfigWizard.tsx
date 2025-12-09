@@ -46,7 +46,7 @@ export default function ReportConfigWizard(
   return (
     <>
       <div className="flex flex-col w-full pb-2">
-        <WizardLabel label="Report Name" />
+        <WizardLabel label="Meldungsname" />
         <WizardTextfield
           value={reportConfig?.propertyName || ''}
           onChange={(value: string | number): void =>
@@ -85,7 +85,7 @@ export default function ReportConfigWizard(
         />
       </div>
       <div className="flex flex-col w-full pb-2">
-        <WizardLabel label="Empfangende Email Adressen (Liste mit Komma ',' trennen)" />
+        <WizardLabel label="Empfangende E-mail Adressen (Liste mit Komma ',' trennen)" />
         <WizardTextfield
           value={(reportConfig?.recipients || []).join(', ')}
           onChange={(value: string | number): void =>
@@ -99,7 +99,7 @@ export default function ReportConfigWizard(
         />
       </div>
       <div className="flex flex-col w-full pb-2">
-        <WizardLabel label="Email Text" />
+        <WizardLabel label="E-mail Text" />
         <WizardTextfield
           value={reportConfig?.mailText || ''}
           onChange={(value: string | number): void =>

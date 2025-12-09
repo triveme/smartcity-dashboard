@@ -5,6 +5,7 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import Header from '@/components/Header';
 import { CorporateInfo } from '@/types';
+import sanitizeCSSInjection from '@/utils/sanitizeHtml';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
@@ -33,6 +34,8 @@ export default async function RootLayout(props: {
     }
   }
 
+  const fontHtml = sanitizeCSSInjection(ciColors.cssStyleInjectionValue);
+
   return (
     <div className="w-full h-full overflow-x-hidden">
       <style>
@@ -51,6 +54,13 @@ export default async function RootLayout(props: {
           }
         `}
       </style>
+      {fontHtml && (
+        <div
+          style={{ display: 'none' }}
+          dangerouslySetInnerHTML={{ __html: fontHtml }}
+          suppressHydrationWarning
+        />
+      )}
       <div className="flex h-full w-full">
         <div className="fixed top-0 left-0 bottom-0 z-30">
           <DashboardSidebar

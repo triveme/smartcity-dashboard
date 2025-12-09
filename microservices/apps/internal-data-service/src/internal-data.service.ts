@@ -5,15 +5,22 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { DataService } from './data/data.service';
+import { DataService, QueryBatch } from './data/data.service';
 import { InternalData, NewInternalData } from '@app/postgres-db/schemas';
 import { AuthHelperUtility } from '@app/auth-helper';
+import { QueryService } from './query/query.service';
+import {
+  NGSIv2AttributeData,
+  TransformationService,
+} from './transformation/transformation.service';
 
 @Injectable()
 export class InternalDataService {
   constructor(
     private readonly dataService: DataService,
     private readonly authHelper: AuthHelperUtility,
+    private readonly queryService: QueryService,
+    private readonly transformationService: TransformationService,
   ) {}
 
   async getCollections(appid: string): Promise<string[]> {
@@ -83,6 +90,41 @@ export class InternalDataService {
   }
   async getById(id: string): Promise<InternalData> {
     return this.dataService.getById(id);
+  }
+
+  async getDataFromDataSource(
+    queryBatch: QueryBatch,
+  ): Promise<{ attrs: NGSIv2AttributeData[] }> {
+    const newData = await this.queryService.getDataFromDataSource(queryBatch);
+    if (newData) {
+      const transformedData = this.transformationService.transformCollection(
+        newData,
+        queryBatch.query_config.attributes,
+        queryBatch.query_config.fiwareType,
+      );
+      return { attrs: transformedData };
+    }
+  }
+
+  async updateFiwareQueries(): Promise<void> {
+    const queryHashMap = await this.queryService.getQueriesToUpdate();
+
+    // Create an array of promises from the dictionary. Each promise will fetch the data
+    // from the data source and update all of it's queries (with the same hash) with the new data.
+    const updates = Array.from(queryHashMap.values()).map(
+      async (queryBatch) => {
+        const newData =
+          await this.dataService.getDataFromDataSource(queryBatch);
+
+        if (newData) {
+          await this.queryService.setQueryDataOfBatch(queryBatch, newData);
+        }
+      },
+    );
+
+    // Wait for all promises to resolve (this will send all the requests
+    // to the data sources and update all the queries in parallel)
+    await Promise.all(updates);
   }
 
   async delete(id: string, roles: Array<string>): Promise<InternalData> {

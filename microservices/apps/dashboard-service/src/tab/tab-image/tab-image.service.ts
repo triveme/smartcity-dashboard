@@ -3,7 +3,7 @@ import { TabImageRepo } from './tab-image.repo';
 import {
   NewTabImage,
   TabImage,
-} from '@app/postgres-db/schemas/dashboard.tab.values-to-images.schema';
+} from '@app/postgres-db/schemas/tab-images.schema';
 import { DbType } from '@app/postgres-db';
 
 @Injectable()

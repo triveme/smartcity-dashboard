@@ -29,12 +29,13 @@ import { AuthHelperUtility } from '@app/auth-helper';
 import { DashboardToTenantService } from '../dashboard-to-tenant/dashboard-to-tenant.service';
 import { PopulateService } from './populate/populate.service';
 import { RoleUtil } from '../../../infopin-service/src/utility/RoleUtil';
-import { DashboardRepo, FlatDashboardData } from './dashboard.repo';
+import { DashboardRepo } from './dashboard.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { NewWidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { WidgetService } from '../widget/widget.service';
 import { PaginatedResult } from '../widget/widget.model';
+import { FlatDashboardData } from './dashboard.model';
 
 export type ChartData = {
   name: string;

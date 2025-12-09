@@ -50,6 +50,7 @@ const initialWizardState: CorporateInfo = {
   widgetSubheadlineFontSize: '14px',
   widgetPrimaryColor: '#3D4760',
   widgetSecondaryColor: '#3D4760',
+  widgetPreviewBackgroundColor: '#1A1A1D',
   sidebarLogos: [],
 
   informationTextFontSize: '11',
@@ -196,6 +197,7 @@ const initialWizardState: CorporateInfo = {
   dateSelectorBackgroundColorSelected: '#3D4760',
   dateSelectorFontColorSelected: '#2D3244',
   dateSelectorFontColorUnselected: '#3D4760',
+  cssStyleInjectionValue: '',
 };
 
 type UseWizardStateReturn = {

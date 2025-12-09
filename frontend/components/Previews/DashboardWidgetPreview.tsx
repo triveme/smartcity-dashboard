@@ -298,6 +298,7 @@ export default function DashboardWidgetPreview(
               filterColor={data?.lineChartFilterColor || '#F1B434'}
               filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
+              chartAggregationMode={tab.chartAggregationMode}
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.barChart ||
@@ -368,6 +369,11 @@ export default function DashboardWidgetPreview(
               axisFontColor={data?.barChartAxisLabelFontColor || '#FFFFFF'}
               decimalPlaces={tab?.decimalPlaces || 0}
               chartHoverSingleValue={tab?.chartHoverSingleValue || false}
+              showTimestampOnHover={
+                tab?.barChartShowTimestampOnHover !== undefined
+                  ? tab.barChartShowTimestampOnHover
+                  : true
+              }
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -504,9 +510,11 @@ export default function DashboardWidgetPreview(
           staticValuesColors={tab.chartStaticValuesColors || []}
           staticValuesTexts={tab.chartStaticValuesTexts || []}
           staticValuesLogos={tab.chartStaticValuesLogos || []}
-          fontSize={data?.wertFontSize || '50'}
+          fontSize={tab.valueFontSize?.toString() || data?.wertFontSize || '50'}
           fontColor={data?.wertFontColor || '#fff'}
-          unitFontSize={data?.wertUnitFontSize || '30'}
+          unitFontSize={
+            tab.valueUnitFontSize?.toString() || data?.wertUnitFontSize || '30'
+          }
           showTime={false}
         />
       )}
@@ -532,46 +540,97 @@ export default function DashboardWidgetPreview(
           )}
         </div>
       )}
-      {tab.componentType === tabComponentTypeEnum.map && (
-        <div id="map" className="h-full w-full">
-          <Map
-            mapMaxZoom={tab.mapMaxZoom || 18}
-            mapMinZoom={tab.mapMinZoom || 0}
-            mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
-            mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
-            mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
-            mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
-            mapMarkerColor={tab.mapMarkerColor ? tab.mapMarkerColor : '#257dc9'}
-            mapMarkerIcon={tab.mapMarkerIcon ? tab.mapMarkerIcon : ''}
-            mapMarkerIconColor={
-              tab.mapMarkerIconColor ? tab.mapMarkerIconColor : 'white'
-            }
-            mapLongitude={tab.mapLongitude ? tab.mapLongitude : 13.404954}
-            mapLatitude={tab.mapLatitude ? tab.mapLatitude : 52.520008}
-            mapActiveMarkerColor={
-              tab.mapActiveMarkerColor ? tab.mapActiveMarkerColor : '#FF0000'
-            }
-            data={tab.mapObject || []}
-            mapShapeOption={
-              tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
-            }
-            mapDisplayMode={
-              tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
-            }
-            mapShapeColor={tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'}
-            mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
-            mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
-            mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
-            staticValues={tab.chartStaticValues || []}
-            staticValuesColors={tab.chartStaticValuesColors || []}
-            mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
-            mapWmsUrl={tab.mapWmsUrl || ''}
-            mapWmsLayer={tab.mapWmsLayer || ''}
-            mapUnitsTexts={tab.mapUnitsTexts || []}
-            staticValuesLogos={[]}
-          />
-        </div>
-      )}
+      {tab.componentType === tabComponentTypeEnum.map &&
+        tab.componentSubType !== tabComponentSubTypeEnum.custom_map && (
+          <div id="map" className="h-full w-full">
+            <Map
+              mapMaxZoom={tab.mapMaxZoom || 18}
+              mapMinZoom={tab.mapMinZoom || 0}
+              mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
+              mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
+              mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
+              mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
+              mapMarkerColor={
+                tab.mapMarkerColor ? tab.mapMarkerColor : '#257dc9'
+              }
+              mapMarkerIcon={tab.mapMarkerIcon ? tab.mapMarkerIcon : ''}
+              mapMarkerIconColor={
+                tab.mapMarkerIconColor ? tab.mapMarkerIconColor : 'white'
+              }
+              mapLongitude={tab.mapLongitude ? tab.mapLongitude : 13.404954}
+              mapLatitude={tab.mapLatitude ? tab.mapLatitude : 52.520008}
+              mapActiveMarkerColor={
+                tab.mapActiveMarkerColor ? tab.mapActiveMarkerColor : '#FF0000'
+              }
+              data={tab.mapObject || []}
+              mapShapeOption={
+                tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
+              }
+              mapDisplayMode={
+                tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
+              }
+              mapShapeColor={tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'}
+              mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
+              mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
+              mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
+              staticValues={tab.chartStaticValues || []}
+              staticValuesColors={tab.chartStaticValuesColors || []}
+              mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
+              mapWmsUrl={tab.mapWmsUrl || ''}
+              mapWmsLayer={tab.mapWmsLayer || ''}
+              staticValuesLogos={[]}
+              isCustomMap={false}
+              mapSearch={tab.mapSearch}
+              mapType={tab.componentSubType || ''}
+            />
+          </div>
+        )}
+      {tab.componentType === tabComponentTypeEnum.map &&
+        tab.componentSubType == tabComponentSubTypeEnum.custom_map && (
+          <div id="map" className="h-full w-full">
+            <Map
+              mapMaxZoom={tab.mapMaxZoom || 18}
+              mapMinZoom={tab.mapMinZoom || 0}
+              mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
+              mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
+              mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
+              mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
+              mapMarkerColor={
+                tab.mapMarkerColor ? tab.mapMarkerColor : '#257dc9'
+              }
+              mapMarkerIcon={tab.mapMarkerIcon ? tab.mapMarkerIcon : ''}
+              mapMarkerIconColor={
+                tab.mapMarkerIconColor ? tab.mapMarkerIconColor : 'white'
+              }
+              mapLongitude={tab.mapLongitude ? tab.mapLongitude : 13.404954}
+              mapLatitude={tab.mapLatitude ? tab.mapLatitude : 52.520008}
+              mapActiveMarkerColor={
+                tab.mapActiveMarkerColor ? tab.mapActiveMarkerColor : '#FF0000'
+              }
+              data={tab.mapObject || []}
+              mapShapeOption={
+                tab.mapShapeOption ? tab.mapShapeOption : 'Rectangle'
+              }
+              mapDisplayMode={
+                tab.mapDisplayMode ? tab.mapDisplayMode : 'Only pin'
+              }
+              mapShapeColor={tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'}
+              mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
+              mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
+              mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
+              staticValues={tab.chartStaticValues || []}
+              staticValuesColors={tab.chartStaticValuesColors || []}
+              mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
+              mapWmsUrl={tab.mapWmsUrl || ''}
+              mapWmsLayer={tab.mapWmsLayer || ''}
+              staticValuesLogos={[]}
+              isCustomMap={true}
+              customMapImageId={tab.customMapImageId || ''}
+              customMapSensorValues={tab.customMapSensorData || []}
+              mapSearch={tab.mapSearch}
+            />
+          </div>
+        )}
       {tab.componentType === tabComponentTypeEnum.listview && (
         <div className="w-full h-full">
           <ListView
@@ -679,13 +738,13 @@ export default function DashboardWidgetPreview(
             count={tab.sensorStatusLightCount || 2}
             isLayoutVertical={tab.sensorStatusLayoutVertical || false}
             size={widget?.height || 200}
-            defaultColor={tab.sensorStatusDefaultColor || '#808080'}
-            color1={tab.sensorStatusColor1 || '#FF0000'}
+            defaultColor={tab.sensorStatusDefaultColor || '#c4c4c4'}
+            color1={tab.sensorStatusColor1 || '#c40505'}
             color2={
               tab.sensorStatusColor2 ||
-              (tab.sensorStatusLightCount == 2 ? '#00FF00' : '#FFFF00')
+              (tab.sensorStatusLightCount == 2 ? '#47d708' : '#f9b30d')
             }
-            color3={tab.sensorStatusColor3 || '#00FF00'}
+            color3={tab.sensorStatusColor3 || '#47d708'}
             value={
               tab.chartValues && tab.chartValues.length > 0
                 ? tab.chartValues[0]

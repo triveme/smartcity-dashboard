@@ -6,6 +6,7 @@ import {
   QueryData,
   menuArrowDirectionEnum,
   dashboardTypeEnum,
+  aggregationEnum,
 } from '.';
 
 export type Dashboard = {
@@ -205,6 +206,7 @@ export type Tab = {
   chartYAxisScale?: number | null;
   chartYAxisScaleChartMinValue?: number | null;
   chartYAxisScaleChartMaxValue?: number | null;
+  chartAggregationMode?: aggregationEnum;
   chartHoverSingleValue: boolean;
   chartDynamicOnlyShowHover?: boolean;
   chartDynamicNoSelectionDisplayAll?: boolean;
@@ -212,6 +214,8 @@ export type Tab = {
   componentType?: string;
   dataModelId?: string;
   decimalPlaces?: number;
+  valueUnitFontSize?: number;
+  valueFontSize?: number;
   dynamicHighlightColor?: string;
   dynamicUnhighlightColor?: string;
   icon?: string;
@@ -271,6 +275,7 @@ export type Tab = {
   mapCombinedWmsUrl?: string;
   mapWmsLayer?: string;
   mapCombinedWmsLayer?: string;
+  mapSearch: boolean;
   mapUnitsTexts?: string[];
   listviewName?: string;
   listviewIsFilteringAllowed?: boolean;
@@ -321,6 +326,8 @@ export type Tab = {
   tableEvenRowColor?: string;
   widgetId?: string;
   weatherWarnings?: WeatherWarningType[];
+  customMapImageId?: string;
+  customMapSensorData?: CustomMapSensor[];
   chartStaticValuesText?: boolean;
   valuesToImages?: ValueToImageData[];
   sensorStatusValue?: number;
@@ -333,6 +340,7 @@ export type Tab = {
   sensorStatusColor3?: string;
   sensorStatusLayoutVertical?: boolean;
   sensorStatusIsNumericType?: boolean;
+  barChartShowTimestampOnHover?: boolean;
 };
 
 export type TabWithQuery = Tab & {
@@ -404,6 +412,8 @@ export type QueryConfig = {
   updatedAt?: string;
   timeframe: string;
   isReporting?: boolean;
+  roundingMode?: string;
+  roundingTarget?: number;
   aggrPeriod: string;
 };
 
@@ -449,6 +459,9 @@ export type CorporateInfo = {
   coloredSliderLabelFontColor: string;
   coloredSliderLabelFontSize: string;
   coloredSliderUnitFontSize: string;
+
+  cssStyleInjectionValue: string;
+
   dashboardFontColor: string;
   dashboardHeadlineFontSize: string;
   dashboardPrimaryColor: string;
@@ -576,6 +589,7 @@ export type CorporateInfo = {
   widgetSubheadlineFontSize: string;
   widgetPrimaryColor: string;
   widgetSecondaryColor: string;
+  widgetPreviewBackgroundColor: string;
 
   // ListView styling
   listviewBackgroundColor: string;
@@ -697,6 +711,15 @@ export type InternalData = {
   timeGroupRowCount: number;
 };
 
+export type CustomMapImage = {
+  id?: string;
+  tenantId: string | undefined;
+  imageBase64: string;
+  name: string;
+  width: number;
+  height: number;
+};
+
 export type ValueToImageData = {
   min: string;
   max: string;
@@ -708,4 +731,11 @@ export type TabImage = {
   tenantId: string | undefined;
   imageBase64: string;
   name: string;
+};
+
+export type CustomMapSensor = {
+  entityId: string;
+  attribute: string;
+  positionX: number;
+  positionY: number;
 };

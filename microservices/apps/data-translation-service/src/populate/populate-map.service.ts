@@ -107,6 +107,16 @@ export class PopulateMapService {
               dataObject.id || 'unknown',
             );
           }
+        } else if (tab.componentSubType === 'Eigene Karte') {
+          tab.mapObject.push({
+            position: {
+              type: 'Point',
+              coordinates: [0, 0],
+            },
+            ...dataObject,
+            queryId: query.id,
+            queryConfigId: query.queryConfigId,
+          });
         }
       }
     }

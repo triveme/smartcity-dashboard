@@ -244,6 +244,9 @@ type Props = {
   setDateSelectorFontColorSelected: (color: string) => void;
   dateSelectorFontColorUnselected: string;
   setDateSelectorFontColorUnselected: (color: string) => void;
+  // Widget Preview
+  widgetPreviewBackgroundColor: string;
+  setWidgetPreviewBackgroundColor: (color: string) => void;
 
   iconColor: string;
   borderColor: string;
@@ -251,6 +254,10 @@ type Props = {
 };
 
 export default function ComponentsCiWizard({
+  // Widget Preview
+  widgetPreviewBackgroundColor,
+  setWidgetPreviewBackgroundColor,
+
   // Information
   informationTextFontSize,
   informationTextFontColor,
@@ -625,6 +632,15 @@ export default function ComponentsCiWizard({
               )}
             </div>
             <HorizontalDivider />
+            <div className="flex flex-col gap-y-6 w-1/2 px-2">
+              <ColorPickerComponent
+                currentColor={widgetPreviewBackgroundColor}
+                handleColorChange={setWidgetPreviewBackgroundColor}
+                label="Vorschau Hintergrundfarbe"
+              />
+            </div>
+            <HorizontalDivider />
+
             {/* Add more columns as needed */}
             {/* Additional fields based on type or subtype */}
             {selectedComponentType === tabComponentTypeEnum.diagram && (
@@ -1933,6 +1949,8 @@ export default function ComponentsCiWizard({
               key={`${selectedComponentType}-${selectedComponentSubType}`}
               componentType={selectedComponentType}
               componentSubType={selectedComponentSubType}
+              // Preview Styling
+              widgetPreviewBackgroundColor={widgetPreviewBackgroundColor}
               // Information Text
               informationTextFontSize={informationTextFontSize}
               informationTextFontColor={informationTextFontColor}

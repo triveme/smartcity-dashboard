@@ -68,6 +68,7 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     widgetSubheadlineFontSize: '14px',
     widgetPrimaryColor: '#333',
     widgetSecondaryColor: '#333',
+    widgetPreviewBackgroundColor: '#1A1A1D',
     informationTextFontSize: '11',
     informationTextFontColor: '#FFF',
     iconWithLinkFontSize: '11',
@@ -182,6 +183,8 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     coloredSliderLabelFontColor: '#FFF',
     coloredSliderArrowColor: '#FFF',
     coloredSliderUnitFontSize: '11',
+
+    cssStyleInjectionValue: 'css_style_injection_value',
 
     tableFontColor: '#000000',
     tableHeaderColor: '#005b9e',

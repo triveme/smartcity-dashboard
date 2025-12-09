@@ -46,6 +46,7 @@ export default function CorporateIdentity(): ReactElement {
   const [isInitDone, setIsInitDone] = useState(false);
 
   const { state, updateState } = useWizardState();
+
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -579,6 +580,12 @@ export default function CorporateIdentity(): ReactElement {
       updateState(
         'showInfoButtonsOnMobile',
         corporateInfo.showInfoButtonsOnMobile,
+      );
+
+      // INJCTED STYLES
+      updateState(
+        'cssStyleInjectionValue',
+        corporateInfo.cssStyleInjectionValue,
       );
 
       setIsInitDone(true);

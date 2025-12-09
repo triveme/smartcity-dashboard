@@ -6,6 +6,12 @@ export enum aggregationEnum {
   none = 'none',
 }
 
+export enum roundingModeEnum {
+  math = 'math',
+  floor = 'floor',
+  ceil = 'ceil',
+}
+
 export enum timeframeEnum {
   live = 'live',
   day = 'day',
@@ -42,7 +48,7 @@ export enum tabComponentTypeEnum {
   image = 'Bild',
   interactiveComponent = 'Interaktive Komponente',
   valueToImage = 'Werte zu Bildern',
-  sensorStatus = 'Sensorstatus',
+  sensorStatus = 'Ampelstatus',
 }
 
 export enum tabComponentSubTypeEnum {
@@ -65,6 +71,7 @@ export enum tabComponentSubTypeEnum {
   pinDynamic = 'Pin (dynamisch)',
   parking = 'Parking',
   combinedMap = 'Kombinierte Karte',
+  custom_map = 'Eigene Karte',
   square = 'Square',
   rectangle = 'Rectangle',
   circle = 'Circle',

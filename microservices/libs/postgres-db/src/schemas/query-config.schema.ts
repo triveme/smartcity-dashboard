@@ -30,6 +30,9 @@ export const queryConfigs = pgTable('query_config', {
   timeframe: timeframeEnum('timeframe'),
   aggrPeriod: aggregationPeriodEnum('aggr_period'),
   isReporting: boolean('is_reporting'),
+  roundingMode: text('rounding_mode'),
+  roundingTarget: smallint('rounding_target'),
+
   hash: text('hash'),
   tenantId: text('tenant_id').references(() => tenants.abbreviation),
   createdAt: timestamp('created_at', { mode: 'date', precision: 6 })

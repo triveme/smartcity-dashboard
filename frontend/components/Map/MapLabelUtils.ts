@@ -168,6 +168,11 @@ export function getGermanLabelForSensorAttribute(
     case 'ARIQUALITYINDEX':
       return 'Luftqualitätsindex';
 
+    case 'TOTALACTIVEPOWER':
+      return 'Gesamte Wirkleistung';
+    case 'TOTALACTIVEENERGYIMPORT':
+      return 'Gesamter Energie-Import';
+
     default:
       return sensorAttribute;
   }

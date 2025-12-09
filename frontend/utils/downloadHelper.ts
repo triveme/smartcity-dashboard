@@ -1,11 +1,38 @@
-import { getDashboardDownloadData } from '@/api/dashboard-service';
+import {
+  getDashboardByIdWithContent,
+  getDashboardDownloadData,
+} from '@/api/dashboard-service';
 import { getWidgetDownloadData } from '@/api/widget-service';
+import { DashboardWithContent } from '@/types';
+
+export const getAvailableWidgets = async (
+  accessToken: string,
+  id: string,
+): Promise<DashboardWithContent | undefined> => {
+  let widgets;
+
+  try {
+    try {
+      widgets = await getDashboardByIdWithContent(accessToken, id);
+    } catch (error) {
+      console.error(
+        'Widget-With-Content konntet nicht abgerufen werden:',
+        error,
+      );
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  return widgets;
+};
 
 export const downloadCSV = async (
   accessToken: string,
   id: string,
   type: string,
   openSnackbar: (message: string, variant: 'success' | 'error') => void,
+  widgetIds?: string[],
 ): Promise<void> => {
   try {
     let csvData;
@@ -14,7 +41,11 @@ export const downloadCSV = async (
     switch (type) {
       case 'dashboard':
         try {
-          csvData = await getDashboardDownloadData(accessToken, id);
+          csvData = await getDashboardDownloadData(
+            accessToken,
+            widgetIds ? widgetIds : [],
+            id,
+          );
           break;
         } catch (error) {
           console.error(
@@ -28,6 +59,8 @@ export const downloadCSV = async (
           return;
         }
       case 'widget':
+        console.log('* * * CASE WIDGET * * *');
+
         try {
           csvData = await getWidgetDownloadData(accessToken, id);
           break;

@@ -3,17 +3,24 @@ width: 100%;
 height: 100%;
 z-index: 0;
 }
+
+.leaflet-container.transparent-bg{
+  background-color: transparent;
+}
+
 .leaflet-touch .leaflet-bar a:first-child {
-  background-color: #3D4760;
-  color: #C7D2EE;
+  background-color: var(--bg-color);
+  color: var(--ft-color);
 }
+
 .leaflet-touch .leaflet-bar a:last-child {
-  background-color: #3D4760;
-  color: #C7D2EE;
+  background-color: var(--bg-color);
+  color: var(--ft-color);
 }
+ 
 .leaflet-touch .leaflet-control-attribution {
-  background-color: #3D4760;
-  color: #C7D2EE;
+  background-color: var(--bg-color);
+    color: var(--ft-color);
 }
 
 .map-marker-popup .leaflet-popup-tip,

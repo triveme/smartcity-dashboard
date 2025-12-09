@@ -15,7 +15,7 @@ import { Public } from '@app/auth-helper/PublicDecorator';
 import {
   TabImage,
   NewTabImage,
-} from '@app/postgres-db/schemas/dashboard.tab.values-to-images.schema';
+} from '@app/postgres-db/schemas/tab-images.schema';
 
 @Controller('tab-image')
 export class TabImageController {

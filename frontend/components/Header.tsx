@@ -210,7 +210,11 @@ export default function Header(props: HeaderProps): ReactElement {
                 {!pathname.includes('/admin') ? (
                   <>
                     <div className="justify-center items-center content-center">
-                      <button onClick={handleInfoButtonClicked}>
+                      <button
+                        type="button"
+                        aria-label="Informationen"
+                        onClick={handleInfoButtonClicked}
+                      >
                         <FontAwesomeIcon
                           icon={faExclamationCircle}
                           size="lg"
@@ -263,7 +267,11 @@ export default function Header(props: HeaderProps): ReactElement {
               // Show user icon with dropdown for login and info message when not authenticated
               <div className="flex">
                 <div className="mr-6">
-                  <button onClick={handleInfoButtonClicked}>
+                  <button
+                    type="button"
+                    aria-label="Informationen"
+                    onClick={handleInfoButtonClicked}
+                  >
                     <FontAwesomeIcon
                       icon={faExclamationCircle}
                       size="lg"

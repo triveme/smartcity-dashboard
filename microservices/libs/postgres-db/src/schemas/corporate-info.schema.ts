@@ -75,6 +75,9 @@ export const corporateInfos = pgTable('corporate_info', {
   coloredSliderUnitFontSize: text('colored_slider_unit_font_size').default(
     '15',
   ),
+
+  cssStyleInjectionValue: text('css_style_injection_value').default(''),
+
   dashboardFontColor: text('dashboard_font_color').default('#FFF'),
   dashboardPrimaryColor: text('dashboard_primary_color').default('#2D3244'),
   dashboardSecondaryColor: text('dashboard_secondary_color').default('#3D4760'),
@@ -310,6 +313,7 @@ export const corporateInfos = pgTable('corporate_info', {
   widgetFontColor: text('widget_font_color').default('#FFF'),
   widgetPrimaryColor: text('widget_primary_color').default('#3D4760'),
   widgetSecondaryColor: text('widget_secondary_color').default('#3D4760'),
+  widgetPreviewBackgroundColor: text('widget_preview_background_color'),
 
   // ListView styling
   listviewBackgroundColor: text('listview_background_color').default('#2D3244'),
