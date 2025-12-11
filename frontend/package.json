@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -33,7 +33,6 @@
     "leaflet.markercluster": "^1.5.3",
     "lodash": "^4.17.21",
     "next": "^15.5.7",
-    "next-runtime-env": "^3.3.0",
     "oidc-client-ts": "^2.4.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -81,9 +80,6 @@
       "react": "19.0.0",
       "react-dom": "19.0.0",
       "react-leaflet": "^5.0.0"
-    },
-    "next-runtime-env": {
-      "next": "15.1.6"
     }
   }
 }

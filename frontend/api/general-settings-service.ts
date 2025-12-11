@@ -1,8 +1,7 @@
 import { GeneralSettings } from '@/types';
 import axios from 'axios';
-import { env } from 'next-runtime-env';
 
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function getGeneralSettingsByTenant(
   tenant?: string | undefined,

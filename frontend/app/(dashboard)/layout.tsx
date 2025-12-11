@@ -1,4 +1,3 @@
-import { PublicEnvScript } from 'next-runtime-env';
 import { JSX } from 'react';
 
 import '../globals.css';
@@ -28,7 +27,6 @@ export default function RootLayout({
       </head>
       <body>
         <TanStackQueryProvider>
-          <PublicEnvScript />
           <SnackbarProvider>
             <AuthenticationProvider>{children}</AuthenticationProvider>
           </SnackbarProvider>

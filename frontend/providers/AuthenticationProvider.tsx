@@ -2,7 +2,6 @@
 
 import React, { ReactElement } from 'react';
 import { AuthProvider, AuthProviderProps } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
 import { WebStorageStateStore, User } from 'oidc-client-ts';
 
 import AuthWrapper from './AuthWrapper'; // Make sure the path is correct
@@ -12,10 +11,10 @@ export default function AuthenticationProvider({
 }: {
   children: React.ReactNode;
 }): ReactElement {
-  const OIDC_AUTHORITY = env('NEXT_PUBLIC_OIDC_AUTHORITY');
-  const OIDC_CLIENT_ID = env('NEXT_PUBLIC_OIDC_CLIENT_ID');
-  const OIDC_REDIRECT_URI = env('NEXT_PUBLIC_OIDC_REDIRECT_URI');
-  const NEXT_PUBLIC_BASEPATH = env('NEXT_PUBLIC_BASEPATH');
+  const OIDC_AUTHORITY = process.env.NEXT_PUBLIC_OIDC_AUTHORITY;
+  const OIDC_CLIENT_ID = process.env.NEXT_PUBLIC_OIDC_CLIENT_ID;
+  const OIDC_REDIRECT_URI = process.env.NEXT_PUBLIC_OIDC_REDIRECT_URI;
+  const NEXT_PUBLIC_BASEPATH = process.env.NEXT_PUBLIC_BASEPATH;
 
   if (!OIDC_AUTHORITY) {
     throw new Error('NEXT_PUBLIC_OIDC_AUTHORITY is not set');

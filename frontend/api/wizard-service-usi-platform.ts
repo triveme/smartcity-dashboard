@@ -1,9 +1,7 @@
 import axios from 'axios';
-import { env } from 'next-runtime-env';
 
-const NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL = env(
-  'NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL',
-);
+const NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL =
+  process.env.NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL;
 
 export type UsiEventType = {
   name: string;
