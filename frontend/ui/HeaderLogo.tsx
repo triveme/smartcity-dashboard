@@ -3,6 +3,7 @@ import { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { env } from 'next-runtime-env';
 
 export default function HeaderLogo(): ReactElement {
   const tenant = getTenantOfPage();
@@ -13,7 +14,7 @@ export default function HeaderLogo(): ReactElement {
   });
 
   const getLogoSrc = (): string => {
-    const basepath = process.env.NEXT_PUBLIC_BASEPATH;
+    const basepath = env('NEXT_PUBLIC_BASEPATH');
     const logoUrl = data?.headerLogo?.logo;
 
     if (logoUrl) {

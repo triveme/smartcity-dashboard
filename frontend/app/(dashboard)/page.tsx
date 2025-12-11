@@ -3,12 +3,13 @@ import { getDashboardUrlByTenantAbbreviation } from '../actions';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
+import { env } from 'next-runtime-env';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
 
 // Tenant for redirection
-const NEXT_PUBLIC_TENANT = process.env.NEXT_PUBLIC_TENANT;
+const NEXT_PUBLIC_TENANT = env('NEXT_PUBLIC_TENANT');
 
 const isSafeEnvMandant = (val?: string): boolean =>
   !!val && /^[a-z0-9-]{1,32}$/.test(val);

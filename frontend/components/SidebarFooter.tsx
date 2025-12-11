@@ -3,6 +3,7 @@
 import { JSX, ReactElement } from 'react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
+import { env } from 'next-runtime-env';
 
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
@@ -39,7 +40,7 @@ export default function SidebarFooter(): ReactElement {
   };
 
   const renderLogo = (): JSX.Element | null => {
-    const basepath = process.env.NEXT_PUBLIC_BASEPATH;
+    const basepath = env('NEXT_PUBLIC_BASEPATH');
     if (data?.sidebarLogos && data.sidebarLogos.length > 0) {
       // Sort logos by 'order'
       const sortedLogos = data.sidebarLogos.sort(

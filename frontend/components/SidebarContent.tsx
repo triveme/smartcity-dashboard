@@ -2,6 +2,7 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from 'react-oidc-context';
+import { env } from 'next-runtime-env';
 import { jwtDecode } from 'jwt-decode';
 
 import SidebarItem, { SidebarItemStyle } from './SidebarItem';
@@ -33,7 +34,7 @@ export default function SidebarContent(
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
   const [internalDataAvailable, setIternalDataAvailable] = useState(false);
-  const superAdminRole = process.env.NEXT_PUBLIC_SUPER_ADMIN_ROLE;
+  const superAdminRole = env('NEXT_PUBLIC_SUPER_ADMIN_ROLE');
 
   const tenant = getTenantOfPage();
   const adminUrl = tenant ? `${tenant}/admin` : 'admin';

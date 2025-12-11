@@ -2,6 +2,7 @@
 import { ReactElement, ReactNode, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
+import { env } from 'next-runtime-env';
 
 import { GenericTableContentItem, TableColumn } from '@/types';
 import VisibilityDisplay from '@/ui/VisibilityDisplay';
@@ -50,7 +51,7 @@ export default function TableContent<T>(
   const pathname = usePathname();
   const auth = useAuth();
 
-  const BASEPATH = process.env.NEXT_PUBLIC_BASEPATH;
+  const BASEPATH = env('NEXT_PUBLIC_BASEPATH');
   const basepathRedirect = BASEPATH ? `${BASEPATH}/` : '';
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;

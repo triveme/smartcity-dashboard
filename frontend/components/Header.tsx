@@ -15,6 +15,7 @@ import {
   faExclamationCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
+import { env } from 'next-runtime-env';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 
@@ -64,14 +65,14 @@ export default function Header(props: HeaderProps): ReactElement {
   const pathname = usePathname();
   const { push } = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const basepath = process.env.NEXT_PUBLIC_BASEPATH;
+  const basepath = env('NEXT_PUBLIC_BASEPATH');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const loginRef = useRef<HTMLDivElement>(null);
 
   // Admin role logic
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
-  const adminRole = process.env.NEXT_PUBLIC_ADMIN_ROLE;
+  const adminRole = env('NEXT_PUBLIC_ADMIN_ROLE');
 
   // Edit public dashboards
   const [allowEdit, setAllowEdit] = useState(

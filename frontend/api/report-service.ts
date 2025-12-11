@@ -1,9 +1,9 @@
 import axios from 'axios';
+import { env } from 'next-runtime-env';
 
 import { ReportConfig } from '@/types';
 
-const NEXT_PUBLIC_REPORT_SERVICE_URL =
-  process.env.NEXT_PUBLIC_REPORT_SERVICE_URL;
+const NEXT_PUBLIC_REPORT_SERVICE_URL = env('NEXT_PUBLIC_REPORT_SERVICE_URL');
 
 export async function getReportConfigByQueryId(
   accessToken: string | undefined,
