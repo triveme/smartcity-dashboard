@@ -1,10 +1,8 @@
 import { InternalData } from '@/types';
 import axios from 'axios';
-import { env } from 'next-runtime-env';
 
-const NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL = env(
-  'NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL',
-);
+const NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL =
+  process.env.NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL;
 
 type IntenalDataUpload = {
   collection: string;

@@ -21,7 +21,6 @@ import L, { LatLngExpression, LeafletEvent, PathOptions } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
-import { env } from 'next-runtime-env';
 
 import '@/components/Map/map.css';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
@@ -226,7 +225,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     props.mapType === tabComponentSubTypeEnum.geoJSONDynamic
       ? 'light-v11'
       : 'streets-v12'
-  }/tiles/256/{z}/{x}/{y}?access_token=${env('NEXT_PUBLIC_MAPBOX_TOKEN')}`;
+  }/tiles/256/{z}/{x}/{y}?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`;
 
   const handleFilterChange = (
     newSelectedFilters: (string | number)[],
