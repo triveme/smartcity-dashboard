@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { env } from 'next-runtime-env';
 import { Mail } from '@/types';
 
-const NEXT_PUBLIC_MAIL_SERVICE_URL = process.env.NEXT_PUBLIC_MAIL_SERVICE_URL;
+const NEXT_PUBLIC_MAIL_SERVICE_URL = env('NEXT_PUBLIC_MAIL_SERVICE_URL');
 
 export async function sendMail(
   accessToken: string | undefined,

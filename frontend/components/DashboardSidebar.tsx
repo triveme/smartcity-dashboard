@@ -101,10 +101,11 @@ export default function DashboardSidebar(
             className="w-full flex flex-col justify-start items-start flex-1 p-2"
           >
             {groupingElements &&
+              groupingElements.length &&
+              groupingElements.length > 0 &&
               groupingElements.sort(
                 (a, b) => (a.position ?? 0) - (b.position ?? 0),
               ) &&
-              groupingElements.length > 0 &&
               groupingElements.map((element) =>
                 element.isDashboard ? (
                   <DashboardSidebarDashboard

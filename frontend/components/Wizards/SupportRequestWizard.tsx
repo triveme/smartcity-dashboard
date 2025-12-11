@@ -2,6 +2,7 @@
 
 import { ReactElement, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
+import { env } from 'next-runtime-env';
 
 import WizardLabel from '@/ui/WizardLabel';
 import WizardTextfield from '@/ui/WizardTextfield';
@@ -31,7 +32,7 @@ export default function SupportRequestWizard(
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<WizardErrors>({});
 
-  const NEXT_PUBLIC_MAIL_TO = process.env.NEXT_PUBLIC_MAIL_TO as string;
+  const NEXT_PUBLIC_MAIL_TO = env('NEXT_PUBLIC_MAIL_TO') as string;
 
   const generateSupportEmailTitle = (): string => {
     const titlePrefix = 'Smartcity Dashboard';

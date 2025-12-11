@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 import { Dashboard, DashboardWithContent } from '@/types';
+import { env } from 'next-runtime-env';
 import { PaginatedResult, UserPagination } from '@/types/pagination';
 
-const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
 export async function getDashboardByIdWithContent(
   accessToken: string | undefined,

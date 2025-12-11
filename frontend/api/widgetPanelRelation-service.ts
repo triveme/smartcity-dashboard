@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 import { WidgetToPanel } from '@/types';
+import { env } from 'next-runtime-env';
 
-const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 
 export async function postWidgetToPanelRelation(
   accessToken: string | undefined,
