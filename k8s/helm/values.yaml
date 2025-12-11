@@ -5,7 +5,7 @@ postgresql:
   image:
     registry: docker.io
     repository: bitnamilegacy/postgresql
-    tag: 17.6.0-debian-12-r4
+    tag: 16.6.0-debian-12-r2
   auth:
     existingSecret: "postgresql-secrets"
     database: "scs"
@@ -38,15 +38,19 @@ keycloak:
     existingSecret: "keycloak-secrets"
     existingSecretHostKey: "db-host"
   keycloakConfigCli:
+    image:
+      registry: docker.io
+      repository: bitnamilegacy/keycloak-config-cli
+      tag: 5.9.0-debian-11-r0
     enabled: true
     existingConfigmap: "keycloak-config"
     resources:
       requests:
-        memory: "128Mi"
+        memory: "64Mi"
         cpu: "50m"
       limits:
-        memory: "512Mi"
-        cpu: "700m"
+        memory: "256Mi"
+        cpu: "400m"
 
 ## dashboard-service config
 dashboard-service:

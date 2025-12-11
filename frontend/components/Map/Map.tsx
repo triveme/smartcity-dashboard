@@ -1188,8 +1188,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 (props as CombinedMapProps).mapDisplayMode?.[0] !==
                   tabComponentSubTypeEnum.onlyFormArea)) && (
               <MarkerClusterGroup
-                iconCreateFunction={(cluster: L.MarkerCluster) =>
-                  createClusterCustomIcon(
+                iconCreateFunction={(cluster: L.MarkerCluster) => {
+                  const baseIcon = createClusterCustomIcon(
                     cluster,
                     isCombinedMap
                       ? (props as CombinedMapProps).mapMarkerColor || []
@@ -1198,8 +1198,26 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       ? (props as CombinedMapProps).mapMarkerIconColor || []
                       : (props as SingleMapProps).mapMarkerIconColor || '',
                     isCombinedMap,
-                  )
-                }
+                  );
+
+                  // Adds an accessible name for cluster icons to prevent warnings.
+                  const count = cluster.getChildCount();
+                  const baseOptions = baseIcon.options as L.DivIconOptions;
+
+                  return L.divIcon({
+                    ...baseOptions,
+                    html: `
+                            <div 
+                              role="button" 
+                              aria-label="Cluster with ${count} markers" 
+                              title="Cluster with ${count} markers"
+                            >
+                              ${baseOptions.html ?? ''}
+                            </div>
+                          `,
+                  });
+                  //
+                }}
                 disableClusteringAtZoom={
                   props.mapMaxZoom ? props.mapMaxZoom : 16
                 }
@@ -1244,6 +1262,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       tabComponentSubTypeEnum.onlyFormArea && (
                       <Marker
                         key={index}
+                        title={marker.title} // Gives markers an accessible name for screen readers
                         position={marker.position as LatLngExpression}
                         icon={createCustomIcon(
                           finalColor,

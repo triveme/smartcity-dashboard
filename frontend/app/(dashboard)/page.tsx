@@ -22,11 +22,18 @@ export default async function DashboardPageGeneral(): Promise<ReactElement> {
   if (token) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const decodedToken: any = jwtDecode(token);
-    const mandatorCode = decodedToken.mandator_code;
+    const mandatorCode = decodedToken?.mandator_code;
+    let primaryMandator = mandatorCode;
+    if (typeof mandatorCode === 'string') {
+      const codes = mandatorCode.split(',');
+      if (codes.length > 1) {
+        primaryMandator = codes[0];
+      }
+    }
 
-    const url = await getDashboardUrlByTenantAbbreviation(mandatorCode);
+    const url = await getDashboardUrlByTenantAbbreviation(primaryMandator);
 
-    redirect(`${mandatorCode}/${url}`);
+    redirect(`${primaryMandator}/${url}`);
   }
 
   // Redirect to tenant if there aren't logged in users and tenant exists

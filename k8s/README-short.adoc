@@ -1,0 +1,14 @@
+=== TL;DR
+[source,bash]
+----
+helm upgrade --install --namespace hcloud mkk-atlas -f values.yaml -f values-hcloud-mkk.yaml -f secrets.yaml .
+helm upgrade --install --namespace hcloud smart-city -f values.yaml -f values-hcloud.yaml -f secrets.yaml .
+helm upgrade --install --namespace ps-feynsinn-smartcity-dashboard-dev smart-city -f values.yaml -f values-edag-dev.yaml -f secrets.yaml .
+----
+
+=== Troubleshooting
+* SmartCity:
+** delete: .\k8s\helm\templates\ca-issuer-clusterissuer.yaml
+* Both:
+** delete migration job in kubernetes before deploy
+** delete keycloak config job in kubernetes while deploying

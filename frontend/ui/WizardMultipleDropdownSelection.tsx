@@ -1,5 +1,6 @@
 import React, { ReactElement, useState, useRef, useEffect } from 'react';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import alphabeticSortHelper from '@/utils/alphabeticSortHelper';
 
 type WizardMultipleDropdownSelectionProps = {
   currentValue: string[];
@@ -26,6 +27,8 @@ export default function WizardMultipleDropdownSelection(
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  const filteredSensors = alphabeticSortHelper(selectableValues);
+
   const handleSelect = (value: string): void => {
     const newSelection = currentValue.includes(value)
       ? currentValue.filter((item) => item !== value)
@@ -34,10 +37,10 @@ export default function WizardMultipleDropdownSelection(
   };
 
   const handleSelectAll = (): void => {
-    if (currentValue.length === selectableValues.length) {
+    if (currentValue.length === filteredSensors.length) {
       onSelect([]); // Deselect all
     } else {
-      onSelect(selectableValues.map(String)); // Select all
+      onSelect(filteredSensors.map(String)); // Select all
     }
   };
 
@@ -108,12 +111,12 @@ export default function WizardMultipleDropdownSelection(
           <label className="block text-lg px-3 py-2 font-bold">
             <input
               type="checkbox"
-              checked={currentValue.length === selectableValues.length}
+              checked={currentValue.length === filteredSensors.length}
               onChange={handleSelectAll}
               className="form-checkbox h-4 w-4 border-0 rounded-md focus:ring-0 bg-[#59647D]"
             />
             <span className="ml-2">
-              {currentValue.length === selectableValues.length
+              {currentValue.length === filteredSensors.length
                 ? 'Alle Abwählen'
                 : 'Alle Auswählen'}
             </span>
@@ -121,7 +124,7 @@ export default function WizardMultipleDropdownSelection(
           <hr className="my-2" />
 
           {/* Individual selectable items */}
-          {selectableValues.map((value, index) => (
+          {filteredSensors.map((value, index) => (
             <label key={index} className="block text-lg px-3 py-2">
               <input
                 type="checkbox"
