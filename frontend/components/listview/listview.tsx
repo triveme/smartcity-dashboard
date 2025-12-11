@@ -166,9 +166,9 @@ export function ListView(props: ListViewProps): ReactElement {
       <div className="flex flex-col gap-1 p-1 pt-0 overflow-hidden">
         {filteredInfos.map((info, index) => {
           return (
-            <div
+            <button
               key={`Interesting-POI-Box-${index}-${info.name}`}
-              className="h-32 flex flex-row p-3 w-full min-w-0"
+              className="h-32 flex flex-row p-3 w-full min-w-0 text-left"
               style={{
                 backgroundColor: listviewItemBackgroundColor,
                 borderColor: listviewItemBorderColor,
@@ -197,7 +197,7 @@ export function ListView(props: ListViewProps): ReactElement {
                 key={`Listview-Map-Arrow-${index}`}
                 iconColor={headlineYellowColor}
               />
-            </div>
+            </button>
           );
         })}
       </div>

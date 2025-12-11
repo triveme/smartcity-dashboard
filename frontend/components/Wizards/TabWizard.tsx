@@ -128,7 +128,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       ) {
         handleWidgetChange({ height: 0 });
       }
-      console.log(newTab);
       return newTab;
     });
   };

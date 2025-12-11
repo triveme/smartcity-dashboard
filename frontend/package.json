@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -32,7 +32,7 @@
     "leaflet-geosearch": "^4.2.2",
     "leaflet.markercluster": "^1.5.3",
     "lodash": "^4.17.21",
-    "next": "^15.3.3",
+    "next": "^15.5.7",
     "next-runtime-env": "^3.3.0",
     "oidc-client-ts": "^2.4.0",
     "react": "19.0.0",
@@ -62,7 +62,7 @@
     "autoprefixer": "^10",
     "cypress": "^13.16.1",
     "eslint": "^8",
-    "eslint-config-next": "15.1.6",
+    "eslint-config-next": "^15.5.7",
     "postcss": "^8",
     "sharp": "^0.33.5",
     "tailwindcss": "^3",
