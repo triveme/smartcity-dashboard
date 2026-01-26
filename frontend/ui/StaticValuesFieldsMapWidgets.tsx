@@ -124,6 +124,10 @@ export default function StaticValuesFieldMapWidgets(
         { label: '', value: '' },
         { label: 'Jumpoff URL', value: 'jumpoff-url' },
         { label: 'Jumpoff Sensor Attribute', value: 'jumpoff-attribute' },
+        {
+          label: 'Jumpoff Entity URL Param',
+          value: 'jumpoff-entity-url-param',
+        },
       ];
     } else {
       return [{ label: '', value: '' }];
@@ -924,6 +928,104 @@ export default function StaticValuesFieldMapWidgets(
                             </div>
                           </div>
                         </div>
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardSelectBox
+                          label="Link in neuem Tab öffnen"
+                          checked={value?.openJumpoffLinkInNewTab ?? true}
+                          onChange={(linkValue: boolean): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      openJumpoffLinkInNewTab: linkValue,
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                {/*  jumpoff button with entity ID passed as URL param*/}
+                {value.componentType === 'Button' &&
+                  value.componentSubType === 'jumpoff-entity-url-param' && (
+                    <>
+                      <div className="flex flex-row w-full gap-x-4 pb-2">
+                        <div className="flex flex-col w-1/2">
+                          <WizardLabel label="Icon" />
+                          <IconSelection
+                            activeIcon={value?.jumpoffIcon || ''}
+                            handleIconSelect={(iconName: string): void => {
+                              const updatedMapWidgetValues =
+                                mapWidgetValues.map((widget, idx) =>
+                                  idx === index
+                                    ? { ...widget, jumpoffIcon: iconName }
+                                    : widget,
+                                );
+                              handleTabChange({
+                                mapWidgetValues: updatedMapWidgetValues,
+                              });
+                              setMapWidgetValues(updatedMapWidgetValues);
+                            }}
+                            iconColor={iconColor}
+                            borderColor={borderColor}
+                          />
+                        </div>
+                        <div className="flex flex-col w-1/2">
+                          <WizardLabel label="Beschriftung" />
+                          <WizardTextfield
+                            value={value?.jumpoffLabel || ''}
+                            onChange={(textValue: string | number): void => {
+                              const updatedMapWidgetValues =
+                                mapWidgetValues.map((widget, idx) =>
+                                  idx === index
+                                    ? {
+                                        ...widget,
+                                        jumpoffLabel: textValue.toString(),
+                                      }
+                                    : widget,
+                                );
+                              handleTabChange({
+                                mapWidgetValues: updatedMapWidgetValues,
+                              });
+                              setMapWidgetValues(updatedMapWidgetValues);
+                            }}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="Jumpoff-URL" />
+                        <WizardUrlTextfield
+                          value={value?.jumpoffUrl || 'https://'}
+                          onChange={(urlValue: string | number): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      jumpoffUrl: urlValue.toString(),
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                          iconColor={iconColor}
+                          borderColor={borderColor}
+                        />
+                        <WizardLabel
+                          label={value?.jumpoffUrl + '?entityId=<entityId>'}
+                        />
                       </div>
                       <div className="flex flex-col w-full pb-2">
                         <WizardSelectBox

@@ -55,6 +55,9 @@ export class GeneralSettingsService {
           privacy: null,
           allowThemeSwitching: false,
           disclaimer: null,
+          cookiebotId: null,
+          matomoSiteId: null,
+          matomoUrl: null,
         };
   }
 

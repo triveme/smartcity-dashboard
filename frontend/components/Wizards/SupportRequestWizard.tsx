@@ -2,7 +2,7 @@
 
 import { ReactElement, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 import WizardLabel from '@/ui/WizardLabel';
 import WizardTextfield from '@/ui/WizardTextfield';

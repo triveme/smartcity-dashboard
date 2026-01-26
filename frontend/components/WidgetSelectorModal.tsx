@@ -17,6 +17,7 @@ type WidgetSelectorModalProps = {
   borderColor: string;
   fontColor: string;
   hoverColor: string;
+  onlyUrlParamWidgets: boolean;
 };
 
 export default function WidgetSelectorModal(
@@ -31,6 +32,7 @@ export default function WidgetSelectorModal(
     borderColor,
     fontColor,
     hoverColor,
+    onlyUrlParamWidgets,
   } = props;
   const auth = useAuth();
 
@@ -44,7 +46,13 @@ export default function WidgetSelectorModal(
     error: widgetsError,
   } = useQuery<Widget[], Error>({
     queryKey: ['widgets'],
-    queryFn: () => getWidgets(auth?.user?.access_token, tenant),
+    queryFn: async () => {
+      let results = await getWidgets(auth?.user?.access_token, tenant);
+      if (onlyUrlParamWidgets) {
+        results = results.filter((x) => x.usesQueryParameter === true);
+      }
+      return results;
+    },
   });
 
   const {
@@ -53,7 +61,16 @@ export default function WidgetSelectorModal(
     error,
   } = useQuery<Widget[], Error>({
     queryKey: ['widgetsByPanelId', panelId],
-    queryFn: () => getWidgetsByPanelId(auth?.user?.access_token, panelId!),
+    queryFn: async () => {
+      let results = await getWidgetsByPanelId(
+        auth?.user?.access_token,
+        panelId!,
+      );
+      if (onlyUrlParamWidgets) {
+        results = results.filter((x) => x.usesQueryParameter === true);
+      }
+      return results;
+    },
     enabled: !!panelId,
   });
 

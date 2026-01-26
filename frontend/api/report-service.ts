@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 import { ReportConfig } from '@/types';
 

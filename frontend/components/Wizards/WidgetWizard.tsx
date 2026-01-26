@@ -192,6 +192,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       tab?.componentType === tabComponentTypeEnum.iframe ||
       tab?.componentType === tabComponentTypeEnum.combinedComponent ||
       tab?.componentType === tabComponentTypeEnum.information ||
+      tab?.componentType === tabComponentTypeEnum.pharmacy ||
       (tab?.componentType === tabComponentTypeEnum.map &&
         tab?.componentSubType === tabComponentSubTypeEnum.combinedMap)
     ) {
@@ -434,6 +435,13 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                         handleCheckboxChange('showName', isSelected)
                       }
                     />
+                    <CheckBox
+                      label="Entität URL Param aktivieren"
+                      value={widget?.usesQueryParameter ?? false}
+                      handleSelectChange={(isSelected): void =>
+                        handleCheckboxChange('usesQueryParameter', isSelected)
+                      }
+                    />
                   </div>
                 </div>
                 <div className="flex flex-col w-full pb-2">
@@ -614,6 +622,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
               tableHeaderColor={tableHeaderColor}
               tableOddRowColor={tableOddRowColor}
               tableEvenRowColor={tableEvenRowColor}
+              usesQueryParameter={widget?.usesQueryParameter || false}
             />
             {widgetHasQueryConfig && (
               <>
@@ -632,6 +641,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                   hoverColor={hoverColor}
                   setOrigin={setDatasourceOrigin}
                   tenant={tenant}
+                  usesQueryParameter={widget.usesQueryParameter || false}
                 />
               </>
             )}

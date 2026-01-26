@@ -27,6 +27,7 @@ type QueryOrchideoWizardProps = {
   backgroundColor: string;
   hoverColor: string;
   isSingleWidget: boolean;
+  usesQueryParameter: boolean;
 };
 
 export default function QueryOrchideoWizard(
@@ -41,6 +42,8 @@ export default function QueryOrchideoWizard(
     backgroundColor,
     hoverColor,
     isSingleWidget,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    usesQueryParameter,
   } = props;
 
   const auth = useAuth();
@@ -256,7 +259,7 @@ export default function QueryOrchideoWizard(
           />
         </div>
       </div>
-      {isSingleWidget ? (
+      {isSingleWidget && usesQueryParameter === false ? (
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label={'Sensoren'} />
           <div className="flex flex-row items-center">

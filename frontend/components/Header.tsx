@@ -15,7 +15,7 @@ import {
   faExclamationCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 

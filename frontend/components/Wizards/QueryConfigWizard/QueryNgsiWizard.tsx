@@ -28,6 +28,7 @@ type QueryNgsiWizardProps = {
   isSingleWidget: boolean;
   ngsiType: 'ngsi-v2' | 'ngsi-ld';
   ngsiCollections: string[];
+  usesQueryParameter: boolean;
 };
 
 export default function QueryNgsiWizard(
@@ -44,6 +45,7 @@ export default function QueryNgsiWizard(
     isSingleWidget,
     ngsiType,
     ngsiCollections,
+    usesQueryParameter,
   } = props;
 
   const auth = useAuth();
@@ -297,7 +299,7 @@ export default function QueryNgsiWizard(
                 />
               </div>
             </div>
-            {isSingleWidget ? (
+            {isSingleWidget && usesQueryParameter === false ? (
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label={'Entitäts-ID / Source'} />
                 <div className="flex flex-row items-center">
@@ -442,7 +444,7 @@ export default function QueryNgsiWizard(
                 />
               </div>
             </div>
-            {isSingleWidget ? (
+            {isSingleWidget && usesQueryParameter === false ? (
               <div className="flex flex-col w-full pb-2">
                 <WizardLabel label={'Entitäts-ID / Source'} />
                 <div className="flex flex-row items-center">

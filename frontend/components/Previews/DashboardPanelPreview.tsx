@@ -26,6 +26,7 @@ type DashboardPanelPreviewProps = {
   handleRemovePanelClick: (panel: Panel) => void;
   movePanel?: (panelId: string, direction: 'left' | 'right') => void;
   index: number;
+  widgetSelectorFilterOnlyUrlParam: boolean;
 };
 
 export default function DashboardPanelPreview(
@@ -38,6 +39,7 @@ export default function DashboardPanelPreview(
     handleRemovePanelClick,
     movePanel,
     index,
+    widgetSelectorFilterOnlyUrlParam,
   } = props;
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const auth = useAuth();
@@ -282,6 +284,7 @@ export default function DashboardPanelPreview(
           borderColor={data?.panelBorderColor || '#59647D'}
           fontColor={data?.panelFontColor || '#FFF'}
           hoverColor={data?.menuHoverColor || '#FFF'}
+          onlyUrlParamWidgets={widgetSelectorFilterOnlyUrlParam}
         />
       )}
       <CreateDashboardElementButton

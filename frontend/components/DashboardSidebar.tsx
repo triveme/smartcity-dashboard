@@ -103,6 +103,7 @@ export default function DashboardSidebar(
             {groupingElements &&
               groupingElements.length &&
               groupingElements.length > 0 &&
+              groupingElements.sort &&
               groupingElements.sort(
                 (a, b) => (a.position ?? 0) - (b.position ?? 0),
               ) &&

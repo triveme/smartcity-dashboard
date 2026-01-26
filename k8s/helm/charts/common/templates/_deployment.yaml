@@ -36,11 +36,11 @@ spec:
           image:  "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            {{- range .Values.container.ports }}
+          {{- range .Values.container.ports }}
             - name: {{ .name | quote }}
               containerPort: {{ .containerPort }}
               protocol: {{ .protocol | quote }}
-            {{- end }}
+          {{- end }}
           {{- if .Values.container.livenessProbe }}
           livenessProbe:
             tcpSocket:
@@ -69,9 +69,11 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.global.tolerations }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
+        - key: "{{ $.Values.global.tolerations.key }}"
+          operator: "{{ $.Values.global.tolerations.operator }}"
+          effect: "{{ $.Values.global.tolerations.effect }}"
       {{- end }}
 
 {{ end }}

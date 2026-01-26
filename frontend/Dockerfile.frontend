@@ -26,9 +26,13 @@ COPY --from=builder /app/public /usr/frontend/apps/public
 COPY --from=builder /app/.next /usr/frontend/apps/.next
 COPY --from=builder /app/node_modules /usr/frontend/apps/node_modules
 COPY --from=builder /app/package.json /usr/frontend/apps/package.json
+COPY --from=builder /app/entry.sh /usr/frontend/apps/entry.sh
+RUN chmod +x /usr/frontend/apps/entry.sh
 
 # Expose the port Next.js runs on
 EXPOSE 3000
 
 # Command to run the application
-CMD [ "npm", "run", "start" ]
+#CMD [ "printenv", "|", "cat", "|", "grep", "NEXT_PUBLIC_", ">", ".env", "&&", "npm", "run", "start" ]
+#CMD [ "npm", "run", "start" ]
+CMD [ "./entry.sh" ]

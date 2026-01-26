@@ -167,6 +167,9 @@ export default function DashboardPreview(
                 handleRemovePanelClick={handleClickDeleteIcon}
                 movePanel={handlePanelPositionChange}
                 index={index}
+                widgetSelectorFilterOnlyUrlParam={
+                  dashboardType === dashboardTypeEnum.entity
+                }
               />
             ))}
       </div>

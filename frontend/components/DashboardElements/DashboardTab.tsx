@@ -53,6 +53,7 @@ import TableDynamic from '@/ui/Charts/TableDynamic';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 import SensorStatusComponent from '@/ui/SensorStatus';
+import PharmacyComponent from '@/ui/Pharmacy';
 
 type DashboardTabProps = {
   tab: Tab;
@@ -109,6 +110,7 @@ export default async function DashboardTab(
   const isValidWithoutTabData = [
     tabComponentTypeEnum.image,
     tabComponentTypeEnum.iframe,
+    tabComponentTypeEnum.pharmacy,
   ].includes(tab.componentType as tabComponentTypeEnum);
 
   const hasCombinedWidgetData =
@@ -198,6 +200,7 @@ export default async function DashboardTab(
               backgroundColor={ciColors.degreeChart180BgColor}
               fillColor={ciColors.degreeChart180FillColor}
               unitFontSize={ciColors.degreeChart180UnitFontSize}
+              tabData={tabData}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 && (
@@ -214,6 +217,7 @@ export default async function DashboardTab(
               backgroundColor={ciColors.degreeChart360BgColor}
               fillColor={ciColors.degreeChart360FillColor}
               unitFontSize={ciColors.degreeChart360UnitFontSize}
+              tabData={tabData}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
@@ -625,6 +629,7 @@ export default async function DashboardTab(
                 }
                 arrowColor={ciColors.coloredSliderArrowColor || '#FFFFF'}
                 unitFontSize={ciColors.coloredSliderUnitFontSize || '35'}
+                tabData={tabData}
               />
             </div>
           )}
@@ -671,6 +676,7 @@ export default async function DashboardTab(
           }
           fontColor={ciColors.wertFontColor || '#FFF'}
           showTime={false}
+          tabData={tabData}
         />
       )}
       {tab.componentType === tabComponentTypeEnum.information && (
@@ -1085,6 +1091,17 @@ export default async function DashboardTab(
             }
             thresholdMin={tab.sensorStatusMinThreshold || '25'}
             thresholdMax={tab.sensorStatusMaxThreshold || '65'}
+          />
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.pharmacy && (
+        <div className="h-full p-2 overflow-y-auto">
+          <PharmacyComponent
+            zipCode={tab.pharmacyZipCode ?? 36119}
+            details={tab.pharmacyDetails ?? ''}
+            borderColor={ciColors?.panelBorderColor ?? '#f1f1f1'}
+            fontColor={ciColors?.widgetFontColor ?? '#000'}
           />
         </div>
       )}

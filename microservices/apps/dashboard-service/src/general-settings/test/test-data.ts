@@ -14,6 +14,9 @@ export function getGeneralSetting(tenant: string): GeneralSettings {
     privacy: 'https://test.de/privacy.html',
     allowThemeSwitching: false,
     disclaimer: 'Test Disclaimer',
+    cookiebotId: '',
+    matomoSiteId: '',
+    matomoUrl: '',
   };
 }
 

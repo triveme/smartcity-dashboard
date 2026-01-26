@@ -20,6 +20,7 @@ type QueryUsiWizardProps = {
   backgroundColor: string;
   hoverColor: string;
   isSingleWidget: boolean;
+  usesQueryParameter: boolean;
 };
 
 export default function QueryUsiWizard(
@@ -34,6 +35,8 @@ export default function QueryUsiWizard(
     backgroundColor,
     hoverColor,
     isSingleWidget,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    usesQueryParameter,
   } = props;
 
   const { openSnackbar } = useSnackbar();
@@ -120,7 +123,7 @@ export default function QueryUsiWizard(
           />
         </div>
       </div>
-      {isSingleWidget ? (
+      {isSingleWidget && usesQueryParameter === false ? (
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label={'Sensor'} />
           <div className="flex flex-row items-center">

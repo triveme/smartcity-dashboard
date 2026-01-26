@@ -3,7 +3,7 @@ import { getDashboardUrlByTenantAbbreviation } from '../actions';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';

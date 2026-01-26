@@ -21,7 +21,7 @@ import L, { LatLngExpression, LeafletEvent, PathOptions } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 import '@/components/Map/map.css';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';

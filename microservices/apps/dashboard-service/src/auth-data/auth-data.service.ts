@@ -264,7 +264,7 @@ export class AuthDataService {
       );
 
       if (!thereAreRoleMatches) {
-        throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+        throw new HttpException('Unauthorized to delete', HttpStatus.FORBIDDEN);
       }
     }
   }

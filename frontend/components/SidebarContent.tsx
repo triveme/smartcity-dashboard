@@ -2,7 +2,7 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { useAuth } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 import { jwtDecode } from 'jwt-decode';
 
 import SidebarItem, { SidebarItemStyle } from './SidebarItem';

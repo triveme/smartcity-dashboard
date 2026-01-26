@@ -26,6 +26,7 @@ export function getWidget(readRoles: string[], writeRoles: string[]): Widget {
     allowDataExport: false,
     readRoles: readRoles,
     writeRoles: writeRoles,
+    usesQueryParameter: false,
   };
 }
 

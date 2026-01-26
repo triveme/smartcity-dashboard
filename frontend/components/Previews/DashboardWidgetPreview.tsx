@@ -30,6 +30,7 @@ import {
   DUMMY_CHART_DATA_YEAR,
   DUMMY_PIE_CHART_LABELS,
   DUMMY_PIE_CHART_VALUES,
+  DUMMY_PHARMACY_DATA,
   DUMMY_POI_DATA,
 } from '@/utils/objectHelper';
 import Table from '@/ui/Charts/Table';
@@ -37,6 +38,7 @@ import BarChartHorizontal from '@/ui/Charts/BarChartHorizonal/BarChartHorizontal
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 import SensorStatusComponent from '@/ui/SensorStatus';
+import PharmacyComponent from '@/ui/Pharmacy';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
   // ssr: false,
@@ -752,6 +754,20 @@ export default function DashboardWidgetPreview(
             }
             thresholdMin={tab.sensorStatusMinThreshold || '25'}
             thresholdMax={tab.sensorStatusMaxThreshold || '65'}
+          />
+        </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.pharmacy && (
+        <div className="w-full h-full">
+          <PharmacyComponent
+            zipCode={tab.pharmacyZipCode ?? 36119}
+            details={
+              tab.pharmacyDetails ??
+              (!tab.pharmacyZipCode ? JSON.stringify(DUMMY_PHARMACY_DATA) : '')
+            }
+            borderColor={data?.panelBorderColor ?? '#f1f1f1'}
+            fontColor={data?.widgetFontColor ?? '#000'}
           />
         </div>
       )}

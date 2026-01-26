@@ -11,6 +11,7 @@ export function validateQueryConfig(
   isQueryConfig: boolean,
   origin: string,
   componentSubType?: string,
+  usesQueryParameter?: boolean,
 ): WizardErrors {
   const errorsOccured: WizardErrors = {};
 
@@ -70,7 +71,11 @@ export function validateQueryConfig(
       errorsOccured.attributeError =
         'Wert Widgets müssen ein einzelnes Attribut haben';
     }
-    if (queryConfig?.entityIds && queryConfig?.entityIds.length != 1) {
+    if (
+      queryConfig?.entityIds &&
+      queryConfig?.entityIds.length != 1 &&
+      !usesQueryParameter
+    ) {
       errorsOccured.sensorError =
         'Wert Widgets müssen einen einzelnen Sensor oder Source haben';
     }

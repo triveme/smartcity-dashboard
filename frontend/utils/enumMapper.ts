@@ -7,6 +7,7 @@ import {
   menuArrowDirectionEnum,
   roundingModeEnum,
   tabComponentSubTypeEnum,
+  tabComponentTypeEnum,
   themeEnum,
   timeframeEnum,
   visibilityEnum,
@@ -56,11 +57,11 @@ export const timeFrameWithoutLive = [
 export const mapComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Pin', value: tabComponentSubTypeEnum.pin },
-  { label: 'Pin (dynamisch)', value: tabComponentSubTypeEnum.pinDynamic },
+  { label: 'Pin (verknüpft)', value: tabComponentSubTypeEnum.pinDynamic },
   { label: 'Kombinierte Karte', value: tabComponentSubTypeEnum.combinedMap },
   { label: 'GeoJSON', value: tabComponentSubTypeEnum.geoJSON },
   {
-    label: 'GeoJSON (dynamisch)',
+    label: 'GeoJSON (verknüpft)',
     value: tabComponentSubTypeEnum.geoJSONDynamic,
   },
   { label: 'Eigene Karte', value: tabComponentSubTypeEnum.custom_map },
@@ -95,26 +96,26 @@ export const chartComponentSubTypes = [
   { label: 'Stageable Chart', value: tabComponentSubTypeEnum.stageableChart },
   { label: 'Kuchendiagramm', value: tabComponentSubTypeEnum.pieChart },
   {
-    label: 'Kuchendiagramm (dynamisch)',
+    label: 'Kuchendiagramm (verknüpft)',
     value: tabComponentSubTypeEnum.pieChartDynamic,
   },
   { label: 'Liniendiagramm', value: tabComponentSubTypeEnum.lineChart },
   {
-    label: 'Liniendiagramm (dynamisch)',
+    label: 'Liniendiagramm (verknüpft)',
     value: tabComponentSubTypeEnum.lineChartDynamic,
   },
   { label: 'Balkendiagramm', value: tabComponentSubTypeEnum.barChart },
   {
-    label: 'Balkendiagramm (dynamisch)',
+    label: 'Balkendiagramm (verknüpft)',
     value: tabComponentSubTypeEnum.barChartDynamic,
   },
   { label: 'Messung', value: tabComponentSubTypeEnum.measurement },
-  { label: 'Table', value: tabComponentSubTypeEnum.table }, //hk
+  { label: 'Tabelle', value: tabComponentSubTypeEnum.table }, //hk
   {
-    label: 'Bar Chart - Horizontal',
+    label: 'Balkendiagramm - Horizontal',
     value: tabComponentSubTypeEnum.barChartHorizontal,
   }, //hk
-  { label: 'Table (dynamisch)', value: tabComponentSubTypeEnum.tableDynamic },
+  { label: 'Tabelle (verknüpft)', value: tabComponentSubTypeEnum.tableDynamic },
 ];
 
 export const chartDateRepresentation = [
@@ -208,3 +209,28 @@ export const dataPlatformTypes = [
   { label: 'Urban Institute', value: authDataTypeEnum.usi },
   { label: 'Intern', value: authDataTypeEnum.internal },
 ];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const tabComponentQueryParamWhitelist: any = {
+  [tabComponentTypeEnum.default]: [],
+  [tabComponentTypeEnum.information]: [
+    tabComponentTypeEnum.default,
+    tabComponentSubTypeEnum.text,
+    tabComponentSubTypeEnum.iconWithLink,
+  ],
+  [tabComponentTypeEnum.diagram]: [
+    tabComponentTypeEnum.default,
+    tabComponentSubTypeEnum.degreeChart180,
+    tabComponentSubTypeEnum.degreeChart360,
+    tabComponentSubTypeEnum.stageableChart,
+    tabComponentSubTypeEnum.barChart,
+    tabComponentSubTypeEnum.barChartHorizontal,
+    // tabComponentSubTypeEnum.table,
+    tabComponentSubTypeEnum.lineChart,
+  ],
+  [tabComponentTypeEnum.slider]: [
+    tabComponentTypeEnum.default,
+    tabComponentSubTypeEnum.coloredSlider,
+  ],
+  [tabComponentTypeEnum.value]: [tabComponentSubTypeEnum.default],
+};

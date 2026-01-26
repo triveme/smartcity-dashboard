@@ -1,0 +1,1 @@
+printenv | cat | grep NEXT_PUBLIC_ > .env && npm run start

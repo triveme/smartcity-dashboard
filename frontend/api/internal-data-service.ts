@@ -1,6 +1,6 @@
 import { InternalData } from '@/types';
 import axios from 'axios';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 const NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL = env(
   'NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL',

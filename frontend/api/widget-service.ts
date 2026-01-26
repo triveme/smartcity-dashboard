@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { Widget, WidgetWithChildren, WidgetWithComponentTypes } from '@/types';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 import { PaginatedResult, UserPagination } from '@/types/pagination';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');

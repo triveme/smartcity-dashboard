@@ -1,4 +1,5 @@
 import { JSX } from 'react';
+import Script from 'next/script';
 
 import { getMenuGroupingElementByUrl } from '@/api/menu-service';
 import { getCorporateInfosWithLogos } from '@/app/actions';
@@ -6,9 +7,16 @@ import DashboardSidebar from '@/components/DashboardSidebar';
 import Header from '@/components/Header';
 import { CorporateInfo } from '@/types';
 import sanitizeCSSInjection from '@/utils/sanitizeHtml';
+import InitMatomo from '@/analytics/InitMatomo';
 
 export const dynamic = 'force-dynamic'; // Neeeded to avoid data fetching during build
 export const runtime = 'edge';
+
+type GeneralSettings = {
+  cookiebotId?: string;
+  matomoUrl?: string;
+  matomoSiteId?: string;
+};
 
 export default async function RootLayout(props: {
   children: React.ReactNode;
@@ -19,6 +27,44 @@ export default async function RootLayout(props: {
   const params = await props.params;
   const tenant = params.tenant || undefined;
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
+
+  const DEFAULTS = {
+    cookiebotId: process.env.NEXT_PUBLIC_COOKIEBOT_ID,
+    matomoUrl: process.env.NEXT_PUBLIC_MATOMO_URL,
+    matomoSiteId: process.env.NEXT_PUBLIC_MATOMO_SITE_ID,
+  };
+
+  let settings = { ...DEFAULTS };
+
+  try {
+    if (!tenant) {
+      console.log('No tenant provided, using env defaults');
+    } else {
+      console.log('Resolving tracking settings for tenant', tenant);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/general-settings/tenant/${tenant}`,
+      );
+
+      if (!response.ok) {
+        console.log('Backend response not OK', response.status);
+      } else {
+        const general: GeneralSettings = await response.json();
+        console.log('General settings received');
+
+        settings = {
+          cookiebotId: general.cookiebotId ?? DEFAULTS.cookiebotId,
+          matomoUrl: general.matomoUrl ?? DEFAULTS.matomoUrl,
+          matomoSiteId: general.matomoSiteId ?? DEFAULTS.matomoSiteId,
+        };
+      }
+    }
+  } catch (error) {
+    console.log(
+      'Failed to resolve tracking settings, using env defaults',
+      error,
+    );
+  }
 
   let dynamicHeadline = '';
   if (params && params.url && params.url.length > 0) {
@@ -38,6 +84,20 @@ export default async function RootLayout(props: {
 
   return (
     <div className="w-full h-full overflow-x-hidden">
+      <Script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid={settings.cookiebotId}
+        data-blockingmode="manual"
+        type="text/javascript"
+      ></Script>
+      {settings.matomoSiteId && settings.matomoUrl && (
+        <InitMatomo
+          matomoID={settings.matomoSiteId}
+          matomoURL={settings.matomoUrl}
+        />
+      )}
+
       <style>
         {/* dynamic scrollbar colors */}
         {`

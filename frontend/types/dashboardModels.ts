@@ -92,6 +92,7 @@ export type Widget = {
   width: number;
   writeRoles: string[];
   widgetData: any;
+  usesQueryParameter?: boolean;
 };
 
 export type WidgetWithContent = {
@@ -340,6 +341,11 @@ export type Tab = {
   sensorStatusColor3?: string;
   sensorStatusLayoutVertical?: boolean;
   sensorStatusIsNumericType?: boolean;
+  pharmacyZipCode?: number;
+  pharmacyUsername?: string;
+  pharmacyDetails?: string;
+  pharmacyLastUpdate?: string;
+  pharmacyPassword?: unknown;
   barChartShowTimestampOnHover?: boolean;
 };
 
@@ -690,6 +696,9 @@ export type GeneralSettings = {
   privacy: string;
   allowThemeSwitching: boolean;
   disclaimer: string;
+  cookiebotId?: string | null;
+  matomoSiteId?: string | null;
+  matomoUrl?: string | null;
 };
 
 export type WeatherWarningType = {

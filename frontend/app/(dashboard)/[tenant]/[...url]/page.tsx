@@ -15,9 +15,8 @@ async function getData(
   accessToken: string,
   tenantAbbreviation: string,
 ): Promise<DashboardWithContent> {
-  const url = new URL(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboards/url/${param}`,
-  );
+  const NEXT_PUBLIC_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const url = new URL(`${NEXT_PUBLIC_BACKEND_URL}/dashboards/url/${param}`);
 
   url.searchParams.append('abbreviation', tenantAbbreviation);
 
