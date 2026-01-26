@@ -25,13 +25,16 @@ export class PopulateValueService {
       mapObject: MapObject[];
       weatherWarnings: WeatherWarningData[];
     },
+    usesQueryParameter: boolean = false,
   ): Promise<void> {
     if (tab.componentType === 'Bild') {
       await this.populateImageTab(tab);
     } else if (tab.componentType === 'Wetterwarnungen') {
       await this.populateWeatherWarnings(tab);
-    } else {
+    } else if (usesQueryParameter === false) {
       await this.populateSingleValueTab(tab);
+    } else {
+      await this.populateSingleValueTabForMultiEntity(tab);
     }
   }
 
@@ -137,6 +140,107 @@ export class PopulateValueService {
           }
         }
       }
+    }
+  }
+
+  private async populateSingleValueTabForMultiEntity(
+    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
+      chartData: ChartData[];
+      mapObject: MapObject[];
+    },
+  ): Promise<void> {
+    const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
+
+    if (!query) {
+      return;
+    }
+
+    const queryConfig = await this.dataTranslationRepo.getQueryConfigById(
+      query.queryConfigId,
+    );
+
+    if (!queryConfig) {
+      return;
+    }
+
+    if (queryConfig.attributes && queryConfig.attributes.length > 0) {
+      tab.chartValues = [];
+      tab.chartData = [];
+      tab.chartLabels = [];
+
+      // INPUT
+      // [
+      //   {
+      //     id: 'urn:ngsi-ld:AirQualityObserved:sentiumfebr-7342',
+      //     type: 'AirQualityObserved',
+      //     co2: {
+      //       type: 'Property',
+      //       value: 1543,
+      //       observedAt: '2025-12-04T09:38:31.841Z'
+      //     }
+      //   }
+      // ]
+      // OUTPUT
+      // [
+      //   {
+      //     "name": "co2",
+      //     "id": "urn:ngsi-ld:AirQualityObserved:sentiumfebr-7342",
+      //     "color": null,
+      //     "values": [1543]
+      //   }
+      // ]
+      if (query && query.queryData) {
+        if (Array.isArray(query.queryData)) {
+          for (const entityId of queryConfig.entityIds) {
+            const entityAttributes = query.queryData.filter(
+              (x) => x.id === entityId,
+            );
+            for (const attribute of queryConfig.attributes) {
+              const target = entityAttributes.find(
+                (x) => x[attribute] !== undefined,
+              );
+              if (target) {
+                const newData: ChartData = {
+                  id: entityId,
+                  name: attribute,
+                  values: [target[attribute].value],
+                };
+                tab.chartData.push(newData);
+              }
+            }
+          }
+        }
+      }
+
+      // for(const attribute of queryConfig.attributes){
+      //   if(query && query.queryData){
+      //     if(Array.isArray(query.queryData)){
+
+      //     }
+      //   }
+      // }
+      // for (const attribute of queryConfig.attributes) {
+      //   if (query && query.queryData) {
+      //     // ToDo: Change persisting of queryData to be ALWAYS an array
+      //     if (Array.isArray(query.queryData) && query.queryData[0]) {
+      //       this.populateSingleValueTabFromQueryData(
+      //         tab,
+      //         query.queryData[0],
+      //         attribute,
+      //         queryConfig.roundingMode,
+      //         queryConfig.roundingTarget,
+      //       );
+      //     } else {
+      //       this.populateSingleValueTabFromQueryData(
+      //         tab,
+      //         query.queryData as object,
+      //         attribute,
+      //         queryConfig.roundingMode,
+      //         queryConfig.roundingTarget,
+      //       );
+      //     }
+      //   }
+      // }
     }
   }
 

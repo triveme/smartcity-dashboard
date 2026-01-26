@@ -192,6 +192,10 @@ export function validateTab(tab: Tab): WizardErrors {
     if (error) {
       errorsOccured.typeError = error;
     }
+  } else if (tab?.componentType === tabComponentTypeEnum.pharmacy) {
+    if (tab.pharmacyZipCode === undefined || isNaN(tab.pharmacyZipCode))
+      errorsOccured.typeError =
+        'Postleitzahl ist erforderlich und muss eine Zahl sein!';
   }
   return errorsOccured;
 }

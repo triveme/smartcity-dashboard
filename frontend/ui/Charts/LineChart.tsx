@@ -24,6 +24,7 @@ import {
   getXMinMax,
 } from '@/utils/lineChartUtil';
 import { debounce } from 'lodash';
+import { useSearchParams } from 'next/navigation';
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -110,14 +111,24 @@ export default function LineChart(props: LineChartProps): ReactElement {
     chartAggregationMode = aggregationEnum.none,
   } = props;
 
-  const [filteredData, setFilteredData] = useState<ChartData[]>(data);
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  const [chartData] = useState<ChartData[]>(
+    entityId ? data.filter((x) => x.id === entityId) : data,
+  );
+
+  const [filteredData, setFilteredData] = useState<ChartData[]>(
+    hasAdditionalSelection ? [] : data,
+  );
   const [clickedAttribute, setClickedAttribute] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
+  const chartInitialized = useRef<boolean>(false);
 
-  const attributes = getUniqueField(data, false);
+  const attributes = getUniqueField(chartData, false);
   const xRange = getXMinMax(filteredData); // TODO This should maybe update on filter
 
   const update = debounce(() => {
@@ -126,7 +137,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     const daysIntervall = getIntervalDaysFromChart(chart, 20);
     const allSeries = getAllSeries(daysIntervall);
     chart.setOption({ series: allSeries }, false);
-  }, 200);
+  }, 500);
 
   const initializeChart = (): void => {
     if (chartRef.current) {
@@ -134,7 +145,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
         chartInstance.current.dispose();
       }
       chartInstance.current = echarts.init(chartRef.current);
-
+      chartInitialized.current = true;
       const seriesAll = getAllSeries(0);
       const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
       const hasEndLabel = seriesAll.find((value) => value.endLabel?.show);
@@ -185,7 +196,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
         },
         yAxis: {
           name: formatYAxisLabel(yAxisLabel || ''),
-          nameGap: calculateYAxisNameGap(data),
+          nameGap: calculateYAxisNameGap(chartData),
           nameLocation: 'middle',
           interval:
             chartYAxisScale !== undefined && chartYAxisScale !== 0
@@ -227,13 +238,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
             chartYAxisScale !== undefined
               ? chartYAxisScaleChartMinValue
               : chartHasAutomaticZoom
-                ? calculateMinYAxisValue(data, decimalPlaces)
+                ? calculateMinYAxisValue(chartData, decimalPlaces)
                 : undefined,
           max:
             chartYAxisScale !== undefined
               ? chartYAxisScaleChartMaxValue
               : chartHasAutomaticZoom
-                ? calculateMaxYAxisValue(data, decimalPlaces)
+                ? calculateMaxYAxisValue(chartData, decimalPlaces)
                 : undefined,
         },
         legend: {
@@ -302,7 +313,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
       };
 
       chartInstance.current.setOption(option);
-
       update();
 
       chartInstance.current.on('datazoom', update);
@@ -314,10 +324,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
   };
 
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
-    const tempData = data;
-    const newFilteredData = tempData.filter((item) =>
+    const tempData = chartData;
+    let newFilteredData = tempData.filter((item) =>
       item.name.includes(clickedAttribute),
     );
+    if (entityId) {
+      newFilteredData = newFilteredData.filter((x) => x.id === entityId);
+    }
     setClickedAttribute(clickedAttribute);
     setFilteredData(newFilteredData);
   };
@@ -329,15 +342,15 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [filteredData, props]);
 
   useEffect(() => {
-    if (data && data.length > 0) {
+    if (chartData && chartData.length > 0) {
       if (hasAdditionalSelection) {
         setClickedAttribute(attributes[0]);
         handleFilterButtonClicked(attributes[0]);
       } else {
-        setFilteredData(data);
+        setFilteredData(filteredData);
       }
     }
-  }, [data]);
+  }, [chartData, entityId]);
 
   // Observe the window size
   useEffect(() => {
@@ -429,22 +442,31 @@ export default function LineChart(props: LineChartProps): ReactElement {
 
   function getAllSeries(intervallDays: number): echarts.LineSeriesOption[] {
     const series: echarts.LineSeriesOption[] = [];
-    if (filteredData && filteredData.length > 0) {
-      for (let i = 0; i < filteredData.length; i++) {
+    let seriesData = [...filteredData];
+    if (entityId) {
+      seriesData = seriesData.filter((x) => x.id === entityId);
+    }
+    if (clickedAttribute) {
+      seriesData = seriesData.filter((item) =>
+        item.name.includes(clickedAttribute),
+      );
+    }
+    if (seriesData && seriesData.length > 0) {
+      for (let i = 0; i < seriesData.length; i++) {
         const dataArray =
           chartAggregationMode && chartAggregationMode != aggregationEnum.none
             ? downsampleValues(
-                filteredData[i].values,
+                seriesData[i].values,
                 intervallDays,
                 chartAggregationMode,
               )
-            : filteredData[i].values;
+            : seriesData[i].values;
         const tempSeries: echarts.LineSeriesOption = {
           data: dataArray,
           type: 'line',
           symbolSize: isShownInMapModal ? 0 : 6,
           step: isStepline ? 'start' : undefined,
-          name: filteredData[i].name,
+          name: seriesData[i].name,
           color: currentValuesColors[i % 10] || 'black',
           ...(isStackedChart && { stack: 'a' }),
           ...(isStackedChart && {
@@ -469,8 +491,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
             },
           }),
         };
-        if (filteredData[i].highlighted != undefined) {
-          tempSeries.color = filteredData[i].highlighted
+        if (seriesData[i].highlighted != undefined) {
+          tempSeries.color = seriesData[i].highlighted
             ? highlightedColor
             : unhighlightedColor;
           tempSeries.itemStyle = {
@@ -484,10 +506,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
     const staticValueSeries: echarts.LineSeriesOption[] =
       staticValues &&
       staticValues.length > 0 &&
-      filteredData &&
-      filteredData.length > 0
+      seriesData &&
+      seriesData.length > 0
         ? staticValues.map((value, index) => ({
-            data: filteredData[0].values.map((label) => [label[0], value]),
+            data: seriesData[0].values.map((label) => [label[0], value]),
             type: 'line',
             symbol: 'none',
             lineStyle: {

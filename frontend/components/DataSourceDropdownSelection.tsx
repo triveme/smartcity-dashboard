@@ -16,7 +16,10 @@ type DataSourceDropdownSelectionProps = {
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
+  usesQueryParameter?: boolean;
 };
+
+const allowedOriginsForQueryParameter = ['ngsi-ld', 'ngsi-v2'];
 
 export default function DataSourceDropdownSelection(
   props: DataSourceDropdownSelectionProps,
@@ -27,6 +30,7 @@ export default function DataSourceDropdownSelection(
     iconColor,
     borderColor,
     backgroundColor,
+    usesQueryParameter,
   } = props;
 
   const auth = useAuth();
@@ -46,11 +50,15 @@ export default function DataSourceDropdownSelection(
 
   useEffect(() => {
     if (dataSourcesData) {
-      setSelectableDataSources(dataSourcesData);
-      if (selectedDataSource) {
-        const preSelect = dataSourcesData.find(
-          (ds) => ds.id === selectedDataSource,
+      let data = dataSourcesData;
+      if (usesQueryParameter) {
+        data = data.filter((x) =>
+          allowedOriginsForQueryParameter.includes(x.origin),
         );
+      }
+      setSelectableDataSources(data);
+      if (selectedDataSource) {
+        const preSelect = data.find((ds) => ds.id === selectedDataSource);
         if (preSelect) {
           onSelectDataSource(
             preSelect.id!,

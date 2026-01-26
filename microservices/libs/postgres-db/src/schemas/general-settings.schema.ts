@@ -12,6 +12,9 @@ export const generalSettings = pgTable('general_settings', {
   privacy: text('privacy'),
   allowThemeSwitching: boolean('allow_theme_switching').default(false),
   disclaimer: text('disclaimer'),
+  cookiebotId: text('cookiebot_id'),
+  matomoSiteId: text('matomo_site_id'),
+  matomoUrl: text('matomo_url'),
 });
 
 export type GeneralSettings = typeof generalSettings.$inferSelect;

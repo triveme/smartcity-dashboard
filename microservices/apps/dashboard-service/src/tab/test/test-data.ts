@@ -257,6 +257,11 @@ export async function getTab(
     sensorStatusColor1: '#FF0000',
     sensorStatusColor2: '#FFFF00',
     sensorStatusColor3: '#00FF00',
+    pharmacyZipCode: 3119,
+    pharmacyUsername: '',
+    pharmacyPassword: '',
+    pharmacyDetails: '',
+    pharmacyLastUpdate: '',
     barChartShowTimestampOnHover: true,
   };
 }

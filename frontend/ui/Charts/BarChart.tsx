@@ -16,6 +16,7 @@ import {
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
 import { generateTooltipContent } from '@/utils/chartTooltipHelper';
+import { useSearchParams } from 'next/navigation';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -63,7 +64,6 @@ export default function BarChart(props: BarChartProps): ReactElement {
     chartYAxisScale,
     chartYAxisScaleChartMinValue,
     chartYAxisScaleChartMaxValue,
-    data,
     xAxisLabel,
     yAxisLabel,
     allowImageDownload,
@@ -96,6 +96,14 @@ export default function BarChart(props: BarChartProps): ReactElement {
     chartHoverSingleValue,
     showTimestampOnHover,
   } = props;
+  let { data } = props;
+
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  if (entityId) {
+    data = data.filter((x) => x.id === entityId);
+  }
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
   const [clickedAttribute, setClickedAttribute] = useState<string>('');
@@ -331,7 +339,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
   };
 
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
-    const tempData = data ? data : data;
+    const tempData = data;
     const newFilteredData = tempData.filter((item) =>
       item.name.includes(clickedAttribute),
     );
@@ -354,7 +362,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
         setFilteredData(data);
       }
     }
-  }, [data]);
+  }, []);
 
   // Observe the window size
   useEffect(() => {

@@ -3,6 +3,7 @@
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
+import { useSearchParams } from 'next/navigation';
 import { ReactElement } from 'react';
 
 interface Level {
@@ -28,6 +29,8 @@ interface SliderProps {
   labelFontColor: string;
   arrowColor: string;
   unitFontSize: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tabData?: any;
 }
 
 export default function Slider(props: SliderProps): ReactElement {
@@ -41,17 +44,31 @@ export default function Slider(props: SliderProps): ReactElement {
     staticValuesTexts,
     iconColor,
     unit,
-    value,
     bigValueFontSize,
     bigValueFontColor,
     labelFontSize,
     labelFontColor,
     arrowColor,
     unitFontSize,
+    tabData,
   } = props;
+  let { value } = props;
 
   if (!staticValues || staticValues.length <= 0) {
     return <div>ERROR</div>;
+  }
+
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  if (entityId && tabData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const findValue = (tabData.chartData as any[]).find(
+      (x) => x.id === entityId,
+    );
+    if (findValue && findValue.values && findValue.values.length > 0) {
+      value = findValue.values[0];
+    }
   }
 
   // Make sure the value never goes below or above min/max

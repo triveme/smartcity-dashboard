@@ -32,6 +32,7 @@ export enum dashboardTypeEnum {
   general = 'Allgemein',
   map = 'Karte',
   iframe = 'iFrame',
+  entity = 'Entität URL Param',
 }
 
 export enum tabComponentTypeEnum {
@@ -48,6 +49,7 @@ export enum tabComponentTypeEnum {
   image = 'Bild',
   interactiveComponent = 'Interaktive Komponente',
   valueToImage = 'Werte zu Bildern',
+  pharmacy = 'Apotheke',
   sensorStatus = 'Ampelstatus',
 }
 

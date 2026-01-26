@@ -300,6 +300,19 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           />
                         </div>
                       )}
+
+                    {widget.componentType === 'Button' &&
+                      widget.componentSubType ===
+                        'jumpoff-entity-url-param' && (
+                        <div className="w-48">
+                          <JumpoffButton
+                            panel={widget}
+                            entityId={selectedMarker?.details?.id || ''}
+                            headerPrimaryColor={ciColors?.headerPrimaryColor}
+                            headerFontColor={ciColors?.headerFontColor}
+                          />
+                        </div>
+                      )}
                   </div>
                 </div>
               ))}

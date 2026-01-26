@@ -3,7 +3,7 @@ import { ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 export default function HeaderLogo(): ReactElement {
   const tenant = getTenantOfPage();

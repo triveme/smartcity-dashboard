@@ -7,13 +7,17 @@ import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { WidgetToPanelService } from '../../widget-to-panel/widget-to-panel.service';
 import { reduceDashboard } from './populate.util';
+import { TabService } from '../../tab/tab.service';
 import { FlatDashboardData } from '../dashboard.model';
 
 @Injectable()
 export class PopulateService {
   private readonly logger = new Logger(PopulateService.name);
 
-  constructor(private readonly widgetToPanelService: WidgetToPanelService) {}
+  constructor(
+    private readonly widgetToPanelService: WidgetToPanelService,
+    private readonly tabService: TabService,
+  ) {}
 
   async populateDashboardsWithContent(
     flatDashboardData: FlatDashboardData[],
@@ -62,6 +66,7 @@ export class PopulateService {
         });
       }
       if (row.tab) {
+        this.tabService.handleSpecialTabs(row.tab);
         tabMap.set(row.tab.id, row.tab);
       }
       if (row.data_model) {

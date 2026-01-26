@@ -55,6 +55,7 @@ import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.sche
 import { WidgetWithContent } from '../dashboard/dashboard.service';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { reduceWidget } from '../dashboard/populate/populate.util';
+import { EncryptionUtil } from '../util/encryption.util';
 
 export type WidgetWithChildren = {
   widget: Widget;
@@ -197,6 +198,7 @@ export class WidgetService {
     for (const tab of tabs) {
       const widget = tenantWidgets.find((widget) => widget.id === tab.widgetId);
       if (widget) {
+        await this.tabService.handleSpecialTabs(tab);
         widgetsWithChildren.push({
           widget,
           tab,
@@ -468,6 +470,7 @@ export class WidgetService {
           ...(duplicatedQuery ? { queryId: duplicatedQuery.id } : {}),
         };
         duplicatedStructure.tab = await this.tabRepo.create(duplicatedTab, trx);
+        await this.tabService.handleSpecialTabs(duplicatedStructure.tab);
       }
     });
 
@@ -620,9 +623,7 @@ export class WidgetService {
       queryConfig: null,
       datasource: null,
     };
-
     const widget = await this.getById(id, rolesFromRequest);
-
     const tabs = await this.tabService.getTabsByWidgetId(widget.id);
 
     if (tabs.length !== 0) {
@@ -653,7 +654,6 @@ export class WidgetService {
       id,
       rolesFromRequest,
     );
-
     try {
       const flatWidgetData = await this.widgetRepo.getWidgetWithContent(id);
 
@@ -704,6 +704,8 @@ export class WidgetService {
       );
 
       widgetWithChildren.widget = populatedWidget;
+
+      await this.tabService.handleSpecialTabs(widgetWithChildren.tab);
 
       return widgetWithChildren;
     } catch (error) {
@@ -770,10 +772,19 @@ export class WidgetService {
           );
       }
 
+      if (payloadTab.pharmacyPassword) {
+        const encryptedPw = EncryptionUtil.encryptPassword(
+          payloadTab.pharmacyPassword as string,
+        );
+        payloadTab.pharmacyPassword = encryptedPw;
+      }
+
       payloadTab.widgetId = createdWidget.id;
       payloadTab.queryId =
         createdQueryConfig !== undefined ? createdQueryConfig.queryId : queryId;
+
       const createdTab = await this.tabService.create(payloadTab, tx);
+      await this.tabService.handleSpecialTabs(createdTab);
 
       payload.widget = createdWidget;
       payload.tab = createdTab;
@@ -829,6 +840,13 @@ export class WidgetService {
           );
       }
 
+      if (payloadTab.pharmacyPassword) {
+        const encryptedPw = EncryptionUtil.encryptPassword(
+          payloadTab.pharmacyPassword as string,
+        );
+        payloadTab.pharmacyPassword = encryptedPw;
+      }
+
       const response: WidgetWithChildren = {
         widget: null,
         tab: null,
@@ -849,6 +867,8 @@ export class WidgetService {
         payloadTab,
         tx,
       );
+
+      await this.tabService.handleSpecialTabs(response.tab);
 
       if (this.shouldUseQueryConfig(payloadTab)) {
         if (!payload.queryConfig.id)
@@ -918,7 +938,7 @@ export class WidgetService {
       );
 
       if (!thereAreRoleMatches) {
-        throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+        throw new HttpException('Unauthorized to delete', HttpStatus.FORBIDDEN);
       }
     }
   }
@@ -968,6 +988,7 @@ export class WidgetService {
       payloadTab.componentType !== 'Bild' &&
       payloadTab.componentType !== 'Informationen' &&
       payloadTab.componentType !== 'iFrame' &&
+      payloadTab.componentType !== 'Apotheke' &&
       payloadTab.componentType !== 'Kombinierte Komponente' &&
       !(
         payloadTab.componentType === 'Karte' &&

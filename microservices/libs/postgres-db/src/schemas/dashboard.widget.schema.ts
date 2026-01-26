@@ -16,6 +16,7 @@ export const widgets = pgTable('widget', {
   name: text('name'),
   description: text('description'),
   showName: boolean('show_name'),
+  usesQueryParameter: boolean('uses_query_parameter').default(false),
   subheadline: text('subheadline'),
   height: smallint('height'),
   width: smallint('width'),

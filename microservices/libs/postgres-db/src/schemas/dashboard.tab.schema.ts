@@ -7,6 +7,8 @@ import {
   boolean,
   smallint,
   json,
+  jsonb,
+  integer,
 } from 'drizzle-orm/pg-core';
 import { queries } from './query.schema';
 import { widgets } from './dashboard.widget.schema';
@@ -190,6 +192,11 @@ export const tabs = pgTable('tab', {
   sensorStatusColor2: text('sensor_status_color2'),
   sensorStatusColor3: text('sensor_status_color3'),
   sensorStatusLayoutVertical: boolean('sensor_status_layout_vertical'),
+  pharmacyZipCode: integer('pharmacy_zip_code'),
+  pharmacyUsername: text('pharmacy_username'),
+  pharmacyPassword: jsonb('pharmacy_password'),
+  pharmacyDetails: text('pharmacy_details'),
+  pharmacyLastUpdate: text('pharmacy_last_update'),
   barChartShowTimestampOnHover: boolean('bar_chart_show_timestamp_on_hover'),
 });
 

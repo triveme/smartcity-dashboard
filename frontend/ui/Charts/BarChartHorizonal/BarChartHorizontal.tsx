@@ -15,6 +15,7 @@ import {
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../../Icons/DashboardIcon';
 import FilterButton from '../../Buttons/FilterButton';
+import { useSearchParams } from 'next/navigation';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -62,7 +63,6 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     chartYAxisScale,
     chartYAxisScaleChartMinValue,
     chartYAxisScaleChartMaxValue,
-    data,
     xAxisLabel,
     yAxisLabel,
     allowImageDownload,
@@ -92,6 +92,14 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     setValueLimit,
     userDefinedLimit,
   } = props;
+  let { data } = props;
+
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  if (entityId) {
+    data = data.filter((x) => x.id === entityId);
+  }
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
   const [clickedAttribute, setClickedAttribute] = useState<string>('');
@@ -106,27 +114,91 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
   const attributes = getUniqueField(data, false);
   const sensorNames = getUniqueField(data, true);
 
-  const sortChartData = (
-    data: ChartData[],
-    order: 'asc' | 'desc' | 'no-filter',
-  ): ChartData[] => {
-    if (order === 'no-filter') return data;
-    const sorted = [...data].sort((a, b) => {
-      const lastA = a.values[a.values.length - 1]?.[1] ?? 0;
-      const lastB = b.values[b.values.length - 1]?.[1] ?? 0;
-      return order === 'asc' ? lastA - lastB : lastB - lastA;
-    });
-    return sorted;
+  const getSeriesSortKey = (values: ChartData['values']): number => {
+    let max = -Infinity;
+
+    for (const v of values) {
+      const y = v?.[1];
+      if (typeof y === 'number' && Number.isFinite(y) && y > max) {
+        max = y;
+      }
+    }
+
+    return max === -Infinity ? 0 : max;
   };
 
+  /**
+   * Sorts the full dataset by the series key.
+   *
+   * - no-filter → original order
+   * - asc       → ascending
+   * - desc      → descending
+   *
+   * Global sorting is skipped when a value limit is active.
+   */
+  const sortChartData = (data: ChartData[], order: SortValue): ChartData[] => {
+    if (limitOfValues !== 'all') return data;
+    if (order === 'no-filter') return data;
+
+    return [...data].sort((a, b) => {
+      const aKey = getSeriesSortKey(a.values);
+      const bKey = getSeriesSortKey(b.values);
+
+      if (aKey === bKey) {
+        const aTie = a.id ?? a.name ?? '';
+        const bTie = b.id ?? b.name ?? '';
+        return aTie.localeCompare(bTie);
+      }
+
+      return order === 'asc' ? aKey - bKey : bKey - aKey;
+    });
+  };
+
+  /**
+   * Applies TOP-N limiting and final ordering.
+   *
+   * - limit = all → return data as-is
+   * - limit = N  → select TOP-N largest series
+   *
+   * Display order:
+   * - no-filter → original order
+   * - asc/desc → sorted within TOP-N
+   */
   const applyLimit = (
     ordered: ChartData[],
     limit: LimitValue,
-    order: 'no-filter' | 'asc' | 'desc',
+    order: SortValue,
   ): ChartData[] => {
     if (limit === 'all') return ordered;
 
-    return order === 'desc' ? ordered.slice(0, limit) : ordered.slice(-limit);
+    const n = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 0;
+    if (n === 0) return [];
+
+    const withMeta = ordered.map((item, idx) => ({
+      item,
+      idx,
+      key: getSeriesSortKey(item.values),
+    }));
+
+    const topN = withMeta
+      .sort((a, b) => (a.key === b.key ? a.idx - b.idx : b.key - a.key))
+      .slice(0, n);
+
+    if (order === 'no-filter') {
+      return topN.sort((a, b) => a.idx - b.idx).map((x) => x.item);
+    }
+
+    return topN
+      .sort((a, b) =>
+        a.key === b.key
+          ? (a.item.id ?? a.item.name ?? '').localeCompare(
+              b.item.id ?? b.item.name ?? '',
+            )
+          : order === 'asc'
+            ? a.key - b.key
+            : b.key - a.key,
+      )
+      .map((x) => x.item);
   };
 
   const initializeChart = (): void => {
@@ -388,7 +460,7 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
   };
 
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
-    const tempData = data ? data : data;
+    const tempData = data;
     const newFilteredData = tempData.filter((item) =>
       item.name.includes(clickedAttribute),
     );
@@ -428,7 +500,7 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
         setFilteredData(dataToUse);
       }
     }
-  }, [data, sortingValue]);
+  }, []);
 
   // Observe the window size
   useEffect(() => {

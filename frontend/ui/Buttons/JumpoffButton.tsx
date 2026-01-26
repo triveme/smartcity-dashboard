@@ -8,6 +8,7 @@ import Link from 'next/link';
 type DashboardGeneralInfoMessageProps = {
   panel: PanelWithContent | MapModalWidget;
   url?: string;
+  entityId?: string;
   headerPrimaryColor?: string;
   headerFontColor?: string;
 };
@@ -15,7 +16,7 @@ type DashboardGeneralInfoMessageProps = {
 export default function JumpoffButton(
   props: DashboardGeneralInfoMessageProps,
 ): ReactElement {
-  const { panel, url, headerPrimaryColor, headerFontColor } = props;
+  const { panel, url, entityId, headerPrimaryColor, headerFontColor } = props;
   const jumpoffButtonStyle = {
     backgroundColor: headerPrimaryColor || '#2B3244',
     color: headerFontColor || 'FFF',
@@ -26,9 +27,20 @@ export default function JumpoffButton(
   const hasIcon =
     panel.jumpoffIcon && panel.jumpoffIcon !== 'empty' ? true : false;
 
+  let url_formatted = '';
+  if (url && url !== '') {
+    url_formatted = url;
+  } else {
+    url_formatted = panel.jumpoffUrl || '';
+  }
+
+  if (url_formatted !== '' && entityId && entityId.length > 0) {
+    url_formatted += '?entityId=' + entityId;
+  }
+
   return (
     <Link
-      href={url && url !== '' ? url : panel.jumpoffUrl || ''}
+      href={url_formatted}
       target={panel.openJumpoffLinkInNewTab ? '_blank' : '_self'}
       rel="noopener"
     >

@@ -267,6 +267,13 @@
       "when": 1765184784447,
       "tag": "0037_parched_terrax_1.1.5",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1768996450042,
+      "tag": "0038_ancient_night_thrasher_1.2.0",
+      "breakpoints": true
     }
   ]
 }

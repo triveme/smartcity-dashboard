@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 import { Mail } from '@/types';
 
 const NEXT_PUBLIC_MAIL_SERVICE_URL = env('NEXT_PUBLIC_MAIL_SERVICE_URL');

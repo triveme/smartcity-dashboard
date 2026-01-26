@@ -3,7 +3,7 @@
 import { JSX, ReactElement } from 'react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';

@@ -8,11 +8,19 @@ type UrlTextfieldProps = {
   error?: string;
   iconColor: string;
   borderColor: string;
+  readonly?: boolean;
 };
 export default function WizardUrlTextfield(
   props: UrlTextfieldProps,
 ): ReactElement {
-  const { value, onChange, error, iconColor, borderColor } = props;
+  const {
+    value,
+    onChange,
+    error,
+    iconColor,
+    borderColor,
+    readonly = false,
+  } = props;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     onChange(event.target.value);
@@ -28,15 +36,18 @@ export default function WizardUrlTextfield(
       >
         <input
           type="text"
+          readOnly={readonly}
           className="p-4 text-base bg-transparent h-full w-full"
           onChange={(e): void => handleChange(e)}
           value={value}
         />
-        <div className="absolute pr-4">
-          <button onClick={(): void => onChange('')}>
-            <DashboardIcons iconName="XMark" color={iconColor} />
-          </button>
-        </div>
+        {!readonly && (
+          <div className="absolute pr-4">
+            <button onClick={(): void => onChange('')}>
+              <DashboardIcons iconName="XMark" color={iconColor} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

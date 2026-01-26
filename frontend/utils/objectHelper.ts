@@ -710,3 +710,44 @@ export const EMPTY_POI: InterestingPlace = {
   website: '',
   description: '',
 };
+
+export const DUMMY_PHARMACY_DATA = {
+  apotheken: {
+    apotheke: [
+      {
+        name: 'Example-Apotheke',
+        kammer: 'lakh',
+        id: '2128',
+        apo_id: 'lakh2128',
+        strasse: 'Hauptstraße 10 a',
+        plz: '36148',
+        ort: 'Kalbach',
+        distanz: '8.11806425999',
+        telefon: '+49 6655 911196',
+        fax: '+49 6655 911197',
+        email: '',
+        startdatum: '29.10.2025',
+        startzeit: '09:00',
+        enddatum: '30.10.2025',
+        endzeit: '09:00',
+      },
+      {
+        name: 'Burg Apotheke',
+        kammer: 'lakh',
+        id: '588',
+        apo_id: 'lakh588',
+        strasse: 'Leipziger Str. 181',
+        plz: '36039',
+        ort: 'Fulda',
+        distanz: '14.90211099759',
+        telefon: '+49 661 61063',
+        fax: '+49 661 606676',
+        email: '',
+        startdatum: '29.10.2025',
+        startzeit: '09:00',
+        enddatum: '30.10.2025',
+        endzeit: '09:00',
+      },
+    ],
+  },
+};

@@ -1,6 +1,6 @@
 {
   "name": "microservices",
-  "version": "1.1.12",
+  "version": "1.2.1",
   "description": "",
   "author": "",
   "private": true,
@@ -38,7 +38,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.2",
-    "wkx": "^0.5.0"
+    "wkx": "^0.5.0",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@json2csv/plainjs": "^7.0.6",
@@ -51,8 +52,8 @@
     "@types/multer": "^1.4.11",
     "@types/node": "^20.3.1",
     "@types/pg": "^8.10.3",
-    "@types/supertest": "^2.0.12",
     "@types/sharp": "^0.32.0",
+    "@types/supertest": "^2.0.12",
     "@types/uuid": "^9.0.4",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",

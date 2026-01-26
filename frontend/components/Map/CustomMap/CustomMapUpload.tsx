@@ -80,7 +80,6 @@ export default function CustomMapUpload(
             );
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const viewbox = (doc.documentElement as any).viewBox.baseVal;
-            console.log(viewbox.width, viewbox.height);
             setUploadImageWidth(viewbox.width);
             setUploadImageHeight(viewbox.height);
           };

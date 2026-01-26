@@ -1,5 +1,5 @@
 import { DataSource } from '@/types';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
 

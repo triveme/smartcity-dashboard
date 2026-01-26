@@ -13,6 +13,9 @@ import { eq } from 'drizzle-orm';
 import { widgetsToTenants } from '@app/postgres-db/schemas/widget-to-tenant.schema';
 import { TenantRepo } from '../tenant/tenant.repo';
 import { WidgetRepo } from '../widget/widget.repo';
+import axios from 'axios';
+import { parseStringPromise } from 'xml2js';
+import { EncryptionUtil } from '../util/encryption.util';
 
 @Injectable()
 export class TabService {
@@ -26,11 +29,17 @@ export class TabService {
   private readonly logger = new Logger(TabService.name);
 
   async getAll(): Promise<Tab[]> {
-    return this.tabRepo.getAll();
+    const tabs = await this.tabRepo.getAll();
+    for (const tab of tabs) {
+      await this.handleSpecialTabs(tab);
+    }
+    return tabs;
   }
 
   async getById(id: string): Promise<Tab> {
-    return this.tabRepo.getById(id);
+    const tab = await this.tabRepo.getById(id);
+    await this.handleSpecialTabs(tab);
+    return tab;
   }
 
   async getTabsByWidgetId(widgetId: string): Promise<Tab[]> {
@@ -41,11 +50,19 @@ export class TabService {
       return [];
     }
 
+    for (const tab of widgetTabs) {
+      await this.handleSpecialTabs(tab);
+    }
+
     return widgetTabs;
   }
 
   async getTabsByWidgetIds(widgetIds: string[]): Promise<Tab[]> {
-    return this.tabRepo.getTabsByWidgetIds(widgetIds);
+    const widgetTabs = await this.tabRepo.getTabsByWidgetIds(widgetIds);
+    for (const tab of widgetTabs) {
+      await this.handleSpecialTabs(tab);
+    }
+    return widgetTabs;
   }
 
   async getTabsByWidgetIdsAndComponentType(
@@ -73,6 +90,10 @@ export class TabService {
       (tab) => tab.componentType === componentType,
     );
 
+    for (const tab of filteredTabs) {
+      await this.handleSpecialTabs(tab);
+    }
+
     return filteredTabs;
   }
 
@@ -96,6 +117,7 @@ export class TabService {
     const resolvedTabs = await Promise.all(tabPromises);
 
     resolvedTabs.forEach((tabs) => retrievedTabs.push(...tabs));
+
     if (retrievedTabs.length === 0) {
       this.logger.warn(
         `Tabs Not Found for Tenant with abbreviation ${abbreviation}`,
@@ -105,6 +127,10 @@ export class TabService {
         HttpStatus.NOT_FOUND,
       );
     }
+
+    for (const tab of retrievedTabs) {
+      await this.handleSpecialTabs(tab);
+    }
     return retrievedTabs;
   }
 
@@ -113,7 +139,9 @@ export class TabService {
     values: Partial<Tab>,
     transaction?: DbType,
   ): Promise<Tab> {
-    return this.tabRepo.update(id, values, transaction);
+    const result = await this.tabRepo.update(id, values, transaction);
+    this.handleSpecialTabs(result);
+    return result;
   }
 
   async delete(id: string): Promise<Tab> {
@@ -138,5 +166,70 @@ export class TabService {
     const decimalValue = Number(value);
 
     return !isNaN(decimalValue) && isFinite(decimalValue);
+  }
+
+  public async handleSpecialTabs(tab: Tab): Promise<void> {
+    switch (tab.componentType) {
+      case 'Apotheke':
+        await this.handlePharmacyDetails(tab);
+        break;
+      default:
+        return;
+    }
+  }
+
+  private async handlePharmacyDetails(tab: Tab): Promise<void> {
+    if (tab.componentType !== 'Apotheke') {
+      return;
+    }
+
+    // In cases: last fetch was less than 6 hours AND
+    //           tab already has details AND
+    //           fetched data hs the same zip than the tab
+    // do not fetch, return with the fethced values
+    if (
+      tab.pharmacyLastUpdate &&
+      new Date(tab.pharmacyLastUpdate).getTime() >=
+        new Date(new Date().getTime() - 6 * 60 * 60 * 1000).getTime() &&
+      tab.pharmacyDetails &&
+      tab.pharmacyZipCode == JSON.parse(tab.pharmacyDetails)?.parameter?.plzort
+    ) {
+      tab.pharmacyPassword = undefined;
+      return;
+    }
+
+    try {
+      const pharmacyServiceUrl = process.env.PHARMACY_URL;
+      const response = await axios.get(
+        `${pharmacyServiceUrl}?plzort=${tab.pharmacyZipCode ?? 36119}`,
+        {
+          auth: {
+            username: tab.pharmacyUsername,
+            password: EncryptionUtil.decryptPassword(
+              tab.pharmacyPassword as object,
+            ),
+          },
+          headers: {
+            Accept: 'application/xml',
+            'User-Agent': 'NestJS/axios',
+          },
+        },
+      );
+
+      const json = await parseStringPromise(response.data, {
+        explicitArray: false,
+      });
+
+      // save into db
+      tab.pharmacyDetails = JSON.stringify(json.notdienstkalender);
+      tab.pharmacyLastUpdate = new Date().toISOString();
+      await this.tabRepo.update(tab.id, {
+        pharmacyDetails: tab.pharmacyDetails,
+        pharmacyLastUpdate: tab.pharmacyLastUpdate,
+      });
+      tab.pharmacyPassword = undefined;
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

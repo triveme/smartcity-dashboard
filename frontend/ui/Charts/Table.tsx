@@ -4,6 +4,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import s from './Table/Table.module.css';
 import { ChartData } from '@/types';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
+import { useSearchParams } from 'next/navigation';
 
 type Attribute = {
   key: string;
@@ -38,12 +39,19 @@ export default function Table(props: TableProps): ReactElement {
     headerColor,
     oddRowColor,
     evenRowColor,
-    data,
     selectedYearIndex,
     selectedRows,
     hoveredRow,
     selectedColor,
   } = props;
+  let { data } = props;
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  if (entityId) {
+    data = data.filter((x) => x.id === entityId);
+  }
+
   const [chosenYear, setChosenYear] = useState(2020);
   const [formatedData, setFormatedData] = useState<TableTransformedDataItem[]>(
     [],
@@ -130,7 +138,7 @@ export default function Table(props: TableProps): ReactElement {
     if (hoveredRow) {
       setHoveredRowInternal(hoveredRow);
     }
-  }, [data, selectedRows?.length, selectedYearIndex, hoveredRow]);
+  }, [selectedRows?.length, selectedYearIndex, hoveredRow]);
 
   const columnKeys = Array.from(
     new Set(

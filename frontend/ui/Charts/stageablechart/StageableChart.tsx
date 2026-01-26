@@ -4,6 +4,7 @@ import { ReactElement, useEffect, useRef, useState } from 'react';
 import * as echarts from 'echarts';
 import { ECharts, EChartsOption } from 'echarts';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
+import { useSearchParams } from 'next/navigation';
 
 type StageableChartProps = {
   unit: string;
@@ -19,6 +20,8 @@ type StageableChartProps = {
   ticksFontColor?: string;
   ticksFontSize?: string;
   showAxisLabels?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  tabData?: any;
 };
 
 type ColorStage = [number, string];
@@ -34,13 +37,27 @@ export default function StageableChart(
     staticValues,
     staticValuesColors,
     staticValuesTexts,
-    value,
     fontColor,
     fontSize,
     ticksFontColor,
     ticksFontSize,
     showAxisLabels,
+    tabData,
   } = props;
+  let { value } = props;
+
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
+  if (entityId && tabData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const findValue = (tabData.chartData as any[]).find(
+      (x) => x.id === entityId,
+    );
+    if (findValue && findValue.values && findValue.values.length > 0) {
+      value = findValue.values[0];
+    }
+  }
 
   const [label, setLabel] = useState<string>('');
 

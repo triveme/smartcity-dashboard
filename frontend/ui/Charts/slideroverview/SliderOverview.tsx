@@ -1,8 +1,11 @@
+'use client';
+
 import { ReactElement } from 'react';
 
 import { ChartData, SliderOverviewType } from '@/types';
 import SliderHeader from './SliderHeader';
 import { SliderWithKnobs } from './SliderWithKnobs';
+import { useSearchParams } from 'next/navigation';
 
 type SliderOverviewProps = {
   data: ChartData[];
@@ -30,18 +33,25 @@ export default function SliderOverview(
   } = props;
   const sliders: SliderOverviewType[] = [];
 
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('entityId');
+
   try {
-    for (let i = 0; i < data.length; i++) {
-      const currentCapacityIndex = data[i].values.findIndex(
+    const filteredData =
+      entityId && entityId.length > 0
+        ? data.filter((x) => x.id === entityId || x.name === entityId)
+        : data;
+    for (let i = 0; i < filteredData.length; i++) {
+      const currentCapacityIndex = filteredData[i].values.findIndex(
         (value) => value[0] === currentCapacityAttribute,
       );
-      const maximumCapacityIndex = data[i].values.findIndex(
+      const maximumCapacityIndex = filteredData[i].values.findIndex(
         (value) => value[0] === maximumCapacityAttribute,
       );
       const slider: SliderOverviewType = {
-        name: data[i].name,
-        capacityCurrent: data[i].values[currentCapacityIndex][1],
-        capacityMax: data[i].values[maximumCapacityIndex][1],
+        name: filteredData[i].name,
+        capacityCurrent: filteredData[i].values[currentCapacityIndex][1],
+        capacityMax: filteredData[i].values[maximumCapacityIndex][1],
       };
       sliders.push(slider);
     }

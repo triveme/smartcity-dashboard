@@ -2,7 +2,7 @@
 
 import React, { ReactElement } from 'react';
 import { AuthProvider, AuthProviderProps } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 import { WebStorageStateStore, User } from 'oidc-client-ts';
 
 import AuthWrapper from './AuthWrapper'; // Make sure the path is correct

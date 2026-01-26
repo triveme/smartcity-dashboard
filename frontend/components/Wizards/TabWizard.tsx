@@ -33,6 +33,7 @@ import {
   sliderComponentSubTypes,
   interactiveComponentSubTypes,
   aggregationOptions,
+  tabComponentQueryParamWhitelist,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -55,6 +56,7 @@ import ValuesToImageFields from '@/ui/ValuesToImageFields';
 import CustomMapUpload from '@/components/Map/CustomMap/CustomMapUpload';
 import CustomMapSensorConfigurator from '@/components/Map/CustomMap/CustomMapSensorConfigurator';
 import UnitsField from '@/ui/UnitsField';
+import WizardPasswordTextfield from '@/ui/WizardPasswordTextfield';
 
 type TabWizardProps = {
   tab: Tab | undefined;
@@ -75,6 +77,7 @@ type TabWizardProps = {
   queryConfig: QueryConfig;
   tenant: string | undefined;
   fontColor: string;
+  usesQueryParameter?: boolean;
 };
 
 export default function TabWizard(props: TabWizardProps): ReactElement {
@@ -97,6 +100,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     queryConfig,
     tenant,
     fontColor,
+    usesQueryParameter,
   } = props;
 
   const auth = useAuth();
@@ -282,6 +286,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
             mapLatitude: 50.585075277802574,
           });
         }
+      } else if (tab.componentType === tabComponentTypeEnum.pharmacy) {
+        tab.pharmacyZipCode = 36119;
       }
       if (tab.componentType === tabComponentTypeEnum.sensorStatus) {
         tab.sensorStatusLightCount = 2;
@@ -356,7 +362,13 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
             <WizardLabel label="Komponente" />
             <WizardDropdownSelection
               currentValue={tab?.componentType || ''}
-              selectableValues={Object.values(tabComponentTypeEnum)}
+              selectableValues={
+                usesQueryParameter
+                  ? Object.values(tabComponentTypeEnum).filter(
+                      (x) => tabComponentQueryParamWhitelist[x] !== undefined,
+                    )
+                  : Object.values(tabComponentTypeEnum)
+              }
               onSelect={(value): void =>
                 handleTabChange({ componentType: value.toString() })
               }
@@ -376,9 +388,17 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       (option) => option.value === tab?.componentSubType,
                     )?.label || ''
                   }
-                  selectableValues={chartComponentSubTypes.map(
-                    (option) => option.label,
-                  )}
+                  selectableValues={
+                    usesQueryParameter
+                      ? chartComponentSubTypes
+                          .filter((x) =>
+                            tabComponentQueryParamWhitelist[
+                              tabComponentTypeEnum.diagram
+                            ].includes(x.value),
+                          )
+                          .map((option) => option.label)
+                      : chartComponentSubTypes.map((option) => option.label)
+                  }
                   onSelect={(label: string | number): void => {
                     const enumValue = chartComponentSubTypes.find(
                       (option) => option.label === label,
@@ -901,7 +921,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             onChange={(value: boolean): void =>
                               handleTabChange({ setValueLimit: value })
                             }
-                            label={`Nur Top ${tab?.userDefinedLimit || 10} anzeigen`}
+                            label={`Anzahl der angezeigten Werte: ${tab?.userDefinedLimit || 10}`}
                           />
                           {tab?.setValueLimit && (
                             <div className="flex-grow">
@@ -1148,9 +1168,17 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       (option) => option.value === tab?.componentSubType,
                     )?.label || ''
                   }
-                  selectableValues={sliderComponentSubTypes.map(
-                    (option) => option.label,
-                  )}
+                  selectableValues={
+                    usesQueryParameter
+                      ? sliderComponentSubTypes
+                          .filter((x) =>
+                            tabComponentQueryParamWhitelist[
+                              tabComponentTypeEnum.slider
+                            ].includes(x.value),
+                          )
+                          .map((option) => option.label)
+                      : sliderComponentSubTypes.map((option) => option.label)
+                  }
                   onSelect={(label: string | number): void => {
                     const enumValue = sliderComponentSubTypes.find(
                       (option) => option.label === label,
@@ -1291,9 +1319,19 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       (option) => option.value === tab?.componentSubType,
                     )?.label || ''
                   }
-                  selectableValues={informationComponentSubTypes.map(
-                    (option) => option.label,
-                  )}
+                  selectableValues={
+                    usesQueryParameter
+                      ? informationComponentSubTypes
+                          .filter((x) =>
+                            tabComponentQueryParamWhitelist[
+                              tabComponentTypeEnum.information
+                            ].includes(x.value),
+                          )
+                          .map((option) => option.label)
+                      : informationComponentSubTypes.map(
+                          (option) => option.label,
+                        )
+                  }
                   onSelect={(label: string | number): void => {
                     const enumValue = informationComponentSubTypes.find(
                       (option) => option.label === label,
@@ -3084,6 +3122,46 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   backgroundColor={backgroundColor}
                   handleTabChange={handleTabChange}
                 />
+              </div>
+            </div>
+          )}
+
+          {tab?.componentType === tabComponentTypeEnum.pharmacy && (
+            <div className="div">
+              <div className="flex flex-col w-full pb-4">
+                <WizardLabel label="Postleitzahl" />
+                <WizardTextfield
+                  value={tab?.pharmacyZipCode ?? '36119'}
+                  onChange={(value: string | number): void => {
+                    handleTabChange({ pharmacyZipCode: value as number });
+                  }}
+                  isNumeric={true}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+                <WizardLabel label="Benutzername" />
+                <WizardTextfield
+                  value={tab?.pharmacyUsername ?? ''}
+                  onChange={(value: string | number): void => {
+                    handleTabChange({ pharmacyUsername: value as string });
+                  }}
+                  isNumeric={false}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+                <WizardLabel label="Passwort" />
+                <WizardPasswordTextfield
+                  value={(tab?.pharmacyPassword as string) ?? ''}
+                  onChange={(value: string | number): void => {
+                    handleTabChange({
+                      pharmacyPassword: value as string,
+                    });
+                  }}
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+                <WizardLabel label="(Wenn das Passwort nicht geändert werden soll, bitte leer lassen)" />
               </div>
             </div>
           )}

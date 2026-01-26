@@ -2,6 +2,9 @@
 
 import { useParams } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
+import { env } from 'next-dynenv';
+
+const NEXT_PUBLIC_IGNORE_TENANT_CHECK = env('NEXT_PUBLIC_IGNORE_TENANT_CHECK');
 
 export function getTenantOfPage(): string | undefined {
   const params = useParams();
@@ -13,7 +16,8 @@ export function isUserMatchingTenant(
   bearerToken: string,
   tenant: string,
 ): boolean {
-  if (process.env.NEXT_PUBLIC_IGNORE_TENANT_CHECK === 'true') {
+  console.log('Skip tenant check? :' + NEXT_PUBLIC_IGNORE_TENANT_CHECK);
+  if (NEXT_PUBLIC_IGNORE_TENANT_CHECK === 'true') {
     return true;
   }
 

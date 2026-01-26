@@ -1,4 +1,5 @@
 import { JSX } from 'react';
+import Script from 'next/script';
 
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { CorporateInfo } from '@/types';
@@ -17,8 +18,44 @@ export default async function RootLayout(props: {
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
 
+  // Resolve Cookiebot ID per tenant with env fallback
+  let cookiebotId = process.env.NEXT_PUBLIC_COOKIEBOT_ID;
+  try {
+    if (tenant) {
+      console.log('[Cookiebot] Resolving ID for tenant:', tenant);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/general-settings/tenant/${tenant}`,
+      );
+      if (response.ok) {
+        const general = await response.json();
+        console.log('[Cookiebot] General settings response received');
+        if (general?.cookiebotId) {
+          cookiebotId = general.cookiebotId;
+          console.log('[Cookiebot] Using DB cookiebotId:', cookiebotId);
+        } else {
+          console.log(
+            '[Cookiebot] No DB cookiebotId found, using env fallback',
+          );
+        }
+      } else {
+        console.warn('[Cookiebot] Failed response:', response.status);
+      }
+    } else {
+      console.log('[Cookiebot] No tenant provided, using env fallback');
+    }
+  } catch (error) {
+    console.error('Failed to fetch Cookiebot ID from general settings:', error);
+  }
+
   return (
     <>
+      <Script
+        id="Cookiebot"
+        src="https://consent.cookiebot.com/uc.js"
+        data-cbid={cookiebotId}
+        data-blockingmode="manual"
+        type="text/javascript"
+      ></Script>
       <style>
         {/* dynamic scrollbar colors */}
         {`

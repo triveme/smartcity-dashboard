@@ -2,11 +2,11 @@
 import { ReactElement, ReactNode, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useAuth } from 'react-oidc-context';
-import { env } from 'next-runtime-env';
+import { env } from 'next-dynenv';
 
 import { GenericTableContentItem, TableColumn } from '@/types';
 import VisibilityDisplay from '@/ui/VisibilityDisplay';
-import DashboardIcons from '@/ui/Icons/DashboardIcon'; // Temporarily unused because the copy & delete buttons don’t work
+import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { deleteGenericItemById } from '@/utils/apiHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
@@ -46,7 +46,7 @@ export default function TableContent<T>(
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const { openSnackbar } = useSnackbar();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [isActiveTransaction, setIsActiveTransaction] = useState(false); // Temporarily unused because the copy & delete buttons don’t work
+  const [isActiveTransaction, setIsActiveTransaction] = useState(false);
 
   const pathname = usePathname();
   const auth = useAuth();
@@ -55,6 +55,12 @@ export default function TableContent<T>(
   const basepathRedirect = BASEPATH ? `${BASEPATH}/` : '';
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;
+
+  const isEditable =
+    contentType === 'widget' ||
+    contentType === 'dashboard' ||
+    contentType === 'InternalData' ||
+    contentType == 'AuthData';
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderFunctions: { [key: string]: (item: any) => ReactNode } = {
@@ -106,7 +112,6 @@ export default function TableContent<T>(
     }
   };
 
-  // Temporarily unused because the copy & delete buttons don’t work
   const handleClickDeleteIcon = (
     event: React.MouseEvent,
     itemId: string | undefined,
@@ -116,7 +121,6 @@ export default function TableContent<T>(
     if (itemId) setSelectedItemId(itemId);
   };
 
-  // Temporarily unused because the copy & delete buttons don’t work
   const handleDuplicateClick = async (
     event: React.MouseEvent,
     itemId: string | undefined,
@@ -172,34 +176,38 @@ export default function TableContent<T>(
                   {renderCell(item, column.name)}
                 </td>
               ))}
-              {/* <td>
-                <button
-                  title="Delete"
-                  className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
-                    isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={isActiveTransaction}
-                  onClick={(event): void =>
-                    handleClickDeleteIcon(event, item.id)
-                  }
-                >
-                  <DashboardIcons iconName="Trashcan" color="#FA4141" />
-                </button>
-              </td>
-              <td>
-                <button
-                  title="Duplicate"
-                  className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
-                    isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={isActiveTransaction}
-                  onClick={async (event): Promise<void> =>
-                    await handleDuplicateClick(event, item.id)
-                  }
-                >
-                  <DashboardIcons iconName="Copy" color="#4CAF50" />
-                </button>
-              </td> */}
+              {isEditable && (
+                <td>
+                  <button
+                    title="Delete"
+                    className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
+                      isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={isActiveTransaction}
+                    onClick={(event): void =>
+                      handleClickDeleteIcon(event, item.id)
+                    }
+                  >
+                    <DashboardIcons iconName="Trashcan" color="#FA4141" />
+                  </button>
+                </td>
+              )}
+              {isEditable && (
+                <td>
+                  <button
+                    title="Duplicate"
+                    className={`z-20 w-8 h-8 hover:bg-[#C7D2EE] rounded-lg ${
+                      isActiveTransaction ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                    disabled={isActiveTransaction}
+                    onClick={async (event): Promise<void> =>
+                      await handleDuplicateClick(event, item.id)
+                    }
+                  >
+                    <DashboardIcons iconName="Copy" color="#4CAF50" />
+                  </button>
+                </td>
+              )}
             </tr>
           ))
         )}

@@ -60,6 +60,9 @@ export default function Pages(): ReactElement {
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [allowThemeSwitching, setAllowThemeSwitching] = useState(false);
   const [disclaimer, setDisclaimer] = useState('');
+  const [cookiebotId, setCookiebotId] = useState<string>('');
+  const [matomoSiteId, setMatomoSiteId] = useState<string>('');
+  const [matomoUrl, setMatomoUrl] = useState<string>('');
   const [errors, setErrors] = useState<WizardErrors>({});
   const { openSnackbar } = useSnackbar();
 
@@ -71,6 +74,17 @@ export default function Pages(): ReactElement {
       setImprintUrl(generalSettings.imprint);
       setPrivacyUrl(generalSettings.privacy);
       setDisclaimer(generalSettings.disclaimer);
+      setCookiebotId(
+        generalSettings.cookiebotId ||
+          (process.env.NEXT_PUBLIC_COOKIEBOT_ID ?? ''),
+      );
+      setMatomoUrl(
+        generalSettings.matomoUrl || (process.env.NEXT_PUBLIC_MATOMO_URL ?? ''),
+      );
+      setMatomoSiteId(
+        generalSettings.matomoSiteId ||
+          (process.env.NEXT_PUBLIC_MATOMO_SITE_ID ?? ''),
+      );
     }
   };
 
@@ -101,6 +115,36 @@ export default function Pages(): ReactElement {
 
   const handleSaveClick = async (): Promise<void> => {
     const errorsOccurred = validateFields();
+    if (!cookiebotId || cookiebotId.trim() === '') {
+      if (
+        process.env.NEXT_PUBLIC_COOKIEBOT_ID &&
+        process.env.NEXT_PUBLIC_COOKIEBOT_ID != ''
+      ) {
+        setCookiebotId(process.env.NEXT_PUBLIC_COOKIEBOT_ID);
+      } else {
+        errorsOccurred.cookiebotIdError = 'Cookiebot ID is required!';
+      }
+    }
+    if (!matomoUrl || matomoUrl.trim() === '') {
+      if (
+        process.env.NEXT_PUBLIC_MATOMO_URL &&
+        process.env.NEXT_PUBLIC_MATOMO_URL != ''
+      ) {
+        setCookiebotId(process.env.NEXT_PUBLIC_MATOMO_URL);
+      } else {
+        //errorsOccurred.matomoUrlError = 'Matomo Url is required!';
+      }
+    }
+    if (!matomoSiteId || matomoSiteId.trim() === '') {
+      if (
+        process.env.NEXT_PUBLIC_MATOMO_SITE_ID &&
+        process.env.NEXT_PUBLIC_MATOMO_SITE_ID != ''
+      ) {
+        setCookiebotId(process.env.NEXT_PUBLIC_MATOMO_SITE_ID);
+      } else {
+        //errorsOccurred.matomoSiteIdError = 'Matomo Site ID is required!';
+      }
+    }
     if (Object.keys(errorsOccurred).length) {
       setErrors(errorsOccurred);
       for (const key in errorsOccurred) {
@@ -124,7 +168,23 @@ export default function Pages(): ReactElement {
         privacy: privacyUrl,
         allowThemeSwitching: allowThemeSwitching,
         disclaimer: disclaimer,
+        cookiebotId: cookiebotId || null,
+        matomoUrl: matomoUrl || null,
+        matomoSiteId: matomoSiteId || null,
       };
+
+      console.log(
+        '[Cookiebot][Admin] Saving updated general settings cookiebotId:',
+        cookiebotId,
+      );
+      console.log(
+        '[Matomo URL][Admin] Saving updated general settings matomoUrl:',
+        matomoUrl,
+      );
+      console.log(
+        '[Matomo-Site-ID][Admin] Saving updated general settings matomoSiteId:',
+        matomoSiteId,
+      );
 
       const retrievedGeneralSettings: GeneralSettings =
         await updateGeneralSettings(
@@ -142,8 +202,15 @@ export default function Pages(): ReactElement {
         privacy: privacyUrl,
         allowThemeSwitching: allowThemeSwitching,
         disclaimer: disclaimer,
+        cookiebotId: cookiebotId || null,
+        matomoUrl: matomoUrl || null,
+        matomoSiteId: matomoSiteId || null,
       };
 
+      console.log(
+        '[Cookiebot][Admin] Creating general settings with cookiebotId:',
+        cookiebotId,
+      );
       const retrievedGeneralSettings: GeneralSettings =
         await createGeneralSettings(
           newGeneralSettings,
@@ -205,20 +272,6 @@ export default function Pages(): ReactElement {
           </div>
         </div>
         <HorizontalDivider />
-        <div className="flex flex-row items-center w-full pb-2">
-          <WizardLabel label="Farbschema-Wechsel erlauben" />
-          <input
-            type="checkbox"
-            checked={allowThemeSwitching}
-            onChange={(e): void => setAllowThemeSwitching(e.target.checked)}
-            className="h-6 w-6 rounded"
-            style={{
-              color: corporateInfo?.fontColor,
-              borderColor: corporateInfo?.panelBorderColor,
-            }}
-          />
-        </div>
-        <HorizontalDivider />
 
         <div className="flex flex-row items-center w-full pb-2">
           <WizardTextfield
@@ -235,9 +288,88 @@ export default function Pages(): ReactElement {
             panelBorderSize={corporateInfo?.panelBorderSize}
           />
         </div>
-        <div className="flex justify-end py-4 space-x-4">
-          <CancelButton closeWindow={true} onClick={handleCancelClick} />
-          <SaveButton handleSaveClick={handleSaveClick} />
+        <HorizontalDivider />
+        <WizardLabel label="Externe Services" />
+        <div className="flex flex-row gap-4 w-full pb-2">
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Cookiebot-ID" />
+            <WizardTextfield
+              value={cookiebotId || ''}
+              onChange={(value: string | number): void =>
+                setCookiebotId(value.toString())
+              }
+              error={errors && (errors.cookiebotIdError as string)}
+              borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+              backgroundColor={
+                corporateInfo?.dashboardPrimaryColor || '#2B3244'
+              }
+              panelFontColor={corporateInfo?.panelFontColor}
+              panelBorderRadius={corporateInfo?.panelBorderRadius}
+              panelBorderSize={corporateInfo?.panelBorderSize}
+              placeholderText={'Enter Cookiebot ID'}
+            />
+          </div>
+        </div>
+        <HorizontalDivider />
+
+        <div className="flex flex-row gap-4 w-full pb-2">
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Matomo-URL" />
+            <WizardTextfield
+              value={matomoUrl || ''}
+              onChange={(value: string | number): void =>
+                setMatomoUrl(value.toString())
+              }
+              error={errors && (errors.matomoUrlError as string)}
+              borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+              backgroundColor={
+                corporateInfo?.dashboardPrimaryColor || '#2B3244'
+              }
+              panelFontColor={corporateInfo?.panelFontColor}
+              panelBorderRadius={corporateInfo?.panelBorderRadius}
+              panelBorderSize={corporateInfo?.panelBorderSize}
+              placeholderText={'Enter Matomo-URL'}
+            />
+          </div>
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Matomo-Site-ID" />
+            <WizardTextfield
+              value={matomoSiteId || ''}
+              onChange={(value: string | number): void =>
+                setMatomoSiteId(value.toString())
+              }
+              error={errors && (errors.matomoSiteIdError as string)}
+              borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+              backgroundColor={
+                corporateInfo?.dashboardPrimaryColor || '#2B3244'
+              }
+              panelFontColor={corporateInfo?.panelFontColor}
+              panelBorderRadius={corporateInfo?.panelBorderRadius}
+              panelBorderSize={corporateInfo?.panelBorderSize}
+              placeholderText={'Enter Matomo-Site-ID'}
+            />
+          </div>
+        </div>
+        <HorizontalDivider />
+        <div className="flex align-center justify-end py-4 ">
+          <div className="flex flex-row items-center w-full pb-2">
+            <WizardLabel label="Farbschema-Wechsel erlauben" />
+            <input
+              type="checkbox"
+              checked={allowThemeSwitching}
+              onChange={(e): void => setAllowThemeSwitching(e.target.checked)}
+              className="h-6 w-6 rounded"
+              style={{
+                color: corporateInfo?.fontColor,
+                borderColor: corporateInfo?.panelBorderColor,
+              }}
+            />
+          </div>
+
+          <div className="flex items-center space-x-4">
+            <CancelButton closeWindow={true} onClick={handleCancelClick} />
+            <SaveButton handleSaveClick={handleSaveClick} />
+          </div>
         </div>
       </div>
     </div>

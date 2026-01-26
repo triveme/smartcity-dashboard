@@ -28,6 +28,7 @@ type QueryInternalDataWizardProps = {
   hoverColor: string;
   isSingleWidget: boolean;
   tenant?: string;
+  usesQueryParameter: boolean;
 };
 
 export default function QueryInternalDataWizard(
@@ -43,6 +44,8 @@ export default function QueryInternalDataWizard(
     hoverColor,
     isSingleWidget,
     tenant,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    usesQueryParameter,
   } = props;
 
   const auth = useAuth();
@@ -258,7 +261,7 @@ export default function QueryInternalDataWizard(
           />
         </div>
       </div>
-      {isSingleWidget ? (
+      {isSingleWidget && usesQueryParameter === false ? (
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label={'Datenreihe'} />
           <div className="flex flex-row items-center">

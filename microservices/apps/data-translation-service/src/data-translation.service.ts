@@ -177,20 +177,33 @@ export class DataTranslationService {
           }
 
           const tabWithContent = wrapTabWithDefaultData(tab);
-          if (isSingleValueTab(tab)) {
+
+          if (isSingleValueTab(tab) && widget.usesQueryParameter === false) {
             await this.populateValueService.populateTab(tabWithContent);
-          } else if (isCombinedWidgetTab(tab)) {
+          } else if (
+            isSingleValueTab(tab) &&
+            widget.usesQueryParameter === true
+          ) {
+            await this.populateValueService.populateTab(tabWithContent, true);
+          } else if (
+            isCombinedWidgetTab(tab) &&
+            widget.usesQueryParameter === false
+          ) {
             await this.populateCombinedWidgetService.populateTab(
               tabWithContent,
             );
-          } else if (tab.componentType === 'Listview') {
+          } else if (
+            tab.componentType === 'Listview' &&
+            widget.usesQueryParameter === false
+          ) {
             await this.populateListviewService.populateListview(tabWithContent);
           } else if (
-            tab.componentType === 'Diagramm' ||
-            tab.componentType === 'Karte' ||
-            (tab.componentType === 'Slider' &&
-              tab.componentSubType === 'Slider Übersicht') ||
-            tab.componentType === 'Interaktive Komponente'
+            (tab.componentType === 'Diagramm' ||
+              tab.componentType === 'Karte' ||
+              (tab.componentType === 'Slider' &&
+                tab.componentSubType === 'Slider Übersicht') ||
+              tab.componentType === 'Interaktive Komponente') &&
+            widget.usesQueryParameter === false
           ) {
             await this.populateChartService.populateTab(tabWithContent);
           }

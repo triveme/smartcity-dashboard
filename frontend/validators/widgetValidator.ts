@@ -37,6 +37,7 @@ export function validateWidgetWithChildren(
           false,
           origin,
           widgetWithChildren.tab.componentSubType,
+          widgetWithChildren.widget.usesQueryParameter,
         ),
       };
     }

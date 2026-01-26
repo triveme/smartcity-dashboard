@@ -47,6 +47,7 @@ type QueryConfigWizardProps = {
   hoverColor: string;
   setOrigin: (selectedOrigin: string) => void;
   tenant?: string;
+  usesQueryParameter?: boolean;
 };
 
 const singleSelectWidgetTypes: string[] = [
@@ -75,6 +76,7 @@ export default function QueryConfigWizard(
     hoverColor,
     setOrigin,
     tenant,
+    usesQueryParameter,
   } = props;
 
   const [queryConfigFormIsOpen, setQueryConfigFormIsOpen] = useState(false);
@@ -186,6 +188,7 @@ export default function QueryConfigWizard(
               iconColor={iconColor}
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+              usesQueryParameter={usesQueryParameter}
             />
           </div>
           <div className="flex flex-col w-full pb-2">
@@ -215,6 +218,7 @@ export default function QueryConfigWizard(
               }
               ngsiType={datasourceOrigin}
               ngsiCollections={ngsiCollections}
+              usesQueryParameter={usesQueryParameter || false}
             />
           ) : datasourceOrigin === 'api' ? (
             <QueryOrchideoWizard
@@ -229,6 +233,7 @@ export default function QueryConfigWizard(
                   ? true
                   : false
               }
+              usesQueryParameter={usesQueryParameter || false}
             />
           ) : datasourceOrigin === 'usi' ? (
             <QueryUsiWizard
@@ -243,6 +248,7 @@ export default function QueryConfigWizard(
                   ? true
                   : false
               }
+              usesQueryParameter={usesQueryParameter || false}
             />
           ) : datasourceOrigin === 'internal' ? (
             <QueryInternalDataWizard
@@ -258,6 +264,7 @@ export default function QueryConfigWizard(
                   ? true
                   : false
               }
+              usesQueryParameter={usesQueryParameter || false}
             />
           ) : null}
 
@@ -265,6 +272,7 @@ export default function QueryConfigWizard(
           {widgetType === tabComponentSubTypeEnum.lineChart ||
           widgetType === tabComponentSubTypeEnum.lineChartDynamic ||
           widgetType === tabComponentSubTypeEnum.barChart ||
+          widgetType === tabComponentSubTypeEnum.barChartHorizontal ||
           widgetType === tabComponentSubTypeEnum.barChartDynamic ? (
             <div>
               {datasourceOrigin !== authDataTypeEnum.internal && (
