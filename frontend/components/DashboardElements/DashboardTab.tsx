@@ -8,7 +8,6 @@ import {
   MapModalLegend,
   MapModalWidget,
   MapObject,
-  QueryDataWithAttributes,
   Tab,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
@@ -239,6 +238,7 @@ export default async function DashboardTab(
               }
               fontSize={ciColors.pieChartFontSize}
               fontColor={ciColors.pieChartFontColor}
+              menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
               currentValuesColors={
                 ciColors.pieChartCurrentValuesColors || [
                   '#4CAF50',
@@ -304,6 +304,8 @@ export default async function DashboardTab(
               isStepline={tab.isStepline || false}
               isStackedChart={tab?.isStackedChart || false}
               showLegend={tab.showLegend || false}
+              singleSelectLegend={tab.singleSelectLegend || false}
+              advancedDateSelection={tab.advancedDateSelection || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
               staticValuesTicks={tab.chartStaticValuesTicks || []}
@@ -311,6 +313,7 @@ export default async function DashboardTab(
               axisLabelFontColor={
                 ciColors.lineChartAxisLabelFontColor || '#FFF'
               }
+              menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
               axisLineColor={ciColors.lineChartAxisLineColor || '#FFF'}
               axisFontSize={ciColors.lineChartAxisTicksFontSize || '15'}
               gridColor={ciColors.lineChartGridColor || '#FFFFF'}
@@ -402,6 +405,7 @@ export default async function DashboardTab(
                   '#70AAFF',
                 ]
               }
+              menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
               showGrid={false}
               legendAlignment={tab.chartLegendAlign || 'Top'}
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
@@ -478,6 +482,7 @@ export default async function DashboardTab(
                   '#70AAFF',
                 ]
               }
+              menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
               showGrid={false}
               legendAlignment={tab.chartLegendAlign || 'Top'}
               hasAdditionalSelection={tab.chartHasAdditionalSelection || false}
@@ -577,6 +582,7 @@ export default async function DashboardTab(
                   '#E74C3C',
                 ]
               }
+              menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
@@ -595,6 +601,7 @@ export default async function DashboardTab(
               fontSize={ciColors.stageableChartFontSize || '32'}
               ticksFontColor={ciColors.stageableChartTicksFontColor || '#FFFFF'}
               ticksFontSize={ciColors.stageableChartTicksFontSize || '20'}
+              tabData={tabData}
             />
           )}
         </div>
@@ -710,9 +717,7 @@ export default async function DashboardTab(
                   data={combinedMapData?.mapObject as MapObject[]}
                   combinedMapData={combinedMapData}
                   mapAllowFilter={true}
-                  combinedQueryData={
-                    combinedQueryData as QueryDataWithAttributes[]
-                  }
+                  combinedQueryData={combinedQueryData?.filteredData}
                   mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
                   mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
                   mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
@@ -860,9 +865,7 @@ export default async function DashboardTab(
                   }
                   mapType={tab.componentSubType || ''}
                   mapSearch={tab.mapSearch}
-                  combinedQueryData={
-                    combinedQueryData as QueryDataWithAttributes[]
-                  }
+                  combinedQueryData={combinedQueryData?.filteredData}
                   mapAllowLegend={tab.mapAllowLegend || false}
                   mapLegendValues={
                     tab.mapLegendValues ? tab.mapLegendValues : []

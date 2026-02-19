@@ -121,6 +121,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     tab?.childWidgets || [''],
   );
 
+  const [pharmacyPassword, setPharmacyPassword] = useState<string>('');
+
   const handleTabChange = (update: Partial<Tab>): void => {
     setTab((prevTab) => {
       const newTab = { ...prevTab, ...update };
@@ -347,6 +349,10 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       }
     };
   }, [geoJSONFile]);
+
+  const filterDefinitions = tab?.mapFilterAttribute
+    ? tab.mapFilterAttribute.split('|')
+    : [''];
 
   return (
     <div className="flex flex-col">
@@ -777,6 +783,32 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         />
                       </div>
                     )}
+                    {(tab?.componentSubType ===
+                      tabComponentSubTypeEnum.lineChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) &&
+                      tab?.showLegend && (
+                        <WizardSelectBox
+                          checked={tab?.singleSelectLegend || false}
+                          onChange={(value: boolean): void => {
+                            handleTabChange({ singleSelectLegend: value });
+                          }}
+                          label=" Sensoren einzeln auswählbar"
+                        />
+                      )}
+                    {(tab?.componentSubType ===
+                      tabComponentSubTypeEnum.lineChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) &&
+                      tab?.mapAllowZoom && (
+                        <WizardSelectBox
+                          checked={tab?.advancedDateSelection || false}
+                          onChange={(value: boolean): void => {
+                            handleTabChange({ advancedDateSelection: value });
+                          }}
+                          label=" erweiterte Datumsauswahl für Nutzer"
+                        />
+                      )}
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
                         <WizardLabel label="Bilddownload erlauben?" />
@@ -1615,22 +1647,78 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     {tab.mapAllowFilter && (
                       <>
                         <HorizontalDivider />
-                        <div className="flex flex-col w-full pb-2">
-                          <WizardLabel label="Filterattribut (nach Query Konfiguration möglich)" />
-                          <WizardDropdownSelection
-                            currentValue={tab?.mapFilterAttribute || ''}
-                            selectableValues={['', ...queryConfig.attributes]}
-                            error={errors && errors.mapFilterAttributeError}
-                            onSelect={(value: string | number): void =>
-                              handleTabChange({
-                                mapFilterAttribute: value.toString(),
-                              })
-                            }
-                            iconColor={iconColor}
-                            borderColor={borderColor}
-                            backgroundColor={backgroundColor}
-                          />
-                        </div>
+                        <WizardLabel label="Filter-Attribute" />
+                        {filterDefinitions.map((currentKey, index) => {
+                          return (
+                            <div key={index} className="flex flex-col p-3">
+                              <div className="flex items-center justify-between">
+                                <WizardLabel label={`Attribut ${index + 1}`} />
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <div className="flex-grow">
+                                  <WizardDropdownSelection
+                                    iconColor={iconColor}
+                                    borderColor={borderColor}
+                                    backgroundColor={backgroundColor}
+                                    currentValue={currentKey || ''}
+                                    selectableValues={[
+                                      '',
+                                      ...queryConfig.attributes,
+                                    ]}
+                                    onSelect={(val: string | number) => {
+                                      const stringVal = val.toString();
+                                      const newDefs = [...filterDefinitions];
+                                      newDefs[index] = stringVal;
+                                      handleTabChange({
+                                        mapFilterAttribute: newDefs.join('|'),
+                                      });
+                                    }}
+                                  />
+                                </div>
+
+                                {filterDefinitions.length > 1 && (
+                                  <CreateDashboardElementButton
+                                    label="-"
+                                    handleClick={(): void => {
+                                      const newDefs = filterDefinitions.filter(
+                                        (_, i) => i !== index,
+                                      );
+                                      handleTabChange({
+                                        mapFilterAttribute: newDefs.join('|'),
+                                      });
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        <CreateDashboardElementButton
+                          label="+ Attribut hinzufügen"
+                          handleClick={() => {
+                            const currentAttr = tab?.mapFilterAttribute || '';
+                            handleTabChange({
+                              mapFilterAttribute: currentAttr
+                                ? `${currentAttr}|`
+                                : '',
+                            });
+                          }}
+                        />
+
+                        <HorizontalDivider />
+                        <CreateDashboardElementButton
+                          label="+ Filter hinzufügen"
+                          handleClick={() => {
+                            const currentAttr = tab?.mapFilterAttribute || '';
+                            handleTabChange({
+                              mapFilterAttribute: currentAttr
+                                ? `${currentAttr}|`
+                                : '',
+                            });
+                          }}
+                        />
                       </>
                     )}
                     {tab.mapAllowLegend && (
@@ -3151,8 +3239,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                 />
                 <WizardLabel label="Passwort" />
                 <WizardPasswordTextfield
-                  value={(tab?.pharmacyPassword as string) ?? ''}
+                  value={pharmacyPassword}
                   onChange={(value: string | number): void => {
+                    setPharmacyPassword(value as string);
                     handleTabChange({
                       pharmacyPassword: value as string,
                     });

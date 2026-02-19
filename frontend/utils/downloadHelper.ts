@@ -2,23 +2,43 @@ import {
   getDashboardByIdWithContent,
   getDashboardDownloadData,
 } from '@/api/dashboard-service';
-import { getWidgetDownloadData } from '@/api/widget-service';
-import { DashboardWithContent } from '@/types';
+import {
+  getWidgetDownloadData,
+  getWidgetWithChildrenById,
+} from '@/api/widget-service';
+import { DashboardWithContent, WidgetWithChildren } from '@/types';
 
 export const getAvailableWidgets = async (
   accessToken: string,
+  type: string,
   id: string,
-): Promise<DashboardWithContent | undefined> => {
+): Promise<DashboardWithContent | WidgetWithChildren | undefined> => {
   let widgets;
 
   try {
-    try {
-      widgets = await getDashboardByIdWithContent(accessToken, id);
-    } catch (error) {
-      console.error(
-        'Widget-With-Content konntet nicht abgerufen werden:',
-        error,
-      );
+    switch (type) {
+      case 'dashboard':
+        try {
+          widgets = await getDashboardByIdWithContent(accessToken, id);
+          break;
+        } catch (error) {
+          console.error(
+            'Widget-With-Content konntet nicht abgerufen werden:',
+            error,
+          );
+          return;
+        }
+      case 'widget':
+        try {
+          widgets = await getWidgetWithChildrenById(accessToken, id);
+          break;
+        } catch (error) {
+          console.error(
+            'Widget-With-Content konntet nicht abgerufen werden:',
+            error,
+          );
+          return;
+        }
     }
   } catch (error) {
     console.error(error);
@@ -59,8 +79,6 @@ export const downloadCSV = async (
           return;
         }
       case 'widget':
-        console.log('* * * CASE WIDGET * * *');
-
         try {
           csvData = await getWidgetDownloadData(accessToken, id);
           break;

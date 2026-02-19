@@ -239,6 +239,48 @@ usi-platform-service:
       memory: "512Mi"
       cpu: "200m"
 
+sql-view-service:
+  nodeSelector:
+    location: 06-Fulda-Steinauer-Str
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: ca-issuer
+      cert-manager.io/issuer-kind: ClusterIssuer
+    ingressClassName: nginx
+  image:
+    repository: nexus.edag.de:8202/smart-city/scs/sql-view-service
+    tag: 'latest-dev'
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
+project-data-service:
+  nodeSelector:
+    location: 06-Fulda-Steinauer-Str
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: ca-issuer
+      cert-manager.io/issuer-kind: ClusterIssuer
+    ingressClassName: nginx
+  image:
+    repository: nexus.edag.de:8202/smart-city/scs/project-data-service
+    tag: 'latest-dev'
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+
 frontend:
   nodeSelector:
     location: 06-Fulda-Steinauer-Str

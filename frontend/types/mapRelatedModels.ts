@@ -51,6 +51,7 @@ export interface BaseMapProps {
   allowDataExport?: boolean;
   widgetDownloadId?: string;
   combinedQueryData?: QueryDataWithAttributes[];
+  uiFilterData?: QueryDataWithAttributes[];
   locateOnMap?: { pos: [number, number]; id: string };
   sendFeaturesToDynamicMap?: (features: string[]) => void;
   sendHoverFeatureToDynmaicMap?: (features: string) => void;

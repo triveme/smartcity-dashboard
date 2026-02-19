@@ -71,6 +71,7 @@ import {
   faDownload,
   faCogs,
   faDatabase,
+  faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const AvailableIcons = [
@@ -129,6 +130,7 @@ export const AvailableIcons = [
   'Download',
   'Cogs',
   'Attention',
+  'Info',
 ];
 
 type FontAwesomeIconsProps = {
@@ -354,6 +356,8 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faCogs} color={color} size={size} />;
     case 'Database':
       return <FontAwesomeIcon icon={faDatabase} color={color} size={size} />;
+    case 'Info':
+      return <FontAwesomeIcon icon={faCircleInfo} color={color} size={size} />;
     default:
       return <div></div>;
   }

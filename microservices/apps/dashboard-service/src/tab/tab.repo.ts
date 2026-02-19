@@ -165,7 +165,7 @@ export class TabRepo {
     const result = await dbActor.insert(tabs).values(tabValues).returning();
 
     if (result && result.length > 0) {
-      if (customMapSensorData !== undefined) {
+      if (customMapSensorData !== undefined && customMapSensorData.length > 0) {
         await dbActor.insert(customMapSensorDataTable).values(
           customMapSensorData.map((sensor) => ({
             tabId: result[0].id,
@@ -177,7 +177,7 @@ export class TabRepo {
         );
       }
 
-      if (valuesToImages !== undefined) {
+      if (valuesToImages !== undefined && valuesToImages.length > 0) {
         await dbActor.insert(tabValuesToImageTable).values(
           valuesToImages.map((vti) => ({
             tabId: result[0].id,

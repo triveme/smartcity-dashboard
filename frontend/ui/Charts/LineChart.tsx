@@ -1,6 +1,6 @@
 'use client';
-import { ReactElement, useEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
+import { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { aggregationEnum, ChartData } from '@/types';
 import {
@@ -22,9 +22,18 @@ import {
   getIntervalDaysFromChart,
   downsampleValues,
   getXMinMax,
+  getVisibleDateRange,
+  setVisibleDateRange,
+  getGridOptions,
+  getLegendOptions,
 } from '@/utils/lineChartUtil';
 import { debounce } from 'lodash';
+import WizardTextfield from '../WizardTextfield';
+import { isValidDate } from '@/utils/validationHelper';
+import WizardLabel from '../WizardLabel';
 import { useSearchParams } from 'next/navigation';
+
+type LegendSelectedMap = Record<string, boolean>;
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -41,6 +50,8 @@ type LineChartProps = {
   isStackedChart: boolean;
   chartHasAutomaticZoom?: boolean;
   showLegend?: boolean;
+  singleSelectLegend?: boolean;
+  advancedDateSelection?: boolean;
   staticValues: number[];
   staticValuesColors: string[];
   chartAggregationMode?: aggregationEnum;
@@ -67,6 +78,7 @@ type LineChartProps = {
   playAnimation?: boolean;
   highlightedColor?: string;
   unhighlightedColor?: string;
+  menuHoverColor: string;
 };
 
 export default function LineChart(props: LineChartProps): ReactElement {
@@ -83,6 +95,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
     isStepline,
     isStackedChart,
     showLegend,
+    singleSelectLegend,
+    advancedDateSelection,
     staticValues,
     staticValuesColors,
     staticValuesTexts = [],
@@ -109,6 +123,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     highlightedColor,
     unhighlightedColor,
     chartAggregationMode = aggregationEnum.none,
+    menuHoverColor,
   } = props;
 
   const searchParams = useSearchParams();
@@ -129,12 +144,21 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const chartInitialized = useRef<boolean>(false);
 
   const attributes = getUniqueField(chartData, false);
-  const xRange = getXMinMax(filteredData); // TODO This should maybe update on filter
+
+  const xFullRange = getXMinMax(filteredData); // TODO This should maybe update on filter
+  const [xRange, setXRange] = useState(xFullRange);
+  const hasEndLabel = useRef<echarts.LineSeriesOption | undefined>(undefined);
+
+  const textMeasureCanvas = document.createElement('canvas');
 
   const update = debounce(() => {
     const chart = chartInstance.current;
     if (!chart) return;
-    const daysIntervall = getIntervalDaysFromChart(chart, 20);
+
+    const range = getVisibleDateRange(chart);
+    if (!range) return;
+    setXRange(range);
+    const daysIntervall = getIntervalDaysFromChart(chart, 20, range);
     const allSeries = getAllSeries(daysIntervall);
     chart.setOption({ series: allSeries }, false);
   }, 500);
@@ -144,11 +168,14 @@ export default function LineChart(props: LineChartProps): ReactElement {
       if (chartInstance.current) {
         chartInstance.current.dispose();
       }
-      chartInstance.current = echarts.init(chartRef.current);
+      chartInstance.current = echarts.init(chartRef.current, undefined, {
+        locale: ECHARTS_LOCALE,
+      });
+
       chartInitialized.current = true;
       const seriesAll = getAllSeries(0);
       const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
-      const hasEndLabel = seriesAll.find((value) => value.endLabel?.show);
+      hasEndLabel.current = seriesAll.find((value) => value.endLabel?.show);
 
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
@@ -191,8 +218,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
           axisTick: {
             show: false,
           },
-          min: xRange?.min?.toISOString(),
-          max: xRange?.max?.toISOString(),
+          min: xFullRange?.min,
+          max: xFullRange?.max,
         },
         yAxis: {
           name: formatYAxisLabel(yAxisLabel || ''),
@@ -247,39 +274,47 @@ export default function LineChart(props: LineChartProps): ReactElement {
                 ? calculateMaxYAxisValue(chartData, decimalPlaces)
                 : undefined,
         },
-        legend: {
-          type: 'scroll',
-          orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
-          show: showLegend,
-          textStyle: {
-            fontSize: legendFontSize,
-            color: legendFontColor,
-          },
-          right: allowImageDownload ? '30' : 'auto',
-        },
+        legend: getLegendOptions(
+          allowImageDownload,
+          legendAlignment,
+          legendFontSize,
+          legendFontColor,
+          singleSelectLegend,
+          showLegend,
+          advancedDateSelection,
+        ),
         toolbox: {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
-              title: 'Bild Downloaden',
+              title: 'Als Bild herunterladen...    ',
+              icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
                 color: axisLabelFontColor,
-                borderColor: axisLabelFontColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
+              },
+              emphasis: {
+                iconStyle: {
+                  color: menuHoverColor,
+                  borderColor: 'transparent',
+                  borderWidth: 0,
+                },
               },
             },
           },
         },
-        grid: {
-          left: isShownInMapModal
-            ? 10
-            : calculateLeftGrid(yAxisLabel || '', legendAlignment),
-          right: hasEndLabel ? 100 * (14 / parseInt(legendFontSize)) : 10,
-          top: isShownInMapModal ? 20 : 30,
-          bottom: isShownInMapModal
-            ? 20
-            : calculateBottomGrid(xAxisLabel || '', allowZoom),
-          containLabel: true,
-        },
+        grid: getGridOptions(
+          isShownInMapModal,
+          hasEndLabel.current,
+          parseInt(legendFontSize),
+          calculateLeftGrid(yAxisLabel || '', legendAlignment),
+          calculateBottomGrid(
+            xAxisLabel || '',
+            allowZoom,
+            advancedDateSelection,
+          ),
+        ),
         dataZoom: allowZoom
           ? [
               {
@@ -288,12 +323,15 @@ export default function LineChart(props: LineChartProps): ReactElement {
                 filterMode: 'none',
                 start: 0,
                 end: 100,
+                bottom: advancedDateSelection ? 70 : undefined,
               },
               {
                 type: 'inside',
                 xAxisIndex: 0,
+                filterMode: 'none',
                 start: 0,
                 end: 100,
+                bottom: advancedDateSelection ? 70 : undefined,
               },
             ]
           : [],
@@ -315,10 +353,18 @@ export default function LineChart(props: LineChartProps): ReactElement {
       chartInstance.current.setOption(option);
       update();
 
+      const listener = (params: unknown): void => {
+        const p = params as { name: string; selected: Record<string, boolean> };
+        handleLegendSelect(p);
+      };
+      if (singleSelectLegend) {
+        chartInstance.current.on('legendselectchanged', listener);
+      }
       chartInstance.current.on('datazoom', update);
       // Clean up previous listeners on dispose
       chartRef.current.addEventListener('dispose', () => {
         chartInstance.current?.off('datazoom', update);
+        chartInstance.current?.off('legendselectchanged', listener);
       });
     }
   };
@@ -326,7 +372,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
     const tempData = chartData;
     let newFilteredData = tempData.filter((item) =>
-      item.name.includes(clickedAttribute),
+      item.name.endsWith(clickedAttribute),
     );
     if (entityId) {
       newFilteredData = newFilteredData.filter((x) => x.id === entityId);
@@ -335,9 +381,65 @@ export default function LineChart(props: LineChartProps): ReactElement {
     setFilteredData(newFilteredData);
   };
 
+  const handleLegendSelect = useCallback(
+    (params: { name: string; selected: LegendSelectedMap }) => {
+      const chart = chartInstance.current;
+      if (!chart) return;
+
+      const selectedMap = params.selected;
+      const selectedKeys = Object.keys(selectedMap).filter(
+        (key) => selectedMap[key],
+      );
+
+      // 1️⃣ None selected → reset all
+      if (selectedKeys.length === 0) {
+        const allSelected: LegendSelectedMap = {};
+        Object.keys(selectedMap).forEach((key) => {
+          allSelected[key] = true;
+        });
+
+        chart.setOption({ legend: { selected: allSelected } });
+        return;
+      }
+
+      // 2️⃣ Multiple selected → force only clicked one
+      if (selectedKeys.length > 1) {
+        const onlyOne: LegendSelectedMap = {};
+        Object.keys(selectedMap).forEach((key) => {
+          onlyOne[key] = key === params.name;
+        });
+
+        chart.setOption({ legend: { selected: onlyOne } });
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {
       initializeChart();
+    }
+
+    if (singleSelectLegend) {
+      const chart = chartInstance.current;
+      if (!chart) return;
+
+      const width = chart.getWidth();
+      const seriesData = [...filteredData];
+      const names = seriesData.map((s) => s.name);
+
+      const legendHeight = estimateLegendHeight(names, width);
+      chart.setOption({
+        grid: {
+          bottom:
+            legendHeight +
+            calculateBottomGrid(
+              xAxisLabel || '',
+              allowZoom,
+              advancedDateSelection,
+            ),
+        },
+      });
     }
   }, [filteredData, props]);
 
@@ -368,7 +470,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
       if (chartRef.current) {
         observer.unobserve(chartRef.current);
       }
-      if (chartInstance.current) {
+      if (chartInstance.current && singleSelectLegend) {
         chartInstance.current.dispose();
       }
     };
@@ -435,7 +537,53 @@ export default function LineChart(props: LineChartProps): ReactElement {
         </>
       )}
       <div className="w-full h-full flex flex-col sm:flex-col">
-        <div className="w-full h-full" ref={chartRef} />
+        <div className="w-full h-full test" ref={chartRef} />
+        {allowZoom && xRange && advancedDateSelection && (
+          <div className="w-full flex" style={{ marginTop: -50 }}>
+            <div className="flex w-1/2 mt-1 ml-4">
+              <WizardLabel label="Start" />
+              <WizardTextfield
+                value={xRange.min.toISOString().split('T')[0]}
+                onChange={(value): void => {
+                  if (
+                    typeof value === 'string' &&
+                    value.includes('-') &&
+                    isValidDate(value)
+                  ) {
+                    const chart = chartInstance.current;
+                    if (!chart) return;
+                    const date = new Date(value);
+                    date.setHours(0, 0, 0); // Set time to start of date
+                    setVisibleDateRange(chart, date, xRange.max);
+                  }
+                }}
+                borderColor={filterColor ?? '#F1B434'}
+                backgroundColor={filterColor ?? '#F1B434'}
+              />
+            </div>
+            <div className="flex w-1/2 mt-1 ml-4">
+              <WizardLabel label="Ende" />
+              <WizardTextfield
+                value={xRange.max.toISOString().split('T')[0]}
+                onChange={(value): void => {
+                  if (
+                    typeof value === 'string' &&
+                    value.includes('-') &&
+                    isValidDate(value)
+                  ) {
+                    const chart = chartInstance.current;
+                    if (!chart) return;
+                    const date = new Date(value);
+                    date.setHours(23, 59, 59); // Set time to end of date
+                    setVisibleDateRange(chart, xRange.min, date);
+                  }
+                }}
+                borderColor={filterColor ?? '#F1B434'}
+                backgroundColor={filterColor ?? '#F1B434'}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -534,5 +682,46 @@ export default function LineChart(props: LineChartProps): ReactElement {
         : [];
     const seriesAll = [...series, ...staticValueSeries];
     return seriesAll;
+  }
+
+  function measureText(text: string, font = '12px sans-serif'): number {
+    const context = textMeasureCanvas.getContext('2d');
+    if (context) {
+      context.font = font;
+      return context.measureText(text).width;
+    }
+    return 0;
+  }
+
+  function getLegendItemWidth(
+    name: string,
+    iconWidth: number,
+    padding: number,
+  ): number {
+    const textWidth = measureText(name, `${legendFontSize}px sans-serif`);
+    return iconWidth + textWidth + padding;
+  }
+
+  function estimateLegendHeight(
+    names: string[],
+    chartWidth: number,
+    rowHeight = 24,
+    legendWidthRatio = 0.95,
+  ): number {
+    const maxWidth = chartWidth * legendWidthRatio;
+    let rows = 1;
+    let currentRowWidth = 0;
+
+    names.forEach((name) => {
+      const itemWidth = getLegendItemWidth(name, 12, 25);
+      if (currentRowWidth + itemWidth > maxWidth) {
+        rows++;
+        currentRowWidth = itemWidth;
+      } else {
+        currentRowWidth += itemWidth;
+      }
+    });
+
+    return Math.ceil(rows * rowHeight) + 20;
   }
 }

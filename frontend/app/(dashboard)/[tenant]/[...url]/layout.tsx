@@ -30,8 +30,8 @@ export default async function RootLayout(props: {
 
   const DEFAULTS = {
     cookiebotId: process.env.NEXT_PUBLIC_COOKIEBOT_ID,
-    matomoUrl: process.env.NEXT_PUBLIC_MATOMO_URL,
-    matomoSiteId: process.env.NEXT_PUBLIC_MATOMO_SITE_ID,
+    matomoUrl: '',
+    matomoSiteId: '',
   };
 
   let settings = { ...DEFAULTS };

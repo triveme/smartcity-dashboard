@@ -87,7 +87,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
     try {
       const token = this.extractJwtFromHeader(req);
       if (!token) {
-        this.logger.log('Unauthenticated request');
+        this.logger.log(`Unauthenticated request - [${req.method}] ${req.url}`);
         req.roles = undefined;
         next();
         return;

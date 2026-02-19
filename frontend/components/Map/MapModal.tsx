@@ -11,6 +11,7 @@ import {
 import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import ImageComponent from '@/ui/ImageComponent';
+import ProjectInfoComponent from '@/ui/ProjectInfoComponent';
 import { roundToDecimalIfValueHasDecimal } from '@/utils/mathHelper';
 import { DashboardValues } from '@/ui/DashboardValues';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -20,6 +21,7 @@ import JumpoffButton from '@/ui/Buttons/JumpoffButton';
 import ChartMapWrapper from '@/ui/Charts/ChartMapWrapper';
 import { DEFAULT_CI } from '@/utils/objectHelper';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
+import ValuesToImageMapWrapper from '@/ui/ValuesToImageMapWrapper';
 
 type Marker = {
   position: [number, number];
@@ -35,6 +37,9 @@ type MapModalProps = {
   chartStyle?: MapModalChartStyle;
   onCloseModal: () => void;
   ciColors?: CorporateInfo;
+  onEditMarker?: (markerData: any) => void;
+  onDeleteMarker?: (markerData: any) => void;
+  isAdmin?: boolean;
 };
 
 export default function MapModal(props: MapModalProps): ReactElement {
@@ -45,6 +50,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
     chartStyle,
     ciColors,
     onCloseModal,
+    onEditMarker,
+    onDeleteMarker,
+    isAdmin = false,
   } = props;
 
   const fontStyle: CSSProperties = {
@@ -59,14 +67,34 @@ export default function MapModal(props: MapModalProps): ReactElement {
 
     const attribute = selectedMarker.details[attributeName];
 
+    const formatObjectValue = (value: any): any => {
+      if (!value || typeof value !== 'object') return value;
+      if (value.type && Array.isArray(value.coordinates)) {
+        return value.coordinates.join(', ');
+      }
+      return value;
+    };
+
     // Check if it's NGSI-LD structure with .value
     if (attribute.value !== undefined) {
-      return attribute.value;
+      return formatObjectValue(attribute.value);
     }
 
     // Simple structure - return the value directly
-    return attribute;
+    return formatObjectValue(attribute);
   };
+
+  const markerTypeRaw = getAttributeValue('type');
+  const markerType =
+    markerTypeRaw && typeof markerTypeRaw === 'object'
+      ? (markerTypeRaw.value ?? markerTypeRaw.type ?? markerTypeRaw)
+      : markerTypeRaw;
+  const markerIdRaw = getAttributeValue('id');
+  const markerId =
+    markerIdRaw && typeof markerIdRaw === 'object'
+      ? (markerIdRaw.value ?? markerIdRaw.id ?? markerIdRaw)
+      : markerIdRaw;
+  const isProjectMarker = String(markerType || '').toLowerCase() === 'project';
 
   const getAttributeChartValueFromMapObject = (
     widgetAttribute: string,
@@ -114,7 +142,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
               <button onClick={onCloseModal} className="absolute top-0 right-0">
                 <FontAwesomeIcon icon={faTimesCircle} size="lg" />
               </button>
-              <h2 className="text-xl font-bold mb-4">{selectedMarker.title}</h2>
+              <h2 className="text-xl pr-5 font-bold mb-4">
+                {selectedMarker.title}
+              </h2>
             </div>
           </div>
         </div>
@@ -258,6 +288,21 @@ export default function MapModal(props: MapModalProps): ReactElement {
                     {widget.componentType ===
                       tabComponentTypeEnum.information &&
                       widget.componentSubType ===
+                        tabComponentSubTypeEnum.project && (
+                        <div className="w-full">
+                          <ProjectInfoComponent
+                            projectId={markerId}
+                            className="w-full"
+                            lightboxTextColor={
+                              ciColors?.menuPrimaryColor ||
+                              ciColors?.headerPrimaryColor
+                            }
+                          />
+                        </div>
+                      )}
+                    {widget.componentType ===
+                      tabComponentTypeEnum.information &&
+                      widget.componentSubType ===
                         tabComponentSubTypeEnum.text && (
                         <div
                           style={fontStyle}
@@ -301,6 +346,60 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         </div>
                       )}
 
+                    {isAdmin &&
+                      isProjectMarker &&
+                      markerId &&
+                      widget.componentType === 'Button' &&
+                      widget.componentSubType === 'edit-button' && (
+                        <div className="w-48">
+                          <button
+                            className="w-full py-2 px-4 rounded font-bold text-center transition-colors hover:opacity-90"
+                            style={{
+                              backgroundColor:
+                                ciColors?.headerSecondaryColor || '#005ea8',
+                              color: ciColors?.headerFontColor || '#FFF',
+                            }}
+                            onClick={() => {
+                              if (onEditMarker) {
+                                onEditMarker({
+                                  ...selectedMarker,
+                                  id: markerId,
+                                });
+                              }
+                            }}
+                          >
+                            {widget.title || 'Bearbeiten'}
+                          </button>
+                        </div>
+                      )}
+
+                    {isAdmin &&
+                      isProjectMarker &&
+                      markerId &&
+                      widget.componentType === 'Button' &&
+                      widget.componentSubType === 'delete-button' && (
+                        <div className="w-48">
+                          <button
+                            className="w-full py-2 px-4 rounded font-bold text-center transition-colors hover:opacity-90"
+                            style={{
+                              backgroundColor:
+                                ciColors?.headerSecondaryColor || '#005ea8',
+                              color: ciColors?.headerFontColor || '#FFF',
+                            }}
+                            onClick={() => {
+                              if (onDeleteMarker) {
+                                onDeleteMarker({
+                                  ...selectedMarker,
+                                  id: markerId,
+                                });
+                              }
+                            }}
+                          >
+                            {widget.title || 'Löschen'}
+                          </button>
+                        </div>
+                      )}
+
                     {widget.componentType === 'Button' &&
                       widget.componentSubType ===
                         'jumpoff-entity-url-param' && (
@@ -313,6 +412,18 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           />
                         </div>
                       )}
+
+                    {widget.componentType ===
+                      tabComponentTypeEnum.valueToImage && (
+                      <div className="w-48 h-60">
+                        <ValuesToImageMapWrapper
+                          queryId={selectedMarker.details.queryId}
+                          entityId={selectedMarker.details.id}
+                          attribute={widget.attributes}
+                          mapWidgetValue={widget}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

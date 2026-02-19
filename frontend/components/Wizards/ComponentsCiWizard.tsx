@@ -251,6 +251,8 @@ type Props = {
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
+
+  menuHoverColor: string;
 };
 
 export default function ComponentsCiWizard({
@@ -502,6 +504,8 @@ export default function ComponentsCiWizard({
   iconColor,
   borderColor,
   backgroundColor,
+
+  menuHoverColor,
 }: Props): JSX.Element {
   const [selectedComponentType, setSelectedComponentType] =
     useState<string>('');
@@ -2107,6 +2111,7 @@ export default function ComponentsCiWizard({
               }
               dateSelectorFontColorSelected={dateSelectorFontColorSelected}
               dateSelectorFontColorUnselected={dateSelectorFontColorUnselected}
+              menuHoverColor={menuHoverColor}
             />
           </div>
         </div>

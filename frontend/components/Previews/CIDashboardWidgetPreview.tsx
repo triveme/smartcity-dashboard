@@ -94,6 +94,8 @@ type CIDashboardWidgetPreviewProps = {
   measurementChartAxisLabelFontColor: string;
   measurementChartCurrentValuesColors: string[];
 
+  menuHoverColor: string;
+
   coloredSliderBigValueFontSize: string;
   coloredSliderBigValueFontColor: string;
   coloredSliderLabelFontSize: string;
@@ -207,6 +209,8 @@ export default function CIDashboardWidgetPreview(
     barChartLegendFontColor,
     barChartLegendFontSize,
     barChartTicksFontColor,
+
+    menuHoverColor,
 
     measurementChartBigValueFontSize,
     measurementChartBigValueFontColor,
@@ -357,6 +361,7 @@ export default function CIDashboardWidgetPreview(
               currentValuesColors={pieChartCurrentValuesColors}
               unit={''}
               pieChartRadius={70}
+              menuHoverColor={menuHoverColor || '#99a4c3ff'}
             />
           )}
           {(componentSubType === tabComponentSubTypeEnum.lineChart ||
@@ -399,6 +404,7 @@ export default function CIDashboardWidgetPreview(
               hasAdditionalSelection={true}
               filterColor={lineChartFilterColor || '#F1B434'}
               filterTextColor={lineChartFilterTextColor || '#1D2330'}
+              menuHoverColor={menuHoverColor || '#99a4c3ff'}
             />
           )}
           {(componentSubType === tabComponentSubTypeEnum.barChart ||
@@ -440,6 +446,7 @@ export default function CIDashboardWidgetPreview(
               axisFontColor={barChartAxisLabelFontColor}
               isStackedChart={false}
               showTimestampOnHover={false}
+              menuHoverColor={menuHoverColor || '#99a4c3ff'}
             />
           )}
           {componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -497,6 +504,7 @@ export default function CIDashboardWidgetPreview(
               currentValuesColors={
                 measurementChartCurrentValuesColors || ['#FFDE21']
               }
+              menuHoverColor={menuHoverColor || '#99a4c3ff'}
             />
           )}
         </div>

@@ -20,3 +20,6 @@ export { default as WaterLevelLow } from './WaterLevelLow';
 export { default as WaterLevelNormal } from './WaterLevelNormal';
 export { default as WaterLevelHigh } from './WaterLevelHigh';
 export { default as ActionLink } from './ActionLink';
+export { default as Building } from './Building';
+export { default as Excavator } from './Excavator';
+export { default as Handyman } from './Handyman';

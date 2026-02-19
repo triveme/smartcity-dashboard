@@ -815,6 +815,7 @@ export default function CorporateInfoWizard({
             setDateSelectorFontColorUnselected={(value): void =>
               updateState('dateSelectorFontColorUnselected', value)
             }
+            menuHoverColor={state.menuHoverColor}
           />
         )}
         {activeTab === 'Logo' && (

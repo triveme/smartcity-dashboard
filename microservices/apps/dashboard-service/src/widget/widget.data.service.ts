@@ -10,6 +10,7 @@ import { DataService as OrchideoDataService } from '../../../orchideo-connect-se
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
 import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
+import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
 
 @Injectable()
 export class WidgetDataService {
@@ -19,6 +20,7 @@ export class WidgetDataService {
     private readonly ngsiQueryService: NgsiQueryService,
     private readonly orchideoDataService: OrchideoDataService,
     private readonly internalDataService: InternalDataService,
+    private readonly sqlViewService: SqlViewService,
     private readonly orchideoConnectService: OrchideoConnectService,
     private readonly tabService: TabService,
   ) {}
@@ -252,6 +254,9 @@ export class WidgetDataService {
         newData =
           await this.internalDataService.getDataFromDataSource(queryBatch);
         await this.internalDataService.updateFiwareQueries();
+      } else if (queryBatch.auth_data.type === 'sql') {
+        newData = await this.sqlViewService.getDataFromDataSource(queryBatch);
+        await this.sqlViewService.updateFiwareQueries();
       }
 
       if (newData) {

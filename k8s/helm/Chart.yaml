@@ -64,6 +64,12 @@ dependencies:
   - name: internal-data-service
     condition: internal-data-service.enabled
     version: 0.1.0
+  - name: sql-view-service
+    condition: sql-view-service.enabled
+    version: 0.1.0
+  - name: project-data-service
+    condition: project-data-service.enabled
+    version: 0.1.0
   - name: frontend
     condition: frontend.enabled
     version: 0.1.0

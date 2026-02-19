@@ -28,7 +28,7 @@ import { widgetsToPanels } from '@app/postgres-db/schemas/dashboard.widget-to-pa
 import { dataModels } from '@app/postgres-db/schemas/data-model.schema';
 import { dashboardsToTenants } from '@app/postgres-db/schemas/dashboard-to-tenant.schema';
 import { PaginatedResult, PaginationMeta } from '../widget/widget.model';
-import { CustomMapSensorDataHelper } from '../helper/custom-map-sensor-data.helper';
+import { TabDataHelper } from '../helper/tab-data.helper';
 import { FlatDashboardData } from './dashboard.model';
 
 @Injectable()
@@ -64,7 +64,7 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+    const enrichedRows = TabDataHelper.enrichDashboardData(
       this.db,
       dashboardContent,
     );
@@ -105,7 +105,7 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+    const enrichedRows = TabDataHelper.enrichDashboardData(
       this.db,
       dashboardContent,
     );
@@ -155,7 +155,7 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+    const enrichedRows = TabDataHelper.enrichDashboardData(
       this.db,
       dashboardContent,
     );
@@ -344,7 +344,7 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+    const enrichedRows = TabDataHelper.enrichDashboardData(
       this.db,
       dbDashboards,
     );
@@ -429,7 +429,7 @@ export class DashboardRepo {
         asc(data.widget_to_panel.position),
       ]);
 
-    const enrichedRows = CustomMapSensorDataHelper.enrichDashboardData(
+    const enrichedRows = TabDataHelper.enrichDashboardData(
       this.db,
       dashboardContent,
     );

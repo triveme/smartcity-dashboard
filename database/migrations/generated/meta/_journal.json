@@ -274,6 +274,20 @@
       "when": 1768996450042,
       "tag": "0038_ancient_night_thrasher_1.2.0",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1769781894136,
+      "tag": "0039_chunky_lady_mastermind_1.3.0-beta",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1770643309995,
+      "tag": "0040_burly_king_bedlam_1.3.1-beta3",
+      "breakpoints": true
     }
   ]
 }

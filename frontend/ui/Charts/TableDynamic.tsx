@@ -45,7 +45,18 @@ export default function TableDynamic(props: TableDynamicProps): ReactElement {
       selectedFeatures.current,
       hoveredFeature.current,
     );
-  }, [selectedYearIndex]);
+  }, [selectedYearIndex]); // run on mount
+
+  // Also refilter when tabData arrives/changes so initial render is correct
+  useEffect(() => {
+    if (tabData?.chartData) {
+      filterData(
+        selectedYearIndex.current,
+        selectedFeatures.current,
+        hoveredFeature.current,
+      );
+    }
+  }, [tabData]);
 
   function handleSelectedFromTable(features: string[]): void {
     eventBus.emit(GEOJSON_FEATURE_SELECTION_EVENT, {
@@ -94,14 +105,24 @@ export default function TableDynamic(props: TableDynamicProps): ReactElement {
     hFeature: string,
   ): void {
     if (tabData?.chartData) {
-      const data: ChartData[] =
-        tabData?.chartData?.map(
-          (item: { name: string; values: [string, number][] }) => {
-            const newItem: ChartData = { ...item };
-            newItem.values = [item.values[sYearIndex]];
-            return newItem;
-          },
-        ) || tabData?.chartData;
+      const src: ChartData[] = Array.isArray(tabData.chartData)
+        ? tabData.chartData
+        : [];
+
+      const safeIndex = Math.max(
+        0,
+        Math.min(sYearIndex || 0, (src[0]?.values?.length || 1) - 1),
+      );
+
+      const data: ChartData[] = src.map((item) => {
+        const newItem: ChartData = { ...item } as ChartData;
+        if (Array.isArray(item.values) && item.values.length > 0) {
+          newItem.values = [item.values[safeIndex] ?? item.values[0]];
+        } else {
+          newItem.values = [] as unknown as [string, number][];
+        }
+        return newItem;
+      });
 
       if (data.some((d) => d === null || d === undefined)) {
         setData([]);

@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
 import { useSearchParams } from 'next/navigation';
@@ -74,7 +74,9 @@ export default function StageableChart(
 
   useEffect(() => {
     if (typeof window !== 'undefined' && chartRef.current) {
-      myChartRef.current = echarts.init(chartRef.current);
+      myChartRef.current = echarts.init(chartRef.current, undefined, {
+        locale: ECHARTS_LOCALE,
+      });
 
       const resizeChart = (): void => {
         if (myChartRef.current && chartRef.current) {

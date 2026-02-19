@@ -38,8 +38,14 @@ internal-data-service:
     enabled: true
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/internal-data-service
-    tag: 1.2.1
+    tag: 1.3.1-beta3
     pullPolicy: Always
+
+sql-view-service:
+  enabled: false
+
+project-data-service:
+  enabled: false
 
 frontend:
   enabled: false
@@ -48,5 +54,5 @@ migrations:
   enabled: true
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: 1.2.1
+    tag: 1.3.1-beta3
     pullPolicy: Always

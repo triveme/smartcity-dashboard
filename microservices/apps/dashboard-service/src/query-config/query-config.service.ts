@@ -50,6 +50,7 @@ export class QueryConfigService {
   ): Promise<CreatedQueryConfig> {
     row.hash = this.generateHash(row);
 
+    console.error('Create query config');
     const result = await this.queryConfigRepo.create(row, transaction);
 
     if (result) {

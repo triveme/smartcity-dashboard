@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useState } from 'react';
+﻿import { ReactElement, useEffect, useState } from 'react';
 import WizardLabel from './WizardLabel';
 import WizardTextfield from './WizardTextfield';
 import { Tab, TabImage, ValueToImageData } from '@/types';
@@ -34,6 +34,43 @@ export default function ValuesToImageFields(
 
   const [imageValues, setImageValues] = useState<TabImage[]>([]);
 
+  // Validation state for each row (min input)
+  const [minErrors, setMinErrors] = useState<string[]>(
+    Array(Math.max(0, inputValues.length)).fill(''),
+  );
+
+  // Validate a single input value for the min field.
+  // Allowed: non-empty string; single number; inclusive numeric range: a-b or a–b (en dash).
+  const validateMin = (raw: string): string => {
+    const v = (raw ?? '').toString().trim();
+    if (!v) return 'Pflichtfeld: bitte einen Wert eingeben.';
+
+    const toNum = (s: string): number | null => {
+      const nrm = (s ?? '').replace(',', '.').trim();
+      if (nrm === '') return null;
+      const n = Number(nrm);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    // Range pattern: a-b or a–b; allow spaces; allow decimals and negatives
+    const range = v.match(
+      /^\s*(-?\d+(?:[.,]\d+)?)\s*[-–]\s*(-?\d+(?:[.,]\d+)?)\s*$/,
+    );
+    if (range) {
+      const a = toNum(range[1]);
+      const b = toNum(range[2]);
+      if (a === null || b === null) return 'Ungültiger Zahlenbereich.';
+      return '';
+    }
+
+    // Single numeric value
+    const singleNum = toNum(v);
+    if (singleNum !== null) return '';
+
+    // Otherwise treat as string label; any non-empty string is fine
+    return '';
+  };
+
   // Multi Tenancy
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;
@@ -62,11 +99,21 @@ export default function ValuesToImageFields(
       setImageValues(newImageValues);
     }
   }, [inputValues, allImages]);
+  useEffect(() => {
+    const errs = inputValues.map((v) => validateMin(v.min));
+    setMinErrors(errs);
+  }, [inputValues.length]);
 
   const handleMinValueChange = (value: string, index: number): void => {
     const newInputValues = [...inputValues];
     newInputValues[index].min = value;
     setInputValues(newInputValues);
+
+    // validate and store error for this row
+    const err = validateMin(value);
+    const newErrors = [...minErrors];
+    newErrors[index] = err;
+    setMinErrors(newErrors);
 
     handleTabChange({ valuesToImages: newInputValues });
   };
@@ -130,6 +177,12 @@ export default function ValuesToImageFields(
         borderColor={borderColor}
       />
       <HorizontalDivider />
+
+      <div className="text-xs text-gray-400 mb-3">
+        Erlaubte Formate: Text (z. B. free, occupied), Zahl (z. B. 10) oder
+        Bereich (z. B. 10-20). Bereiche sind inklusiv. Dezimaltrennzeichen ','
+        oder '.'; Leerzeichen sind erlaubt.
+      </div>
       {inputValues.map((value, index) => (
         <div key={`main-value-${index}`} className="flex flex-col gap-4 mb-4">
           <div className="flex justify-start items-center content-center gap-4">
@@ -141,7 +194,14 @@ export default function ValuesToImageFields(
               }
               borderColor={borderColor}
               backgroundColor={backgroundColor}
+              placeholderText="z. B.: free, 10, 10-20"
+              error={minErrors[index]}
             />
+            {minErrors[index] && (
+              <div className="text-xs text-red-500 mt-1">
+                {minErrors[index]}
+              </div>
+            )}
             {/* <WizardLabel label="Max" />
             <WizardTextfield
               value={value.max}

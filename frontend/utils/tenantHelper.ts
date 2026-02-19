@@ -25,7 +25,6 @@ export function isUserMatchingTenant(
   const decodedToken: any = jwtDecode(bearerToken);
   const mandatorCode = decodedToken?.mandator_code;
 
-  console.log(mandatorCode);
   if (typeof mandatorCode === 'string') {
     const codes = mandatorCode.split(',');
     return codes.includes(tenant);

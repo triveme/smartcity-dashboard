@@ -170,6 +170,7 @@ export default function DashboardWidgetPreview(
               setSortDescending={tab?.setSortDescending || false}
               setValueLimit={tab?.setValueLimit || false}
               userDefinedLimit={tab?.userDefinedLimit || 10}
+              menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.table ||
@@ -228,6 +229,7 @@ export default function DashboardWidgetPreview(
               }
               allowImageDownload={tab.chartAllowImageDownload || false}
               pieChartRadius={tab.chartPieRadius || 70}
+              menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.lineChart ||
@@ -269,6 +271,8 @@ export default function DashboardWidgetPreview(
               isStepline={tab.isStepline || false}
               isStackedChart={tab.isStackedChart || false}
               showLegend={tab.showLegend || false}
+              singleSelectLegend={tab.singleSelectLegend || false}
+              advancedDateSelection={tab.advancedDateSelection || false}
               staticValues={tab.chartStaticValues || []}
               staticValuesColors={tab.chartStaticValuesColors || []}
               staticValuesTicks={tab.chartStaticValuesTicks || []}
@@ -301,6 +305,7 @@ export default function DashboardWidgetPreview(
               filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
               chartAggregationMode={tab.chartAggregationMode}
+              menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.barChart ||
@@ -376,6 +381,7 @@ export default function DashboardWidgetPreview(
                   ? tab.barChartShowTimestampOnHover
                   : true
               }
+              menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -448,6 +454,7 @@ export default function DashboardWidgetPreview(
                   '#FFDE21',
                 ]
               }
+              menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
             />
           )}
         </div>

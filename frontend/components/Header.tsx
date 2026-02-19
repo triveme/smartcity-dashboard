@@ -12,7 +12,7 @@ import { useAuth } from 'react-oidc-context';
 import {
   faCircleUser,
   faArrowRightFromBracket,
-  faExclamationCircle,
+  faCircleInfo,
 } from '@fortawesome/free-solid-svg-icons';
 import { usePathname, useRouter } from 'next/navigation';
 import { env } from 'next-dynenv';
@@ -216,7 +216,7 @@ export default function Header(props: HeaderProps): ReactElement {
                         onClick={handleInfoButtonClicked}
                       >
                         <FontAwesomeIcon
-                          icon={faExclamationCircle}
+                          icon={faCircleInfo}
                           size="lg"
                         ></FontAwesomeIcon>
                       </button>
@@ -273,7 +273,7 @@ export default function Header(props: HeaderProps): ReactElement {
                     onClick={handleInfoButtonClicked}
                   >
                     <FontAwesomeIcon
-                      icon={faExclamationCircle}
+                      icon={faCircleInfo}
                       size="lg"
                     ></FontAwesomeIcon>
                   </button>

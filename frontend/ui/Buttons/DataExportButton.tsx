@@ -25,7 +25,7 @@ type DataExportButtonProps = {
 type AvailabelWidgetType = {
   id: string;
   name: string;
-  panelName: string;
+  panelName?: string;
 };
 
 export default function DataExportButton(
@@ -97,23 +97,37 @@ export default function DataExportButton(
   };
 
   const getAllAvalilableWidgets = async (): Promise<void> => {
-    const dashboard = await getAvailableWidgets(accessToken, id);
+    const widgets = await getAvailableWidgets(accessToken, type, id);
+    if (type === 'dashboard') {
+      if (!widgets || !('panels' in widgets)) {
+        return;
+      }
 
-    if (!dashboard || !dashboard.panels) {
-      return;
-    }
-
-    const result = dashboard.panels.flatMap((panel) => {
-      return panel.widgets.map((widget) => {
-        return {
-          id: widget.id as string,
-          name: widget.name,
-          panelName: panel.name,
-        };
+      const result = widgets.panels.flatMap((panel) => {
+        return panel.widgets.map((widget) => {
+          return {
+            id: widget.id as string,
+            name: widget.name,
+            panelName: panel.name,
+          };
+        });
       });
-    });
 
-    setAvailableWidgets(result);
+      setAvailableWidgets(result);
+    }
+    if (type === 'widget') {
+      if (!widgets || !('widget' in widgets)) {
+        return;
+      }
+      const result = [
+        {
+          id: widgets.widget.id as string,
+          name: widgets.widget.name,
+        },
+      ];
+
+      setAvailableWidgets(result);
+    }
   };
 
   const handleToggleWidget = (id: string, checked: boolean): void => {
@@ -202,7 +216,7 @@ export default function DataExportButton(
                       className="flex flex-col justify-center w-full"
                     >
                       <CheckBox
-                        label={`${widget.panelName} - ${widget.name}`}
+                        label={`${widget.panelName ? widget.panelName + ' -' : ''} ${widget.name}`}
                         value={selectedWidgetIds.includes(widget.id)}
                         handleSelectChange={(isSelected) =>
                           handleToggleWidget(widget.id, isSelected)
@@ -223,7 +237,7 @@ export default function DataExportButton(
                 disabled={isLoading}
               >
                 <div className="flex items-center">
-                  <div className="hidden sm:block">Abbrechnen</div>
+                  <div className="hidden sm:block">Abbrechen</div>
                 </div>
               </button>
               <button
