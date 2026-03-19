@@ -341,7 +341,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
     const tempData = data;
     const newFilteredData = tempData.filter((item) =>
-      item.name.includes(clickedAttribute),
+      item.name.endsWith(clickedAttribute),
     );
     setClickedAttribute(clickedAttribute);
     setFilteredData(newFilteredData);

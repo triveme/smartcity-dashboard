@@ -121,6 +121,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     tab?.childWidgets || [''],
   );
 
+  const [pharmacyPassword, setPharmacyPassword] = useState<string>('');
+
   const handleTabChange = (update: Partial<Tab>): void => {
     setTab((prevTab) => {
       const newTab = { ...prevTab, ...update };
@@ -3151,8 +3153,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                 />
                 <WizardLabel label="Passwort" />
                 <WizardPasswordTextfield
-                  value={(tab?.pharmacyPassword as string) ?? ''}
+                  value={pharmacyPassword}
                   onChange={(value: string | number): void => {
+                    setPharmacyPassword(value as string);
                     handleTabChange({
                       pharmacyPassword: value as string,
                     });

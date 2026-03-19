@@ -595,6 +595,7 @@ export default async function DashboardTab(
               fontSize={ciColors.stageableChartFontSize || '32'}
               ticksFontColor={ciColors.stageableChartTicksFontColor || '#FFFFF'}
               ticksFontSize={ciColors.stageableChartTicksFontSize || '20'}
+              tabData={tabData}
             />
           )}
         </div>

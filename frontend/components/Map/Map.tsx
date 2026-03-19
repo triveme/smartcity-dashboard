@@ -804,12 +804,18 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
   function geoJSONGetIDProperty(properties: any): any {
     let id = '';
-    if (props.mapGeoJSONFeatureIdentifier) {
+    if (
+      props.mapGeoJSONFeatureIdentifier &&
+      props.mapGeoJSONFeatureIdentifier != ''
+    ) {
       id = properties[props.mapGeoJSONFeatureIdentifier];
     } else {
       id = properties['AGS'];
     }
-    if (id.substring(0, 1) == '0') {
+    if (id) {
+      id = '';
+    }
+    if (id && id.substring(0, 1) == '0') {
       return id.substring(1);
     }
     return id;

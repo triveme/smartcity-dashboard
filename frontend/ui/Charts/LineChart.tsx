@@ -326,7 +326,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
     const tempData = chartData;
     let newFilteredData = tempData.filter((item) =>
-      item.name.includes(clickedAttribute),
+      item.name.endsWith(clickedAttribute),
     );
     if (entityId) {
       newFilteredData = newFilteredData.filter((x) => x.id === entityId);
