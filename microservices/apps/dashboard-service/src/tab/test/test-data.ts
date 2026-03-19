@@ -158,6 +158,8 @@ export async function getTab(
     setValueLimit: false,
     userDefinedLimit: 10,
     showLegend: false,
+    singleSelectLegend: false,
+    advancedDateSelection: false,
     imageSrc: null,
     imageUrl: null,
     imageUpdateInterval: null,

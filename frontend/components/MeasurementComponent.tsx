@@ -48,6 +48,8 @@ type MeasurementComponentProps = {
   axisLabelFontColor: string;
 
   currentValuesColors: string[];
+
+  menuHoverColor: string;
 };
 
 export default function MeasurementComponent(
@@ -83,6 +85,8 @@ export default function MeasurementComponent(
     axisTicksFontColor,
     axisLabelFontColor,
     currentValuesColors,
+
+    menuHoverColor,
   } = props;
 
   const [dayActive, setDayActive] = useState(true);
@@ -247,6 +251,7 @@ export default function MeasurementComponent(
               hasAdditionalSelection={false}
               showTooltip={false}
               chartDateRepresentation={'Default'}
+              menuHoverColor={menuHoverColor}
             />
           )}
           {monthActive && (
@@ -282,6 +287,7 @@ export default function MeasurementComponent(
               hasAdditionalSelection={false}
               showTooltip={false}
               chartDateRepresentation={'Default'}
+              menuHoverColor={menuHoverColor}
             />
           )}
           {dayActive && (

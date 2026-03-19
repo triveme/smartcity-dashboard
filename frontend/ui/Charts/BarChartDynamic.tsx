@@ -201,6 +201,7 @@ export default function BarChartDynamic(
             ? tab.barChartShowTimestampOnHover
             : true
         }
+        menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
       />
     </>
   );

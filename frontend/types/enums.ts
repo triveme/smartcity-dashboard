@@ -57,6 +57,7 @@ export enum tabComponentSubTypeEnum {
   default = '',
   text = 'Text',
   iconWithLink = 'Icon mit Link',
+  project = 'Projekt',
   degreeChart180 = '180° Chart',
   degreeChart360 = '360° Chart',
   stageableChart = 'Stageable Chart',
@@ -109,6 +110,7 @@ export enum authDataTypeEnum {
   staticendpoint = 'static-endpoint',
   usi = 'usi',
   internal = 'internal',
+  sql = 'sql',
 }
 
 export enum reportThresholdTriggerTypeEnum {
@@ -184,4 +186,16 @@ export enum componentLayoutEnum {
 export enum themeEnum {
   Dark = 'Dark',
   Light = 'Light',
+}
+
+export enum projectCategoryEnum {
+  hochbau = 'Hochbau',
+  tiefbau = 'Tiefbau',
+  sonstiges = 'Sonstiges',
+}
+
+export enum projectStatusEnum {
+  ACTIVE = 'ACTIVE',
+  ARCHIVED = 'ARCHIVED',
+  PLANNED = 'PLANNED',
 }

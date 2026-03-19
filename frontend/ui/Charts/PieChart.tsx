@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactElement, useEffect, useRef } from 'react';
-import * as echarts from 'echarts';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { applyUserLocaleToNumber } from '@/utils/mathHelper';
 import { PieChartDataItem } from '@/types/dashboardModels';
@@ -19,6 +19,7 @@ type PieChartProps = {
   highlightedIndex?: number;
   highlightedColor?: string;
   unhighlightedColor?: string;
+  menuHoverColor: string;
 };
 
 export default function PieChart(props: PieChartProps): ReactElement {
@@ -34,6 +35,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
     playAnimation = true,
     highlightedColor,
     unhighlightedColor,
+    menuHoverColor,
   } = props;
 
   const chartRef = useRef<HTMLDivElement>(null);
@@ -56,7 +58,9 @@ export default function PieChart(props: PieChartProps): ReactElement {
 
   const initializeChart = (): void => {
     if (chartRef.current) {
-      myChart = echarts.init(chartRef.current);
+      myChart = echarts.init(chartRef.current, undefined, {
+        locale: ECHARTS_LOCALE,
+      });
 
       if (props.highlightedIndex != undefined) {
         highlightedIndex.current = props.highlightedIndex;
@@ -116,10 +120,19 @@ export default function PieChart(props: PieChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
-              title: 'Bild Downloaden',
+              title: 'Als Bild herunterladen...    ',
+              icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
                 color: fontColor,
-                borderColor: fontColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
+              },
+              emphasis: {
+                iconStyle: {
+                  color: menuHoverColor,
+                  borderColor: 'transparent',
+                  borderWidth: 0,
+                },
               },
             },
           },

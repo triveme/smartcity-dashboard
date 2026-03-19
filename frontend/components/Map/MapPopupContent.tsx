@@ -39,7 +39,9 @@ export default function MapPopupContent({
           key === 'name' ||
           key === 'queryId' ||
           key === 'queryConfigId' ||
-          key === 'type'
+          key === 'type' ||
+          key === 'category' ||
+          key === 'status'
         )
           return;
         if (isCombinedMap) {

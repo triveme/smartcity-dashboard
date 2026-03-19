@@ -1,6 +1,6 @@
 'use client';
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { ChartData } from '@/types';
 import {
@@ -56,6 +56,7 @@ type BarChartProps = {
   unhighlightedColor?: string;
   chartHoverSingleValue?: boolean;
   showTimestampOnHover?: boolean;
+  menuHoverColor: string;
 };
 
 export default function BarChart(props: BarChartProps): ReactElement {
@@ -95,6 +96,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
     unhighlightedColor,
     chartHoverSingleValue,
     showTimestampOnHover,
+    menuHoverColor,
   } = props;
   let { data } = props;
 
@@ -120,7 +122,9 @@ export default function BarChart(props: BarChartProps): ReactElement {
       if (chartInstance.current) {
         chartInstance.current.dispose();
       }
-      chartInstance.current = echarts.init(chartRef.current);
+      chartInstance.current = echarts.init(chartRef.current, undefined, {
+        locale: ECHARTS_LOCALE,
+      });
 
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
@@ -285,10 +289,19 @@ export default function BarChart(props: BarChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
-              title: 'Bild Downloaden',
+              title: 'Als Bild herunterladen...    ',
+              icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
                 color: fontColor,
-                borderColor: fontColor,
+                borderColor: 'transparent',
+                borderWidth: 0,
+              },
+              emphasis: {
+                iconStyle: {
+                  color: menuHoverColor,
+                  borderColor: 'transparent',
+                  borderWidth: 0,
+                },
               },
             },
           },
@@ -341,7 +354,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
   const handleFilterButtonClicked = (clickedAttribute: string): void => {
     const tempData = data;
     const newFilteredData = tempData.filter((item) =>
-      item.name.includes(clickedAttribute),
+      item.name.endsWith(clickedAttribute),
     );
     setClickedAttribute(clickedAttribute);
     setFilteredData(newFilteredData);

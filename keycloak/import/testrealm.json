@@ -84,6 +84,15 @@
         "attributes": {}
       },
       {
+        "id": "08ea597e-957d-435f-9ea9-1884232226b4",
+        "name": "scs-project-admin",
+        "description": "",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "cde49b2f-7c00-4e55-8598-d60a73a419e9",
+        "attributes": {}
+      },
+      {
         "id": "5d99b58b-5101-49bb-85d3-a6aa43134fef",
         "name": "scs-super-admin",
         "description": "",
@@ -515,6 +524,7 @@
         "Admin",
         "Writer",
         "scs-admin",
+        "scs-project-admin",
         "default-roles-testrealm"
       ],
       "notBefore": 0,
@@ -538,6 +548,7 @@
         "Admin",
         "Writer",
         "scs-admin",
+        "scs-project-admin",
         "default-roles-testrealm"
       ],
       "notBefore": 0,
@@ -561,6 +572,7 @@
         "Admin",
         "Writer",
         "scs-admin",
+        "scs-project-admin",
         "default-roles-testrealm"
       ],
       "notBefore": 0,
@@ -581,6 +593,7 @@
       "requiredActions": [],
       "realmRoles": [
         "scs-admin",
+        "scs-project-admin",
         "default-roles-testrealm"
       ],
       "notBefore": 0,

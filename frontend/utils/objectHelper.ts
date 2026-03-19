@@ -688,6 +688,20 @@ export const DUMMY_POI_DATA: InterestingPlace[] = [
 
 export const fontSizes = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36];
 
+export const limitOfDecimalPlaces = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+];
+
 export const EMPTY_POI: InterestingPlace = {
   id: '',
   name: '',

@@ -1,5 +1,5 @@
 import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { CSSProperties, ReactElement, useEffect, useRef } from 'react';
 
@@ -65,11 +65,7 @@ export default function GeneralInfoMessageModal({
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <FontAwesomeIcon
-              icon={faExclamationCircle}
-              size="lg"
-              className="mr-3"
-            />
+            <FontAwesomeIcon icon={faCircleInfo} size="lg" className="mr-3" />
             <h2 className="text-xl">{headline}</h2>
           </div>
           <button

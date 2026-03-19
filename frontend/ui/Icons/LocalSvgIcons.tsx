@@ -22,6 +22,12 @@ import {
   WaterLevelNormal,
   WaterLevelHigh,
   ActionLink,
+  Building,
+  Excavator,
+  Handyman,
+  Accessibility,
+  EasySpeech,
+  SignLanguage,
 } from '../../assets/icons';
 
 type IconType = 'fontawesome' | 'svg';
@@ -60,6 +66,12 @@ export const localSvgIconsList: IconOption[] = [
   { name: 'WaterLevelNormal', type: 'svg' },
   { name: 'WaterLevelHigh', type: 'svg' },
   { name: 'ActionLink', type: 'svg' },
+  { name: 'Building', type: 'svg' },
+  { name: 'Excavator', type: 'svg' },
+  { name: 'Handyman', type: 'svg' },
+  { name: 'Accessibility', type: 'svg' },
+  { name: 'EasySpeech', type: 'svg' },
+  { name: 'SignLanguage', type: 'svg' },
   // Add other SVG icons here
 ];
 
@@ -113,6 +125,18 @@ export default function LocalSvgIcons(props: DashboardSvgProps): ReactElement {
       return <WaterLevelHigh fontColor={fontColor} height={height} />;
     case 'ActionLink':
       return <ActionLink fontColor={fontColor} height={height} />;
+    case 'Building':
+      return <Building fontColor={fontColor} height={height} />;
+    case 'Excavator':
+      return <Excavator fontColor={fontColor} height={height} />;
+    case 'Handyman':
+      return <Handyman fontColor={fontColor} height={height} />;
+    case 'Accessibility':
+      return <Accessibility fontColor={fontColor} height={height} />;
+    case 'EasySpeech':
+      return <EasySpeech fontColor={fontColor} height={height} />;
+    case 'SignLanguage':
+      return <SignLanguage fontColor={fontColor} height={height} />;
     // Add other SVG icons here
     default:
       return <div></div>;

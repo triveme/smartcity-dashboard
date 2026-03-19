@@ -11,6 +11,7 @@ import {
   WMSTileLayer,
   Marker,
   GeoJSON,
+  Polyline,
   ImageOverlay,
   useMap,
 } from 'react-leaflet';
@@ -53,9 +54,36 @@ import {
 } from '@/types/mapRelatedModels';
 import { MapRef } from 'react-leaflet/MapContainer';
 import { getCustomMapImageById } from '@/api/tab.custom-map-image.service';
-import { useAuth } from 'react-oidc-context';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import SearchControl from './SearchControl/SearchControl';
+import MapCreatePinModal from './MapCreatePinModal';
+import { useAuth } from 'react-oidc-context';
+import { getProjects } from '@/api/project-service';
+import { getTenantOfPage } from '@/utils/tenantHelper';
+import {
+  getProjectId,
+  isProjectType,
+  isProjectOrStreetType,
+  getStatusColor,
+  createProjectCategoryIcon,
+  hasProjectVisibilityFlag,
+  isProjectPublic,
+  filterProjectVisibility,
+  normalizeIncomingMapData,
+  fetchAndCacheProjectCategories,
+} from './MapProjectUtils';
+import { getLineCoords, getStreetLineCoords } from './MapLineUtils';
+import { extractRolesFromToken } from './MapAuthUtils';
+import {
+  fetchProjectForEdit,
+  deleteProjectMarker,
+  createProjectAddedUpdater,
+  type ProjectInput,
+} from './MapProjectUtils';
+import {
+  createSelectCoordinatesHandler,
+  createSelectRouteHandler,
+} from './MapProjectUtils';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -95,6 +123,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   const { openSnackbar } = useSnackbar();
 
   const {
+    uiFilterData,
     isFullscreenMap,
     menuStyle,
     ciColors,
@@ -110,6 +139,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     customMapSensorValues,
     handleOnMarkerClick,
   } = props;
+
+  const tempMarkerColor = ciColors?.fontColor || '#FFF';
 
   const isCombinedMap = isCombinedMapProps(props);
 
@@ -134,16 +165,53 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isLegendModalOpen, setIsLegendModalOpen] = useState(false);
-  const [selectedMapFilterAttribute, setSelectedMapFilterAttribute] =
-    useState('');
-  const [selectedFilters, setSelectedFilters] = useState<(string | number)[]>(
-    [],
-  );
+  const [selectedFilters, setSelectedFilters] = useState<
+    Record<string, (string | number)[]>
+  >({});
   const [selectedDataSources, setSelectedDataSources] = useState<number[]>([]);
   const [searchMarker, setSearchMarker] = useState<{
     position: LatLngExpression;
     label: string;
+    routePoints?: LatLngExpression[];
   } | null>(null);
+  const [localData, setLocalData] = useState<any[]>(props.data || []);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [centerPinVisible, setCenterPinVisible] = useState(false);
+  const [editingMarker, setEditingMarker] = useState<any>(null);
+  const [projectCategoryCache, setProjectCategoryCache] = useState<
+    Record<string, string>
+  >({});
+  const tenant = getTenantOfPage();
+  const [roleOptions, setRoleOptions] = useState<string[]>([]);
+  const requiredRole = 'scs-project-admin';
+  const isProjectAdmin = roleOptions.includes(requiredRole);
+
+  // Extract roles from JWT token when auth changes
+  useEffect(
+    function extractUserRolesFromAuth(): void {
+      if (auth?.user?.access_token) {
+        const roles = extractRolesFromToken(auth.user.access_token);
+        setRoleOptions(roles);
+      }
+    },
+    [auth],
+  );
+
+  // Handle locate on map events
+  useEffect(
+    function handleLocateOnMapEffect(): void {
+      if (locateOnMap) {
+        handleLocateOnMap({
+          data: {
+            lat: locateOnMap.pos[0],
+            lng: locateOnMap.pos[1],
+            id: locateOnMap.id,
+          },
+        });
+      }
+    },
+    [locateOnMap],
+  );
 
   const [customMapImage, setCustomMapImage] = useState<
     CustomMapImage | undefined
@@ -204,18 +272,6 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     setCustomMapBounds,
   ]);
 
-  useEffect(() => {
-    if (locateOnMap) {
-      handleLocateOnMap({
-        data: {
-          lat: locateOnMap.pos[0],
-          lng: locateOnMap.pos[1],
-          id: locateOnMap.id,
-        },
-      });
-    }
-  }, [locateOnMap]);
-
   const selectedMapFeatures = useRef<string[]>([]);
   const hoveredMapFeature = useRef<string>('');
 
@@ -229,13 +285,17 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   }/tiles/256/{z}/{x}/{y}?access_token=${env('NEXT_PUBLIC_MAPBOX_TOKEN')}`;
 
   const handleFilterChange = (
-    newSelectedFilters: (string | number)[],
+    newValuesForThisAttribute: (string | number)[],
     filterAttribute?: string,
   ): void => {
-    setSelectedFilters(newSelectedFilters);
-    if (filterAttribute) {
-      setSelectedMapFilterAttribute(filterAttribute);
-    }
+    if (!filterAttribute) return;
+
+    const updatedFilters = {
+      ...selectedFilters,
+      [filterAttribute]: newValuesForThisAttribute,
+    };
+
+    setSelectedFilters(updatedFilters);
   };
 
   const highlightLocated = async (i: number, m: MarkerType): Promise<void> => {
@@ -305,25 +365,69 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     setIsLegendModalOpen(false);
   };
 
+  const closePinModal = (): void => {
+    setIsPinModalOpen(false);
+    setEditingMarker(null);
+  };
+
   const toggleFilterModal = (): void => {
     if (
       ((isFullscreenMap && isMobileView) || !isFullscreenMap) &&
-      isLegendModalOpen
+      (isLegendModalOpen || isPinModalOpen)
     ) {
       closeLegendModal();
+      closePinModal();
     }
     setIsFilterModalOpen(!isFilterModalOpen);
   };
 
   const toggleLegendModal = (): void => {
     if (
-      ((isFullscreenMap && isMobileView) || !isFullscreenMap) &&
-      isFilterModalOpen
+      (((isFullscreenMap && isMobileView) || !isFullscreenMap) &&
+        isFilterModalOpen) ||
+      isPinModalOpen
     ) {
       closeFilterModal();
+      closePinModal();
     }
     setIsLegendModalOpen(!isLegendModalOpen);
   };
+
+  const togglePinModal = (): void => {
+    if (
+      (((isFullscreenMap && isMobileView) || !isFullscreenMap) &&
+        isFilterModalOpen) ||
+      isLegendModalOpen
+    ) {
+      closeFilterModal();
+      closeLegendModal();
+    }
+    setEditingMarker(null);
+    setIsPinModalOpen(!isPinModalOpen);
+  };
+
+  function is2DArray(value: unknown): value is unknown[][] {
+    return (
+      Array.isArray(value) &&
+      value.every((row) => Array.isArray(row) || row == undefined)
+    );
+  }
+
+  function getIconIndex(dataSource: number, icon: string): number {
+    let iconIndex = 0;
+    if (props.staticValuesLogos) {
+      if (is2DArray(props.staticValuesLogos)) {
+        const icons = props.staticValuesLogos[dataSource];
+        if (icons) {
+          iconIndex = icons.indexOf(icon);
+        }
+      } else {
+        iconIndex = props.staticValuesLogos.indexOf(icon);
+      }
+    }
+    return iconIndex >= 0 ? iconIndex : 0;
+  }
+
   const getIconForMarker = (marker: MarkerType, markerValue: any): string => {
     if (!isCombinedMap) {
       const singleProps = props as SingleMapProps;
@@ -433,7 +537,70 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
   const geoJSONData = (props.mapGeoJSON ? props.mapGeoJSON : '') as any;
 
-  const markerPositions: MarkerType[] = (props.data || []).map(
+  // Apply project visibility filtering based on admin status and is_public flag
+  useEffect(
+    function applyProjectVisibilityFilter(): () => void {
+      let cancelled = false;
+
+      const applyVisibility = async (): Promise<void> => {
+        // Admins can see all project pins regardless of is_public
+        if (isProjectAdmin) {
+          setLocalData(normalizeIncomingMapData(props.data || []));
+          return;
+        }
+
+        const incoming = props.data || [];
+        const projectIds = Array.from(
+          new Set(
+            incoming
+              .filter((item) => isProjectType(item))
+              .map((item) => getProjectId(item))
+              .filter((id): id is string => Boolean(id)),
+          ),
+        );
+
+        const visibilityMap: Record<string, boolean> = {};
+
+        try {
+          const projects = await getProjects(auth?.user?.access_token, tenant);
+          (projects || []).forEach((proj: any) => {
+            const id = proj?.id?.value ?? proj?.id;
+            if (!id) return;
+            visibilityMap[String(id)] = Boolean(proj?.is_public ?? false);
+          });
+        } catch (err) {
+          console.error('[Map] Failed to fetch project visibility list', {
+            error: err,
+          });
+        }
+
+        projectIds.forEach((projectId) => {
+          if (visibilityMap[projectId] === undefined) {
+            visibilityMap[projectId] = false;
+          }
+        });
+
+        const filtered = filterProjectVisibility(
+          incoming,
+          visibilityMap,
+          isProjectAdmin,
+        );
+
+        if (!cancelled) {
+          setLocalData(normalizeIncomingMapData(filtered));
+        }
+      };
+
+      applyVisibility();
+
+      return function cleanupVisibilityEffect(): void {
+        cancelled = true;
+      };
+    },
+    [props.data, auth?.user?.access_token, isProjectAdmin, tenant],
+  );
+
+  const markerPositions: MarkerType[] = (localData || []).map(
     (mapObject, index) => {
       let markerValue;
       let title;
@@ -497,14 +664,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         color = getColorForMarker(mapObject, markerValue);
       }
       const icon = getIconForMarker(mapObject, markerValue);
-      let iconIndex = 0;
-      if (isCombinedMap) {
-        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
-        const staticValuesLogos = props.staticValuesLogos?.[dataSource] ?? [];
-        iconIndex = staticValuesLogos.indexOf(icon);
-      } else {
-        iconIndex = props.staticValuesLogos?.indexOf(icon);
-      }
+      const iconIndex = getIconIndex(mapObject.dataSource ?? 0, icon);
       return {
         position: mapObject.position.coordinates ?? [52.520008, 13.404954],
         title: title,
@@ -516,6 +676,109 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       };
     },
   );
+
+  // Fetch categories for project/street markers
+  useEffect(
+    function fetchProjectCategoriesEffect(): void {
+      fetchAndCacheProjectCategories({
+        markerPositions,
+        authToken: auth.user?.access_token,
+        projectCategoryCache,
+        setProjectCategoryCache,
+      });
+    },
+    [markerPositions, auth.user?.access_token],
+  );
+
+  const getFilteredMarkers = (): MarkerType[] => {
+    const base = markerPositions.filter(function filterMarkerByFilters(marker) {
+      const activeFilterKeys = Object.keys(selectedFilters).filter(
+        (key) => selectedFilters[key].length > 0,
+      );
+
+      if (activeFilterKeys.length > 0) {
+        const passesAllFilters = activeFilterKeys.every((key) => {
+          const selectedValues = selectedFilters[key];
+          const attributeDetails = marker.details[key];
+
+          if (attributeDetails === undefined) return true;
+
+          const propertyValue =
+            attributeDetails.value !== undefined
+              ? attributeDetails.value
+              : attributeDetails;
+
+          const normalizedValue =
+            parseFloat(propertyValue) === 0 ? 0 : propertyValue;
+          return selectedValues.includes(normalizedValue);
+        });
+
+        if (!passesAllFilters) return false;
+      }
+
+      if (
+        isCombinedMap &&
+        selectedDataSources.length > 0 &&
+        !selectedDataSources.includes(marker.dataSource ?? -1)
+      ) {
+        return false;
+      }
+
+      if (
+        !isProjectAdmin &&
+        (isProjectType(marker.details) ||
+          hasProjectVisibilityFlag(marker.details)) &&
+        !isProjectPublic(marker.details)
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // If the user selected an address in the modal, append it to the marker list
+    // so it is rendered using the same icon generation logic as other markers.
+    // Only show the pin if it is NOT a route (route shows dashed line only).
+    if (searchMarker && !searchMarker.routePoints) {
+      try {
+        const pos = Array.isArray(searchMarker.position)
+          ? (searchMarker.position as [number, number])
+          : // if it's an object like {lat, lng}
+            [
+              (searchMarker.position as any).lat,
+              (searchMarker.position as any).lng,
+            ];
+
+        const hasMatch = base.some((marker) => {
+          const [lat, lng] = marker.position;
+          return Math.abs(lat - pos[0]) < 1e-6 && Math.abs(lng - pos[1]) < 1e-6;
+        });
+
+        if (hasMatch) {
+          return base;
+        }
+
+        const searchMarkerEntry: MarkerType = {
+          position: pos as [number, number],
+          title: searchMarker.label || 'Ausgewählt',
+          details: {
+            id: 'search-marker',
+            routePoints: (searchMarker as any).routePoints,
+          },
+          dataSource: 0,
+          iconIndex: 0,
+        };
+
+        return [...base, searchMarkerEntry];
+      } catch (err) {
+        // Fall back to base if anything unexpected happens
+        console.error('Error adding searchMarker to filtered markers', err);
+        return base;
+      }
+    }
+
+    return base;
+  };
 
   const customMarkerPositions: MarkerType[] = (customMapSensorValues || []).map(
     (markerObject, index) => {
@@ -582,14 +845,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         color = getColorForMarker(mapObject, markerValue);
       }
       const icon = getIconForMarker(mapObject, markerValue);
-      let iconIndex = 0;
-      if (isCombinedMap) {
-        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
-        const staticValuesLogos = props.staticValuesLogos?.[dataSource] ?? [];
-        iconIndex = staticValuesLogos.indexOf(icon);
-      } else {
-        iconIndex = props.staticValuesLogos?.indexOf(icon);
-      }
+      const iconIndex = getIconIndex(mapObject.dataSource ?? 0, icon);
       return {
         // position: mapObject.position.coordinates ?? [52.520008, 13.404954],
         position: [markerObject.positionY, markerObject.positionX],
@@ -602,83 +858,58 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     },
   );
 
-  const getFilteredMarkers = (): MarkerType[] => {
-    return (isCustomMap ? customMarkerPositions : markerPositions).filter(
-      (marker) => {
-        // Filter by attribute and value
-        if (selectedFilters.length > 0) {
-          const filterAttribute = isCombinedMap
-            ? selectedMapFilterAttribute
-            : props.mapFilterAttribute;
-          if (!filterAttribute) return false;
-          const attributeDetails = marker.details[filterAttribute];
-          if (!attributeDetails) return false;
-
-          let propertyValue;
-          if (attributeDetails.value !== undefined) {
-            propertyValue = attributeDetails.value;
-          } else {
-            propertyValue = attributeDetails;
-          }
-
-          const normalizedValue =
-            parseFloat(propertyValue) === 0 ? 0 : propertyValue;
-          if (!selectedFilters.includes(normalizedValue)) return false;
-        }
-
-        // Filter by dataSource (map selection) - only for combined maps
-        if (
-          isCombinedMap &&
-          selectedDataSources.length > 0 &&
-          !selectedDataSources.includes(marker.dataSource ?? -1)
-        ) {
-          return false;
-        }
-
-        return true;
-      },
-    );
-  };
-
   const getColorForGeoJSONFeature = (
     featureId: string,
     defaultColor: string,
   ): string => {
     const combinedProps = props as CombinedMapProps;
-    const values = props.mapGeoJSONSensorData?.filter(
-      (item) => item.id == featureId,
-    );
-    if (values) {
-      const value =
-        values?.reduce((sum, current) => sum + current.value, 0) /
-        values?.length;
+
+    // Find sensor entries matching this feature id
+    const raw =
+      props.mapGeoJSONSensorData?.filter((item) => item.id == featureId) ?? [];
+
+    // Parse numbers robustly (handle numeric strings and comma decimals) and drop non-numeric
+    const numericValues = raw
+      .map((v) => {
+        if (typeof v.value === 'number') return v.value;
+        const s = String(v.value).trim().replace(',', '.');
+        const n = parseFloat(s);
+        return Number.isFinite(n) ? n : null;
+      })
+      .filter((n): n is number => n !== null);
+
+    const avg =
+      numericValues.length > 0
+        ? numericValues.reduce((sum, n) => sum + n, 0) / numericValues.length
+        : undefined;
+
+    if (
+      combinedProps.mapGeoJSONSensorBasedColors &&
+      avg !== undefined &&
+      !Number.isNaN(avg)
+    ) {
       if (
-        combinedProps.mapGeoJSONSensorBasedColors &&
-        value &&
-        !Number.isNaN(value)
+        Object.prototype.toString.call(props.staticValues?.[0]) ===
+        '[object Array]'
       ) {
-        if (
-          Object.prototype.toString.call(props.staticValues?.[0]) ===
-          '[object Array]'
-        ) {
-          const staticValues = combinedProps.staticValues?.[0];
-          const staticColors = combinedProps.staticValuesColors?.[0];
-          if (staticValues && staticColors) {
-            return getColorForValue(value, staticValues, staticColors);
-          }
-        } else {
-          return getColorForValue(
-            value,
-            (props.staticValues as (string | number)[]) || [],
-            (props.staticValuesColors as string[]) || [],
-          );
+        const staticValues = combinedProps.staticValues?.[0];
+        const staticColors = combinedProps.staticValuesColors?.[0];
+        if (staticValues && staticColors) {
+          return getColorForValue(avg, staticValues, staticColors);
         }
-      } else if (props.mapGeoJSONSensorBasedNoDataColor) {
-        return props.mapGeoJSONSensorBasedNoDataColor;
+      } else {
+        return getColorForValue(
+          avg,
+          (props.staticValues as (string | number)[]) || [],
+          (props.staticValuesColors as string[]) || [],
+        );
       }
+    } else if (props.mapGeoJSONSensorBasedNoDataColor) {
+      // Explicit no-data color when enabled but no numeric value present
+      return props.mapGeoJSONSensorBasedNoDataColor;
     }
 
-    // Default to marker color for this data source if value-based coloring isn't enabled
+    // Default/fallback color
     const fallbackColor =
       defaultColor || combinedProps.mapGeoJSONFillColor || '#000000';
     return fallbackColor;
@@ -804,12 +1035,20 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
   function geoJSONGetIDProperty(properties: any): any {
     let id = '';
-    if (props.mapGeoJSONFeatureIdentifier) {
-      id = properties[props.mapGeoJSONFeatureIdentifier];
+    if (
+      props.mapGeoJSONFeatureIdentifier &&
+      props.mapGeoJSONFeatureIdentifier != ''
+    ) {
+      id = properties?.[props.mapGeoJSONFeatureIdentifier];
     } else {
-      id = properties['AGS'];
+      id = properties?.['AGS'];
     }
-    if (id.substring(0, 1) == '0') {
+    if (id == null) {
+      return '';
+    }
+    // Normalize to string for consistent comparisons
+    id = String(id);
+    if (id.substring(0, 1) === '0') {
       return id.substring(1);
     }
     return id;
@@ -822,8 +1061,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     topright: 'leaflet-top leaflet-right',
   };
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  function GeoJSONLegend() {
+  function GeoJSONLegend(): JSX.Element {
     let staticValues: (number | string)[] = [];
     let staticColors: string[] = [];
     if (
@@ -944,6 +1182,29 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     });
   }
 
+  async function handleEditMarker(markerData: any): Promise<void> {
+    const project = await fetchProjectForEdit(
+      auth.user?.access_token,
+      markerData,
+    );
+    if (project) {
+      setEditingMarker(project);
+      setIsPinModalOpen(true);
+      handleOnCloseModal();
+    }
+  }
+
+  async function handleDeleteMarker(markerData: any): Promise<void> {
+    const filterFn = await deleteProjectMarker(
+      auth.user?.access_token,
+      markerData,
+    );
+    if (filterFn) {
+      setLocalData(filterFn);
+      handleOnCloseModal();
+    }
+  }
+
   const getDivStyle = (): CSSProperties => {
     if (isFullscreenMap && !isMobileView) {
       return {
@@ -982,6 +1243,19 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       decimalSeparator={decimalSeparator}
     />
   );
+
+  const handleProjectCreated = async (project: any): Promise<void> => {
+    try {
+      const updater = await createProjectAddedUpdater(
+        project as ProjectInput,
+        isProjectAdmin,
+      );
+      setLocalData(updater);
+      setSearchMarker(null); // remove grey pin
+    } catch (err) {
+      console.error('handleProjectCreated failed to append project', err);
+    }
+  };
 
   // Get marker colors and icons based on map type
   const getMarkerProps = (
@@ -1222,121 +1496,208 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   props.mapMaxZoom ? props.mapMaxZoom : 16
                 }
               >
-                {(markerPositions.length > 0
-                  ? getFilteredMarkers()
-                  : DEFAULT_MARKERS
-                ).map((marker, index) => {
-                  const dataSource = marker.dataSource || 0;
-                  const markerProps = getMarkerProps(
-                    dataSource,
-                    selectedMarker.id === index,
-                  );
+                {((): Array<JSX.Element | null> => {
+                  const filteredMarkers =
+                    markerPositions.length > 0
+                      ? getFilteredMarkers()
+                      : DEFAULT_MARKERS;
+                  const renderedStreetIds = new Set<string>();
+                  const renderedLineIds = new Set<string>();
 
-                  // Determine the correct color to use
-                  // Priority: 1) Active color if selected, 2) Value-based color if enabled, 3) Default marker color
-                  const isSelected = selectedMarker.id === index;
-                  let finalColor = markerProps.color; // This already handles active vs default color
+                  return filteredMarkers.map(
+                    (marker, index): JSX.Element | null => {
+                      const dataSource = marker.dataSource || 0;
+                      const markerProps = getMarkerProps(
+                        dataSource,
+                        selectedMarker.id === index,
+                      );
 
-                  // Only use value-based color if not selected and value-based coloring is enabled
-                  if (!isSelected) {
-                    if (isCombinedMap) {
-                      const combinedProps = props as CombinedMapProps;
-                      if (
-                        combinedProps.mapIsIconColorValueBased?.[dataSource] ||
-                        combinedProps.mapIsFormColorValueBased?.[dataSource]
-                      ) {
-                        finalColor = marker.color || markerProps.color;
+                      // Determine the correct color to use
+                      // Priority: 1) Active color if selected, 2) Value-based color if enabled, 3) Default marker color
+                      const isSelected = selectedMarker.id === index;
+                      let finalColor = markerProps.color; // This already handles active vs default color
+
+                      // If this is the transient search marker inserted by the modal,
+                      // force a grey color so it visually differs from existing markers.
+                      if (marker?.details?.id === 'search-marker') {
+                        finalColor = tempMarkerColor;
                       }
-                    } else {
-                      const singleProps = props as SingleMapProps;
-                      if (
-                        singleProps.mapIsIconColorValueBased ||
-                        singleProps.mapIsFormColorValueBased
-                      ) {
-                        finalColor = marker.color || markerProps.color;
-                      }
-                    }
-                  }
-                  return (
-                    markerProps.displayMode !==
-                      tabComponentSubTypeEnum.onlyFormArea && (
-                      <Marker
-                        key={index}
-                        title={marker.title} // Gives markers an accessible name for screen readers
-                        position={marker.position as LatLngExpression}
-                        icon={createCustomIcon(
-                          finalColor,
-                          iconSvgMarkup,
-                          markerProps.iconIndex ?? 0,
-                          isCombinedMap,
-                          isCombinedMap
-                            ? (props as CombinedMapProps).mapMarkerIcon?.[
-                                markerProps.iconIndex
-                              ]
-                            : (props as SingleMapProps).mapMarkerIcon,
-                        )}
-                        eventHandlers={{
-                          click: (e): void => {
-                            e.originalEvent.stopPropagation();
-                            if (selectedMarker.id === index) {
-                              setSelectedMarker({
-                                id: null,
-                                data: null,
-                                dataSource: null,
-                              });
-                            } else {
-                              setSelectedMarker({
-                                id: index,
-                                data: marker,
-                                dataSource: dataSource,
-                              });
-                            }
-                            if (handleOnMarkerClick) {
-                              handleOnMarkerClick(marker.details.id);
-                            }
-                          },
-                          popupclose: handleOnCloseModal,
-                        }}
-                      >
-                        {props.mapAllowPopups && !isFullscreenMap && (
-                          <Popup
-                            maxWidth={200}
-                            // ref={(popup: L.Popup | null) => {
-                            //   if (popup)
-                            //     popupRefsMap.current.set(
-                            //       `${marker.details.id}`,
-                            //       popup,
-                            //     );
-                            // }}
-                          >
-                            <div
-                              style={{
-                                textAlign: 'center',
-                                fontSize: '16px',
-                                marginBottom: '10px',
-                                color: '#000000',
-                              }}
-                            >
-                              <strong>{marker.title}</strong>
-                            </div>
-                            {renderPopupContent(marker)}
-                          </Popup>
-                        )}
 
-                        {markerProps.displayMode !==
-                          tabComponentSubTypeEnum.onlyPin &&
-                          mapZoom > 15 &&
-                          (!Array.isArray(marker) || marker.length === 1) &&
-                          renderShape(
-                            marker.position,
-                            markerProps.shapeType,
+                      // Only use value-based color if not selected and value-based coloring is enabled
+                      if (!isSelected) {
+                        const statusColor = getStatusColor(marker);
+                        if (statusColor) {
+                          finalColor = statusColor;
+                        }
+
+                        if (isCombinedMap) {
+                          const combinedProps = props as CombinedMapProps;
+                          if (
+                            combinedProps.mapIsIconColorValueBased?.[
+                              dataSource
+                            ] ||
+                            combinedProps.mapIsFormColorValueBased?.[dataSource]
+                          ) {
+                            finalColor =
+                              statusColor || marker.color || markerProps.color;
+                          }
+                        } else {
+                          const singleProps = props as SingleMapProps;
+                          if (
+                            singleProps.mapIsIconColorValueBased ||
+                            singleProps.mapIsFormColorValueBased
+                          ) {
+                            finalColor =
+                              statusColor || marker.color || markerProps.color;
+                          }
+                        }
+                      }
+
+                      const streetLineCoords = getStreetLineCoords(marker);
+                      if (streetLineCoords) {
+                        const streetId = marker?.details?.id
+                          ? String(marker.details.id)
+                          : null;
+                        if (!streetId || renderedStreetIds.has(streetId)) {
+                          return null;
+                        }
+                        renderedStreetIds.add(streetId);
+                        return (
+                          <Polyline
+                            key={`street-${streetId}`}
+                            positions={streetLineCoords}
+                            pathOptions={{
+                              color: finalColor,
+                              weight: 5,
+                              opacity: 0.95,
+                              dashArray: '14 8',
+                            }}
+                          />
+                        );
+                      }
+                      // Streets render as polylines only to avoid duplicate pins
+                      if (marker?.details?.type === 'Street') {
+                        return null;
+                      }
+                      // Use project category icon for project/street types
+                      const markerIcon = isProjectOrStreetType(marker)
+                        ? createProjectCategoryIcon(
                             finalColor,
-                            dataSource,
-                          )}
-                      </Marker>
-                    )
+                            marker,
+                            projectCategoryCache,
+                          )
+                        : createCustomIcon(
+                            finalColor,
+                            iconSvgMarkup,
+                            marker.iconIndex ?? 0,
+                            isCombinedMap,
+                            isCombinedMap
+                              ? (props as CombinedMapProps).mapMarkerIcon?.[
+                                  markerProps.iconIndex
+                                ]
+                              : (props as SingleMapProps).mapMarkerIcon,
+                          );
+
+                      const markerElement =
+                        markerProps.displayMode !==
+                        tabComponentSubTypeEnum.onlyFormArea ? (
+                          <Marker
+                            key={`marker-${index}`}
+                            position={marker.position as LatLngExpression}
+                            icon={markerIcon}
+                            eventHandlers={{
+                              click: (e): void => {
+                                e.originalEvent.stopPropagation();
+                                if (selectedMarker.id === index) {
+                                  setSelectedMarker({
+                                    id: null,
+                                    data: null,
+                                    dataSource: null,
+                                  });
+                                } else {
+                                  setSelectedMarker({
+                                    id: index,
+                                    data: marker,
+                                    dataSource: dataSource,
+                                  });
+                                }
+                                if (handleOnMarkerClick) {
+                                  handleOnMarkerClick(marker.details.id);
+                                }
+                              },
+                              popupclose: handleOnCloseModal,
+                            }}
+                          >
+                            {props.mapAllowPopups && !isFullscreenMap && (
+                              <Popup maxWidth={200}>
+                                <div
+                                  style={{
+                                    textAlign: 'center',
+                                    fontSize: '16px',
+                                    marginBottom: '10px',
+                                  }}
+                                >
+                                  <strong>{marker.title}</strong>
+                                </div>
+                                {renderPopupContent(marker)}
+                              </Popup>
+                            )}
+
+                            {markerProps.displayMode !==
+                              tabComponentSubTypeEnum.onlyPin &&
+                              mapZoom > 15 &&
+                              (!Array.isArray(marker) || marker.length === 1) &&
+                              renderShape(
+                                marker.position,
+                                markerProps.shapeType,
+                                finalColor,
+                                dataSource,
+                              )}
+                          </Marker>
+                        ) : null;
+
+                      const lineCoords = getLineCoords(marker);
+                      if (lineCoords) {
+                        const lineId = marker?.details?.id
+                          ? String(marker.details.id)
+                          : String(index);
+                        if (renderedLineIds.has(lineId)) {
+                          return null;
+                        }
+                        renderedLineIds.add(lineId);
+                        return (
+                          <React.Fragment key={`route-${lineId}`}>
+                            <Polyline
+                              positions={lineCoords}
+                              pathOptions={{
+                                color: finalColor,
+                                weight: 5,
+                                opacity: 0.95,
+                                dashArray: '14 8',
+                              }}
+                            />
+                            {markerElement}
+                          </React.Fragment>
+                        );
+                      }
+
+                      return markerElement;
+                    },
                   );
-                })}
+                })()}
+
+                {/* If a route was created in the modal, render it as a polyline (single visual line) */}
+                {searchMarker?.routePoints && (
+                  <Polyline
+                    positions={searchMarker.routePoints as LatLngExpression[]}
+                    pathOptions={{
+                      color: tempMarkerColor,
+                      weight: 5,
+                      opacity: 0.95,
+                      dashArray: '14 8',
+                    }}
+                  />
+                )}
               </MarkerClusterGroup>
             )}
 
@@ -1396,6 +1757,21 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   />
                 </div>
               )}
+              {isProjectAdmin && (
+                <div
+                  className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                  onClick={togglePinModal}
+                  style={menuStyle}
+                >
+                  <h2 className="font-bold pr-1">Pin hinzufügen</h2>
+                  <FontAwesomeIcon
+                    icon={faAnglesRight}
+                    className={`transform ${
+                      isPinModalOpen ? 'rotate-180' : 'rotate-0'
+                    } transition-transform ease-in-out duration-300`}
+                  />
+                </div>
+              )}
               {allowShare && (
                 <div
                   className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
@@ -1428,7 +1804,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
             {/* filter and legend modals */}
             {props.mapAllowFilter && isFilterModalOpen && (
               <MapFilterModal
-                combinedQueryData={props.combinedQueryData || []}
+                uiFilterData={uiFilterData}
                 selectedFilters={selectedFilters}
                 onFilterChange={handleFilterChange}
                 menuStyle={menuStyle}
@@ -1455,7 +1831,53 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 isFullscreenMap={isFullscreenMap}
               />
             )}
+            {isProjectAdmin && isPinModalOpen && (
+              <MapCreatePinModal
+                menuStyle={{ ...menuStyle, width: '25rem' }}
+                ciColors={ciColors}
+                onCloseModal={closePinModal}
+                initialData={editingMarker}
+                onProjectCreated={handleProjectCreated}
+                onSelectCoordinates={createSelectCoordinatesHandler(
+                  setSearchMarker,
+                  mapRef,
+                )}
+                onRequestCenterPinVisibility={setCenterPinVisible}
+                onSelectRoute={createSelectRouteHandler(
+                  setSearchMarker,
+                  mapRef,
+                )}
+              />
+            )}
           </MapContainer>
+        )}
+        {centerPinVisible && (
+          <div
+            className="absolute top-1/2 left-1/2 z-[1000] pointer-events-none"
+            style={{ transform: 'translate(-50%, -60px)' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 30 30"
+              fill={tempMarkerColor}
+              width="60px"
+              height="60px"
+              style={{
+                filter:
+                  'drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))',
+              }}
+            >
+              <path d="M15 2C10.58 2 7 5.58 7 10c0 6.627 8 16 8 16s8-9.373 8-16c0-4.42-3.58-8-8-8z" />
+              <g
+                transform="translate(10.5, 6) scale(0.4)"
+                dangerouslySetInnerHTML={{
+                  __html: Array.isArray(iconSvgMarkup)
+                    ? iconSvgMarkup[0]
+                    : iconSvgMarkup,
+                }}
+              />
+            </svg>
+          </div>
         )}
 
         {isCustomMap &&
@@ -1610,7 +2032,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           )}
 
         <div ref={iconRef} style={{ display: 'none' }}>
-          {isCombinedMap
+          {isCombinedMap && (props as CombinedMapProps).mapMarkerIcon
             ? (props as CombinedMapProps).mapMarkerIcon?.map(
                 (iconName, index) => (
                   <DashboardIcons
@@ -1639,7 +2061,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       </div>
 
       {/* sidebar modal */}
-      {props.mapAllowPopups && selectedMarker.data && isFullscreenMap && (
+      {props.mapAllowPopups && isFullscreenMap && selectedMarker.data && (
         <MapModal
           selectedMarker={selectedMarker.data}
           mapWidgetValues={
@@ -1655,6 +2077,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           chartStyle={isCombinedMap ? props.chartStyle : undefined}
           ciColors={ciColors}
           onCloseModal={handleOnCloseModal}
+          onEditMarker={isProjectAdmin ? handleEditMarker : undefined}
+          onDeleteMarker={isProjectAdmin ? handleDeleteMarker : undefined}
+          isAdmin={isProjectAdmin}
         />
       )}
     </div>

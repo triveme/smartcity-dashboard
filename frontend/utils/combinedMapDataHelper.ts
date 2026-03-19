@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  AttributeData,
-  QueryData,
-  QueryDataWithAttributes,
-  WidgetWithContent,
-} from '@/types';
+import { QueryDataWithAttributes, WidgetWithContent } from '@/types';
 
 const attributesToBeExcluded = [
   'query', // combined using a different function due to the structure difference
@@ -98,7 +93,9 @@ export function combineWidgetAttributes(
       // These need to be transformed into arrays organized by dataSource
       else if (
         key === 'chartStaticValuesColors' ||
-        key === 'chartStaticValues'
+        key === 'chartStaticValues' ||
+        key === 'chartStaticValuesLogos' ||
+        key === 'chartStaticValuesTexts'
       ) {
         // Group by dataSource and extract the values
         const groupedByDataSource: { [dataSource: number]: any[] } = {};
@@ -132,70 +129,85 @@ export function combineWidgetAttributes(
 }
 
 export function combineQueryData(
-  widgetQueryDataArrays: QueryData[][],
+  widgetQueryDataArrays: any,
   mapFilterAttribute: string[],
-): QueryDataWithAttributes[] {
-  const combinedData: QueryDataWithAttributes = {};
+): {
+  filteredData: QueryDataWithAttributes[];
+  uiGroups: QueryDataWithAttributes[];
+} {
+  const filterOptions: Record<string, any[]> = {};
+  const allItems: any[] = Array.isArray(widgetQueryDataArrays)
+    ? widgetQueryDataArrays.flat(Infinity)
+    : [];
 
-  // Helper to process each widget's queryData
-  const processQueryData = (queryData: QueryData[]): void => {
-    if (queryData && queryData.length > 0) {
-      queryData.forEach((data) => {
-        Object.keys(data).forEach((key) => {
-          // Only process keys that are included in mapFilterAttribute
-          // TODO: come up with another way to include all attributes
-          if (mapFilterAttribute) {
-            if (
-              mapFilterAttribute.length === 0 || // If no filter is provided, include all attributes
-              mapFilterAttribute.includes(key)
-            ) {
-              if (typeof data[key] === 'object' && 'type' in data[key]) {
-                const attributeKey = key; // E.g., precipitation, temperature
-                const attributeData = data[key] as AttributeData;
-
-                // Initialize an array for the attribute if it doesn't exist yet
-                if (!combinedData[attributeKey]) {
-                  combinedData[attributeKey] = [];
-                }
-
-                // Add the current attribute data into the array
-                combinedData[attributeKey].push(attributeData);
-              }
-            }
-          }
-        });
-      });
-    }
-  };
-
-  // Process all provided query data arrays dynamically
-  widgetQueryDataArrays.forEach(processQueryData);
-
-  // Sort and remove duplicates for each attribute
-  Object.keys(combinedData).forEach((attributeKey) => {
-    combinedData[attributeKey] = Array.from(
-      // Remove duplicates by using a Set and mapping the values
-      new Set(
-        combinedData[attributeKey].map((attr) => JSON.stringify(attr)), // Convert object to string for Set uniqueness
-      ),
-    )
-      // Convert back to objects after removing duplicates
-      .map((attr) => JSON.parse(attr))
-      // Sort by the value (smallest to largest)
-      .sort((a: AttributeData, b: AttributeData) => {
-        if (typeof a.value === 'number' && typeof b.value === 'number') {
-          return a.value - b.value;
-        } else if (typeof a.value === 'string' && typeof b.value === 'string') {
-          return a.value.localeCompare(b.value);
-        } else {
-          // If mixed types, convert to string for consistent comparison
-          return a.value.toString().localeCompare(b.value.toString());
-        }
-      });
+  const rawFilter = Array.isArray(mapFilterAttribute)
+    ? mapFilterAttribute[0]
+    : mapFilterAttribute;
+  const filterDefinitions = (rawFilter || '').split('|').filter(Boolean);
+  const parsedFilters = filterDefinitions.map((def) => {
+    const [key, values] = def.split(':');
+    return {
+      key: key.trim(),
+      values: values
+        ? values
+            .split(',')
+            .map((v) => v.trim())
+            .filter(Boolean)
+        : [],
+    };
   });
 
-  // Convert the combinedData object to an array of objects where each attribute is separate
-  return Object.keys(combinedData).map((attributeKey) => ({
-    [attributeKey]: combinedData[attributeKey],
-  }));
+  allItems.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+
+    parsedFilters.forEach((filter) => {
+      const actualKey = Object.keys(item).find(
+        (k) => k.toLowerCase() === filter.key.toLowerCase(),
+      );
+      if (actualKey) {
+        if (!filterOptions[filter.key]) filterOptions[filter.key] = [];
+        const rawVal = item[actualKey];
+        filterOptions[filter.key].push(
+          rawVal && typeof rawVal === 'object' && 'value' in rawVal
+            ? rawVal
+            : { value: rawVal ?? 'N/A', type: typeof rawVal, metadata: {} },
+        );
+      }
+    });
+  });
+
+  const filteredData = allItems.filter((item) => {
+    if (!item || typeof item !== 'object') return false;
+
+    return parsedFilters.every((filter) => {
+      const { key, values } = filter;
+      const actualKey = Object.keys(item).find(
+        (k) => k.toLowerCase() === key.toLowerCase(),
+      );
+
+      // If the row doesn't have the key, we keep it (e.g. Streets for Project data)
+      if (!actualKey) return true;
+
+      if (values.length > 0) {
+        const rawVal = item[actualKey];
+        const valueToCompare =
+          rawVal && typeof rawVal === 'object' && 'value' in rawVal
+            ? rawVal.value
+            : rawVal;
+
+        return values.includes(String(valueToCompare));
+      }
+
+      return true;
+    });
+  });
+
+  const uiGroups = Object.keys(filterOptions).map((key) => {
+    const unique = Array.from(
+      new Set(filterOptions[key].map((attr) => JSON.stringify(attr))),
+    ).map((attr) => JSON.parse(attr));
+    return { [key]: unique };
+  });
+
+  return { filteredData, uiGroups };
 }

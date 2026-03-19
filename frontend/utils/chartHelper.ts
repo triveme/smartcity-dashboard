@@ -83,6 +83,7 @@ export const calculateLeftGrid = (
 export const calculateBottomGrid = (
   xAxisLabel: string,
   allowZoom = false,
+  advancedDateSelection = false,
 ): number => {
   let bottomGrid = 30;
 
@@ -92,6 +93,7 @@ export const calculateBottomGrid = (
   if (!xAxisLabel && allowZoom) bottomGrid = 80;
   if (!xAxisLabel && !allowZoom) bottomGrid = 30;
 
+  if (advancedDateSelection) bottomGrid += 60;
   return bottomGrid;
 };
 

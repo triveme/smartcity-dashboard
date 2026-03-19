@@ -89,6 +89,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'static-endpoint',
   'usi',
   'internal',
+  'sql',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [

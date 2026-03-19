@@ -174,6 +174,7 @@ export type MapModalWidget = {
   chartYAxisScaleChartMinValue?: number;
   chartYAxisScaleChartMaxValue?: number;
   showTimeOnDatetimeValues?: boolean;
+  valuesToImages?: ValueToImageData[];
 };
 
 export type MapModalLegend = {
@@ -317,6 +318,8 @@ export type Tab = {
   setValueLimit: boolean;
   userDefinedLimit: number;
   showLegend?: boolean;
+  singleSelectLegend?: boolean;
+  advancedDateSelection?: boolean;
   sliderCurrentAttribute?: string;
   sliderMaximumAttribute?: string;
   textValue?: string;

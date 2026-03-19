@@ -83,7 +83,8 @@ export default async function Dashboard(
 
   let tab;
   let combinedMapData;
-  let combinedQueryData;
+  let combinedQueryDataArray;
+  let uiFilterData;
   if (dashboard.type === dashboardTypeEnum.map) {
     tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
 
@@ -140,12 +141,15 @@ export default async function Dashboard(
       });
 
       // merge queryData and format to use in filter modal list
-      combinedQueryData = combineQueryData(
+      const result = combineQueryData(
         isSingleMap ? [singleMapQueryData] : allWidgetQueryData,
         isSingleMap
           ? [mapFilterAttribute]
           : (combinedMapData.mapFilterAttribute as string[]),
       );
+
+      combinedQueryDataArray = result.filteredData as QueryDataWithAttributes[];
+      uiFilterData = result.uiGroups;
     }
   }
 
@@ -221,9 +225,8 @@ export default async function Dashboard(
                   data={combinedMapData?.mapObject as MapObject[]}
                   combinedMapData={combinedMapData}
                   mapAllowFilter={true}
-                  combinedQueryData={
-                    combinedQueryData as QueryDataWithAttributes[]
-                  }
+                  combinedQueryData={combinedQueryDataArray}
+                  uiFilterData={uiFilterData}
                   mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
                   mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
                   mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
@@ -475,9 +478,8 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .componentSubType || ''
                   }
-                  combinedQueryData={
-                    combinedQueryData as QueryDataWithAttributes[]
-                  }
+                  combinedQueryData={combinedQueryDataArray}
+                  uiFilterData={uiFilterData}
                   mapAllowLegend={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapAllowLegend || false
@@ -555,6 +557,8 @@ export default async function Dashboard(
               widgetDownloadId={dashboard.panels?.[0].widgets?.[0].id || ''}
               tab={tab}
               combinedMapData={combinedMapData}
+              combinedQueryData={combinedQueryDataArray}
+              uiFilterData={uiFilterData}
             />
           )}
         </div>

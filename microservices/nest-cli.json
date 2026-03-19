@@ -71,6 +71,24 @@
         "tsConfigPath": "apps/internal-data-service/tsconfig.app.json"
       }
     },
+    "project-data-service": {
+      "type": "application",
+      "root": "apps/project-data-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/project-data-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/project-data-service/tsconfig.app.json"
+      }
+    },
+    "sql-view-service": {
+      "type": "application",
+      "root": "apps/sql-view-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/sql-view-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/sql-view-service/tsconfig.app.json"
+      }
+    },
     "mail-service": {
       "type": "application",
       "root": "apps/mail-service",

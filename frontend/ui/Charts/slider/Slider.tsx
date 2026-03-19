@@ -31,6 +31,7 @@ interface SliderProps {
   unitFontSize: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData?: any;
+  decimalPlaces?: number;
 }
 
 export default function Slider(props: SliderProps): ReactElement {
@@ -51,6 +52,7 @@ export default function Slider(props: SliderProps): ReactElement {
     arrowColor,
     unitFontSize,
     tabData,
+    decimalPlaces,
   } = props;
   let { value } = props;
 
@@ -136,7 +138,7 @@ export default function Slider(props: SliderProps): ReactElement {
           }}
         >
           {applyUserLocaleToNumber(
-            roundToDecimal(clampedValue),
+            roundToDecimal(clampedValue, decimalPlaces),
             navigator.language || 'de-DE',
           )}
         </span>

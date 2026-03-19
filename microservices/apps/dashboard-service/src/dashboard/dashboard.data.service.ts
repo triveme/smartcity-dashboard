@@ -121,8 +121,18 @@ export class DashboardDataService {
           ) {
             queryBatch.query_config.aggrMode = 'none';
             queryBatch.query_config.timeframe = 'year';
+
+            //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+            //
+            //DOWNLOAD-TODO: Investigate use-case for download function. Use get for now.
+            //
+            // rawData =
+            //   await this.ngsiDataService.downloadDataFromDataSource(queryBatch);
+            //
             rawData =
-              await this.ngsiDataService.downloadDataFromDataSource(queryBatch);
+              await this.ngsiDataService.getDataFromDataSource(queryBatch);
+            //
+            //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
           } else if (queryBatch.auth_data.type === 'api') {
             console.log('DOWNLOAD ORCHIDEO CONNECT DATA');
             console.log(queryBatch.queryIds);

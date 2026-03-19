@@ -5,6 +5,7 @@ import {
   chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
   menuArrowDirectionEnum,
+  projectStatusEnum,
   roundingModeEnum,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
@@ -141,6 +142,7 @@ export const informationComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Text', value: tabComponentSubTypeEnum.text },
   { label: 'Icon mit Link', value: tabComponentSubTypeEnum.iconWithLink },
+  { label: 'Projekt', value: tabComponentSubTypeEnum.project },
 ];
 
 export const interactiveComponentSubTypes = [
@@ -155,6 +157,13 @@ export const widgetImageSources = [
   { label: '', value: '' },
   { label: 'URL', value: widgetImageSourceEnum.url },
   { label: 'Sensor', value: widgetImageSourceEnum.sensor },
+];
+
+export const projectStatusOptions = [
+  { label: '', value: '' },
+  { label: 'Aktiv', value: projectStatusEnum.ACTIVE },
+  { label: 'Geplant', value: projectStatusEnum.PLANNED },
+  { label: 'Archiviert', value: projectStatusEnum.ARCHIVED },
 ];
 
 export const visibilityOptions = [
@@ -208,6 +217,7 @@ export const dataPlatformTypes = [
   { label: 'Statischer Endpunkt', value: authDataTypeEnum.staticendpoint },
   { label: 'Urban Institute', value: authDataTypeEnum.usi },
   { label: 'Intern', value: authDataTypeEnum.internal },
+  { label: 'SQL', value: authDataTypeEnum.sql },
 ];
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

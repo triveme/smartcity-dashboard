@@ -168,8 +168,7 @@ export class AuthDataService {
       row.visibility = 'protected';
       // Populate roles
       RoleUtil.populateRoles(row, rolesFromRequest);
-
-      if (row.type !== 'api' && row.type !== 'internal') {
+      if (row.type !== 'api' && row.type !== 'internal' && row.type !== 'sql') {
         row.appUserPassword = EncryptionUtil.encryptPassword(
           row.appUserPassword as string,
         );

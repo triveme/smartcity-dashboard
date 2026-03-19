@@ -185,25 +185,18 @@ export class DataTranslationService {
             widget.usesQueryParameter === true
           ) {
             await this.populateValueService.populateTab(tabWithContent, true);
-          } else if (
-            isCombinedWidgetTab(tab) &&
-            widget.usesQueryParameter === false
-          ) {
+          } else if (isCombinedWidgetTab(tab)) {
             await this.populateCombinedWidgetService.populateTab(
               tabWithContent,
             );
-          } else if (
-            tab.componentType === 'Listview' &&
-            widget.usesQueryParameter === false
-          ) {
+          } else if (tab.componentType === 'Listview') {
             await this.populateListviewService.populateListview(tabWithContent);
           } else if (
-            (tab.componentType === 'Diagramm' ||
-              tab.componentType === 'Karte' ||
-              (tab.componentType === 'Slider' &&
-                tab.componentSubType === 'Slider Übersicht') ||
-              tab.componentType === 'Interaktive Komponente') &&
-            widget.usesQueryParameter === false
+            tab.componentType === 'Diagramm' ||
+            tab.componentType === 'Karte' ||
+            (tab.componentType === 'Slider' &&
+              tab.componentSubType === 'Slider Übersicht') ||
+            tab.componentType === 'Interaktive Komponente'
           ) {
             await this.populateChartService.populateTab(tabWithContent);
           }

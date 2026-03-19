@@ -4,7 +4,10 @@ import { json } from 'express';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(DashboardServiceModule, {
-    logger: ['error', 'warn', 'log'],
+    logger:
+      process.env.NODE_ENV === 'test'
+        ? ['error', 'warn', 'log', 'verbose']
+        : ['error', 'warn', 'log'],
   });
 
   app.enableCors({

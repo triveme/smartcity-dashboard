@@ -2,7 +2,7 @@
 import React, { ReactElement, useState } from 'react';
 
 import { PanelWithContent } from '@/types';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import GeneralInfoMessageModal from '@/ui/GeneralInfoMessageModal';
 
@@ -25,7 +25,7 @@ export default function DashboardGeneralInfoMessage(
   return (
     <div className="justify-center items-center content-center h-4/6">
       <button onClick={handleInfoButtonClicked}>
-        <FontAwesomeIcon icon={faExclamationCircle} size="sm" />
+        <FontAwesomeIcon icon={faCircleInfo} size="sm" />
       </button>
       <GeneralInfoMessageModal
         isVisible={isModalVisible}

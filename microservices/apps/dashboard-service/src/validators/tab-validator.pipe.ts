@@ -80,6 +80,8 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'setValueLimit',
       'userDefinedLimit',
       'showLegend',
+      'singleSelectLegend',
+      'advancedDateSelection',
       'tiles',
       'decimalPlaces',
       'tableFontColor',

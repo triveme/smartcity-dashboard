@@ -1,7 +1,8 @@
 'use client';
 
 import { ReactElement, useEffect, useRef } from 'react';
-import * as echarts from 'echarts';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+
 import { ECharts, EChartsOption } from 'echarts';
 import { useSearchParams } from 'next/navigation';
 
@@ -52,7 +53,9 @@ export default function Radial180Chart(
   let myChart: ECharts | null = null;
 
   const initializeChart = (): void => {
-    myChart = echarts.init(chartRef.current);
+    myChart = echarts.init(chartRef.current, undefined, {
+      locale: ECHARTS_LOCALE,
+    });
 
     const option: EChartsOption = {
       series: [

@@ -26,8 +26,12 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_BACKEND_URL` | The URL for the backend application. | `http://localhost:8081`
 | `ADMIN_ROLE` | The name of the "admin" role in Keycloak. | `scs-admin`
 | `SUPER_ADMIN_ROLE` | The name of the "superadmin" role in Keycloak. | `scs-super-admin`
-| `TRUSTED_CA` | Populated during helm installation with the trusted CA config map. |
-| `NEST_JWKS_URI` | URI to JSON Web Key Set for NestJS. | `http://localhost:8080/realms/testrealm/protocol/openid-connect/certs`
+| `TRUSTED_CA` | Populated during helm installation with the trusted CA config map. This should be set to a .pem file which includes the trusted CA certificates from the Keycloak server. | `certificates/letsencrypt.pem`
+.2+| `NEST_JWKS_URI` 2+| URI to JSON Web Key Set for NestJS. Needed to verify the Access-Token. If it's starting with `https://` the `TRUSTED_CA` certificate is used to verify the SSL-certificate. See notes for some handy openSSL commands 
+
+2+| `http://localhost:8080/realms/testrealm/protocol/openid-connect/certs`
+
+`https://keycloak.public-dashboard.de/realms/testrealm/protocol/openid-connect/certs`
 |===
 
 == PostgreSQL Variables
@@ -57,7 +61,7 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | Variable | Description | Example Value
 | `MAX_LOGS` | Maximum number of logfiles to keep | `3`
 | `LOG_PATH` | Path in which to save logs | `./logs`
-| `LOG)ROTATION_CRON` | Set a cron string to control log rotaion timing | `3 2 * * * *`
+| `LOG_ROTATION_CRON` | Set a cron string to control log rotaion timing | `3 2 * * * *`
 |===
 
 == Mail Service Variables
@@ -74,7 +78,23 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 
 |===
 
-== Note
+== Notes
 
 - Make sure to replace placeholder values (like URLs and passwords) with your actual configuration values before deployment.
 - For security reasons, never commit sensitive information like passwords or secret keys to your version control system. Consider using secrets management tools or environment variable management practices.
+
+=== OpenSSL Commands for JWKS URI
+Zertifikat vom Server abrufen und gegen dein CA-Zertifikat verifizieren
+
+`openssl s_client -servername keycloak.public-dashboard.de -connect keycloak.public-dashboard.de:443 -CAfile ./letsencrypt.pem < /dev/null`
+
+Zertifikate extrahieren
+
+`echo | openssl s_client -servername keycloak.public-dashboard.de -connect keycloak.public-dashboard.de:443 -showcerts 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > extracted-certs.pem`
+
+Dieser Extrakt enthält oft nicht alle Zertifikate der Kette, sondern nur das Serverzertifikat. In diesem Fall musst du das Root-CA aus dem Internet herunterladen und ergänzen. Das Root-CA-Zertifikat von Let's Encrypt kannst du z.B. hier herunterladen: https://letsencrypt.org/certs/lets-encrypt-r3.pem
+
+Inhalte von Zertifikaten kann man sich unter anderem hier decoden lassen:
+https://www.sslshopper.com/certificate-decoder.html
+
+

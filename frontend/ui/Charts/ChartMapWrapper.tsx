@@ -88,6 +88,7 @@ export default function ChartMapWrapper({
           allowZoom={false}
           isStackedChart={false}
           isShownInMapModal={true}
+          menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
         />
       ) : (
         <BarChart
@@ -131,6 +132,7 @@ export default function ChartMapWrapper({
           filterTextColor={ciColors.barChartFilterTextColor || '#1D2330'}
           axisFontColor={ciColors.barChartAxisLabelFontColor || '#FFF'}
           decimalPlaces={2}
+          menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
         />
       )}
     </>

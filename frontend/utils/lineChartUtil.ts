@@ -116,13 +116,36 @@ export function getVisibleDateRange(
   return null;
 }
 
+export function setVisibleDateRange(
+  chart: ECharts,
+  min: Date,
+  max: Date,
+): void {
+  chart.setOption({
+    dataZoom: [
+      {
+        type: 'inside',
+        xAxisIndex: 0,
+        filterMode: 'none',
+        startValue: min.getTime(),
+        endValue: max.getTime(),
+      },
+      {
+        type: 'slider',
+        xAxisIndex: 0,
+        filterMode: 'none',
+        startValue: min.getTime(),
+        endValue: max.getTime(),
+      },
+    ],
+  });
+}
+
 export function getIntervalDaysFromChart(
   chart: ECharts,
   desiredPoints: number,
+  range: { min: Date; max: Date },
 ): number {
-  const range = getVisibleDateRange(chart);
-  if (!range) return 0;
-
   const msPerDay = 1000 * 60 * 60 * 24;
   const totalDays = (range.max.getTime() - range.min.getTime()) / msPerDay;
   const intervalDays = totalDays / (desiredPoints - 1);
@@ -130,13 +153,53 @@ export function getIntervalDaysFromChart(
   return intervalDays;
 }
 
-// export function debounce<T extends (...args: unknown[]) => void>(
-//     func: T,
-//     delay: number,
-// ): (...args: Parameters<T>) => void {
-//     let timer: NodeJS.Timeout;
-//     return (...args: Parameters<T>) => {
-//         clearTimeout(timer);
-//         timer = setTimeout(() => func(...args), delay);
-//     };
-// }
+export function getLegendOptions(
+  allowImageDownload: boolean,
+  legendAlignment: string,
+  legendFontSize: string,
+  legendFontColor: string,
+  singleSelectLegend?: boolean,
+  showLegend?: boolean,
+  advancedDateSelection?: boolean,
+): echarts.LegendComponentOption {
+  if (singleSelectLegend) {
+    return {
+      type: 'plain',
+      orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
+      show: showLegend,
+      textStyle: {
+        fontSize: legendFontSize,
+        color: legendFontColor,
+      },
+      bottom: advancedDateSelection ? 120 : 65,
+      selectedMode: true,
+    };
+  }
+  return {
+    type: 'scroll',
+    orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
+    show: showLegend,
+    textStyle: {
+      fontSize: legendFontSize,
+      color: legendFontColor,
+    },
+    right: allowImageDownload ? '30' : 'auto',
+    selectedMode: 'multiple',
+  };
+}
+
+export function getGridOptions(
+  isShownInMapModal: boolean,
+  hasEndLabel: echarts.LineSeriesOption | undefined,
+  legendFontSize: number,
+  lGrid: number,
+  bGrid: number,
+): echarts.GridComponentOption {
+  return {
+    left: isShownInMapModal ? 10 : lGrid,
+    right: hasEndLabel ? 100 * (14 / legendFontSize) : 10,
+    top: isShownInMapModal ? 20 : 30,
+    bottom: isShownInMapModal ? 20 : bGrid,
+    containLabel: true,
+  };
+}

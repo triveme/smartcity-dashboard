@@ -59,6 +59,17 @@ export default function PieChartDynamic(
     );
   }, [selectedYearIndex.current, hoveredFeature.current]);
 
+  // Ensure initial filter once tabData is available (initial page load)
+  useEffect(() => {
+    if (tabData?.chartData) {
+      filterData(
+        selectedYearIndex.current,
+        selectedFeatures.current,
+        hoveredFeature.current,
+      );
+    }
+  }, [tabData]);
+
   function handleYearIndexUpdate(dataFromEvent: Event): void {
     playAnimation = true;
     selectedYearIndex.current = dataFromEvent.data;
@@ -174,6 +185,7 @@ export default function PieChartDynamic(
           highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
           unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
           highlightedIndex={hoveredIndex.current}
+          menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
         />
       )}
     </>

@@ -603,7 +603,7 @@ export class DataService {
         };
       } else if (auth_data.type === 'ngsi-ld') {
         headers = {
-          'NGSILD-Tenant': query_config.fiwareService,
+          'NGSILD-Tenant': query_config.fiwareService, // empty string in query_config.fiwareService
           Authorization: `Bearer ${access_token}`,
           Link: `<https://context.kopenhagen.beispiel-stadt.de/main-context>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
         };

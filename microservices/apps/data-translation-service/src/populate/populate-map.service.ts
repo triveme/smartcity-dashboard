@@ -70,12 +70,23 @@ export class PopulateMapService {
         } else if (dataObject['position']) {
           position = dataObject.position;
         }
-
         if (position) {
           let tempCoordinates: number[] = [];
 
           // Ensure coordinates exist and are valid
-          if (
+          if (position.type === 'Line') {
+            position.coordinates.forEach((coord) => {
+              tab.mapObject.push({
+                position: {
+                  type: position.type,
+                  coordinates: coord,
+                },
+                ...dataObject,
+                queryId: query.id,
+                queryConfigId: query.queryConfigId,
+              });
+            });
+          } else if (
             position.coordinates &&
             Array.isArray(position.coordinates) &&
             position.coordinates.length >= 2
@@ -97,6 +108,7 @@ export class PopulateMapService {
                 type: position.type ?? 'Point',
                 coordinates: tempCoordinates,
               },
+              name: dataObject['name'] ?? '',
               ...dataObject,
               queryId: query.id,
               queryConfigId: query.queryConfigId,
@@ -329,6 +341,40 @@ export class PopulateMapService {
 
           return {
             type: 'Point',
+            coordinates: [
+              geoJsonCoordinates['coordinates'][1],
+              geoJsonCoordinates['coordinates'][0],
+            ],
+          };
+        }
+      } catch (error) {
+        console.error('Error parsing WKB coordinates:', error);
+      }
+    }
+
+    return null;
+  }
+
+  private getGeoJsonArrayFromNgsi(wkbCoordinates: any): Position {
+    if (
+      typeof wkbCoordinates === 'object' &&
+      wkbCoordinates !== null &&
+      wkbCoordinates.type &&
+      wkbCoordinates.coordinates
+    ) {
+      return wkbCoordinates;
+    }
+
+    if (wkbCoordinates && typeof wkbCoordinates === 'string') {
+      try {
+        const wkbBuffer = Buffer.from(wkbCoordinates, 'hex');
+        const coordinates = wkx.Geometry.parse(wkbBuffer);
+
+        if (coordinates) {
+          const geoJsonCoordinates = coordinates.toGeoJSON();
+
+          return {
+            type: 'Line',
             coordinates: [
               geoJsonCoordinates['coordinates'][1],
               geoJsonCoordinates['coordinates'][0],

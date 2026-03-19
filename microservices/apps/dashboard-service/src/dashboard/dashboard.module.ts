@@ -52,6 +52,8 @@ import { InternalDataService } from 'apps/internal-data-service/src/internal-dat
 import { DataService } from 'apps/internal-data-service/src/data/data.service';
 import { QueryService as InternalDataQueryService } from '../../../internal-data-service/src/query/query.service';
 import { TransformationService } from 'apps/internal-data-service/src/transformation/transformation.service';
+import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
+import { TransformationService as SqlTransformationService } from 'apps/sql-view-service/src/transformation/transformation.service';
 
 @Module({
   imports: [HttpModule],
@@ -105,6 +107,8 @@ import { TransformationService } from 'apps/internal-data-service/src/transforma
     DataService,
     InternalDataQueryService,
     TransformationService,
+    SqlViewService,
+    SqlTransformationService,
   ],
   controllers: [DashboardController],
 })

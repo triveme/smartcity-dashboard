@@ -137,6 +137,12 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
       className="rounded-lg border-4 p-4"
     >
       <h2 className="text-xl font-bold mb-4"> Neue Datei Hochladen</h2>
+      <p className="pt-2 pb-8 px-4 border-4 border-transparent">
+        Indizes sind 0-basiert. Der Index Wert entspricht also der Anzahl der
+        Zeilen/Spalten vor dem Datenbereich.
+        <br />
+        Standartwerte entsprechen einem Datenbereich beginnend in B3.
+      </p>
       <div className="flex flex-row w-full px-2 mb-4">
         <div className="flex-grow basis-1/4 px-2">
           <WizardLabel label="Collection" />

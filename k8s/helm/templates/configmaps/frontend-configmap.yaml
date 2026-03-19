@@ -23,4 +23,6 @@ data:
   NEXT_PUBLIC_COOKIEBOT_ID: {{ index .Values "frontend" "cbid" }}
   NEXT_PUBLIC_INTERNAL_DATA_SERVICE_URL: {{ index .Values "frontend" "internalDataServiceUrl" }}
   NEXT_PUBLIC_IGNORE_TENANT_CHECK: "{{ .Values.frontend.ignoreTenantCheck }}"
+  NEXT_PUBLIC_SQL_SERVICE_URL: {{ index .Values "frontend" "sqlViewServiceUrl" }}
+  NEXT_PUBLIC_PROJECT_DATA_SERVICE_URL: {{ index .Values "frontend" "projectDataServiceUrl" }}
 {{- end }}

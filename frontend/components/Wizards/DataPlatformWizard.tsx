@@ -169,6 +169,9 @@ export default function DataPlatformWizard(
     if (type === authDataTypeEnum.api && !validateUrl(apiUrl))
       errorsOccured.apiUrlError = `Ungültiges api-URL-Format. ${invalidUrlRequirement}`;
 
+    if (type === authDataTypeEnum.sql && !collections)
+      errorsOccured.sqlViewError = `SQL View name ist erforderlich!`;
+
     if (Object.keys(errorsOccured).length) {
       for (const key in errorsOccured) {
         const error = errorsOccured[key] as string;
@@ -522,6 +525,23 @@ export default function DataPlatformWizard(
               value={collections.join(',')}
               onChange={(value: string | number): void =>
                 handleCollectionChange(value.toString().replace(' ', ','))
+              }
+              error={errors && errors.appUserError}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+            />
+          </div>
+        ) : type === authDataTypeEnum.sql ? (
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel
+              label={'SQL View Names (Liste mit Komma getrennt eingeben)'}
+            />
+            <WizardTextfield
+              value={collections.join(',')}
+              onChange={(value: string | number): void =>
+                handleCollectionChange(
+                  value.toString().replace(' ', ',').toLowerCase(),
+                )
               }
               error={errors && errors.appUserError}
               borderColor={borderColor}

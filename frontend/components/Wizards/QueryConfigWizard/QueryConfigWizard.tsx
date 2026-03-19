@@ -29,6 +29,7 @@ import QueryNgsiWizard from './QueryNgsiWizard';
 import QueryOrchideoWizard from './QueryOrchideoWizard';
 import QueryUsiWizard from './QueryUsiWizard';
 import QueryInternalDataWizard from './QueryInternalDataWizard';
+import QuerySqlWizard from './QuerySqlWizard';
 
 type QueryConfigWizardProps = {
   widgetType?: string;
@@ -265,6 +266,21 @@ export default function QueryConfigWizard(
                   : false
               }
               usesQueryParameter={usesQueryParameter || false}
+            />
+          ) : datasourceOrigin === 'sql' ? (
+            <QuerySqlWizard
+              queryConfig={queryConfig}
+              setQueryConfig={setQueryConfig}
+              iconColor={iconColor}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+              tenant={tenant}
+              hoverColor={hoverColor}
+              isSingleWidget={
+                widgetType && singleSelectWidgetTypes.includes(widgetType)
+                  ? true
+                  : false
+              }
             />
           ) : null}
 

@@ -183,6 +183,13 @@ export class TabService {
       return;
     }
 
+    if (tab.pharmacyPassword && tab.pharmacyPassword === 'error') {
+      console.warn(
+        'Pharmacy Password was wrong at the last attempt. Please change the password.',
+      );
+      return;
+    }
+
     // In cases: last fetch was less than 6 hours AND
     //           tab already has details AND
     //           fetched data hs the same zip than the tab
@@ -199,7 +206,9 @@ export class TabService {
     }
 
     try {
-      const pharmacyServiceUrl = process.env.PHARMACY_URL;
+      // const pharmacyServiceUrl = process.env.PHARMACY_URL;
+      const pharmacyServiceUrl =
+        'https://apotheken.notdienstdaten.de/emergencies_xml/';
       const response = await axios.get(
         `${pharmacyServiceUrl}?plzort=${tab.pharmacyZipCode ?? 36119}`,
         {
@@ -230,6 +239,17 @@ export class TabService {
       tab.pharmacyPassword = undefined;
     } catch (error) {
       console.error(error);
+      await this.tabRepo.update(tab.id, {
+        pharmacyDetails: JSON.stringify({
+          apotheken: {
+            apotheke: {
+              name: 'Aponet Passwort Falsch',
+            },
+          },
+        }),
+        pharmacyLastUpdate: undefined,
+        pharmacyPassword: 'error',
+      });
     }
   }
 }
