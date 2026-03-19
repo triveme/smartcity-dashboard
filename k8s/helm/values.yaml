@@ -180,6 +180,34 @@ internal-data-service:
         name: "trusted-ca-configmap"
     - secretRef:
         name: "postgresql-connection-secrets"
+## sql-view-service config
+sql-view-service:
+  enabled: true
+  service:
+    enabled: true
+  envFrom:
+    - configMapRef:
+        name: "sql-view-service-configmap"
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - configMapRef:
+        name: "trusted-ca-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
+## project-data-service config
+project-data-service:
+  enabled: true
+  service:
+    enabled: true
+  envFrom:
+    - configMapRef:
+        name: "project-data-service-configmap"
+    - configMapRef:
+        name: "postgresql-connection-configmap"
+    - configMapRef:
+        name: "trusted-ca-configmap"
+    - secretRef:
+        name: "postgresql-connection-secrets"
 ## frontend config
 frontend:
   enabled: true

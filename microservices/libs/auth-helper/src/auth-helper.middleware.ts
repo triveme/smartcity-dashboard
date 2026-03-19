@@ -24,6 +24,8 @@ export class AuthHelperMiddleware implements NestMiddleware {
     if (!this.jwksUri) {
       throw new Error('Missing JWKS URI environment variable');
     }
+    this.logger.log(`jwksUri - ${this.jwksUri}`);
+    this.logger.log(`TRUSTED_CA - ${this.ca}`);
   }
 
   // Determine the protocol of the JWKS URI
@@ -45,6 +47,8 @@ export class AuthHelperMiddleware implements NestMiddleware {
    * @returns The JWT token, or `undefined` if the token is not present or is invalid.
    */
   private extractJwtFromHeader(request: Request): string | undefined {
+    this.logger.verbose('extractJwtFromHeader');
+    this.logger.verbose(request.headers);
     if (request.headers.authorization?.startsWith('ey')) {
       return request.headers.authorization;
     }
@@ -87,22 +91,29 @@ export class AuthHelperMiddleware implements NestMiddleware {
     try {
       const token = this.extractJwtFromHeader(req);
       if (!token) {
-        this.logger.log('Unauthenticated request');
+        this.logger.log(`Unauthenticated request - [${req.method}] ${req.url}`);
+        this.logger.verbose(req);
         req.roles = undefined;
         next();
         return;
       }
+
+      this.logger.verbose(`Token - ${token}`);
 
       const decodedToken = decode(token as string, { complete: true });
       const { payload, header } = decodedToken as Jwt & { payload: JwtPayload };
       const kid = header.kid;
       const signingKey = await this.getSigningKey(kid as string);
 
+      this.logger.verbose(`Signing Key - ${signingKey}`);
+      this.logger.verbose('Decoded Token');
+      this.logger.verbose(decodedToken);
+
       try {
         verify(token as string, signingKey as string);
       } catch (error) {
         // We use a normal log here because failing verifications are expected.
-        this.logger.log(error);
+        this.logger.log(`Verfiy token error - ${error}`);
         req.roles = undefined;
         next();
         return;
@@ -115,13 +126,13 @@ export class AuthHelperMiddleware implements NestMiddleware {
       req.tenant = tenant || undefined;
 
       this.logger.log(
-        `Authenticated request with roles: ${roles.join(
+        `Authenticated request ${req.url} with roles: ${roles.join(
           ', ',
         )} for tenant:  ${tenant}`,
       );
       next();
     } catch (err) {
-      this.logger.error(err);
+      this.logger.error(`Caught on use - ${err}`);
       req.roles = undefined;
       next();
       return;

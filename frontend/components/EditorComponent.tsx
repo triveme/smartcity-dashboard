@@ -163,7 +163,6 @@ export default function EditorComponent({
     borderRadius: '0.5rem',
   };
 
-  console.log('backgroundColor', backgroundColor);
   return (
     <div className="block" style={error ? errorStyle : { color: fontColor }}>
       <Editor

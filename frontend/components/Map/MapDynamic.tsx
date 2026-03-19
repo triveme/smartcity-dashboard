@@ -39,10 +39,14 @@ type MapDynamicProps = {
   tab?: Tab | TabWithQuery;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   combinedMapData: any;
+  combinedQueryData?: QueryDataWithAttributes[];
+  uiFilterData?: QueryDataWithAttributes[];
 };
 
 export default function MapDynamic(props: MapDynamicProps): ReactElement {
   const {
+    uiFilterData,
+    combinedQueryData,
     isCombinedMap,
     tabData,
     chartStyle,
@@ -56,7 +60,6 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     combinedMapData,
   } = props;
 
-  const [queryData, setQueryData] = useState<QueryDataWithAttributes[]>([]);
   const [filteredData, setFilteredData] = useState<GeoJSONSensorData[]>([]);
   const [mapData, setMapData] = useState<MapObject[] | undefined>(
     isCombinedMap
@@ -70,10 +73,6 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     { pos: [number, number]; id: string } | undefined
   >(undefined);
   useEffect(() => {
-    if (combinedMapData.combinedQueryData) {
-      setQueryData(combinedMapData.combinedQueryData);
-    }
-
     eventBus.on(YEAR_INDEX_SELECTION_EVENT, handleYearIndexUpdate);
     eventBus.on(GEOJSON_FEATURE_SELECTION_EVENT, handleSelectedFeaturesUpdate);
     eventBus.on(GEOJSON_FEATURE_HOVER_EVENT, handleHoveredFeatureUpdate);
@@ -196,7 +195,8 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           data={mapData || []}
           combinedMapData={combinedMapData}
           mapAllowFilter={true}
-          combinedQueryData={queryData}
+          combinedQueryData={combinedQueryData}
+          uiFilterData={uiFilterData}
           mapAllowPopups={combinedMapData?.mapAllowPopups as boolean}
           mapAllowScroll={combinedMapData?.mapAllowScroll as boolean}
           mapAllowZoom={combinedMapData?.mapAllowZoom as boolean}
@@ -326,7 +326,8 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapGeoJSONSelectedFeatures={selectedFeatures || []}
           mapGeoJSONHoveredFeature={hoveredFeature || ''}
           mapType={tab?.componentSubType || ''}
-          combinedQueryData={queryData}
+          combinedQueryData={combinedQueryData}
+          uiFilterData={uiFilterData}
           mapAllowLegend={tab?.mapAllowLegend || false}
           mapLegendValues={tab?.mapLegendValues ? tab?.mapLegendValues : []}
           mapLegendDisclaimer={

@@ -26,6 +26,8 @@ import IconSelection from './Icons/IconSelection';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import WizardIntegerfield from './WizardIntegerfield';
 import IconButton from './Buttons/IconButton';
+import { limitOfDecimalPlaces } from '@/utils/objectHelper';
+import ValuesToImageFields from './ValuesToImageFields';
 
 type StaticValuesFieldProps = {
   errors?: WizardErrors;
@@ -83,6 +85,7 @@ export default function StaticValuesFieldMapWidgets(
           type === tabComponentTypeEnum.default ||
           type === tabComponentTypeEnum.information ||
           type === tabComponentTypeEnum.value ||
+          type === tabComponentTypeEnum.valueToImage ||
           type === tabComponentTypeEnum.diagram ||
           type === tabComponentTypeEnum.image ||
           type === tabComponentTypeEnum.interactiveComponent,
@@ -124,6 +127,8 @@ export default function StaticValuesFieldMapWidgets(
         { label: '', value: '' },
         { label: 'Jumpoff URL', value: 'jumpoff-url' },
         { label: 'Jumpoff Sensor Attribute', value: 'jumpoff-attribute' },
+        { label: 'Edit Button', value: 'edit-button' },
+        { label: 'Delete Button', value: 'delete-button' },
         {
           label: 'Jumpoff Entity URL Param',
           value: 'jumpoff-entity-url-param',
@@ -217,28 +222,39 @@ export default function StaticValuesFieldMapWidgets(
                     <div className="flex flex-col w-1/4 pb-2">
                       <WizardLabel label="Typ" />
                       <WizardDropdownSelection
-                        currentValue={
-                          (
+                        currentValue={((): string => {
+                          const options =
                             getAllowableComponentSubTypes(
                               value.componentType,
-                            ) || []
-                          ).find(
+                            ) || [];
+                          const currentRaw =
+                            value?.componentSubType?.toString() || '';
+                          const currentLower = currentRaw.toLowerCase();
+                          const selected = options.find(
                             (option) =>
-                              option.value === value?.componentSubType,
-                          )?.label || ''
-                        }
+                              option.value === currentRaw ||
+                              option.label === currentRaw ||
+                              option.value.toLowerCase() === currentLower ||
+                              option.label.toLowerCase() === currentLower,
+                          );
+                          return selected?.label || '';
+                        })()}
                         selectableValues={(
                           getAllowableComponentSubTypes(value.componentType) ||
                           []
                         ).map((option) => option.label)}
                         onSelect={(label: string | number): void => {
-                          const enumValue =
-                            (
-                              getAllowableComponentSubTypes(
-                                value.componentType,
-                              ) || []
-                            ).find((option) => option.label === label)?.value ||
-                            '';
+                          const options =
+                            getAllowableComponentSubTypes(
+                              value.componentType,
+                            ) || [];
+                          const labelStr = label.toString();
+                          const selected = options.find(
+                            (option) =>
+                              option.label === labelStr ||
+                              option.value === labelStr,
+                          );
+                          const enumValue = selected?.value || '';
                           const updatedMapWidgetValues = mapWidgetValues.map(
                             (widget, idx) =>
                               idx === index
@@ -257,6 +273,7 @@ export default function StaticValuesFieldMapWidgets(
                     </div>
                   )}
                   {(value.componentType === tabComponentTypeEnum.value ||
+                    value.componentType === tabComponentTypeEnum.valueToImage ||
                     value.componentType === tabComponentTypeEnum.diagram ||
                     (value.componentType === tabComponentTypeEnum.image &&
                       value.componentSubType ===
@@ -632,6 +649,31 @@ export default function StaticValuesFieldMapWidgets(
                     </div>
                   </>
                 )}
+                {value.componentType === tabComponentTypeEnum.valueToImage && (
+                  <div className="flex flex-col w-full pb-4">
+                    <ValuesToImageFields
+                      initialValues={value?.valuesToImages || []}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                      handleTabChange={(update: Partial<Tab>) => {
+                        value.valuesToImages = update.valuesToImages;
+                        const updatedMapWidgetValues = mapWidgetValues.map(
+                          (widget, idx) =>
+                            idx === index
+                              ? {
+                                  ...widget,
+                                  valuesToImages: value.valuesToImages,
+                                }
+                              : widget,
+                        );
+
+                        handleTabChange({
+                          mapWidgetValues: updatedMapWidgetValues,
+                        });
+                      }}
+                    />
+                  </div>
+                )}
                 {/* information */}
                 {value.componentType === tabComponentTypeEnum.information &&
                   value.componentSubType === tabComponentSubTypeEnum.text && (
@@ -951,6 +993,66 @@ export default function StaticValuesFieldMapWidgets(
                         />
                       </div>
                     </>
+                  )}
+                {/* edit button */}
+                {value.componentType === 'Button' &&
+                  value.componentSubType === 'edit-button' && (
+                    <div
+                      className="flex flex-col w-full pb-2"
+                      key="edit-button"
+                    >
+                      <WizardLabel label="Beschriftung" />
+                      <WizardTextfield
+                        value={value?.title || ''}
+                        onChange={(textValue: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    title: textValue.toString(),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                  )}
+                {/* delete button */}
+                {value.componentType === 'Button' &&
+                  value.componentSubType === 'delete-button' && (
+                    <div
+                      className="flex flex-col w-full pb-2"
+                      key="delete-button"
+                    >
+                      <WizardLabel label="Beschriftung" />
+                      <WizardTextfield
+                        value={value?.title || ''}
+                        onChange={(textValue: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    title: textValue.toString(),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
                   )}
                 {/*  jumpoff button with entity ID passed as URL param*/}
                 {value.componentType === 'Button' &&
@@ -1329,9 +1431,10 @@ export default function StaticValuesFieldMapWidgets(
                     <div className="flex flex-col w-full pb-2">
                       <div>
                         <WizardLabel label="Anzahl Dezimalstellen" />
-                        <WizardIntegerfield
-                          value={value.decimalPlaces || '0'}
-                          onChange={(value: string | number): void => {
+                        <WizardDropdownSelection
+                          currentValue={value?.decimalPlaces || '0'}
+                          selectableValues={[...limitOfDecimalPlaces]}
+                          onSelect={(value: string | number): void => {
                             const updatedMapWidgetValues = mapWidgetValues.map(
                               (widget, idx) =>
                                 idx === index
@@ -1346,6 +1449,7 @@ export default function StaticValuesFieldMapWidgets(
                             });
                             setMapWidgetValues(updatedMapWidgetValues);
                           }}
+                          iconColor={iconColor}
                           borderColor={borderColor}
                           backgroundColor={backgroundColor}
                         />

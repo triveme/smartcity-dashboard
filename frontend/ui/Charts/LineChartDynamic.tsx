@@ -130,6 +130,8 @@ export default function LineChartDynamic(
         isStepline={tab.isStepline || false}
         isStackedChart={tab?.isStackedChart || false}
         showLegend={tab.showLegend || false}
+        singleSelectLegend={tab.singleSelectLegend || false}
+        advancedDateSelection={tab.advancedDateSelection || false}
         staticValues={tab.chartStaticValues || []}
         staticValuesColors={tab.chartStaticValuesColors || []}
         staticValuesTicks={tab.chartStaticValuesTicks || []}
@@ -166,6 +168,7 @@ export default function LineChartDynamic(
         highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
         chartAggregationMode={tab?.chartAggregationMode}
+        menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
       />
     </>
   );

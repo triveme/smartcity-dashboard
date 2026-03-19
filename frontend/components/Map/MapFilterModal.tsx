@@ -6,14 +6,12 @@ import CheckBox from '@/ui/CheckBox';
 import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
 import { QueryDataWithAttributes } from '@/types';
+import { projectStatusOptions } from '@/utils/enumMapper';
 
 type MapFilterModalProps = {
-  combinedQueryData?: QueryDataWithAttributes[];
-  selectedFilters: (number | string)[];
-  onFilterChange: (
-    newSelectedFilters: (string | number)[],
-    filterAttribute: string,
-  ) => void;
+  uiFilterData?: QueryDataWithAttributes[];
+  selectedFilters: Record<string, (string | number)[]>;
+  onFilterChange: (newValues: (string | number)[], attribute: string) => void;
   menuStyle?: CSSProperties;
   onCloseModal: () => void;
   isLegendModalOpen: boolean;
@@ -28,7 +26,7 @@ export default function MapFilterModal(
   props: MapFilterModalProps,
 ): ReactElement {
   const {
-    combinedQueryData,
+    uiFilterData,
     selectedFilters,
     onFilterChange,
     menuStyle,
@@ -42,17 +40,16 @@ export default function MapFilterModal(
 
   const isMobileView = determineIsMobileView();
   const scrollRef = usePreventMapScroll();
-
   const handleSelectChange = (
     filterValue: string | number,
     checked: boolean,
     filterAttribute: string,
   ): void => {
-    const newSelectedFilters = checked
-      ? [...selectedFilters, filterValue]
-      : selectedFilters.filter((f) => f !== filterValue);
-
-    onFilterChange(newSelectedFilters, filterAttribute);
+    const currentAttributeValues = selectedFilters[filterAttribute] || [];
+    const updatedAttributeValues = checked
+      ? [...currentAttributeValues, filterValue]
+      : currentAttributeValues.filter((f) => f !== filterValue);
+    onFilterChange(updatedAttributeValues, filterAttribute);
   };
 
   const getFilterModalStyle = (): CSSProperties => {
@@ -102,8 +99,8 @@ export default function MapFilterModal(
 
   const renderFilter = (
     filterAttribute: string,
-    values: { value: number | string }[],
-    selectedFilters: (number | string)[],
+    values: { value: number | string; label?: string }[],
+    selectedFiltersForThisAttribute: (number | string)[],
     handleSelectChange: (
       filterValue: number | string,
       checked: boolean,
@@ -115,30 +112,27 @@ export default function MapFilterModal(
       className="pb-3"
       onTouchStart={(e): void => e.stopPropagation()}
     >
-      <h3>{filterAttribute}</h3>
-      {values.map((item, index) => (
-        <div
-          key={`key-${filterAttribute}-${index}`}
-          className="flex items-center"
-          onTouchStart={(e): void => {
-            e.stopPropagation();
-            e.preventDefault();
-            handleSelectChange(
-              item.value,
-              !selectedFilters.includes(item.value),
-              filterAttribute,
-            );
-          }}
-        >
-          <CheckBox
-            label={item.value.toString()}
-            value={selectedFilters.includes(item.value)}
-            handleSelectChange={(checked): void =>
-              handleSelectChange(item.value, checked, filterAttribute)
-            }
-          />
-        </div>
-      ))}
+      <h3 className="font-bold capitalize">
+        {filterAttribute.replace('_', ' ')}
+      </h3>
+      {values.map((item, index) => {
+        const isChecked = selectedFiltersForThisAttribute.includes(item.value);
+
+        return (
+          <div
+            key={`key-${filterAttribute}-${index}`}
+            className="flex items-center"
+          >
+            <CheckBox
+              label={item.label?.toString() || 'Empty'}
+              value={isChecked}
+              handleSelectChange={(checked): void =>
+                handleSelectChange(item.value, checked, filterAttribute)
+              }
+            />
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -203,25 +197,38 @@ export default function MapFilterModal(
           style={{ maxHeight: '80vh' }}
         >
           {/* Attribute filters */}
-          {!isCombinedMap &&
-            combinedQueryData &&
-            combinedQueryData.length > 0 && (
-              <>
-                {combinedQueryData?.map((filterData, index) => (
-                  <div key={`filter-group-${index}`}>
-                    {Object.entries(filterData).map(
-                      ([filterAttribute, values]) =>
-                        renderFilter(
-                          filterAttribute,
-                          values as { value: number | string }[],
-                          selectedFilters,
-                          handleSelectChange,
-                        ),
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
+          {!isCombinedMap && uiFilterData && uiFilterData.length > 0 && (
+            <>
+              {uiFilterData?.map((filterGroup, index) => (
+                <div key={`group-${index}`}>
+                  {Object.entries(filterGroup).map(([attr, values]) => {
+                    const selectionsForThisAttr = selectedFilters[attr] || [];
+                    const formattedOptions = (
+                      values as { value: string | number }[]
+                    ).map((item) => {
+                      //Add enums here that should be mapped
+                      const projectOptionMatch = projectStatusOptions.find(
+                        (opt) => opt.value === item.value,
+                      );
+                      return {
+                        value: item.value,
+                        label: projectOptionMatch
+                          ? projectOptionMatch.label
+                          : String(item.value),
+                      };
+                    });
+
+                    return renderFilter(
+                      attr,
+                      formattedOptions,
+                      selectionsForThisAttr,
+                      handleSelectChange,
+                    );
+                  })}
+                </div>
+              ))}
+            </>
+          )}
 
           {/* Map Name filters */}
           {isCombinedMap && mapNames && mapNames.length > 0 && (

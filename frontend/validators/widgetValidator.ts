@@ -114,6 +114,7 @@ export function validateWidgetHeightBasedOnComponentType(
   const minimumWidgetHeight = getMinHeightBasedOnComponentType(
     tab.componentType as tabComponentTypeEnum,
     tab.componentSubType as tabComponentSubTypeEnum,
+    tab.singleSelectLegend || tab.advancedDateSelection,
   );
 
   if (widget.height < minimumWidgetHeight) {
@@ -126,6 +127,7 @@ export function validateWidgetHeightBasedOnComponentType(
 function getMinHeightBasedOnComponentType(
   tabComponentType: tabComponentTypeEnum,
   tabComponentSubType: tabComponentSubTypeEnum,
+  chartBigOption?: boolean,
 ): number {
   const largeComponentTypes = [
     tabComponentTypeEnum.diagram,
@@ -140,6 +142,12 @@ function getMinHeightBasedOnComponentType(
       tabComponentSubType === tabComponentSubTypeEnum.degreeChart360
     ) {
       return 200;
+    }
+    if (
+      tabComponentSubType === tabComponentSubTypeEnum.lineChart &&
+      chartBigOption
+    ) {
+      return 500;
     }
     return 400;
   } else if (mediumComponentTypes.includes(tabComponentType)) {
@@ -209,10 +217,16 @@ export function validateMapFilterAttributeSelected(
     return errorsOccured;
   }
 
-  if (!requiredAttributes.includes(mapFilterAttribute)) {
+  const filterDefinitions = mapFilterAttribute.split('|').filter(Boolean);
+
+  const allKeysValid = filterDefinitions.every((def) => {
+    const currentKey = def.split(':')[0].trim();
+    return requiredAttributes.includes(currentKey);
+  });
+
+  if (!allKeysValid) {
     errorsOccured.attributeError =
       'Im Filterattribut ausgewähltes Attribut muss in der Abfragekonfiguration ausgewählt werden';
   }
-
   return errorsOccured;
 }

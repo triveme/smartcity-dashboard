@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import * as echarts from 'echarts';
+import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { EChartsOption } from 'echarts';
 
 type ColumnChartProps = {
@@ -35,7 +35,9 @@ export default function ColumnChart({
     let myChart: echarts.ECharts | null = null;
 
     if (chartRef.current) {
-      myChart = echarts.init(chartRef.current);
+      myChart = echarts.init(chartRef.current, undefined, {
+        locale: ECHARTS_LOCALE,
+      });
 
       const option: EChartsOption = {
         tooltip: {

@@ -122,7 +122,8 @@ export default function Table(props: TableProps): ReactElement {
   };
 
   useEffect(() => {
-    const dataToUse = data.length > 0 ? data : DUMMY_CHART_DATA;
+    const dataToUse =
+      Array.isArray(data) && data.length > 0 ? data : DUMMY_CHART_DATA;
     const transformed = dataToUse.map(transformObject);
     setFormatedData(transformed);
 
@@ -131,14 +132,14 @@ export default function Table(props: TableProps): ReactElement {
     }
 
     let years = ['2020'];
-    if (data && data.length > 0) {
+    if (Array.isArray(data) && data.length > 0) {
       years = data[0].values.map((v) => v[0].split('-')[0]);
     }
     setChosenYear(Number(years[0]));
     if (hoveredRow) {
       setHoveredRowInternal(hoveredRow);
     }
-  }, [selectedRows?.length, selectedYearIndex, hoveredRow]);
+  }, [data, selectedRows?.length, selectedYearIndex, hoveredRow]);
 
   const columnKeys = Array.from(
     new Set(

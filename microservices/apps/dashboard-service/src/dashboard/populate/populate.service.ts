@@ -46,7 +46,7 @@ export class PopulateService {
 
     // Iterate through each row retrieved from the query
     // adding each dashboard component to their resepctive HashMaps
-    rows.forEach((row) => {
+    for (const row of rows) {
       if (row.dashboard) {
         dashboardMap.set(row.dashboard.id, row.dashboard);
       }
@@ -66,7 +66,7 @@ export class PopulateService {
         });
       }
       if (row.tab) {
-        this.tabService.handleSpecialTabs(row.tab);
+        await this.tabService.handleSpecialTabs(row.tab);
         tabMap.set(row.tab.id, row.tab);
       }
       if (row.data_model) {
@@ -75,7 +75,7 @@ export class PopulateService {
       if (row.query) {
         queryMap.set(row.query.id, row.query);
       }
-    });
+    }
 
     // Returning and array of the reduced dashboard object: DashboardWithContent
     const dashboardsWithContent: DashboardWithContent[] = Array.from(

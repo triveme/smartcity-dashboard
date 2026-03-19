@@ -238,8 +238,10 @@ const findInvalidMapWidgetIndices = (
       }
       return invalidIndices;
     } else if (widget.componentType === 'Button') {
-      if (!widget.jumpoffUrl && !widget.jumpoffAttribute) {
-        invalidIndices.push(index);
+      if (widget.componentSubType === 'jumpoff-url') {
+        if (!widget.jumpoffUrl && !widget.jumpoffAttribute) {
+          invalidIndices.push(index);
+        }
       }
       return invalidIndices;
     }

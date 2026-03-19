@@ -78,13 +78,8 @@ export default function Pages(): ReactElement {
         generalSettings.cookiebotId ||
           (process.env.NEXT_PUBLIC_COOKIEBOT_ID ?? ''),
       );
-      setMatomoUrl(
-        generalSettings.matomoUrl || (process.env.NEXT_PUBLIC_MATOMO_URL ?? ''),
-      );
-      setMatomoSiteId(
-        generalSettings.matomoSiteId ||
-          (process.env.NEXT_PUBLIC_MATOMO_SITE_ID ?? ''),
-      );
+      setMatomoUrl(generalSettings.matomoUrl || '');
+      setMatomoSiteId(generalSettings.matomoSiteId || '');
     }
   };
 
@@ -122,27 +117,7 @@ export default function Pages(): ReactElement {
       ) {
         setCookiebotId(process.env.NEXT_PUBLIC_COOKIEBOT_ID);
       } else {
-        errorsOccurred.cookiebotIdError = 'Cookiebot ID is required!';
-      }
-    }
-    if (!matomoUrl || matomoUrl.trim() === '') {
-      if (
-        process.env.NEXT_PUBLIC_MATOMO_URL &&
-        process.env.NEXT_PUBLIC_MATOMO_URL != ''
-      ) {
-        setCookiebotId(process.env.NEXT_PUBLIC_MATOMO_URL);
-      } else {
-        //errorsOccurred.matomoUrlError = 'Matomo Url is required!';
-      }
-    }
-    if (!matomoSiteId || matomoSiteId.trim() === '') {
-      if (
-        process.env.NEXT_PUBLIC_MATOMO_SITE_ID &&
-        process.env.NEXT_PUBLIC_MATOMO_SITE_ID != ''
-      ) {
-        setCookiebotId(process.env.NEXT_PUBLIC_MATOMO_SITE_ID);
-      } else {
-        //errorsOccurred.matomoSiteIdError = 'Matomo Site ID is required!';
+        // errorsOccurred.cookiebotIdError = 'Cookiebot ID is required!';
       }
     }
     if (Object.keys(errorsOccurred).length) {

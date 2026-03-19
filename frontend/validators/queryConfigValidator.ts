@@ -18,10 +18,11 @@ export function validateQueryConfig(
   if (
     queryConfig?.interval === undefined ||
     queryConfig?.interval === null ||
-    queryConfig?.interval === 0
+    queryConfig?.interval === 0 ||
+    queryConfig?.interval < 60
   ) {
     errorsOccured.updateIntervalError =
-      'Aktualisierungsintervall ist erforderlich';
+      'Aktualisierungsintervall von mindestens 60 Sekunden ist erforderlich';
   }
 
   if (origin !== 'ngsi-ld' && !queryConfig?.fiwareService) {

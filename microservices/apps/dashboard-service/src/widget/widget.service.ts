@@ -314,6 +314,7 @@ export class WidgetService {
 
     this.populateRoles(row, rolesFromRequest);
 
+    console.error('Create widget', row);
     const newWidget = await this.widgetRepo.create(row, dbActor);
 
     if (newWidget && tenantExists) {
@@ -790,6 +791,7 @@ export class WidgetService {
       payload.tab = createdTab;
       payload.queryConfig = createdQueryConfig;
 
+      console.error('QueryConfig', payload.queryConfig);
       if (payload.queryConfig) {
         const payloadDataSource = await this.db
           .select()

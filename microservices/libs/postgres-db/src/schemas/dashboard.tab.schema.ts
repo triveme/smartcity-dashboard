@@ -138,6 +138,8 @@ export const tabs = pgTable('tab', {
   setValueLimit: boolean('set_value_limit'),
   userDefinedLimit: real('user_defined_limit'),
   showLegend: boolean('show_legend'),
+  singleSelectLegend: boolean('single_select_legend'),
+  advancedDateSelection: boolean('advanced_date_selection'),
   sliderCurrentAttribute: text('slider_current_attribute'),
   sliderMaximumAttribute: text('slider_maximum_attribute'),
   textValue: text('text_value'),

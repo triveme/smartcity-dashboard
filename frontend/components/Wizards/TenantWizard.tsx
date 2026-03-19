@@ -78,10 +78,18 @@ export default function TenantWizard({
       >
         <div>
           <PageHeadline
-            headline={isUpdate ? 'Edit Tenant' : 'Add Tenant'}
+            headline={isUpdate ? 'Mandant bearbeiten' : 'Mandant hinzufügen'}
             fontColor={fontColor}
           />
         </div>
+        <div>
+          <p className="mt-3">
+            Das Kürzel bestimmt den URL-Pfad Ihrer Dashboards, z. B.
+            domain.de/kürzel. <br /> Bitte verwenden Sie nur Buchstaben und
+            Zahlen.
+          </p>
+        </div>
+
         <div className="w-full h-full flex flex-col">
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Abbreviation" />

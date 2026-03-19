@@ -3,3 +3,4 @@ export * from './dashboard.panel.schema';
 export * from './dashboard.tab.schema';
 export * from './dashboard.widget.schema';
 export * from './internal-data.schema';
+export * from './project.schema';
