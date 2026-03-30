@@ -138,6 +138,7 @@ export default function Widgets(): ReactElement {
       componentTypeSearch,
       componentSubTypeSearch,
     ],
+    enabled: !!auth?.user?.access_token,
     queryFn: () =>
       searchWidgets(
         auth?.user?.access_token,
@@ -149,7 +150,7 @@ export default function Widgets(): ReactElement {
       ),
     select: (result) => ({
       ...result,
-      data: result.data.map((item) => ({
+      data: (result.data ?? []).map((item) => ({
         ...item,
         componentSubType:
           subComponentTypeMapping[componentTypeSearch]?.find(
