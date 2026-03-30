@@ -38,6 +38,8 @@ export async function searchWidgets(
   componentSubType?: string | undefined,
   pagination?: UserPagination,
 ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -55,7 +57,7 @@ export async function searchWidgets(
     params.limit = pagination.limit;
   }
 
-  const url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/search`;
+  const url = `${backendUrl}/widgets/search`;
 
   try {
     const response = await axios.get(url, { headers, params });
