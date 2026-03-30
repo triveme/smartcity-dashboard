@@ -138,6 +138,7 @@ export default function Widgets(): ReactElement {
       componentTypeSearch,
       componentSubTypeSearch,
     ],
+    enabled: !auth.isLoading && !!auth?.user?.access_token,
     queryFn: () =>
       searchWidgets(
         auth?.user?.access_token,
