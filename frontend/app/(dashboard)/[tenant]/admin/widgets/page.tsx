@@ -138,7 +138,7 @@ export default function Widgets(): ReactElement {
       componentTypeSearch,
       componentSubTypeSearch,
     ],
-    enabled: !!auth?.user?.access_token,
+    enabled: !auth.isLoading && !!auth?.user?.access_token,
     queryFn: () =>
       searchWidgets(
         auth?.user?.access_token,
@@ -150,7 +150,7 @@ export default function Widgets(): ReactElement {
       ),
     select: (result) => ({
       ...result,
-      data: (result.data ?? []).map((item) => ({
+      data: result.data.map((item) => ({
         ...item,
         componentSubType:
           subComponentTypeMapping[componentTypeSearch]?.find(
@@ -234,7 +234,7 @@ export default function Widgets(): ReactElement {
           />
         </div>
       </div>
-      {isPending ? (
+      {isPending || !widgetsPage ? (
         <div className="flex justify-center text-2xl">
           <DashboardIcons iconName="Spinner" color={dashboardStyle.color!} />
         </div>

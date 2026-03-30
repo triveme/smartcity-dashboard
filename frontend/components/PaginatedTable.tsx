@@ -75,9 +75,9 @@ export default function PaginatedTable<T>(
       </TableWrapper>
       <TablePagination
         currentPage={userPagination.page}
-        totalPages={paginatedResult.meta.totalPages}
+        totalPages={paginatedResult.meta?.totalPages}
         viewsPerPage={userPagination.limit}
-        totalItems={paginatedResult.meta.totalItems}
+        totalItems={paginatedResult.meta?.totalItems}
         paginate={paginate}
         onViewsPerPageChange={handleViewsPerPageChange}
         iconColor={iconColor}

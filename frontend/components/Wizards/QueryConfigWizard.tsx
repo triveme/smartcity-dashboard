@@ -172,6 +172,7 @@ export default function QueryConfigWizard(
             auth?.user?.access_token,
             selectedCollection,
             queryConfig?.dataSourceId,
+            "v2"
           );
         } else {
           return;
@@ -218,6 +219,7 @@ export default function QueryConfigWizard(
             auth?.user?.access_token,
             queryConfig?.fiwareService,
             queryConfig?.dataSourceId,
+            "v2"
           );
         } else {
           return;
@@ -261,6 +263,7 @@ export default function QueryConfigWizard(
             auth?.user?.access_token,
             queryConfig?.fiwareService,
             queryConfig?.dataSourceId,
+            "v2"
           );
         } else {
           return;

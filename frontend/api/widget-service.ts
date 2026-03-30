@@ -38,6 +38,14 @@ export async function searchWidgets(
   componentSubType?: string | undefined,
   pagination?: UserPagination,
 ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+
+  if (!backendUrl) {
+    throw new Error(
+      '[searchWidgets] NEXT_PUBLIC_BACKEND_URL is not defined — window.__ENV may not be loaded yet',
+    );
+  }
+
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -55,10 +63,21 @@ export async function searchWidgets(
     params.limit = pagination.limit;
   }
 
-  const url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/search`;
+  const url = `${backendUrl}/widgets/search`;
 
   try {
     const response = await axios.get(url, { headers, params });
+    if (!response.data || !Array.isArray(response.data.data)) {
+      console.error(
+        '[searchWidgets] unexpected response shape — backend may be down or redirecting. Received:',
+        typeof response.data === 'string'
+          ? response.data.substring(0, 200) + '...'
+          : response.data,
+      );
+      throw new Error(
+        `Backend returned an unexpected response (expected PaginatedResult, got ${typeof response.data})`,
+      );
+    }
     return response.data;
   } catch (err) {
     console.error(err);
