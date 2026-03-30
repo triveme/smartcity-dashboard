@@ -4,18 +4,17 @@ import { Dashboard, DashboardWithContent } from '@/types';
 import { env } from 'next-dynenv';
 import { PaginatedResult, UserPagination } from '@/types/pagination';
 
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
-
 export async function getDashboardByIdWithContent(
   accessToken: string | undefined,
   dashboardId: string,
 ): Promise<DashboardWithContent> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
 
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}?includeContent=true`,
+    `${backendUrl}/dashboards/${dashboardId}?includeContent=true`,
     {
       headers,
     },
@@ -31,12 +30,13 @@ export async function getDashboardByIdWithStructure(
   accessToken: string | undefined,
   dashboardId: string,
 ): Promise<DashboardWithContent> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
 
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/dashboards/with-widgets/${dashboardId}`,
+    `${backendUrl}/dashboards/with-widgets/${dashboardId}`,
     {
       headers,
     },
@@ -53,6 +53,7 @@ export async function getDashboards(
   includeContent?: boolean,
   tenant?: string | undefined,
 ): Promise<Dashboard[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: any = {};
@@ -62,9 +63,9 @@ export async function getDashboards(
 
     let url = '';
     if (tenant && tenant !== '') {
-      url = `${NEXT_PUBLIC_BACKEND_URL}/dashboards/tenant/${tenant}`;
+      url = `${backendUrl}/dashboards/tenant/${tenant}`;
     } else {
-      url = `${NEXT_PUBLIC_BACKEND_URL}/dashboards`;
+      url = `${backendUrl}/dashboards`;
     }
 
     const headers = accessToken
@@ -90,6 +91,7 @@ export async function searchDashboards(
   search?: string | undefined,
   pagination?: UserPagination,
 ): Promise<PaginatedResult<Dashboard>> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
@@ -106,7 +108,7 @@ export async function searchDashboards(
       params.limit = pagination.limit;
     }
 
-    const url = `${NEXT_PUBLIC_BACKEND_URL}/dashboards/search`;
+    const url = `${backendUrl}/dashboards/search`;
     // Perform the GET request with axios
     const response = await axios.get(url, {
       params,
@@ -125,9 +127,10 @@ export async function getDashboardDownloadData(
   widgetsIds?: string[],
   dashboardId?: string,
 ): Promise<string> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/download-data/${dashboardId}`,
+      `${backendUrl}/dashboards/download-data/${dashboardId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -159,6 +162,7 @@ export async function postDashboard(
   newDashboard: Dashboard,
   tenant?: string | undefined,
 ): Promise<Dashboard> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -170,7 +174,7 @@ export async function postDashboard(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards${tenantParam}`,
+      `${backendUrl}/dashboards${tenantParam}`,
       newDashboard,
       { headers: headers },
     );
@@ -191,6 +195,7 @@ export async function updateDashboard(
   updateDashboard: Dashboard,
   tenant?: string | undefined,
 ): Promise<Dashboard> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -202,7 +207,7 @@ export async function updateDashboard(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${updateDashboard.id}${tenantParam}`,
+      `${backendUrl}/dashboards/${updateDashboard.id}${tenantParam}`,
       updateDashboard,
       { headers: headers },
     );
@@ -223,6 +228,7 @@ export async function duplicateDashboard(
   dashboardId: string,
   tenant?: string | undefined,
 ): Promise<DashboardWithContent> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -234,7 +240,7 @@ export async function duplicateDashboard(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/duplicate/${dashboardId}${tenantParam}`,
+      `${backendUrl}/dashboards/duplicate/${dashboardId}${tenantParam}`,
       {},
       { headers: headers },
     );
@@ -255,6 +261,7 @@ export async function deleteDashboard(
   dashboardId: string,
   tenant?: string | undefined,
 ): Promise<Dashboard> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -266,7 +273,7 @@ export async function deleteDashboard(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/dashboards/${dashboardId}${tenantParam}`,
+      `${backendUrl}/dashboards/${dashboardId}${tenantParam}`,
       { headers: headers },
     );
 

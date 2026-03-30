@@ -1,17 +1,16 @@
 import { DataSource } from '@/types';
 import { env } from 'next-dynenv';
 
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
-
 export async function getDataSourcesByTenant(
   accessToken: string | undefined,
   tenant: string | undefined,
 ): Promise<DataSource[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/data-sources/tenant/${tenant}`,
+    `${backendUrl}/data-sources/tenant/${tenant}`,
     {
       headers,
     },

@@ -4,21 +4,20 @@ import { Widget, WidgetWithChildren, WidgetWithComponentTypes } from '@/types';
 import { env } from 'next-dynenv';
 import { PaginatedResult, UserPagination } from '@/types/pagination';
 
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
-
 export async function getWidgets(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<Widget[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
 
   let url = '';
   if (tenant && tenant !== '') {
-    url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/tenant/${tenant}`;
+    url = `${backendUrl}/widgets/tenant/${tenant}`;
   } else {
-    url = `${NEXT_PUBLIC_BACKEND_URL}/widgets`;
+    url = `${backendUrl}/widgets`;
   }
 
   return await fetch(url, {
@@ -72,9 +71,10 @@ export async function getWidgetsByPanelId(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<Widget[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/panel/${widgetId}`,
+      `${backendUrl}/widgets/panel/${widgetId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -93,11 +93,12 @@ export async function getWidgetsByTenantAndTabComponentType(
   componentType: string,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?abbreviation=${tenant}` : '';
 
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/tab/${componentType}${tenantParam}`,
+      `${backendUrl}/widgets/tab/${componentType}${tenantParam}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -115,9 +116,10 @@ export async function getWidgetDownloadData(
   accessToken: string | undefined,
   widgetId?: string,
 ): Promise<string> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/download-data/${widgetId}`,
+      `${backendUrl}/widgets/download-data/${widgetId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -146,6 +148,7 @@ export async function deleteWidget(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<Widget> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -156,7 +159,7 @@ export async function deleteWidget(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/${widgetId}`,
+      `${backendUrl}/widgets/${widgetId}`,
       {
         headers: headers,
       },
@@ -177,12 +180,13 @@ export async function getWidgetsWithChildren(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren[]> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
 
-  const url = `${NEXT_PUBLIC_BACKEND_URL}/widgets/with-children${tenantParam}`;
+  const url = `${backendUrl}/widgets/with-children${tenantParam}`;
   const response = await fetch(url, { headers });
 
   if (!response.ok) {
@@ -198,6 +202,7 @@ export async function duplicateWidget(
   widgetId: string,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -209,7 +214,7 @@ export async function duplicateWidget(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/duplicate/${widgetId}${tenantParam}`,
+      `${backendUrl}/widgets/duplicate/${widgetId}${tenantParam}`,
       {},
       { headers: headers },
     );
@@ -230,6 +235,7 @@ export async function postWidgetWithChildren(
   newWidgetWithChildren: WidgetWithChildren,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -241,7 +247,7 @@ export async function postWidgetWithChildren(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/with-children${tenantParam}`,
+      `${backendUrl}/widgets/with-children${tenantParam}`,
       newWidgetWithChildren,
       { headers: headers },
     );
@@ -265,6 +271,7 @@ export async function updateWidgetWithChildren(
   updateWidgetWithChildren: WidgetWithChildren,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -277,7 +284,7 @@ export async function updateWidgetWithChildren(
   try {
     const widgetId = updateWidgetWithChildren.widget.id;
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/with-children/${widgetId}${tenantParam}`,
+      `${backendUrl}/widgets/with-children/${widgetId}${tenantParam}`,
       updateWidgetWithChildren,
       { headers: headers },
     );
@@ -300,9 +307,10 @@ export async function getWidgetWithChildrenById(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<WidgetWithChildren> {
+  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets/with-children/${widgetId}`,
+      `${backendUrl}/widgets/with-children/${widgetId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
