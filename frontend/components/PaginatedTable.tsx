@@ -41,7 +41,7 @@ export default function PaginatedTable<T>(
     showSuffixText = false,
     isTenant = false,
   } = props;
-  const content = paginatedResult.data.map(
+  const content = (paginatedResult.data ?? []).map(
     (widget) => widget as GenericTableContentItem<T>,
   );
   // Update page function for pagination
