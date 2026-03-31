@@ -1,14 +1,14 @@
 import axios from 'axios';
 
 import { Widget, WidgetWithChildren, WidgetWithComponentTypes } from '@/types';
-import { env } from 'next-dynenv';
+import { getBackendUrl } from '@/utils/envHelper';
 import { PaginatedResult, UserPagination } from '@/types/pagination';
 
 export async function getWidgets(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<Widget[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -37,7 +37,7 @@ export async function searchWidgets(
   componentSubType?: string | undefined,
   pagination?: UserPagination,
 ): Promise<PaginatedResult<WidgetWithComponentTypes>> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
 
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
@@ -71,7 +71,7 @@ export async function getWidgetsByPanelId(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<Widget[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
       `${backendUrl}/widgets/panel/${widgetId}`,
@@ -93,7 +93,7 @@ export async function getWidgetsByTenantAndTabComponentType(
   componentType: string,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?abbreviation=${tenant}` : '';
 
   try {
@@ -116,7 +116,7 @@ export async function getWidgetDownloadData(
   accessToken: string | undefined,
   widgetId?: string,
 ): Promise<string> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
       `${backendUrl}/widgets/download-data/${widgetId}`,
@@ -148,7 +148,7 @@ export async function deleteWidget(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<Widget> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -180,7 +180,7 @@ export async function getWidgetsWithChildren(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
@@ -202,7 +202,7 @@ export async function duplicateWidget(
   widgetId: string,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -235,7 +235,7 @@ export async function postWidgetWithChildren(
   newWidgetWithChildren: WidgetWithChildren,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -271,7 +271,7 @@ export async function updateWidgetWithChildren(
   updateWidgetWithChildren: WidgetWithChildren,
   tenant?: string | undefined,
 ): Promise<WidgetWithChildren> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -307,7 +307,7 @@ export async function getWidgetWithChildrenById(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<WidgetWithChildren> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
       `${backendUrl}/widgets/with-children/${widgetId}`,

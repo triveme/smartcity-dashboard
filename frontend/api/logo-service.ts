@@ -1,19 +1,18 @@
 import axios from 'axios';
 import { Logo } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getLogos(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<Logo[]> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/logos${tenantParam}`,
+    `${backendUrl}/logos${tenantParam}`,
     {
       headers,
     },
@@ -30,6 +29,7 @@ export async function postLogo(
   newLogo: Logo,
   tenant?: string | undefined,
 ): Promise<Logo> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export async function postLogo(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/logos`,
+      `${backendUrl}/logos`,
       { ...newLogo, tenantId: tenantParam },
       {
         headers: headers,

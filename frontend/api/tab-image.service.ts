@@ -1,19 +1,18 @@
 import { TabImage } from '@/types';
 import axios from 'axios';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getTabImages(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<TabImage[]> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/tab-image${tenantParam}`,
+    `${backendUrl}/tab-image${tenantParam}`,
     {
       headers,
     },
@@ -29,7 +28,8 @@ export async function getTabImageById(
   accessToken: string | undefined,
   id: string,
 ): Promise<TabImage | undefined> {
-  const uri = `${NEXT_PUBLIC_BACKEND_URL}/tab-image/${id}`;
+  const backendUrl = getBackendUrl();
+  const uri = `${backendUrl}/tab-image/${id}`;
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -45,7 +45,8 @@ export async function deleteTabImage(
   accessToken: string | undefined,
   id: string,
 ): Promise<void> {
-  const uri = `${NEXT_PUBLIC_BACKEND_URL}/tab-image/${id}`;
+  const backendUrl = getBackendUrl();
+  const uri = `${backendUrl}/tab-image/${id}`;
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -58,6 +59,7 @@ export async function postTabImage(
   newTabImage: TabImage,
   tenant?: string | undefined,
 ): Promise<TabImage> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -69,7 +71,7 @@ export async function postTabImage(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/tab-image`,
+      `${backendUrl}/tab-image`,
       { ...newTabImage, tenantId: tenantParam },
       {
         headers: headers,

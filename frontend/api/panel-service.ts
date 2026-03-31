@@ -1,17 +1,16 @@
 import axios from 'axios';
 
 import { Panel } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getPanelsByDashboardId(
   accessToken: string | undefined,
   dashboardId: string,
 ): Promise<Panel[]> {
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/panels/dashboard/${dashboardId}`,
+      `${backendUrl}/panels/dashboard/${dashboardId}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
@@ -30,6 +29,7 @@ export async function updatePanel(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updatePanel: Panel & { [key: string]: any },
 ): Promise<Panel> {
+  const backendUrl = getBackendUrl();
   if (updatePanel.widgets) {
     delete updatePanel.widgets;
   }
@@ -44,7 +44,7 @@ export async function updatePanel(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/panels/${updatePanel.id}`,
+      `${backendUrl}/panels/${updatePanel.id}`,
       updatePanel,
       { headers: headers },
     );
@@ -64,6 +64,7 @@ export async function postPanel(
   accessToken: string | undefined,
   newPanel: Panel,
 ): Promise<Panel> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -74,7 +75,7 @@ export async function postPanel(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/panels`,
+      `${backendUrl}/panels`,
       newPanel,
       {
         headers: headers,
@@ -96,6 +97,7 @@ export async function deletePanel(
   accessToken: string | undefined,
   id: string,
 ): Promise<void> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {};
 
   if (accessToken) {
@@ -103,7 +105,7 @@ export async function deletePanel(
   }
 
   try {
-    await axios.delete(`${NEXT_PUBLIC_BACKEND_URL}/panels/${id}`, {
+    await axios.delete(`${backendUrl}/panels/${id}`, {
       headers: headers,
     });
   } catch (err) {

@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { AuthData } from '@/types';
-import { env } from 'next-dynenv';
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getAuthDatasByTenant(
   accessToken: string | undefined,
   tenant: string | undefined,
 ): Promise<AuthData[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -27,7 +27,7 @@ export async function getAuthDataById(
   accessToken: string | undefined,
   authDataId: string,
 ): Promise<AuthData> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
       `${backendUrl}/auth-datas/${authDataId}`,
@@ -48,7 +48,7 @@ export async function updateAuthData(
   accessToken: string | undefined,
   updateAuthData: AuthData,
 ): Promise<AuthData> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -79,7 +79,7 @@ export async function postAuthData(
   accessToken: string | undefined,
   newAuthData: AuthData,
 ): Promise<AuthData> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -110,7 +110,7 @@ export async function deleteAuthData(
   accessToken: string | undefined,
   authDataId: string,
 ): Promise<void> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {};
 
   if (accessToken) {

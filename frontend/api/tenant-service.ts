@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { Tenant } from '@/types';
-import { env } from 'next-dynenv';
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getTenants(
   accessToken: string | undefined,
 ): Promise<Tenant[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -23,7 +23,7 @@ export async function postTenant(
   accessToken: string | undefined,
   newTenant: Tenant,
 ): Promise<Tenant> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -56,7 +56,7 @@ export async function updateTenant(
   accessToken: string | undefined,
   updateTenant: Tenant,
 ): Promise<Tenant> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -87,7 +87,7 @@ export async function deleteTenant(
   accessToken: string | undefined,
   tenantId: string,
 ): Promise<Tenant> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

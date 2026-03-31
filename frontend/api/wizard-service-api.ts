@@ -1,22 +1,19 @@
 import axios from 'axios';
-import { env } from 'next-dynenv';
+import { getOrchideoConnectUrl } from '@/utils/envHelper';
 
 import { DataConfigRequestType } from '@/types/wizard';
-
-const NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL = env(
-  'NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL',
-);
 
 export async function getCollections(
   args: string | undefined,
   accessToken: string | undefined,
 ): Promise<string[]> {
+  const orchideoConnectUrl = getOrchideoConnectUrl();
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/collections`,
+      `${orchideoConnectUrl}/wizard/collections`,
       {
         headers,
         params: {
@@ -34,12 +31,13 @@ export async function getCollections(
 export async function getSourcesForCollection(
   args: DataConfigRequestType,
 ): Promise<string[]> {
+  const orchideoConnectUrl = getOrchideoConnectUrl();
   try {
     const headers = args.accessToken
       ? { Authorization: `Bearer ${args.accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/sources`,
+      `${orchideoConnectUrl}/wizard/sources`,
       {
         headers,
         params: {
@@ -58,12 +56,13 @@ export async function getSourcesForCollection(
 export async function getAttributeForSource(
   args: DataConfigRequestType,
 ): Promise<string[]> {
+  const orchideoConnectUrl = getOrchideoConnectUrl();
   const headers = args.accessToken
     ? { Authorization: `Bearer ${args.accessToken}` }
     : undefined;
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/attributes`,
+      `${orchideoConnectUrl}/wizard/attributes`,
       {
         headers,
         params: {
@@ -83,12 +82,13 @@ export async function getAttributeForSource(
 export async function getSensorsForSource(
   args: DataConfigRequestType,
 ): Promise<string[]> {
+  const orchideoConnectUrl = getOrchideoConnectUrl();
   try {
     const headers = args.accessToken
       ? { Authorization: `Bearer ${args.accessToken}` }
       : undefined;
     const response = await axios.get(
-      `${NEXT_PUBLIC_ORCHIDEO_CONNECT_SERVICE_URL}/wizard/entities`,
+      `${orchideoConnectUrl}/wizard/entities`,
       {
         headers,
         params: {

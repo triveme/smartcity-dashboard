@@ -2,13 +2,13 @@
 import axios from 'axios';
 
 import { GroupingElement } from '@/types';
-import { env } from 'next-dynenv';
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getMenuGroupingElements(
   tenant: string | undefined,
   accessToken: string,
 ): Promise<GroupingElement[]> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
@@ -39,7 +39,7 @@ export async function getMenuGroupingElementByUrl(
   urlParam: string,
   tenant: string,
 ): Promise<GroupingElement> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   try {
     const params: any = {};
     params.abbreviation = tenant;
@@ -66,7 +66,7 @@ export async function postMenuGroupingElement(
   accessToken: string | undefined,
   newGroup: GroupingElement,
 ): Promise<GroupingElement> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -99,7 +99,7 @@ export async function updateMenuGroupingElement(
   accessToken: string | undefined,
   newGroup: Partial<GroupingElement>,
 ): Promise<GroupingElement> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -132,7 +132,7 @@ export async function deleteMenuGroupingElement(
   accessToken: string | undefined,
   id: string,
 ): Promise<GroupingElement> {
-  const backendUrl = env('NEXT_PUBLIC_BACKEND_URL');
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

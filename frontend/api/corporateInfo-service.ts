@@ -1,14 +1,13 @@
 import axios from 'axios';
 
 import { CorporateInfo } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function updateCorporateInfo(
   accessToken: string | undefined,
   updateCorporateInfo: CorporateInfo,
 ): Promise<CorporateInfo> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -19,7 +18,7 @@ export async function updateCorporateInfo(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/corporate-infos/${updateCorporateInfo.id}`,
+      `${backendUrl}/corporate-infos/${updateCorporateInfo.id}`,
       updateCorporateInfo,
       { headers: headers },
     );
@@ -40,6 +39,7 @@ export async function postCorporateInfo(
   newCorporateInfo: CorporateInfo,
   tenant?: string | undefined,
 ): Promise<CorporateInfo> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export async function postCorporateInfo(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/corporate-infos${tenantParam}`,
+      `${backendUrl}/corporate-infos${tenantParam}`,
       { ...newCorporateInfo, tenantId: tenant },
       { headers: headers },
     );
