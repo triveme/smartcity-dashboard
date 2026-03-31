@@ -1,16 +1,15 @@
 import axios from 'axios';
 import { Tenant } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getTenants(
   accessToken: string | undefined,
 ): Promise<Tenant[]> {
+  const backendUrl = getBackendUrl();
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
-  const fetched = await fetch(`${NEXT_PUBLIC_BACKEND_URL}/tenants`, {
+  const fetched = await fetch(`${backendUrl}/tenants`, {
     headers,
   })
     .then((res) => res.json())
@@ -24,6 +23,7 @@ export async function postTenant(
   accessToken: string | undefined,
   newTenant: Tenant,
 ): Promise<Tenant> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -34,7 +34,7 @@ export async function postTenant(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/tenants`,
+      `${backendUrl}/tenants`,
       newTenant,
       {
         headers: headers,
@@ -56,6 +56,7 @@ export async function updateTenant(
   accessToken: string | undefined,
   updateTenant: Tenant,
 ): Promise<Tenant> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -66,7 +67,7 @@ export async function updateTenant(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/tenants/${updateTenant.id}`,
+      `${backendUrl}/tenants/${updateTenant.id}`,
       updateTenant,
       { headers: headers },
     );
@@ -86,6 +87,7 @@ export async function deleteTenant(
   accessToken: string | undefined,
   tenantId: string,
 ): Promise<Tenant> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -96,7 +98,7 @@ export async function deleteTenant(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/tenants/${tenantId}`,
+      `${backendUrl}/tenants/${tenantId}`,
       {
         headers: headers,
       },

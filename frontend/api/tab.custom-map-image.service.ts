@@ -1,19 +1,18 @@
 import { CustomMapImage } from '@/types';
 import axios from 'axios';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getCustomMapImages(
   accessToken: string | undefined,
   tenant?: string | undefined,
 ): Promise<CustomMapImage[]> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `?tenant=${tenant}` : '';
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
   const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/custom-map-image${tenantParam}`,
+    `${backendUrl}/custom-map-image${tenantParam}`,
     {
       headers,
     },
@@ -29,7 +28,8 @@ export async function getCustomMapImageById(
   accessToken: string | undefined,
   id: string,
 ): Promise<CustomMapImage | undefined> {
-  const uri = `${NEXT_PUBLIC_BACKEND_URL}/custom-map-image/${id}`;
+  const backendUrl = getBackendUrl();
+  const uri = `${backendUrl}/custom-map-image/${id}`;
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -45,7 +45,8 @@ export async function deleteCustomMapImage(
   accessToken: string | undefined,
   id: string,
 ): Promise<void> {
-  const uri = `${NEXT_PUBLIC_BACKEND_URL}/custom-map-image/${id}`;
+  const backendUrl = getBackendUrl();
+  const uri = `${backendUrl}/custom-map-image/${id}`;
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
@@ -58,6 +59,7 @@ export async function postCustomMapImage(
   newCustomMapImage: CustomMapImage,
   tenant?: string | undefined,
 ): Promise<CustomMapImage> {
+  const backendUrl = getBackendUrl();
   const tenantParam = tenant && tenant !== '' ? `${tenant}` : '';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -69,7 +71,7 @@ export async function postCustomMapImage(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/custom-map-image`,
+      `${backendUrl}/custom-map-image`,
       { ...newCustomMapImage, tenantId: tenantParam },
       {
         headers: headers,
