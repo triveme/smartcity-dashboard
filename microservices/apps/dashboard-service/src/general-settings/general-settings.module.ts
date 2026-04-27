@@ -17,8 +17,14 @@ import { TenantRepo } from '../tenant/tenant.repo';
 export class GeneralSettingsModule {
   configure(consumer: MiddlewareConsumer): void {
     // Apply the AuthHelperMiddleware to protect specific routes
-    consumer.apply(AuthHelperMiddleware).forRoutes(
-      { path: 'general-settings*', method: RequestMethod.ALL }, // Protect all methods in the "general-settings" route
-    );
+    consumer
+      .apply(AuthHelperMiddleware)
+      .exclude({
+        path: 'general-settings/tenant/(.*)',
+        method: RequestMethod.GET,
+      })
+      .forRoutes(
+        { path: 'general-settings*', method: RequestMethod.ALL }, // Protect all methods in the "general-settings" route
+      );
   }
 }

@@ -163,7 +163,10 @@ export default async function Dashboard(
                 <div>
                   <PageHeadline
                     headline={dashboard.name || 'Dashboardseite'}
-                    fontColor={ciColors.dashboardFontColor}
+                    fontColor={
+                      props.dashboard.headlineColor ??
+                      ciColors.dashboardFontColor
+                    }
                     fontSize={generateResponsiveFontSize(
                       parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
                     )}
@@ -341,7 +344,18 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .customMapSensorData
                   }
+                  pinMode={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].pinMode
+                  }
+                  multiAttributeConfigs={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .multiAttributeConfigs
+                  }
                   mapSearch={tab?.mapSearch || false}
+                  values={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      ?.chartValues?.[0] || 65
+                  }
                 />
               ) : (
                 <Map
@@ -535,7 +549,18 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .customMapSensorData
                   }
+                  pinMode={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].pinMode
+                  }
+                  multiAttributeConfigs={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .multiAttributeConfigs
+                  }
                   mapSearch={tab?.mapSearch || false}
+                  values={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      ?.chartValues?.[0] || 65
+                  }
                 />
               )}
             </>

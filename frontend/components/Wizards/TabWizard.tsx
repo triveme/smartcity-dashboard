@@ -1093,6 +1093,20 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       label=" Bilddownload"
                     />
                   </div>
+                  <div className="flex w-full items-center">
+                    <div className="min-w-[200px]">
+                      <WizardLabel label="Prozentwerte anzeigen?" />
+                    </div>
+                    <WizardSelectBox
+                      checked={tab?.chartShowPercent ?? true}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({
+                          chartShowPercent: value,
+                        })
+                      }
+                      label=" Prozentwerte"
+                    />
+                  </div>
 
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Einheit" />
@@ -1204,6 +1218,15 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       evenRowColor={tableEvenRowColor}
                     />
                   </div>
+                  <HorizontalDivider />
+
+                  <WizardSelectBox
+                    checked={tab?.isTableHeaderVisible || false}
+                    onChange={(value: boolean): void =>
+                      handleTabChange({ isTableHeaderVisible: value })
+                    }
+                    label="Headerzeile ausblenden"
+                  />
                 </div>
               )}
             </div>
@@ -1642,6 +1665,25 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             handleTabChange(update)
                           }
                         />
+                        <div className="flex flex-col w-full pb-2">
+                          <WizardLabel label="Pin Modus" />
+                          <WizardDropdownSelection
+                            currentValue={tab?.pinMode || 'single'}
+                            selectableValues={['single', 'multi']}
+                            onSelect={(value: string | number): void => {
+                              const v = value as 'single' | 'multi';
+                              handleTabChange({
+                                pinMode: v,
+                                ...(v === 'multi'
+                                  ? { mapIsIconColorValueBased: true }
+                                  : {}),
+                              });
+                            }}
+                            iconColor={iconColor}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -1903,25 +1945,33 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           <div className="flex py-2 items-center">
                             <div className="flex flex-row items-center">
                               <WizardSelectBox
-                                checked={tab?.mapIsIconColorValueBased || false}
-                                onChange={(value: boolean): void =>
-                                  handleTabChange({
-                                    mapIsIconColorValueBased: value,
-                                  })
+                                checked={
+                                  tab?.pinMode === 'multi'
+                                    ? true
+                                    : tab?.mapIsIconColorValueBased || false
                                 }
+                                onChange={(value: boolean): void => {
+                                  if (tab?.pinMode !== 'multi') {
+                                    handleTabChange({
+                                      mapIsIconColorValueBased: value,
+                                    });
+                                  }
+                                }}
+                                disabled={tab?.pinMode === 'multi'}
                                 label="Sensorwert abhängige Farbe / Icon"
                               />
-                              {!tab.mapIsIconColorValueBased && (
-                                <ColorPickerComponent
-                                  currentColor={
-                                    tab?.mapMarkerColor || '#224400'
-                                  }
-                                  handleColorChange={(color: string): void =>
-                                    handleTabChange({ mapMarkerColor: color })
-                                  }
-                                  label={'Grundfarbe'}
-                                />
-                              )}
+                              {!(tab?.pinMode === 'multi') &&
+                                !tab.mapIsIconColorValueBased && (
+                                  <ColorPickerComponent
+                                    currentColor={
+                                      tab?.mapMarkerColor || '#224400'
+                                    }
+                                    handleColorChange={(color: string): void =>
+                                      handleTabChange({ mapMarkerColor: color })
+                                    }
+                                    label={'Grundfarbe'}
+                                  />
+                                )}
                             </div>
                             <ColorPickerComponent
                               currentColor={
@@ -1958,81 +2008,388 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               />
                             </div>
                           </div>
-                          {(tab.mapIsFormColorValueBased ||
+                          {(tab?.pinMode === 'multi' ||
+                            tab.mapIsFormColorValueBased ||
                             tab.mapIsIconColorValueBased) && (
                             <>
                               <HorizontalDivider />
                               <div className="flex flex-col w-full pb-2 gap-4">
-                                <WizardLabel label="Einstellungen für Sensor abhängige Farben" />
-                                {tab.componentSubType !==
-                                  tabComponentSubTypeEnum.custom_map && (
-                                  <div className="flex flex-col w-full">
-                                    <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
-                                    <WizardDropdownSelection
-                                      currentValue={
-                                        tab?.mapAttributeForValueBased || ''
-                                      }
-                                      selectableValues={[
-                                        '',
-                                        ...queryConfig.attributes,
-                                      ]}
-                                      error={
-                                        errors && errors.mapFilterAttributeError
-                                      }
-                                      onSelect={(
-                                        value: string | number,
-                                      ): void =>
-                                        handleTabChange({
-                                          mapAttributeForValueBased:
-                                            value.toString(),
-                                        })
-                                      }
-                                      iconColor={iconColor}
-                                      borderColor={borderColor}
-                                      backgroundColor={backgroundColor}
-                                    />
+                                <WizardLabel
+                                  label={
+                                    tab?.pinMode === 'multi'
+                                      ? 'Einstellungen für Sensor abhängige Farben (Multi-Attribute)'
+                                      : 'Einstellungen für Sensor abhängige Farben'
+                                  }
+                                />
+                                {tab?.pinMode === 'multi' ? (
+                                  <div className="flex flex-col w-full gap-4">
+                                    {(tab?.multiAttributeConfigs || []).map(
+                                      (cfg, idx) => {
+                                        const usedAttrs = (
+                                          tab?.multiAttributeConfigs || []
+                                        ).map((c) => c.attribute);
+                                        const selectable = [
+                                          '',
+                                          ...queryConfig.attributes.filter(
+                                            (a) =>
+                                              a === cfg.attribute ||
+                                              !usedAttrs.includes(a),
+                                          ),
+                                        ];
+                                        return (
+                                          <div
+                                            key={idx}
+                                            className="border-4 rounded-lg p-4 flex flex-col gap-3"
+                                          >
+                                            <div className="flex items-center gap-4">
+                                              <div className="flex-grow">
+                                                <WizardLabel label="Sensorattribut" />
+                                                <WizardDropdownSelection
+                                                  currentValue={
+                                                    cfg.attribute || ''
+                                                  }
+                                                  selectableValues={selectable}
+                                                  onSelect={(
+                                                    value: string | number,
+                                                  ): void => {
+                                                    const val =
+                                                      value.toString();
+                                                    const arr = [
+                                                      ...(tab?.multiAttributeConfigs ||
+                                                        []),
+                                                    ];
+                                                    arr[idx] = {
+                                                      ...arr[idx],
+                                                      attribute: val,
+                                                    };
+                                                    handleTabChange({
+                                                      multiAttributeConfigs:
+                                                        arr,
+                                                    });
+                                                  }}
+                                                  error={
+                                                    cfg.attribute
+                                                      ? undefined
+                                                      : 'Attribut erforderlich'
+                                                  }
+                                                  iconColor={iconColor}
+                                                  borderColor={borderColor}
+                                                  backgroundColor={
+                                                    backgroundColor
+                                                  }
+                                                />
+                                              </div>
+                                              <ColorPickerComponent
+                                                currentColor={
+                                                  cfg.errorColor || '#FF0000'
+                                                }
+                                                handleColorChange={(
+                                                  color: string,
+                                                ): void => {
+                                                  const arr = [
+                                                    ...(tab?.multiAttributeConfigs ||
+                                                      []),
+                                                  ];
+                                                  arr[idx] = {
+                                                    ...arr[idx],
+                                                    errorColor: color,
+                                                  };
+                                                  handleTabChange({
+                                                    multiAttributeConfigs: arr,
+                                                  });
+                                                }}
+                                                label="Error Farbe"
+                                              />
+                                              <CreateDashboardElementButton
+                                                label="-"
+                                                handleClick={(): void => {
+                                                  const arr = [
+                                                    ...(tab?.multiAttributeConfigs ||
+                                                      []),
+                                                  ];
+                                                  arr.splice(idx, 1);
+                                                  handleTabChange({
+                                                    multiAttributeConfigs: arr,
+                                                  });
+                                                }}
+                                              />
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                              <div className="flex-grow">
+                                                <WizardLabel label="Default Bereich (z.B. 1-10)" />
+                                                <WizardTextfield
+                                                  value={cfg.defaultRange || ''}
+                                                  onChange={(
+                                                    value: string | number,
+                                                  ): void => {
+                                                    const arr = [
+                                                      ...(tab?.multiAttributeConfigs ||
+                                                        []),
+                                                    ];
+                                                    arr[idx] = {
+                                                      ...arr[idx],
+                                                      defaultRange:
+                                                        value.toString(),
+                                                    };
+                                                    handleTabChange({
+                                                      multiAttributeConfigs:
+                                                        arr,
+                                                    });
+                                                  }}
+                                                  error={(function ():
+                                                    | string
+                                                    | undefined {
+                                                    const s = (
+                                                      cfg.defaultRange || ''
+                                                    ).trim();
+                                                    const m =
+                                                      s.match(
+                                                        /^(\d+)\s*-\s*(\d+)$/,
+                                                      );
+                                                    if (!m)
+                                                      return 'Format: min-max (z.B. 1-10)';
+                                                    const a = parseInt(
+                                                      m[1],
+                                                      10,
+                                                    );
+                                                    const b = parseInt(
+                                                      m[2],
+                                                      10,
+                                                    );
+                                                    if (
+                                                      Number.isNaN(a) ||
+                                                      Number.isNaN(b)
+                                                    )
+                                                      return 'Nur ganze Zahlen';
+                                                    if (a >= b)
+                                                      return 'Min < Max erforderlich';
+                                                    return undefined;
+                                                  })()}
+                                                  borderColor={borderColor}
+                                                  backgroundColor={
+                                                    backgroundColor
+                                                  }
+                                                />
+                                              </div>
+                                              <ColorPickerComponent
+                                                currentColor={
+                                                  cfg.defaultColor || '#47d708'
+                                                }
+                                                handleColorChange={(
+                                                  color: string,
+                                                ): void => {
+                                                  const arr = [
+                                                    ...(tab?.multiAttributeConfigs ||
+                                                      []),
+                                                  ];
+                                                  arr[idx] = {
+                                                    ...arr[idx],
+                                                    defaultColor: color,
+                                                  };
+                                                  handleTabChange({
+                                                    multiAttributeConfigs: arr,
+                                                  });
+                                                }}
+                                                label="Default Farbe"
+                                              />
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                              <div className="flex-grow">
+                                                <WizardLabel label="Warnung Bereich (optional, z.B. 11-20)" />
+                                                <WizardTextfield
+                                                  value={cfg.warnRange || ''}
+                                                  onChange={(
+                                                    value: string | number,
+                                                  ): void => {
+                                                    const arr = [
+                                                      ...(tab?.multiAttributeConfigs ||
+                                                        []),
+                                                    ];
+                                                    arr[idx] = {
+                                                      ...arr[idx],
+                                                      warnRange:
+                                                        value.toString(),
+                                                    };
+                                                    handleTabChange({
+                                                      multiAttributeConfigs:
+                                                        arr,
+                                                    });
+                                                  }}
+                                                  error={(function ():
+                                                    | string
+                                                    | undefined {
+                                                    const s = (
+                                                      cfg.warnRange || ''
+                                                    ).trim();
+                                                    if (!s) return undefined; // optional
+                                                    const m =
+                                                      s.match(
+                                                        /^(\d+)\s*-\s*(\d+)$/,
+                                                      );
+                                                    if (!m)
+                                                      return 'Format: min-max (z.B. 11-20)';
+                                                    const a = parseInt(
+                                                      m[1],
+                                                      10,
+                                                    );
+                                                    const b = parseInt(
+                                                      m[2],
+                                                      10,
+                                                    );
+                                                    if (
+                                                      Number.isNaN(a) ||
+                                                      Number.isNaN(b)
+                                                    )
+                                                      return 'Nur ganze Zahlen';
+                                                    if (a >= b)
+                                                      return 'Min < Max erforderlich';
+                                                    return undefined;
+                                                  })()}
+                                                  borderColor={borderColor}
+                                                  backgroundColor={
+                                                    backgroundColor
+                                                  }
+                                                />
+                                              </div>
+                                              <ColorPickerComponent
+                                                currentColor={
+                                                  cfg.warnColor || '#f9b30d'
+                                                }
+                                                handleColorChange={(
+                                                  color: string,
+                                                ): void => {
+                                                  const arr = [
+                                                    ...(tab?.multiAttributeConfigs ||
+                                                      []),
+                                                  ];
+                                                  arr[idx] = {
+                                                    ...arr[idx],
+                                                    warnColor: color,
+                                                  };
+                                                  handleTabChange({
+                                                    multiAttributeConfigs: arr,
+                                                  });
+                                                }}
+                                                label="Warnung Farbe"
+                                              />
+                                            </div>
+                                          </div>
+                                        );
+                                      },
+                                    )}
+                                    <div className="flex justify-end">
+                                      <CreateDashboardElementButton
+                                        label="+ Attribut hinzufügen"
+                                        handleClick={(): void => {
+                                          const used = (
+                                            tab?.multiAttributeConfigs || []
+                                          ).map((c) => c.attribute);
+                                          const firstAvailable =
+                                            queryConfig.attributes.find(
+                                              (a) => !used.includes(a),
+                                            );
+                                          if (!firstAvailable) {
+                                            openSnackbar(
+                                              'Keine weiteren Attribute verfügbar',
+                                              'warning',
+                                            );
+                                            return;
+                                          }
+                                          const newItem = {
+                                            attribute: firstAvailable,
+                                            errorColor: '#FF0000',
+                                            defaultRange: '',
+                                            defaultColor: '#47d708',
+                                            warnRange: '',
+                                            warnColor: '#f9b30d',
+                                          };
+                                          handleTabChange({
+                                            multiAttributeConfigs: [
+                                              ...(tab?.multiAttributeConfigs ||
+                                                []),
+                                              newItem,
+                                            ],
+                                          });
+                                        }}
+                                      />
+                                    </div>
                                   </div>
+                                ) : (
+                                  tab.componentSubType !==
+                                    tabComponentSubTypeEnum.custom_map && (
+                                    <div className="flex flex-col w-full">
+                                      <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
+                                      <WizardDropdownSelection
+                                        currentValue={
+                                          tab?.mapAttributeForValueBased || ''
+                                        }
+                                        selectableValues={[
+                                          '',
+                                          ...queryConfig.attributes,
+                                        ]}
+                                        error={
+                                          errors &&
+                                          errors.mapFilterAttributeError
+                                        }
+                                        onSelect={(
+                                          value: string | number,
+                                        ): void =>
+                                          handleTabChange({
+                                            mapAttributeForValueBased:
+                                              value.toString(),
+                                          })
+                                        }
+                                        iconColor={iconColor}
+                                        borderColor={borderColor}
+                                        backgroundColor={backgroundColor}
+                                      />
+                                    </div>
+                                  )
                                 )}
 
-                                <div className="flex flex-col w-full pb-2">
-                                  <WizardSelectBox
-                                    checked={
-                                      tab?.chartStaticValuesText || false
-                                    }
-                                    onChange={(value: boolean): void =>
-                                      handleTabChange({
-                                        chartStaticValuesText: value,
-                                      })
-                                    }
-                                    label="Textwerte"
-                                  />
-                                </div>
-                                <StaticValuesField
-                                  initialChartStaticValues={
-                                    tab.chartStaticValuesText
-                                      ? tab?.chartStaticValuesTexts || []
-                                      : tab?.chartStaticValues || []
-                                  }
-                                  initialStaticColors={
-                                    tab?.chartStaticValuesColors || []
-                                  }
-                                  initialStaticValuesTicks={
-                                    tab?.chartStaticValuesTicks || []
-                                  }
-                                  initialStaticValuesLogos={
-                                    tab?.chartStaticValuesLogos || []
-                                  }
-                                  initialStaticValuesTexts={
-                                    tab?.chartStaticValuesTexts || []
-                                  }
-                                  handleTabChange={handleTabChange}
-                                  error={errors?.stageableColorValueError}
-                                  borderColor={borderColor}
-                                  backgroundColor={backgroundColor}
-                                  fontColor={fontColor}
-                                  isTextValues={tab.chartStaticValuesText}
-                                  type="map"
-                                />
+                                {tab?.pinMode !== 'multi' && (
+                                  <>
+                                    <div className="flex flex-col w-full pb-2">
+                                      <WizardSelectBox
+                                        checked={
+                                          tab?.chartStaticValuesText || false
+                                        }
+                                        onChange={(value: boolean): void =>
+                                          handleTabChange({
+                                            chartStaticValuesText: value,
+                                          })
+                                        }
+                                        label="Textwerte"
+                                      />
+                                    </div>
+                                    <StaticValuesField
+                                      initialChartStaticValues={
+                                        tab.chartStaticValuesText
+                                          ? tab?.chartStaticValuesTexts || []
+                                          : tab?.chartStaticValues || []
+                                      }
+                                      initialStaticColors={
+                                        tab?.chartStaticValuesColors || []
+                                      }
+                                      initialStaticValuesTicks={
+                                        tab?.chartStaticValuesTicks || []
+                                      }
+                                      initialStaticValuesLogos={
+                                        tab?.chartStaticValuesLogos || []
+                                      }
+                                      initialStaticValuesTexts={
+                                        tab?.chartStaticValuesTexts || []
+                                      }
+                                      handleTabChange={handleTabChange}
+                                      error={errors?.stageableColorValueError}
+                                      borderColor={borderColor}
+                                      backgroundColor={backgroundColor}
+                                      fontColor={fontColor}
+                                      isTextValues={tab.chartStaticValuesText}
+                                      type="map"
+                                    />
+                                  </>
+                                )}
                               </div>
                             </>
                           )}
@@ -2090,6 +2447,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               tab.customMapSensorData || []
                             }
                             handleTabChange={handleTabChange}
+                            isMulti={tab.pinMode === 'multi'}
                           />
                         </>
                       )}
@@ -2123,106 +2481,121 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           <div className="flex flex-col w-full pb-2">
                             <div className="w-full">
                               <WizardLabel label="GeoJSON Farben" />
-                              <div className="flex flex-row items-center">
-                                <WizardSelectBox
-                                  checked={
-                                    tab?.mapGeoJSONSensorBasedColors || false
-                                  }
-                                  onChange={(value: boolean): void =>
-                                    handleTabChange({
-                                      mapGeoJSONSensorBasedColors: value,
-                                    })
-                                  }
-                                  label="Sensorwert abhängige Farbe"
-                                />
-                                <ColorPickerComponent
-                                  currentColor={
-                                    tab?.mapGeoJSONBorderColor || '#3388ff'
-                                  }
-                                  handleColorChange={(color: string): void =>
-                                    handleTabChange({
-                                      mapGeoJSONBorderColor: color,
-                                    })
-                                  }
-                                  label="Randfarbe"
-                                />
-                                {!tab.mapGeoJSONSensorBasedColors && (
+                              <div className="flex flex-col gap-2">
+                                <div className="flex flex-col items-start">
+                                  <WizardSelectBox
+                                    checked={
+                                      tab?.mapGeoJSONSensorBasedColors || false
+                                    }
+                                    onChange={(value: boolean): void =>
+                                      handleTabChange({
+                                        mapGeoJSONSensorBasedColors: value,
+                                      })
+                                    }
+                                    label="Sensorwert abhängige Farbe"
+                                  />
+                                </div>
+                                <div className="flex flex-row flex-wrap gap-4 items-center">
                                   <ColorPickerComponent
                                     currentColor={
-                                      tab?.mapGeoJSONFillColor || '#3388ff'
+                                      tab?.mapGeoJSONBorderColor || '#3388ff'
                                     }
                                     handleColorChange={(color: string): void =>
                                       handleTabChange({
-                                        mapGeoJSONFillColor: color,
+                                        mapGeoJSONBorderColor: color,
                                       })
                                     }
-                                    label="Füllfarbe"
+                                    label="Randfarbe"
                                   />
-                                )}
-                                {tab.mapGeoJSONSensorBasedColors && (
+                                  {!tab.mapGeoJSONSensorBasedColors && (
+                                    <ColorPickerComponent
+                                      currentColor={
+                                        tab?.mapGeoJSONFillColor || '#3388ff'
+                                      }
+                                      handleColorChange={(
+                                        color: string,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapGeoJSONFillColor: color,
+                                        })
+                                      }
+                                      label="Füllfarbe"
+                                    />
+                                  )}
+                                  {tab.mapGeoJSONSensorBasedColors && (
+                                    <ColorPickerComponent
+                                      currentColor={
+                                        tab?.mapGeoJSONSensorBasedNoDataColor ||
+                                        '#ff0000'
+                                      }
+                                      handleColorChange={(
+                                        color: string,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapGeoJSONSensorBasedNoDataColor:
+                                            color,
+                                        })
+                                      }
+                                      label="Füllfarbe keine Daten"
+                                    />
+                                  )}
                                   <ColorPickerComponent
                                     currentColor={
-                                      tab?.mapGeoJSONSensorBasedNoDataColor ||
-                                      '#ff0000'
-                                    }
-                                    handleColorChange={(color: string): void =>
-                                      handleTabChange({
-                                        mapGeoJSONSensorBasedNoDataColor: color,
-                                      })
-                                    }
-                                    label="Füllfarbe keine Daten"
-                                  />
-                                )}
-                                <ColorPickerComponent
-                                  currentColor={
-                                    tab?.mapGeoJSONSelectionBorderColor ||
-                                    '#0b63de'
-                                  }
-                                  handleColorChange={(color: string): void =>
-                                    handleTabChange({
-                                      mapGeoJSONSelectionBorderColor: color,
-                                    })
-                                  }
-                                  label="Selektion Randfarbe"
-                                />
-                                {!tab.mapGeoJSONSensorBasedColors && (
-                                  <ColorPickerComponent
-                                    currentColor={
-                                      tab?.mapGeoJSONSelectionFillColor ||
+                                      tab?.mapGeoJSONSelectionBorderColor ||
                                       '#0b63de'
                                     }
                                     handleColorChange={(color: string): void =>
                                       handleTabChange({
-                                        mapGeoJSONSelectionFillColor: color,
+                                        mapGeoJSONSelectionBorderColor: color,
                                       })
                                     }
-                                    label="Selektion Füllfarbe"
+                                    label="Selektion Randfarbe"
                                   />
-                                )}
-                                <ColorPickerComponent
-                                  currentColor={
-                                    tab?.mapGeoJSONHoverBorderColor || '#0347a6'
-                                  }
-                                  handleColorChange={(color: string): void =>
-                                    handleTabChange({
-                                      mapGeoJSONHoverBorderColor: color,
-                                    })
-                                  }
-                                  label="Hover Randfarbe"
-                                />
-                                {!tab.mapGeoJSONSensorBasedColors && (
+                                  {!tab.mapGeoJSONSensorBasedColors && (
+                                    <ColorPickerComponent
+                                      currentColor={
+                                        tab?.mapGeoJSONSelectionFillColor ||
+                                        '#0b63de'
+                                      }
+                                      handleColorChange={(
+                                        color: string,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapGeoJSONSelectionFillColor: color,
+                                        })
+                                      }
+                                      label="Selektion Füllfarbe"
+                                    />
+                                  )}
                                   <ColorPickerComponent
                                     currentColor={
-                                      tab?.mapGeoJSONHoverFillColor || '#0347a6'
+                                      tab?.mapGeoJSONHoverBorderColor ||
+                                      '#0347a6'
                                     }
                                     handleColorChange={(color: string): void =>
                                       handleTabChange({
-                                        mapGeoJSONHoverFillColor: color,
+                                        mapGeoJSONHoverBorderColor: color,
                                       })
                                     }
-                                    label="Hover Füllfarbe"
+                                    label="Hover Randfarbe"
                                   />
-                                )}
+                                  {!tab.mapGeoJSONSensorBasedColors && (
+                                    <ColorPickerComponent
+                                      currentColor={
+                                        tab?.mapGeoJSONHoverFillColor ||
+                                        '#0347a6'
+                                      }
+                                      handleColorChange={(
+                                        color: string,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapGeoJSONHoverFillColor: color,
+                                        })
+                                      }
+                                      label="Hover Füllfarbe"
+                                    />
+                                  )}
+                                </div>
                               </div>
                             </div>
                             {tab.mapGeoJSONSensorBasedColors && (

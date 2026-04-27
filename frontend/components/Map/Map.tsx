@@ -114,7 +114,7 @@ const FitBounds = ({ bounds }: { bounds: L.LatLngBoundsExpression }): null => {
   const map = useMap();
   React.useEffect(() => {
     map.fitBounds(bounds);
-  }, []);
+  }, [bounds]);
   return null;
 };
 
@@ -273,9 +273,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   ]);
 
   const selectedMapFeatures = useRef<string[]>([]);
-  const hoveredMapFeature = useRef<string>('');
+  const localHoveredFeature = useRef<string>('');
+  const syncedHoveredFeature = useRef<string>('');
+  const hoverTimeoutRef = useRef<number | null>(null);
+  const pendingHoverId = useRef<string>('');
 
   const geoJSonLayers = useRef<{ [id: string]: L.GeoJSON }>({});
+  const geoJsonRef = useRef<L.GeoJSON | null>(null);
 
   const mapboxUrl = `https://api.mapbox.com/styles/v1/mapbox/${
     props.mapType === tabComponentSubTypeEnum.geoJSON ||
@@ -447,7 +451,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     } else {
       // For combined maps, check if value-based coloring is enabled
       const combinedProps = props as CombinedMapProps;
-      const dataSource = marker.dataSource ?? 0; // Default to 0 if undefined
+      const dataSource = marker ? (marker.dataSource ?? 0) : 0; // Default to 0 if undefined
 
       // Use form-based value coloring if the flag is set for this data source
       const fallback = combinedProps.mapMarkerIcon?.[dataSource];
@@ -457,12 +461,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         markerValue !== undefined
       ) {
         const staticValues = combinedProps.staticValues?.[dataSource];
-        const staticColors = combinedProps.staticValuesLogos?.[dataSource];
-        if (staticValues && staticColors) {
+        const staticLogos = combinedProps.staticValuesLogos?.[dataSource];
+        if (staticValues && staticLogos) {
           const icon = getIconForValue(
             markerValue,
             staticValues,
-            staticColors,
+            staticLogos,
             fallback,
           );
           return icon;
@@ -470,6 +474,18 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       }
       return fallback;
     }
+  };
+
+  const getCombinedMapIconList = (dataSource: number): string[] => {
+    const combinedProps = props as CombinedMapProps;
+    const fallback = combinedProps.mapMarkerIcon;
+    if (
+      combinedProps.mapIsFormColorValueBased?.[dataSource] ||
+      combinedProps.mapIsIconColorValueBased?.[dataSource]
+    ) {
+      return combinedProps.staticValuesLogos?.[dataSource] ?? fallback;
+    }
+    return fallback;
   };
 
   const getColorForMarker = (marker: MarkerType, markerValue: any): string => {
@@ -664,14 +680,17 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         color = getColorForMarker(mapObject, markerValue);
       }
       const icon = getIconForMarker(mapObject, markerValue);
-      const iconIndex = getIconIndex(mapObject.dataSource ?? 0, icon);
+      const iconIndex = getIconIndex(
+        mapObject ? (mapObject.dataSource ?? 0) : 0,
+        icon,
+      );
       return {
         position: mapObject.position.coordinates ?? [52.520008, 13.404954],
         title: title,
         details: mapObject,
-        dataSource: mapObject.dataSource,
+        dataSource: mapObject ? (mapObject.dataSource ?? 0) : 0,
         color: color,
-        iconIndex: iconIndex + 1, // +1 bc of default icon at index 0
+        iconIndex: iconIndex,
         unitsTexts: props.mapUnitsTexts,
       };
     },
@@ -691,7 +710,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   );
 
   const getFilteredMarkers = (): MarkerType[] => {
-    const base = markerPositions.filter(function filterMarkerByFilters(marker) {
+    const source = isCustomMap ? customMarkerPositions : markerPositions;
+    const base = source.filter(function filterMarkerByFilters(marker) {
       const activeFilterKeys = Object.keys(selectedFilters).filter(
         (key) => selectedFilters[key].length > 0,
       );
@@ -782,78 +802,147 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
   const customMarkerPositions: MarkerType[] = (customMapSensorValues || []).map(
     (markerObject, index) => {
-      //use attribute from markerobject instead of combinedProps and singleProps attributes
-
       const mapObject = props.data?.find((x) => x.id === markerObject.entityId);
-      let markerValue;
-      let title;
-      let color = '#000000';
-      if (isCombinedMap) {
-        // Combined map logic
-        const combinedProps = props as CombinedMapProps;
-        title = mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`;
+      const title =
+        mapObject?.name?.value || mapObject?.name || `Sensor ${index + 1}`;
 
-        // Extract marker value for combined maps if value-based coloring is enabled
-        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
+      // Determine color for custom map pins with multi-attribute logic when enabled
+      const singleProps = props as SingleMapProps;
+      const pinMode = (props as any).pinMode as 'single' | 'multi' | undefined;
+      const cfgs = (props as any).multiAttributeConfigs as
+        | {
+            attribute: string;
+            errorColor: string;
+            defaultRange: string;
+            defaultColor: string;
+            warnRange?: string;
+            warnColor?: string;
+          }[]
+        | undefined;
 
-        if (
-          combinedProps.mapIsIconColorValueBased?.[dataSource] ||
-          combinedProps.mapIsFormColorValueBased?.[dataSource]
-        ) {
-          const valueAttribute =
-            combinedProps.mapAttributeForValueBased?.[dataSource];
-          if (valueAttribute) {
-            if (mapObject[valueAttribute]?.value !== undefined) {
-              markerValue = mapObject[valueAttribute].value;
-            } else if (mapObject[valueAttribute] !== undefined) {
-              markerValue = mapObject[valueAttribute];
+      const parseRange = (
+        range?: string,
+      ): { min: number; max: number } | null => {
+        const s = (range || '').trim();
+        if (!s) return null;
+        const m = s.match(/^(\d+)\s*-\s*(\d+)$/);
+        if (!m) return null;
+        const a = parseInt(m[1], 10);
+        const b = parseInt(m[2], 10);
+        if (Number.isNaN(a) || Number.isNaN(b) || a >= b) return null;
+        return { min: a, max: b };
+      };
+
+      const getAttrValue = (attr: string): number | undefined => {
+        if (!mapObject) return undefined;
+        const raw = (mapObject as any)[attr];
+        const v = raw?.value !== undefined ? raw.value : raw;
+        const num = typeof v === 'number' ? v : parseFloat(v);
+        return Number.isNaN(num) ? undefined : num;
+      };
+
+      let color = singleProps.mapMarkerColor || '#000000';
+
+      if (pinMode === 'multi' && Array.isArray(cfgs) && cfgs.length > 0) {
+        // Priority: error (outside both ranges) -> warn -> default. First match wins.
+        let chosenColor: string | undefined;
+        // Error
+        for (const cfg of cfgs) {
+          const val = getAttrValue(cfg.attribute);
+          const def = parseRange(cfg.defaultRange);
+          const warn = parseRange(cfg.warnRange);
+          const inDef =
+            def && val !== undefined && val >= def.min && val <= def.max;
+          const inWarn =
+            warn && val !== undefined && val >= warn.min && val <= warn.max;
+          if (!inDef && !inWarn) {
+            chosenColor = cfg.errorColor;
+            break;
+          }
+        }
+        // Warn
+        if (!chosenColor) {
+          for (const cfg of cfgs) {
+            const val = getAttrValue(cfg.attribute);
+            const warn = parseRange(cfg.warnRange);
+            if (
+              warn &&
+              val !== undefined &&
+              val >= warn.min &&
+              val <= warn.max &&
+              cfg.warnColor
+            ) {
+              chosenColor = cfg.warnColor;
+              break;
             }
           }
         }
-
-        color = getColorForMarker(
-          { ...mapObject, dataSource: dataSource },
-          markerValue,
-        );
+        // Default
+        if (!chosenColor) {
+          for (const cfg of cfgs) {
+            const val = getAttrValue(cfg.attribute);
+            const def = parseRange(cfg.defaultRange);
+            if (def && val !== undefined && val >= def.min && val <= def.max) {
+              chosenColor = cfg.defaultColor;
+              break;
+            }
+          }
+        }
+        color = chosenColor || color;
       } else {
-        // Single map logic
-        const singleProps = props as SingleMapProps;
-        // Handle different data structures for the attribute value
-        // Only extract markerValue if value-based coloring is enabled
+        // Fallback to existing single-attribute value-based logic
+        let markerValue: any;
         if (mapObject) {
           if (
             singleProps.mapIsIconColorValueBased ||
             singleProps.mapIsFormColorValueBased
           ) {
-            if (mapObject[markerObject.attribute]?.value !== undefined) {
-              markerValue = mapObject[markerObject.attribute].value;
+            if (
+              (mapObject as any)[markerObject.attribute]?.value !== undefined
+            ) {
+              markerValue = (mapObject as any)[markerObject.attribute].value;
             } else {
-              markerValue = mapObject[markerObject.attribute];
+              markerValue = (mapObject as any)[markerObject.attribute];
             }
           }
         }
-
-        // Handle different data structures for the name/title
-        if (mapObject?.name?.value) {
-          title = mapObject.name.value;
-        } else if (mapObject?.name) {
-          title = mapObject.name;
-        } else {
-          title = `Sensor ${index + 1}`;
-        }
-
-        color = getColorForMarker(mapObject, markerValue);
+        color = getColorForMarker(mapObject as any, markerValue);
       }
-      const icon = getIconForMarker(mapObject, markerValue);
-      const iconIndex = getIconIndex(mapObject.dataSource ?? 0, icon);
+
+      // Icon selection consistent with existing logic
+      let markerValueForIcon: any;
+      if (mapObject) {
+        if (
+          singleProps.mapIsIconColorValueBased ||
+          singleProps.mapIsFormColorValueBased
+        ) {
+          if ((mapObject as any)[markerObject.attribute]?.value !== undefined) {
+            markerValueForIcon = (mapObject as any)[markerObject.attribute]
+              .value;
+          } else {
+            markerValueForIcon = (mapObject as any)[markerObject.attribute];
+          }
+        }
+      }
+      const icon = getIconForMarker(mapObject as any, markerValueForIcon);
+      let iconIndex = 0;
+      if (isCombinedMap) {
+        const dataSource = (mapObject as any)?.dataSource ?? 0;
+        const staticValuesLogos =
+          (props as CombinedMapProps).staticValuesLogos?.[dataSource] ?? [];
+        iconIndex = staticValuesLogos.indexOf(icon);
+      } else {
+        iconIndex =
+          (props as SingleMapProps).staticValuesLogos?.indexOf(icon) ?? 0;
+      }
+
       return {
-        // position: mapObject.position.coordinates ?? [52.520008, 13.404954],
         position: [markerObject.positionY, markerObject.positionX],
-        title: title,
+        title,
         details: mapObject,
-        dataSource: mapObject?.dataSource || 0,
-        color: color,
-        iconIndex: iconIndex + 1, // +1 bc of default icon at index 0
+        dataSource: (mapObject as any)?.dataSource || 0,
+        color,
+        iconIndex: iconIndex + 1,
       };
     },
   );
@@ -862,7 +951,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     featureId: string,
     defaultColor: string,
   ): string => {
-    const combinedProps = props as CombinedMapProps;
+    const combinedProps = isCombinedMap
+      ? (props as CombinedMapProps)
+      : undefined;
 
     // Find sensor entries matching this feature id
     const raw =
@@ -884,16 +975,16 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         : undefined;
 
     if (
-      combinedProps.mapGeoJSONSensorBasedColors &&
+      props.mapGeoJSONSensorBasedColors &&
       avg !== undefined &&
       !Number.isNaN(avg)
     ) {
       if (
-        Object.prototype.toString.call(props.staticValues?.[0]) ===
-        '[object Array]'
+        Array.isArray(props.staticValues?.[0]) &&
+        Array.isArray(props.staticValuesColors?.[0])
       ) {
-        const staticValues = combinedProps.staticValues?.[0];
-        const staticColors = combinedProps.staticValuesColors?.[0];
+        const staticValues = props.staticValues?.[0];
+        const staticColors = props.staticValuesColors?.[0];
         if (staticValues && staticColors) {
           return getColorForValue(avg, staticValues, staticColors);
         }
@@ -911,7 +1002,11 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
     // Default/fallback color
     const fallbackColor =
-      defaultColor || combinedProps.mapGeoJSONFillColor || '#000000';
+      defaultColor ||
+      (isCombinedMap
+        ? combinedProps?.mapGeoJSONFillColor
+        : (props as SingleMapProps).mapGeoJSONFillColor) ||
+      '#000000';
     return fallbackColor;
   };
 
@@ -921,10 +1016,6 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   ): PathOptions {
     const geoJSONId = geoJSONGetIDProperty(feature?.properties);
     if (selectedMapFeatures.current.includes(geoJSONId)) {
-      if (geoJSonLayers.current[geoJSONId]) {
-        geoJSonLayers.current[geoJSONId].bringToFront();
-      }
-
       return {
         color: props.mapGeoJSONSelectionBorderColor,
         fillColor: getColorForGeoJSONFeature(
@@ -934,12 +1025,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         fillOpacity: 0.4,
         weight: 2.5,
       };
-    } else {
-      if (geoJSonLayers.current[geoJSONId]) {
-        geoJSonLayers.current[geoJSONId].bringToBack();
-      }
     }
-    if (hoveredMapFeature.current.includes(geoJSONId) || hovered) {
+    if (syncedHoveredFeature.current === geoJSONId || hovered) {
       return {
         color: props.mapGeoJSONHoverBorderColor,
         fillColor: props.mapGeoJSONHoverFillColor,
@@ -983,58 +1070,97 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       layer.bringToBack();
     }
 
-    layer.bindTooltip(tooltip);
+    if (props.mapAllowPopups) {
+      layer.bindTooltip(tooltip);
+    }
 
     geoJSonLayers.current[geoJSONId] = layer;
   }
 
   function geoJSONOnMouseOver(event: LeafletEvent): void {
-    event.target.bringToFront();
-    event.target.setStyle(geoJSONStyle(event.target.feature, true));
+    const geoJSONId = geoJSONGetIDProperty(event.target.feature.properties);
 
-    if (props.sendHoverFeatureToDynmaicMap) {
-      hoveredMapFeature.current = geoJSONGetIDProperty(
-        event.target.feature.properties,
-      );
-      props.sendHoverFeatureToDynmaicMap(hoveredMapFeature.current);
+    // Avoid spamming hover events when staying on the same feature
+    if (pendingHoverId.current === geoJSONId) {
+      return;
     }
+
+    // Cancel any pending hover commit for a previous feature
+    if (hoverTimeoutRef.current !== null) {
+      window.clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    pendingHoverId.current = geoJSONId;
+
+    // Small debounce so rapid border crossing doesn't cause stale hovers
+    hoverTimeoutRef.current = window.setTimeout(() => {
+      // Only commit if this is still the pending feature
+      if (pendingHoverId.current !== geoJSONId) {
+        return;
+      }
+
+      if (props.sendHoverFeatureToDynamicMap) {
+        localHoveredFeature.current = geoJSONId;
+        props.sendHoverFeatureToDynamicMap(geoJSONId);
+      }
+
+      syncedHoveredFeature.current = geoJSONId;
+      if (geoJsonRef.current) {
+        geoJsonRef.current.setStyle(geoJSONStyle);
+      }
+    }, 200);
   }
 
   function geoJSONOnMouseOut(event: LeafletEvent): void {
     const geoJSONId = geoJSONGetIDProperty(event.target.feature.properties);
-    if (!selectedMapFeatures.current.includes(geoJSONId)) {
-      event.target.bringToBack();
+
+    // If we leave the feature that is pending hover, cancel the debounce
+    if (
+      pendingHoverId.current === geoJSONId &&
+      hoverTimeoutRef.current !== null
+    ) {
+      window.clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+      pendingHoverId.current = '';
     }
-    event.target.setStyle(geoJSONStyle(event.target.feature));
 
     if (
-      hoveredMapFeature.current ==
-        geoJSONGetIDProperty(event.target.feature.properties) &&
-      props.sendHoverFeatureToDynmaicMap
+      localHoveredFeature.current === geoJSONId &&
+      props.sendHoverFeatureToDynamicMap
     ) {
-      props.sendHoverFeatureToDynmaicMap('');
-      hoveredMapFeature.current = '';
+      props.sendHoverFeatureToDynamicMap('');
+    }
+    if (localHoveredFeature.current === geoJSONId) {
+      localHoveredFeature.current = '';
+      syncedHoveredFeature.current = '';
+      if (geoJsonRef.current) {
+        geoJsonRef.current.setStyle(geoJSONStyle);
+      }
     }
   }
 
   function geoJSONOnMouseClick(event: LeafletEvent): void {
     const geoJSONId = geoJSONGetIDProperty(event.target.feature.properties);
+    const layer = geoJSonLayers.current[geoJSONId] ?? (event.target as any);
     const id = selectedMapFeatures.current.findIndex((x) => x == geoJSONId);
     if (id != -1) {
-      event.target.bringToBack();
+      (layer as any).bringToBack();
       selectedMapFeatures.current.splice(id, 1);
     } else {
-      event.target.bringToFront();
+      (layer as any).bringToFront();
       selectedMapFeatures.current.push(geoJSONId);
     }
     if (props.sendFeaturesToDynamicMap) {
       props.sendFeaturesToDynamicMap(selectedMapFeatures.current);
     }
-    event.target.setStyle(geoJSONStyle(event.target.feature));
+    if (geoJsonRef.current) {
+      geoJsonRef.current.setStyle(geoJSONStyle);
+    }
   }
 
-  function geoJSONGetIDProperty(properties: any): any {
-    let id = '';
+  function geoJSONGetIDProperty(properties: any): string {
+    let id: string | number | undefined;
     if (
       props.mapGeoJSONFeatureIdentifier &&
       props.mapGeoJSONFeatureIdentifier != ''
@@ -1043,15 +1169,16 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     } else {
       id = properties?.['AGS'];
     }
+
     if (id == null) {
       return '';
     }
-    // Normalize to string for consistent comparisons
-    id = String(id);
-    if (id.substring(0, 1) === '0') {
-      return id.substring(1);
+
+    const idStr = String(id);
+    if (idStr.substring(0, 1) === '0') {
+      return idStr.substring(1);
     }
-    return id;
+    return idStr;
   }
 
   const POSITION_CLASSES = {
@@ -1263,7 +1390,6 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     isSelected: boolean,
   ): {
     color: string;
-    iconIndex: number;
     shapeType: string;
     displayMode: string;
   } => {
@@ -1271,12 +1397,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       const combinedProps = props as CombinedMapProps;
       return {
         color: isSelected
-          ? combinedProps.mapActiveMarkerColor[dataSource] ||
-            combinedProps.mapActiveMarkerColor[0]
+          ? combinedProps.mapActiveMarkerColor
+            ? combinedProps.mapActiveMarkerColor[dataSource] ||
+              combinedProps.mapActiveMarkerColor[0]
+            : '#FF0000'
           : combinedProps.mapMarkerColor?.[dataSource] ||
             combinedProps.mapMarkerColor?.[0] ||
             '#257DC9',
-        iconIndex: dataSource,
         shapeType:
           combinedProps.mapShapeOption?.[dataSource] ||
           combinedProps.mapShapeOption?.[0] ||
@@ -1292,11 +1419,29 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         color: isSelected
           ? singleProps.mapActiveMarkerColor
           : singleProps.mapMarkerColor,
-        iconIndex: 0,
         shapeType: singleProps.mapShapeOption || 'Rectangle',
         displayMode: singleProps.mapDisplayMode || '',
       };
     }
+  };
+
+  const combinedMapMarkerStaticIconOffset = (datasource: number): number => {
+    if (!isCombinedMap) return 0;
+
+    const combinedProps = props as CombinedMapProps;
+    const markerIconLength = props.mapMarkerIcon.length;
+    if (datasource == 0) return markerIconLength;
+
+    let offset = 0;
+    if (combinedProps.staticValuesLogos) {
+      const icons = combinedProps.staticValuesLogos;
+      if (icons.length > datasource) {
+        for (let i = 0; i < datasource; i++) {
+          offset += icons[i].length;
+        }
+      }
+    }
+    return markerIconLength + offset;
   };
 
   // Handle initial load state
@@ -1351,16 +1496,19 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
       if (
         mapGeoJSONHoveredFeature != undefined &&
-        mapGeoJSONHoveredFeature != hoveredMapFeature.current
+        mapGeoJSONHoveredFeature != syncedHoveredFeature.current
       ) {
-        hoveredMapFeature.current = mapGeoJSONHoveredFeature;
+        syncedHoveredFeature.current = mapGeoJSONHoveredFeature;
+        if (geoJsonRef.current) {
+          geoJsonRef.current.setStyle(geoJSONStyle);
+        }
       }
     } else {
       setIconSvgMarkup(isCombinedMap ? [] : '');
     }
   }, [
-    props,
     isCombinedMap,
+    props.mapMarkerIconColor,
     mapGeoJSONHoveredFeature,
     mapGeoJSONSelectedFeatures,
   ]);
@@ -1447,11 +1595,14 @@ export default function MapNew(props: MapNewProps): JSX.Element {
               props.mapType === tabComponentSubTypeEnum.geoJSONDynamic) && (
               <>
                 <GeoJSON
+                  ref={geoJsonRef as any}
                   onEachFeature={geoJSONOnEachFeature}
                   data={geoJSONData ? geoJSONData : DUMMY_GEOJSON}
                   style={geoJSONStyle}
                 />
-                {props.mapGeoJSONSensorBasedColors && <GeoJSONLegend />}
+                {props.mapGeoJSONSensorBasedColors && props.mapAllowLegend && (
+                  <GeoJSONLegend />
+                )}
               </>
             )}
 
@@ -1589,11 +1740,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                         : createCustomIcon(
                             finalColor,
                             iconSvgMarkup,
-                            marker.iconIndex ?? 0,
+                            combinedMapMarkerStaticIconOffset(dataSource) +
+                              (marker.iconIndex ?? 0),
                             isCombinedMap,
                             isCombinedMap
-                              ? (props as CombinedMapProps).mapMarkerIcon?.[
-                                  markerProps.iconIndex
+                              ? getCombinedMapIconList(dataSource)[
+                                  marker.iconIndex ?? 0
                                 ]
                               : (props as SingleMapProps).mapMarkerIcon,
                           );
@@ -1602,7 +1754,11 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                         markerProps.displayMode !==
                         tabComponentSubTypeEnum.onlyFormArea ? (
                           <Marker
-                            key={`marker-${index}`}
+                            key={
+                              marker.details?.id
+                                ? String(marker.details.id)
+                                : `marker-${index}`
+                            }
                             position={marker.position as LatLngExpression}
                             icon={markerIcon}
                             eventHandlers={{
@@ -1742,21 +1898,23 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   />
                 </div>
               )}
-              {props.mapAllowLegend && (
-                <div
-                  className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
-                  onClick={toggleLegendModal}
-                  style={menuStyle}
-                >
-                  <h2 className="font-bold pr-1">Legende</h2>
-                  <FontAwesomeIcon
-                    icon={faAnglesRight}
-                    className={`transform ${
-                      isLegendModalOpen ? 'rotate-180' : 'rotate-0'
-                    } transition-transform ease-in-out duration-300`}
-                  />
-                </div>
-              )}
+              {props.mapAllowLegend &&
+                props.mapType !== tabComponentSubTypeEnum.geoJSON &&
+                props.mapType !== tabComponentSubTypeEnum.geoJSONDynamic && (
+                  <div
+                    className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
+                    onClick={toggleLegendModal}
+                    style={menuStyle}
+                  >
+                    <h2 className="font-bold pr-1">Legende</h2>
+                    <FontAwesomeIcon
+                      icon={faAnglesRight}
+                      className={`transform ${
+                        isLegendModalOpen ? 'rotate-180' : 'rotate-0'
+                      } transition-transform ease-in-out duration-300`}
+                    />
+                  </div>
+                )}
               {isProjectAdmin && (
                 <div
                   className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
@@ -1908,10 +2066,15 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
               {/* <ZoomHandler onZoomChange={setMapZoom} /> */}
 
-              {(customMarkerPositions.length > 0
-                ? getFilteredMarkers()
-                : []
-              ).map((marker, index) => {
+              {((): MarkerType[] => {
+                const list =
+                  customMarkerPositions.length > 0 ? customMarkerPositions : [];
+                const filtered = list.filter((m) => {
+                  // Reuse the same filter logic as standard markers
+                  return getFilteredMarkers().includes(m);
+                });
+                return filtered;
+              })().map((marker, index) => {
                 const dataSource = marker.dataSource || 0;
                 const markerProps = getMarkerProps(
                   dataSource,
@@ -1924,20 +2087,29 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 let finalColor = markerProps.color; // This already handles active vs default color
 
                 // Only use value-based color if not selected and value-based coloring is enabled
+                // Additionally: in custom map multi-pin mode, always use the computed marker.color
                 if (!isSelected) {
-                  if (isCombinedMap) {
-                    const combinedProps = props as CombinedMapProps;
-                    if (
-                      combinedProps.mapIsIconColorValueBased?.[dataSource] ||
-                      combinedProps.mapIsFormColorValueBased?.[dataSource]
+                  const pinMode = (props as any).pinMode as
+                    | 'single'
+                    | 'multi'
+                    | undefined;
+                  if (!isCombinedMap) {
+                    const singleProps = props as SingleMapProps;
+                    const isCustomMulti = pinMode === 'multi';
+                    if (isCustomMulti) {
+                      // Use multi-attribute computed color
+                      finalColor = marker.color || markerProps.color;
+                    } else if (
+                      singleProps.mapIsIconColorValueBased ||
+                      singleProps.mapIsFormColorValueBased
                     ) {
                       finalColor = marker.color || markerProps.color;
                     }
                   } else {
-                    const singleProps = props as SingleMapProps;
+                    const combinedProps = props as CombinedMapProps;
                     if (
-                      singleProps.mapIsIconColorValueBased ||
-                      singleProps.mapIsFormColorValueBased
+                      combinedProps.mapIsIconColorValueBased?.[dataSource] ||
+                      combinedProps.mapIsFormColorValueBased?.[dataSource]
                     ) {
                       finalColor = marker.color || markerProps.color;
                     }
@@ -1952,11 +2124,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       icon={createCustomIcon(
                         finalColor,
                         iconSvgMarkup,
-                        markerProps.iconIndex ?? 0,
+                        combinedMapMarkerStaticIconOffset(dataSource) +
+                          (marker.iconIndex ?? 0),
                         isCombinedMap,
                         isCombinedMap
-                          ? (props as CombinedMapProps).mapMarkerIcon?.[
-                              markerProps.iconIndex
+                          ? getCombinedMapIconList(dataSource)[
+                              marker.iconIndex ?? 0
                             ]
                           : (props as SingleMapProps).mapMarkerIcon,
                       )}
@@ -2048,15 +2221,33 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   color={(props as SingleMapProps).mapMarkerIconColor}
                 />
               )}
-          {(props as SingleMapProps).staticValuesLogos?.map((l, index) => {
-            return (
-              <DashboardIcons
-                key={'DashboardIcons-' + index}
-                iconName={l}
-                color={(props as SingleMapProps).mapMarkerIconColor}
-              />
-            );
-          })}
+          {isCombinedMap
+            ? (props as CombinedMapProps).staticValuesLogos?.map(
+                (staticValuesLogos, datasource) => {
+                  return staticValuesLogos.map((l, index) => {
+                    return (
+                      <DashboardIcons
+                        key={datasource + '-DashboardIcons-' + index}
+                        iconName={l}
+                        color={
+                          (props as CombinedMapProps).staticValuesColors![
+                            datasource
+                          ][index] ?? 'white'
+                        }
+                      />
+                    );
+                  });
+                },
+              )
+            : (props as SingleMapProps).staticValuesLogos?.map((l, index) => {
+                return (
+                  <DashboardIcons
+                    key={'DashboardIcons-' + index}
+                    iconName={l}
+                    color={(props as SingleMapProps).staticValuesColors[index]}
+                  />
+                );
+              })}
         </div>
       </div>
 
@@ -2080,6 +2271,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           onEditMarker={isProjectAdmin ? handleEditMarker : undefined}
           onDeleteMarker={isProjectAdmin ? handleDeleteMarker : undefined}
           isAdmin={isProjectAdmin}
+          values={props.values || 65}
         />
       )}
     </div>

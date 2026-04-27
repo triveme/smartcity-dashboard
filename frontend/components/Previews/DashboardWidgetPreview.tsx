@@ -100,6 +100,7 @@ export default function DashboardWidgetPreview(
               headerColor={tab?.tableHeaderColor || '#005b9e'}
               oddRowColor={tab?.tableOddRowColor || '#2D3244'}
               evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+              isTableHeaderVisible={tab?.isTableHeaderVisible || false}
             />
           )}
           {tab.componentSubType ===
@@ -181,6 +182,7 @@ export default function DashboardWidgetPreview(
                 headerColor={tab?.tableHeaderColor || '#005b9e'}
                 oddRowColor={tab?.tableOddRowColor || '#2D3244'}
                 evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+                isTableHeaderVisible={tab?.isTableHeaderVisible || false}
               />
             ))}
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
@@ -231,6 +233,7 @@ export default function DashboardWidgetPreview(
               allowImageDownload={tab.chartAllowImageDownload || false}
               pieChartRadius={tab.chartPieRadius || 70}
               menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
+              chartShowPercent={tab.chartShowPercent ?? true}
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.lineChart ||

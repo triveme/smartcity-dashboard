@@ -38,7 +38,7 @@ internal-data-service:
     enabled: true
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/internal-data-service
-    tag: 1.3.1
+    tag: 1.3.3
     pullPolicy: Always
 
 sql-view-service:
@@ -54,5 +54,5 @@ migrations:
   enabled: true
   image:
     repository: ghcr.io/triveme/smartcity-dashboard/migrations
-    tag: 1.3.1
+    tag: 1.3.3
     pullPolicy: Always

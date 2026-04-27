@@ -1,0 +1,11 @@
+{{- if index .Values "sql-view-service" "enabled" }}
+# Env vars specific for the dashboard-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sql-view-service-configmap
+data:
+  NODE_ENV: "development"
+  NEST_JWKS_URI: {{ index .Values "sql-view-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "sql-view-service" "frontendUrl" }}
+{{- end }}

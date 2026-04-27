@@ -23,6 +23,7 @@ import {
 import { customMapImages } from './dashboard.tab.custom_map_image.schema';
 import { customMapSensorDataTable } from './custom-map-sensor-data.schema';
 import { tabValuesToImageTable } from './dashboard.tab.values_to_image.schema';
+import { tabMultiAttributeConfigsTable } from './dashboard.tab.multi_attribute_configs.schema';
 
 export const tabs = pgTable('tab', {
   id: uuid('id')
@@ -57,6 +58,7 @@ export const tabs = pgTable('tab', {
   chartDynamicNoSelectionDisplayAll: boolean(
     'chart_dynamic_noselection_displayall',
   ),
+  chartShowPercent: boolean('chart_show_percent').default(true),
   childWidgets: text('child_widgets').array(),
   componentSubType: tabComponentSubTypeEnum('component_sub_type'),
   componentType: tabComponentTypeEnum('component_type'),
@@ -80,6 +82,7 @@ export const tabs = pgTable('tab', {
   isStepline: boolean('is_stepline'),
   isStackedChart: boolean('is_stacked_chart'),
   isLayoutVertical: boolean('is_layout_vertical'),
+  isTableHeaderVisible: boolean('is_table_header_visible'),
   mapActiveMarkerColor: text('map_active_marker_color'),
   mapAllowFilter: boolean('map_allow_filter'),
   mapAllowLegend: boolean('map_allow_legend'),
@@ -200,6 +203,7 @@ export const tabs = pgTable('tab', {
   pharmacyDetails: text('pharmacy_details'),
   pharmacyLastUpdate: text('pharmacy_last_update'),
   barChartShowTimestampOnHover: boolean('bar_chart_show_timestamp_on_hover'),
+  pinMode: text('pin_mode'),
 });
 
 export const tabsRelations = relations(tabs, ({ one, many }) => ({
@@ -221,6 +225,7 @@ export const tabsRelations = relations(tabs, ({ one, many }) => ({
   }),
   customMapSensorData: many(customMapSensorDataTable),
   valuesToImages: many(tabValuesToImageTable),
+  multiAttributeConfigs: many(tabMultiAttributeConfigsTable),
 }));
 
 export const customMapImageRelations = relations(
@@ -248,6 +253,16 @@ export type EnrichedTab = Tab & {
     max: string;
     imageId: string;
   }[];
+  multiAttributeConfigs?: {
+    id: string;
+    tabId: string;
+    attribute: string;
+    errorColor: string;
+    defaultRange: string;
+    defaultColor: string;
+    warnRange: string;
+    warnColor: string;
+  }[];
 };
 
 export type NewEnrichedTab = NewTab & {
@@ -264,5 +279,15 @@ export type NewEnrichedTab = NewTab & {
     min: string;
     max: string;
     imageId: string;
+  }[];
+  multiAttributeConfigs?: {
+    id: string;
+    tabId: string;
+    attribute: string;
+    errorColor: string;
+    defaultRange: string;
+    defaultColor: string;
+    warnRange: string;
+    warnColor: string;
   }[];
 };

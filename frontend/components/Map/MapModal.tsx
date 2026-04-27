@@ -22,6 +22,7 @@ import ChartMapWrapper from '@/ui/Charts/ChartMapWrapper';
 import { DEFAULT_CI } from '@/utils/objectHelper';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
+import SensorStatusComponent from '@/ui/SensorStatus';
 
 type Marker = {
   position: [number, number];
@@ -40,6 +41,7 @@ type MapModalProps = {
   onEditMarker?: (markerData: any) => void;
   onDeleteMarker?: (markerData: any) => void;
   isAdmin?: boolean;
+  values: number | string;
 };
 
 export default function MapModal(props: MapModalProps): ReactElement {
@@ -186,6 +188,21 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         />
                       </div>
                     )}
+                    {widget.componentType ===
+                      tabComponentTypeEnum.sensorStatus && (
+                      <div className="h-full p-2 overflow-y-auto">
+                        <SensorStatusComponent
+                          count={widget.count || 2}
+                          size={200}
+                          isLayoutVertical={
+                            widget.sensorStatusLayoutVertical || false
+                          }
+                          thresholdMin={widget.thresholdMin || '25'}
+                          thresholdMax={widget.thresholdMax || '65'}
+                          value={props.values}
+                        />
+                      </div>
+                    )}
                     {widget.componentSubType ===
                       tabComponentSubTypeEnum.degreeChart180 && (
                       <div className="flex flex-col w-full h-60">
@@ -275,7 +292,7 @@ export default function MapModal(props: MapModalProps): ReactElement {
                       </div>
                     )}
                     {widget.componentType === tabComponentTypeEnum.image && (
-                      <div className="w-full max-h-40">
+                      <div className="w-full max-h-60">
                         <ImageComponent
                           imageUrl={
                             widget?.imageUrl

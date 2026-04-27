@@ -126,9 +126,9 @@ export default function IconSelection(props: IconSelectionProps): ReactElement {
         >
           <div className="grid grid-cols-6 justify-items-center gap-2 p-2">
             {filteredIcons.length > 0 ? (
-              filteredIcons.map((iconOption) => (
+              filteredIcons.map((iconOption, index) => (
                 <button
-                  key={iconOption.name}
+                  key={iconOption.name + index}
                   className="flex items-center justify-center w-9 h-9 p-2 hover:bg-[#3D4760] rounded-lg transition-colors"
                   onClick={() => selectIcon(iconOption)}
                   title={iconOption.name}

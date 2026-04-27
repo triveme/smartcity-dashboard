@@ -105,7 +105,7 @@ export function getColorForValue(
   for (let i = 0; i < staticValues.length; i++) {
     if (typeof staticValues[i] === 'number' && typeof value === 'number') {
       if ((value as number) <= (staticValues[i] as number)) {
-        return staticValuesColors[i];
+        return staticValuesColors[i - 1 < 0 ? 0 : i - 1];
       }
     } else {
       let valueToCheck = value;

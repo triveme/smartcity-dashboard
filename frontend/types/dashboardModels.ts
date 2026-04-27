@@ -175,12 +175,25 @@ export type MapModalWidget = {
   chartYAxisScaleChartMaxValue?: number;
   showTimeOnDatetimeValues?: boolean;
   valuesToImages?: ValueToImageData[];
+  count?: number;
+  thresholdMin?: number | string;
+  thresholdMax?: number | string;
+  sensorStatusLayoutVertical?: boolean;
 };
 
 export type MapModalLegend = {
   icon: string;
   iconBackgroundColor: string;
   label: string;
+};
+
+export type MultiAttributeConfig = {
+  attribute: string;
+  errorColor: string;
+  defaultRange: string; // e.g. "1-10"
+  defaultColor: string;
+  warnRange: string; // e.g. "11-20"
+  warnColor: string;
 };
 
 export type Tab = {
@@ -212,6 +225,7 @@ export type Tab = {
   chartHoverSingleValue: boolean;
   chartDynamicOnlyShowHover?: boolean;
   chartDynamicNoSelectionDisplayAll?: boolean;
+  chartShowPercent?: boolean;
   componentSubType?: string;
   componentType?: string;
   dataModelId?: string;
@@ -233,6 +247,7 @@ export type Tab = {
   isStackedChart?: boolean;
   isStepline?: boolean;
   isLayoutVertical?: boolean;
+  isTableHeaderVisible?: boolean;
   labelColor?: string;
   mapActiveMarkerColor?: string;
   mapAllowFilter?: boolean;
@@ -350,6 +365,8 @@ export type Tab = {
   pharmacyLastUpdate?: string;
   pharmacyPassword?: unknown;
   barChartShowTimestampOnHover?: boolean;
+  pinMode?: 'single' | 'multi';
+  multiAttributeConfigs?: MultiAttributeConfig[];
 };
 
 export type TabWithQuery = Tab & {

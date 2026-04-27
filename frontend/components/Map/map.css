@@ -98,3 +98,8 @@ z-index: 0;
     opacity: 0.7;
   }
 }
+
+/* Remove default focus bounding box around GeoJSON shapes */
+.leaflet-container .leaflet-interactive:focus {
+  outline: none;
+}

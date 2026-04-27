@@ -286,7 +286,14 @@
       "idx": 40,
       "version": "5",
       "when": 1770643309995,
-      "tag": "0040_burly_king_bedlam",
+      "tag": "0040_burly_king_bedlam_1.3.1",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1775547522831,
+      "tag": "0041_silent_giant_man_1.3.3",
       "breakpoints": true
     }
   ]
