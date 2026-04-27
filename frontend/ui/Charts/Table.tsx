@@ -24,6 +24,7 @@ type TableProps = {
   highlightedColor?: string;
   sendSelectedToDynamicTable?: (rows: string[]) => void;
   sendHoveredToDynamicTable?: (row: string) => void;
+  isTableHeaderVisible: boolean;
 };
 
 type TableTransformedDataItem = {
@@ -43,6 +44,7 @@ export default function Table(props: TableProps): ReactElement {
     selectedRows,
     hoveredRow,
     selectedColor,
+    isTableHeaderVisible,
   } = props;
   let { data } = props;
   const searchParams = useSearchParams();
@@ -151,25 +153,27 @@ export default function Table(props: TableProps): ReactElement {
     <div className={s.tableContainer}>
       <div className={s.tableWrapper}>
         <table className={s.table}>
-          <thead
-            className={s.tableHeader}
-            style={{ backgroundColor: headerColor }}
-          >
-            <tr className={s.row}>
-              {columnKeys.map((key, i) => (
-                <th
-                  key={i}
-                  className={s.headerCell}
-                  style={{ color: fontColor }}
-                >
-                  {key}
+          {!isTableHeaderVisible ? (
+            <thead
+              className={s.tableHeader}
+              style={{ backgroundColor: headerColor }}
+            >
+              <tr className={s.row}>
+                {columnKeys.map((key, i) => (
+                  <th
+                    key={i}
+                    className={s.headerCell}
+                    style={{ color: fontColor }}
+                  >
+                    {key}
+                  </th>
+                ))}
+                <th className={s.headerCell} style={{ color: fontColor }}>
+                  {chosenYear}
                 </th>
-              ))}
-              <th className={s.headerCell} style={{ color: fontColor }}>
-                {chosenYear}
-              </th>
-            </tr>
-          </thead>
+              </tr>
+            </thead>
+          ) : null}
           <tbody
             className={s.tableBody}
             style={{ border: '2px solid transparent' }}

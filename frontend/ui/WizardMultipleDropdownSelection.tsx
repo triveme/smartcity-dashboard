@@ -1,6 +1,7 @@
 import React, { ReactElement, useState, useRef, useEffect } from 'react';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import alphabeticSortHelper from '@/utils/alphabeticSortHelper';
+import searchSensorsByQuery from '@/utils/searchSensorsByQuery';
 
 type WizardMultipleDropdownSelectionProps = {
   currentValue: string[];
@@ -25,9 +26,16 @@ export default function WizardMultipleDropdownSelection(
     backgroundColor,
   } = props;
   const [isOpen, setIsOpen] = useState(false);
+  const [filterValue, setFilterValue] = useState('');
+
   const dropdownRef = useRef(null);
 
-  const filteredSensors = alphabeticSortHelper(selectableValues);
+  const alphabeticFilteredSensors = alphabeticSortHelper(selectableValues);
+
+  const filteredSensors = searchSensorsByQuery(
+    alphabeticFilteredSensors,
+    filterValue,
+  );
 
   const handleSelect = (value: string): void => {
     const newSelection = currentValue.includes(value)
@@ -70,6 +78,10 @@ export default function WizardMultipleDropdownSelection(
   };
 
   useEffect(() => {
+    searchSensorsByQuery(filteredSensors, filterValue);
+  }, [filterValue]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
       if (
         dropdownRef.current &&
@@ -108,21 +120,39 @@ export default function WizardMultipleDropdownSelection(
           style={{ backgroundColor: backgroundColor }}
         >
           {/* Select All checkbox */}
-          <label className="block text-lg px-3 py-2 font-bold">
-            <input
-              type="checkbox"
-              checked={currentValue.length === filteredSensors.length}
-              onChange={handleSelectAll}
-              className="form-checkbox h-4 w-4 border-0 rounded-md focus:ring-0 bg-[#59647D]"
-            />
-            <span className="ml-2">
-              {currentValue.length === filteredSensors.length
-                ? 'Alle Abwählen'
-                : 'Alle Auswählen'}
-            </span>
-          </label>
-          <hr className="my-2" />
+          <div className="flex my-1">
+            <div className="flex w-1/2">
+              <label className="block text-lg px-3 py-2 font-bold">
+                <input
+                  type="checkbox"
+                  checked={currentValue.length === filteredSensors.length}
+                  onChange={handleSelectAll}
+                  className="form-checkbox h-4 w-4 border-0 rounded-md focus:ring-0 bg-[#59647D]"
+                />
+                <span className="ml-2">
+                  {currentValue.length === filteredSensors.length
+                    ? 'Alle Abwählen'
+                    : 'Alle Auswählen'}
+                </span>
+              </label>
+            </div>
 
+            <div className="flex w-1/2 pr-1 ">
+              <input
+                type="text"
+                className="px-3 border-2 rounded-lg w-full"
+                value={filterValue}
+                placeholder="Suchen"
+                onChange={(e) => setFilterValue(e.target.value)}
+                style={{
+                  borderColor: borderColor,
+                  backgroundColor: backgroundColor,
+                }}
+              />
+            </div>
+          </div>
+
+          <hr className="my-2" />
           {/* Individual selectable items */}
           {filteredSensors.map((value, index) => (
             <label key={index} className="block text-lg px-3 py-2">

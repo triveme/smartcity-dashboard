@@ -54,8 +54,8 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_FRONTEND_URL` | Variable required for CORS settings to accept communication from the frontend. | `http://localhost:3000`
 | `ORCHIDEO_CONNECT_SERVICE_URL` | Connection information to the external orchideo connect dataplatform required for API calls. | `http://external-api.com/api/v1`
 | `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
-| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
-| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `dashboard-super-admin`
+| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `scs-admin`
+| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `scs-super-admin`
 | `NEST_JWKS_URI` | Url information for the keycloak connection and authentication. | `http://localhost:8080/realms/testrealm`
 | `POSTGRES_USER` | The PostgreSQL database user. | `postgres`
 | `POSTGRES_PASSWORD` | The password for the PostgreSQL user. | `postgres`

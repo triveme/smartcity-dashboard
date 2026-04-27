@@ -1,0 +1,14 @@
+{{- if index .Values "project-data-service" "enabled" }}
+# Env vars specific for the dashboard-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: project-data-service-configmap
+data:
+  NODE_ENV: "development"
+  ADMIN_ROLE: {{ index .Values "project-data-service" "adminRole" }}
+  SUPER_ADMIN_ROLE: {{ index .Values "project-data-service" "superAdminRole" }}
+  EDIT_ROLES: {{ index .Values "project-data-service" "editRoles" | toJson }}
+  NEST_JWKS_URI: {{ index .Values "project-data-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "project-data-service" "frontendUrl" }}
+{{- end }}

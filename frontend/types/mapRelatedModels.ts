@@ -6,6 +6,7 @@ import {
   CustomMapSensor,
   MapModalLegend,
   MapModalWidget,
+  MultiAttributeConfig,
 } from './dashboardModels';
 import { QueryDataWithAttributes } from './queryData';
 
@@ -54,11 +55,14 @@ export interface BaseMapProps {
   uiFilterData?: QueryDataWithAttributes[];
   locateOnMap?: { pos: [number, number]; id: string };
   sendFeaturesToDynamicMap?: (features: string[]) => void;
-  sendHoverFeatureToDynmaicMap?: (features: string) => void;
+  sendHoverFeatureToDynamicMap?: (features: string) => void;
   handleOnMarkerClick?: (data: string) => void;
   customMapImageId?: string;
   customMapSensorValues?: CustomMapSensor[];
   isCustomMap: boolean;
+  pinMode?: 'single' | 'multi';
+  multiAttributeConfigs?: MultiAttributeConfig[];
+  values?: number | string;
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {

@@ -7,16 +7,23 @@ services:
       - .env
     ports:
       - "${KEYCLOAK_PORT}:8080"
+    depends_on:
+      - postgres-dev
     # only for development: Import realm on startup
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import/
-    entrypoint: [ "/opt/keycloak/bin/kc.sh", "start-dev --import-realm" ]
+    command: ["start-dev"]
   postgres-dev:
     container_name: postgres-dev
-    image: postgres
+    image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '${POSTGRES_PORT}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

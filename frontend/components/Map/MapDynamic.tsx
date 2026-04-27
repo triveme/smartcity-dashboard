@@ -266,7 +266,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           allowDataExport={allowDataExport || false}
           widgetDownloadId={widgetDownloadId || ''}
           sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
-          sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
+          sendHoverFeatureToDynamicMap={handleHoverFeatureFromMap}
           locateOnMap={locateOnMap}
           isCustomMap={
             tab && tab.customMapImageId
@@ -356,7 +356,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           allowDataExport={allowDataExport || false}
           widgetDownloadId={widgetDownloadId || ''}
           sendFeaturesToDynamicMap={handleSelectedFeaturesFromMap}
-          sendHoverFeatureToDynmaicMap={handleHoverFeatureFromMap}
+          sendHoverFeatureToDynamicMap={handleHoverFeatureFromMap}
           locateOnMap={locateOnMap}
           isCustomMap={
             tab && tab.customMapImageId

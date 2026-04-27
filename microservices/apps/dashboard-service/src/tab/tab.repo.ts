@@ -10,6 +10,7 @@ import {
 } from '@app/postgres-db/schemas/dashboard.tab.schema';
 import { customMapSensorDataTable } from '@app/postgres-db/schemas/custom-map-sensor-data.schema';
 import { tabValuesToImageTable } from '@app/postgres-db/schemas/dashboard.tab.values_to_image.schema';
+import { tabMultiAttributeConfigsTable } from '@app/postgres-db/schemas/dashboard.tab.multi_attribute_configs.schema';
 
 @Injectable()
 export class TabRepo {
@@ -27,10 +28,15 @@ export class TabRepo {
           .select()
           .from(tabValuesToImageTable)
           .where(eq(tabValuesToImageTable.tabId, tab.id));
+        const multiAttributeConfigsData = await this.db
+          .select()
+          .from(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, tab.id));
         return {
           ...tab,
           customMapSensorData: sensorData,
           valuesToImages: valuesToImagesData,
+          multiAttributeConfigs: multiAttributeConfigsData,
         };
       }),
     );
@@ -49,11 +55,16 @@ export class TabRepo {
         .select()
         .from(tabValuesToImageTable)
         .where(eq(tabValuesToImageTable.tabId, id));
+      const multiAttributeConfigsData = await this.db
+        .select()
+        .from(tabMultiAttributeConfigsTable)
+        .where(eq(tabMultiAttributeConfigsTable.tabId, id));
 
       return {
         ...result[0],
         customMapSensorData: sensorData,
         valuesToImages: valuesToImagesData,
+        multiAttributeConfigs: multiAttributeConfigsData,
       };
     }
 
@@ -75,10 +86,15 @@ export class TabRepo {
           .select()
           .from(tabValuesToImageTable)
           .where(eq(tabValuesToImageTable.tabId, tab.id));
+        const multiAttributeConfigsData = await this.db
+          .select()
+          .from(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, tab.id));
         return {
           ...tab,
           customMapSensorData: sensorData,
           valuesToImages: valuesToImagesData,
+          multiAttributeConfigs: multiAttributeConfigsData,
         };
       }),
     );
@@ -100,10 +116,15 @@ export class TabRepo {
           .select()
           .from(tabValuesToImageTable)
           .where(eq(tabValuesToImageTable.tabId, tab.id));
+        const multiAttributeConfigsData = await this.db
+          .select()
+          .from(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, tab.id));
         return {
           ...tab,
           customMapSensorData: sensorData,
           valuesToImages: valuesToImagesData,
+          multiAttributeConfigs: multiAttributeConfigsData,
         };
       }),
     );
@@ -145,10 +166,15 @@ export class TabRepo {
           .select()
           .from(tabValuesToImageTable)
           .where(eq(tabValuesToImageTable.tabId, tab.id));
+        const multiAttributeConfigsData = await this.db
+          .select()
+          .from(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, tab.id));
         return {
           ...tab,
           customMapSensorData: sensorData,
           valuesToImages: valuesToImagesData,
+          multiAttributeConfigs: multiAttributeConfigsData,
         };
       }),
     );
@@ -159,7 +185,12 @@ export class TabRepo {
     row: NewEnrichedTab,
     transaction?: DbType,
   ): Promise<EnrichedTab> {
-    const { customMapSensorData, valuesToImages, ...tabValues } = row;
+    const {
+      customMapSensorData,
+      valuesToImages,
+      multiAttributeConfigs,
+      ...tabValues
+    } = row;
     const dbActor = transaction === undefined ? this.db : transaction;
 
     const result = await dbActor.insert(tabs).values(tabValues).returning();
@@ -188,6 +219,23 @@ export class TabRepo {
         );
       }
 
+      if (
+        multiAttributeConfigs !== undefined &&
+        multiAttributeConfigs.length > 0
+      ) {
+        await dbActor.insert(tabMultiAttributeConfigsTable).values(
+          multiAttributeConfigs.map((cfg) => ({
+            tabId: result[0].id,
+            attribute: cfg.attribute,
+            errorColor: cfg.errorColor,
+            defaultRange: cfg.defaultRange,
+            defaultColor: cfg.defaultColor,
+            warnRange: cfg.warnRange,
+            warnColor: cfg.warnColor,
+          })),
+        );
+      }
+
       return this.getById(result[0].id);
     }
 
@@ -199,7 +247,12 @@ export class TabRepo {
     values: Partial<EnrichedTab>,
     transaction?: DbType,
   ): Promise<EnrichedTab> {
-    const { customMapSensorData, valuesToImages, ...tabValues } = values;
+    const {
+      customMapSensorData,
+      valuesToImages,
+      multiAttributeConfigs,
+      ...tabValues
+    } = values;
     const dbActor = transaction === undefined ? this.db : transaction;
     const result = await dbActor
       .update(tabs)
@@ -249,6 +302,35 @@ export class TabRepo {
           })),
         );
       }
+
+      if (multiAttributeConfigs && multiAttributeConfigs.length > 0) {
+        await dbActor
+          .delete(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, id));
+
+        await dbActor.insert(tabMultiAttributeConfigsTable).values(
+          multiAttributeConfigs.map((cfg) => ({
+            tabId: id,
+            attribute: cfg.attribute,
+            errorColor: cfg.errorColor,
+            defaultRange: cfg.defaultRange,
+            defaultColor: cfg.defaultColor,
+            warnRange: cfg.warnRange,
+            warnColor: cfg.warnColor,
+          })),
+        );
+      } else {
+        const existingCfgs = await dbActor
+          .select()
+          .from(tabMultiAttributeConfigsTable)
+          .where(eq(tabMultiAttributeConfigsTable.tabId, id));
+        if (existingCfgs.length > 0) {
+          await dbActor
+            .delete(tabMultiAttributeConfigsTable)
+            .where(eq(tabMultiAttributeConfigsTable.tabId, id));
+        }
+      }
+
       return this.getById(result[0].id);
     }
 

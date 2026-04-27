@@ -145,6 +145,7 @@ export default function TableDynamic(props: TableDynamicProps): ReactElement {
       sendSelectedToDynamicTable={handleSelectedFromTable}
       sendHoveredToDynamicTable={handleHoverFeatureFromTable}
       selectedColor={tab?.dynamicHighlightColor || '#3388ff'}
+      isTableHeaderVisible={tab?.isTableHeaderVisible || false}
     />
   );
 }

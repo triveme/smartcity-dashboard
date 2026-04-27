@@ -375,7 +375,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
         setFilteredData(data);
       }
     }
-  }, []);
+  }, [data]);
 
   // Observe the window size
   useEffect(() => {

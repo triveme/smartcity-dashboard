@@ -7,6 +7,7 @@ import {
   tabComponentSubTypeEnum,
   QueryConfig,
   widgetImageSourceEnum,
+  componentLayoutEnum,
 } from '@/types';
 import CreateDashboardElementButton from './Buttons/CreateDashboardElementButton';
 import ColorPickerComponent from './ColorPickerComponent';
@@ -88,7 +89,8 @@ export default function StaticValuesFieldMapWidgets(
           type === tabComponentTypeEnum.valueToImage ||
           type === tabComponentTypeEnum.diagram ||
           type === tabComponentTypeEnum.image ||
-          type === tabComponentTypeEnum.interactiveComponent,
+          type === tabComponentTypeEnum.interactiveComponent ||
+          type === tabComponentTypeEnum.sensorStatus,
       ),
       'Button', // Add manually here because dont want to create as an enum
     ];
@@ -103,6 +105,8 @@ export default function StaticValuesFieldMapWidgets(
     if (componentType === tabComponentTypeEnum.information) {
       return informationComponentSubTypes;
     } else if (componentType === tabComponentTypeEnum.value) {
+      return [{ label: '', value: '' }];
+    } else if (componentType === tabComponentTypeEnum.sensorStatus) {
       return [{ label: '', value: '' }];
     } else if (componentType === tabComponentTypeEnum.diagram) {
       return chartComponentSubTypes.filter(
@@ -308,6 +312,40 @@ export default function StaticValuesFieldMapWidgets(
                       </div>
                     </div>
                   )}
+                  {value.componentType ===
+                    tabComponentTypeEnum.sensorStatus && (
+                    <>
+                      <div className="flex flex-col w-2/4 pb-2">
+                        <WizardLabel label="Anzahl der Anzeigen" />
+                        <div className="flex flex-row items-end">
+                          <div className="flex-1">
+                            <WizardDropdownSelection
+                              currentValue={value?.count || 2}
+                              selectableValues={[2, 3]}
+                              onSelect={(newValue): void => {
+                                const updatedMapWidgetValues =
+                                  mapWidgetValues.map((widget, idx) =>
+                                    idx === index
+                                      ? {
+                                          ...widget,
+                                          count: +newValue as number,
+                                        }
+                                      : widget,
+                                  );
+                                handleTabChange({
+                                  mapWidgetValues: updatedMapWidgetValues,
+                                });
+                                setMapWidgetValues(updatedMapWidgetValues);
+                              }}
+                              iconColor={'#fff'}
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   {value.componentType === tabComponentTypeEnum.image &&
                     value.componentSubType === widgetImageSourceEnum.url && (
                       <div className="flex flex-col w-2/4 pb-2">
@@ -335,6 +373,97 @@ export default function StaticValuesFieldMapWidgets(
                       </div>
                     )}
                 </div>
+                {value.componentType === tabComponentTypeEnum.sensorStatus && (
+                  <div className="flex flex-row justify-between gap-x-2 pb-4">
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Bedingung 1" />
+                      <WizardTextfield
+                        value={value?.thresholdMin || 0}
+                        onChange={(newValue: string | number): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    thresholdMin: newValue.toString(),
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    {value.count == 3 && (
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="Bedingung 2" />
+                        <WizardTextfield
+                          value={value?.thresholdMax || 0}
+                          onChange={(newValue: string | number): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      thresholdMax: newValue.toString(),
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Layout" />
+                      <div className="flex flex-row items-end">
+                        <div className="flex-1">
+                          <WizardDropdownSelection
+                            currentValue={
+                              (value?.sensorStatusLayoutVertical ?? false)
+                                ? componentLayoutEnum.Vertical
+                                : componentLayoutEnum.Horizontal
+                            }
+                            selectableValues={Object.values(
+                              componentLayoutEnum,
+                            )}
+                            onSelect={(newValue): void => {
+                              const updatedMapWidgetValues =
+                                mapWidgetValues.map((widget, idx) =>
+                                  idx === index
+                                    ? {
+                                        ...widget,
+                                        sensorStatusLayoutVertical:
+                                          newValue ===
+                                          componentLayoutEnum.Vertical
+                                            ? true
+                                            : false,
+                                      }
+                                    : widget,
+                                );
+                              handleTabChange({
+                                mapWidgetValues: updatedMapWidgetValues,
+                              });
+                              setMapWidgetValues(updatedMapWidgetValues);
+                            }}
+                            iconColor={'#fff'}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* value */}
                 {value.componentType == tabComponentTypeEnum.value && (
                   <>

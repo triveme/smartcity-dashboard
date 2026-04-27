@@ -17,15 +17,27 @@ export type AuthenticatedRequest = Request & { roles?: string[] } & {
 
 @Injectable()
 export class AuthHelperMiddleware implements NestMiddleware {
-  readonly jwksUri = process.env.NEST_JWKS_URI as string;
-  readonly ca = process.env.TRUSTED_CA;
-  readonly logger = new Logger('Auth Guard');
+  private readonly jwksUri: string;
+  private readonly ca: string | undefined;
+  private readonly logger = new Logger('Auth Guard');
+  private readonly jwksClient: jwks.JwksClient;
+
   constructor() {
+    this.jwksUri = process.env.NEST_JWKS_URI as string;
+    this.ca = process.env.TRUSTED_CA;
+
     if (!this.jwksUri) {
       throw new Error('Missing JWKS URI environment variable');
     }
-    this.logger.log(`jwksUri - ${this.jwksUri}`);
-    this.logger.log(`TRUSTED_CA - ${this.ca}`);
+
+    this.jwksClient = jwks({
+      jwksUri: this.jwksUri,
+      requestHeaders: {}, // Optional
+      requestAgent:
+        this.getProtocol(this.jwksUri) === 'https:'
+          ? new https.Agent({ ca: this.ca }) // add trusted ca when the protocol is https
+          : undefined,
+    });
   }
 
   // Determine the protocol of the JWKS URI
@@ -33,22 +45,11 @@ export class AuthHelperMiddleware implements NestMiddleware {
     return new URL(uri).protocol;
   }
 
-  readonly jwksClient = jwks({
-    jwksUri: this.jwksUri,
-    requestHeaders: {}, // Optional
-    requestAgent:
-      this.getProtocol(this.jwksUri) === 'https:'
-        ? new https.Agent({ ca: this.ca }) // add trusted ca when the protocol is https
-        : undefined,
-  });
-
   /**
    * @param request The HTTP request object.
    * @returns The JWT token, or `undefined` if the token is not present or is invalid.
    */
   private extractJwtFromHeader(request: Request): string | undefined {
-    this.logger.verbose('extractJwtFromHeader');
-    this.logger.verbose(request.headers);
     if (request.headers.authorization?.startsWith('ey')) {
       return request.headers.authorization;
     }
@@ -92,22 +93,15 @@ export class AuthHelperMiddleware implements NestMiddleware {
       const token = this.extractJwtFromHeader(req);
       if (!token) {
         this.logger.log(`Unauthenticated request - [${req.method}] ${req.url}`);
-        this.logger.verbose(req);
         req.roles = undefined;
         next();
         return;
       }
 
-      this.logger.verbose(`Token - ${token}`);
-
       const decodedToken = decode(token as string, { complete: true });
       const { payload, header } = decodedToken as Jwt & { payload: JwtPayload };
       const kid = header.kid;
       const signingKey = await this.getSigningKey(kid as string);
-
-      this.logger.verbose(`Signing Key - ${signingKey}`);
-      this.logger.verbose('Decoded Token');
-      this.logger.verbose(decodedToken);
 
       try {
         verify(token as string, signingKey as string);

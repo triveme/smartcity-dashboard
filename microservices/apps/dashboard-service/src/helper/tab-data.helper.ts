@@ -1,6 +1,7 @@
 import { DbType } from '@app/postgres-db';
 import { FlatDashboardData } from '../dashboard/dashboard.model';
 import { customMapSensorDataTable } from '@app/postgres-db/schemas/custom-map-sensor-data.schema';
+import { tabMultiAttributeConfigsTable } from '@app/postgres-db/schemas/dashboard.tab.multi_attribute_configs.schema';
 import { inArray } from 'drizzle-orm';
 import { tabValuesToImageTable } from '@app/postgres-db/schemas/dashboard.tab.values_to_image.schema';
 
@@ -17,10 +18,22 @@ export class TabDataHelper {
       return dashboardContent;
     }
 
+    // Fetch custom map sensor data for all tabs in one query
     const sensorDataRows = await db
       .select()
       .from(customMapSensorDataTable)
       .where(inArray(customMapSensorDataTable.tabId, tabIds));
+
+    // Fetch multi-attribute configs for all tabs in one query
+    const multiCfgRows = await db
+      .select()
+      .from(tabMultiAttributeConfigsTable)
+      .where(inArray(tabMultiAttributeConfigsTable.tabId, tabIds));
+
+    const valueToImageRows = await db
+      .select()
+      .from(tabValuesToImageTable)
+      .where(inArray(tabValuesToImageTable.tabId, tabIds));
 
     const sensorDataMap = sensorDataRows.reduce(
       (acc, sensor) => {
@@ -41,10 +54,26 @@ export class TabDataHelper {
       >,
     );
 
-    const valueToImageRows = await db
-      .select()
-      .from(tabValuesToImageTable)
-      .where(inArray(tabValuesToImageTable.tabId, tabIds));
+    const multiCfgMap = multiCfgRows.reduce(
+      (acc, cfg) => {
+        acc[cfg.tabId] = acc[cfg.tabId] || [];
+        acc[cfg.tabId].push(cfg);
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          id: string;
+          tabId: string;
+          attribute: string;
+          errorColor: string;
+          defaultRange: string;
+          defaultColor: string;
+          warnRange: string | null;
+          warnColor: string | null;
+        }[]
+      >,
+    );
 
     const valueToImagesMap = valueToImageRows.reduce(
       (acc, vti) => {
@@ -71,6 +100,7 @@ export class TabDataHelper {
           tab: {
             ...row.tab,
             customMapSensorData: sensorDataMap[row.tab.id] || [],
+            multiAttributeConfigs: multiCfgMap[row.tab.id] || [],
             valuesToImages: valueToImagesMap[row.tab.id] || [],
           },
         } as FlatDashboardData;

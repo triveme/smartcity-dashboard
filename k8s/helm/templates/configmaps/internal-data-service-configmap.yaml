@@ -1,0 +1,14 @@
+{{- if index .Values "internal-data-service" "enabled" }}
+# Env vars specific for the ngsi-service nestjs microservice
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: internal-data-service-configmap
+data:
+  NODE_ENV: "development"
+  ADMIN_ROLE: {{ index .Values "internal-data-service" "adminRole" }}
+  SUPER_ADMIN_ROLE: {{ index .Values "internal-data-service" "superAdminRole" }}
+  EDIT_ROLES: {{ index .Values "internal-data-service" "editRoles" | toJson }}
+  NEST_JWKS_URI: {{ index .Values "internal-data-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "internal-data-service" "frontendUrl" }}
+{{- end }}

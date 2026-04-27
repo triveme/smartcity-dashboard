@@ -11,6 +11,7 @@ type CustomMapSensorConfiguratorProps = {
   backgroundColor: string;
   customMapSensorValues: CustomMapSensor[];
   handleTabChange: (update: Partial<Tab>) => void;
+  isMulti?: boolean;
 };
 
 export default function CustomMapSensorConfigurator(
@@ -22,6 +23,7 @@ export default function CustomMapSensorConfigurator(
     backgroundColor,
     customMapSensorValues,
     handleTabChange,
+    isMulti = false,
   } = props;
 
   // sensor states
@@ -123,25 +125,29 @@ export default function CustomMapSensorConfigurator(
   return (
     <div className="flex flex-col w-full pb-2 mb-4">
       <WizardLabel label="Marker Konfigurationen" />
-      <div className="flex flex-row w-full gap-4">
-        <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
-        <WizardDropdownSelection
-          currentValue={selectedAttribute}
-          selectableValues={['', ...queryConfig.attributes]}
-          onSelect={(value: string | number): void => {
-            setSelectedAttribute(value.toString());
+      {!isMulti && (
+        <div className="flex flex-row w-full gap-4">
+          <WizardLabel label="Sensorattribut (nach Query Konfiguration möglich)" />
+          <WizardDropdownSelection
+            currentValue={selectedAttribute}
+            selectableValues={['', ...queryConfig.attributes]}
+            onSelect={(value: string | number): void => {
+              setSelectedAttribute(value.toString());
+            }}
+            iconColor="#fff"
+            backgroundColor={backgroundColor}
+            borderColor={borderColor}
+          />
+        </div>
+      )}
+      {!isMulti && (
+        <CreateDashboardElementButton
+          label="Auf alle Marker anwenden"
+          handleClick={() => {
+            handleApplySelectedAttributeToAllMarkers();
           }}
-          iconColor="#fff"
-          backgroundColor={backgroundColor}
-          borderColor={borderColor}
         />
-      </div>
-      <CreateDashboardElementButton
-        label="Auf alle Marker anwenden"
-        handleClick={() => {
-          handleApplySelectedAttributeToAllMarkers();
-        }}
-      />
+      )}
       <div className="flex flex-col w-full h-full gap-4">
         {sensorDataValues.map((value, index) => (
           <div
@@ -160,17 +166,21 @@ export default function CustomMapSensorConfigurator(
                 backgroundColor={backgroundColor}
                 borderColor={borderColor}
               />
-              <WizardLabel label="Attribut" />
-              <WizardDropdownSelection
-                currentValue={value.attribute}
-                selectableValues={['', ...queryConfig.attributes]}
-                onSelect={(value: string | number): void => {
-                  handleSensorAttributeChange(value.toString(), index);
-                }}
-                iconColor="#fff"
-                backgroundColor={backgroundColor}
-                borderColor={borderColor}
-              />
+              {!isMulti && (
+                <>
+                  <WizardLabel label="Attribut" />
+                  <WizardDropdownSelection
+                    currentValue={value.attribute}
+                    selectableValues={['', ...queryConfig.attributes]}
+                    onSelect={(value: string | number): void => {
+                      handleSensorAttributeChange(value.toString(), index);
+                    }}
+                    iconColor="#fff"
+                    backgroundColor={backgroundColor}
+                    borderColor={borderColor}
+                  />
+                </>
+              )}
               <CreateDashboardElementButton
                 label="-"
                 handleClick={(): void => handleRemoveSensor(index)}

@@ -251,6 +251,7 @@ export default async function DashboardTab(
               unit={tab.chartUnit || ''}
               allowImageDownload={tab.chartAllowImageDownload || false}
               pieChartRadius={tab.chartPieRadius || 70}
+              chartShowPercent={tab.chartShowPercent ?? true}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.table && (
@@ -260,6 +261,7 @@ export default async function DashboardTab(
               headerColor={tab?.tableHeaderColor || '#005b9e'}
               oddRowColor={tab?.tableOddRowColor || '#2D3244'}
               evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+              isTableHeaderVisible={tab?.isTableHeaderVisible || false}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.tableDynamic && (
@@ -801,6 +803,8 @@ export default async function DashboardTab(
                   }
                   customMapImageId={tab.customMapImageId}
                   customMapSensorValues={tab.customMapSensorData}
+                  pinMode={tab.pinMode}
+                  multiAttributeConfigs={tab.multiAttributeConfigs}
                 />
               ) : (
                 <Map
@@ -903,6 +907,8 @@ export default async function DashboardTab(
                   }
                   customMapImageId={tab.customMapImageId}
                   customMapSensorValues={tab.customMapSensorData}
+                  pinMode={tab.pinMode}
+                  multiAttributeConfigs={tab.multiAttributeConfigs}
                 />
               )}
             </>

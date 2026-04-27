@@ -20,6 +20,7 @@ type PieChartProps = {
   highlightedColor?: string;
   unhighlightedColor?: string;
   menuHoverColor: string;
+  chartShowPercent?: boolean;
 };
 
 export default function PieChart(props: PieChartProps): ReactElement {
@@ -36,6 +37,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
     highlightedColor,
     unhighlightedColor,
     menuHoverColor,
+    chartShowPercent,
   } = props;
 
   const chartRef = useRef<HTMLDivElement>(null);
@@ -80,7 +82,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
               params.percent,
               navigator.language || 'de-DE',
             );
-            return `${params.name}: ${value}${unit} (${percentValue}%)`;
+            return `${params.name}: ${value}${unit} ${chartShowPercent ? `(${percentValue}%)` : ''} `;
           },
         },
         series: [
@@ -101,7 +103,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
                   params.percent,
                   navigator.language || 'de-DE',
                 );
-                return `${params.name}: ${value}${unit} (${percentValue}%)`;
+                return `${params.name}: ${value}${unit} ${chartShowPercent ? `(${percentValue}%)` : ''}`;
               },
               color: fontColor || '#E95051',
               fontSize: fontSize || 14,

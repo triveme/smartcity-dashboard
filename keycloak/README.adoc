@@ -39,8 +39,8 @@ The dashboard project integrates several technologies including Next.js, NestJS,
 | `NEXT_PUBLIC_OIDC_CLIENT_ID` | Client information for the keycloak connection and authentication. | `scs-frontend`
 | `NEXT_PUBLIC_OIDC_REDIRECT_URI` | Redirect url for the keycloak connection and authentication. | `http://localhost:3000/admin`
 | `KEYCLOAK_PORT` | The port on which Keycloak server runs. | `8080`
-| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `dashboard-admin`
-| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `dashboard-super-admin`
+| `ADMIN_ROLE` | The default role required to create, edit and delete dashboards and elements set within keycloak. | `scs-admin`
+| `SUPER_ADMIN_ROLE` | The default super role required to adjust general settings, dataplattform connections, tenant management and corporate design. | `scs-super-admin`
 |===
 
 

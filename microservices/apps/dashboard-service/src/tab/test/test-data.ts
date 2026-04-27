@@ -115,10 +115,12 @@ export async function getTab(
     chartStaticValuesTicks: [20, 60],
     chartStaticValuesLogos: ['ChevronLeft', 'ChevronLeft'],
     chartStaticValuesTexts: ['dry', 'normal', 'humid'],
+    chartShowPercent: true,
     childWidgets: [],
     isStepline: false,
     isStackedChart: false,
     isLayoutVertical: false,
+    isTableHeaderVisible: true,
     mapAllowPopups: true,
     mapAllowScroll: true,
     mapAllowZoom: true,
@@ -265,6 +267,7 @@ export async function getTab(
     pharmacyDetails: '',
     pharmacyLastUpdate: '',
     barChartShowTimestampOnHover: true,
+    pinMode: 'single',
   };
 }
 

@@ -159,6 +159,7 @@ export default function Pages(): ReactElement {
 
   useEffect(() => {
     if (dashboardIsError) {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       openSnackbar('Error: ' + dashboardError, 'error');
     }
   }, [dashboardIsError]);
@@ -319,7 +320,7 @@ export default function Pages(): ReactElement {
       <div>
         <PageHeadline
           headline={`Dashboard ${dashboardName}`}
-          fontColor={data?.dashboardFontColor}
+          fontColor={dashboardFontColor}
         />
       </div>
       <div className="flex justify-between items-start content-center grow py-4 gap-4">

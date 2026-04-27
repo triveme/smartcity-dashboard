@@ -186,6 +186,7 @@ export default function PieChartDynamic(
           unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
           highlightedIndex={hoveredIndex.current}
           menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
+          chartShowPercent={tab.chartShowPercent ?? true}
         />
       )}
     </>
