@@ -17,6 +17,7 @@ export function getGeneralSetting(tenant: string): GeneralSettings {
     cookiebotId: '',
     matomoSiteId: '',
     matomoUrl: '',
+    linkWithIconValues: [],
   };
 }
 

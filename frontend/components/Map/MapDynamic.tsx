@@ -277,6 +277,8 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           customMapSensorValues={tab?.customMapSensorData}
           mapSearch={tab?.mapSearch || false}
           handleOnMarkerClick={handleOnMarkerClick}
+          allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
+          mapPopupWidth={tab?.mapPopupWidth || 25}
         />
       ) : (
         <Map
@@ -367,6 +369,8 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           customMapSensorValues={tab?.customMapSensorData}
           mapSearch={tab?.mapSearch || false}
           handleOnMarkerClick={handleOnMarkerClick}
+          allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
+          mapPopupWidth={tab?.mapPopupWidth || 25}
         />
       )}
     </>

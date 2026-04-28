@@ -314,10 +314,17 @@ export default async function Dashboard(
                     combinedMapData?.mapIsFormColorValueBased as boolean[]
                   }
                   staticValues={
-                    combinedMapData?.chartStaticValues as number[][]
+                    combinedMapData?.chartStaticValuesText
+                      ? ((combinedMapData?.chartStaticValuesTexts ||
+                          []) as string[][])
+                      : ((combinedMapData?.chartStaticValues ||
+                          []) as number[][])
                   }
                   staticValuesColors={
                     combinedMapData?.chartStaticValuesColors as string[][]
+                  }
+                  staticValuesLogos={
+                    combinedMapData?.chartStaticValuesLogos as string[][]
                   }
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
@@ -352,6 +359,10 @@ export default async function Dashboard(
                       .multiAttributeConfigs
                   }
                   mapSearch={tab?.mapSearch || false}
+                  allowMapPopupWidthChange={
+                    tab?.allowMapPopupWidthChange || false
+                  }
+                  mapPopupWidth={tab?.mapPopupWidth || 25}
                   values={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       ?.chartValues?.[0] || 65
@@ -520,7 +531,11 @@ export default async function Dashboard(
                   mapIsIconColorValueBased={
                     tab?.mapIsIconColorValueBased || false
                   }
-                  staticValues={tab?.chartStaticValues || []}
+                  staticValues={
+                    tab?.chartStaticValuesText
+                      ? tab?.chartStaticValuesTexts || []
+                      : tab?.chartStaticValues || []
+                  }
                   staticValuesColors={tab?.chartStaticValuesColors || []}
                   staticValuesLogos={tab?.chartStaticValuesLogos || []}
                   mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
@@ -557,6 +572,8 @@ export default async function Dashboard(
                       .multiAttributeConfigs
                   }
                   mapSearch={tab?.mapSearch || false}
+                  allowMapPopupWidthChange={tab?.allowMapPopupWidthChange}
+                  mapPopupWidth={tab?.mapPopupWidth || 25}
                   values={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       ?.chartValues?.[0] || 65

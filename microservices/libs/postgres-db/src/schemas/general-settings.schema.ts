@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, uuid, jsonb } from 'drizzle-orm/pg-core';
 import { tenants } from './tenant.schema';
 
 export const generalSettings = pgTable('general_settings', {
@@ -15,6 +15,7 @@ export const generalSettings = pgTable('general_settings', {
   cookiebotId: text('cookiebot_id'),
   matomoSiteId: text('matomo_site_id'),
   matomoUrl: text('matomo_url'),
+  linkWithIconValues: jsonb('link_with_icon_values'),
 });
 
 export type GeneralSettings = typeof generalSettings.$inferSelect;

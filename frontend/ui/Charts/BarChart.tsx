@@ -12,6 +12,8 @@ import {
   getChartDateFormatter,
   getChartDateRichText,
   getLabelMap,
+  sortChartSensorNames,
+  sortFilteredData,
 } from '@/utils/chartHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
@@ -134,12 +136,12 @@ export default function BarChart(props: BarChartProps): ReactElement {
       const series: echarts.BarSeriesOption[] = [];
       if (filteredData && filteredData.length > 0) {
         for (let i = 0; i < filteredData.length; i++) {
-          const dataArray = filteredData[i].values;
+          const dataArray = sortFilteredData(filteredData)[i].values;
 
           const tempSeries: echarts.BarSeriesOption = {
             data: dataArray,
             type: 'bar',
-            name: sensorNames[i],
+            name: sortChartSensorNames(sensorNames)[i],
             color: currentValuesColors[i % 10] || 'black',
             ...(isStackedChart && { stack: 'a' }),
           };

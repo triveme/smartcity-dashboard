@@ -300,6 +300,10 @@ export class DataService {
             aggrMethods: undefined,
             aggrPeriodDuration: undefined,
             options: undefined,
+            // temporal filter parameters are not allowed on /entities
+            timerel: undefined,
+            timeAt: undefined,
+            endTimeAt: undefined,
             attrs: 'name',
           };
 

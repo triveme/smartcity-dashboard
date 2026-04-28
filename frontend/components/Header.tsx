@@ -25,6 +25,8 @@ import GenericButton from '@/ui/Buttons/GenericButton';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import { useQuery } from '@tanstack/react-query';
 import { getGeneralSettingsByTenant } from '@/api/general-settings-service';
+import Link from 'next/link';
+import FontAwesomeIcons from '@/ui/Icons/FontAwesomeIcons';
 
 type HeaderProps = {
   isLoginHeader?: boolean;
@@ -60,17 +62,17 @@ export default function Header(props: HeaderProps): ReactElement {
     informationTextFontColor,
     informationTextFontSize,
   } = props;
-  const { isAuthenticated, signoutRedirect, signinRedirect } = useAuth();
+  const auth = useAuth();
+  const { isAuthenticated } = auth;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const pathname = usePathname();
-  const { push } = useRouter();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const basepath = env('NEXT_PUBLIC_BASEPATH');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const loginRef = useRef<HTMLDivElement>(null);
 
   // Admin role logic
-  const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
   const adminRole = env('NEXT_PUBLIC_ADMIN_ROLE');
 
@@ -143,11 +145,11 @@ export default function Header(props: HeaderProps): ReactElement {
     deleteCookie('allowEdit');
 
     if (basepath !== undefined) {
-      signoutRedirect({
+      auth.signoutRedirect({
         post_logout_redirect_uri: `${window.location.origin}${basepath}/${tenant}`,
       });
     } else {
-      signoutRedirect({
+      auth.signoutRedirect({
         post_logout_redirect_uri: `${window.location.origin}/${tenant}`,
       });
     }
@@ -155,11 +157,13 @@ export default function Header(props: HeaderProps): ReactElement {
 
   const handleUserIconClick = (): void => {
     if (!isAuthenticated) {
-      signinRedirect({
-        state: pathname,
-      }).catch((err) => {
-        console.error('Failed to redirect to login:', err);
-      });
+      auth
+        .signinRedirect({
+          state: pathname,
+        })
+        .catch((err) => {
+          console.error('Failed to redirect to login:', err);
+        });
     }
   };
 
@@ -209,8 +213,29 @@ export default function Header(props: HeaderProps): ReactElement {
               <div className="flex gap-4">
                 {!pathname.includes('/admin') ? (
                   <>
+                    <div className="flex item-center gap-4">
+                      {generalSetting?.linkWithIconValues?.map((item, ind) => {
+                        return (
+                          <div key={ind} className="flex item-center">
+                            <Link
+                              className={`flex items-center justify-center gap-2`}
+                              href={`${item.url}`}
+                              target={'_blank'}
+                            >
+                              {item.titel}
+                              <FontAwesomeIcons
+                                iconName={item.icon}
+                                color={fontColor}
+                                size="lg"
+                              />
+                            </Link>
+                          </div>
+                        );
+                      })}
+                    </div>
                     <div className="justify-center items-center content-center">
                       <button
+                        className="flex justify-center items-center"
                         type="button"
                         aria-label="Informationen"
                         onClick={handleInfoButtonClicked}
@@ -238,7 +263,7 @@ export default function Header(props: HeaderProps): ReactElement {
                         <GenericButton
                           label="Admin"
                           handleClick={(): void => {
-                            push(tenant ? `/${tenant}/admin` : '/admin');
+                            router.push(tenant ? `/${tenant}/admin` : '/admin');
                           }}
                           fontColor={headerstyle.color || '#FFFFFF'}
                         />

@@ -17,6 +17,7 @@ import {
 } from '@/api/general-settings-service';
 import {
   GeneralSettings,
+  LinkWithIconValues,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
 } from '@/types';
@@ -26,6 +27,9 @@ import { validateUrl } from '@/utils/validationHelper';
 import CancelButton from '@/ui/Buttons/CancelButton';
 import HorizontalDivider from '@/ui/HorizontalDivider';
 import WizardTextfield from '@/ui/WizardTextfield';
+import IconSelection from '@/ui/Icons/IconSelection';
+import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
+import FontAwesomeIcons from '@/ui/Icons/FontAwesomeIcons';
 
 export default function Pages(): ReactElement {
   const auth = useAuth();
@@ -64,6 +68,11 @@ export default function Pages(): ReactElement {
   const [matomoSiteId, setMatomoSiteId] = useState<string>('');
   const [matomoUrl, setMatomoUrl] = useState<string>('');
   const [errors, setErrors] = useState<WizardErrors>({});
+
+  const [linkWithIconTitle, setLinkWithIconTitle] = useState<string>('');
+  const [linkWithIconUrl, setLinkWithIconUrl] = useState<string>('');
+  const [linkWithIconIcon, setLinkWithIconIcon] = useState<string>('');
+  const [linkWithIcon, setLinkWithIcon] = useState<LinkWithIconValues[]>([]);
   const { openSnackbar } = useSnackbar();
 
   const setGeneralSettings = (
@@ -80,6 +89,7 @@ export default function Pages(): ReactElement {
       );
       setMatomoUrl(generalSettings.matomoUrl || '');
       setMatomoSiteId(generalSettings.matomoSiteId || '');
+      setLinkWithIcon(generalSettings.linkWithIconValues || []);
     }
   };
 
@@ -146,6 +156,7 @@ export default function Pages(): ReactElement {
         cookiebotId: cookiebotId || null,
         matomoUrl: matomoUrl || null,
         matomoSiteId: matomoSiteId || null,
+        linkWithIconValues: linkWithIcon || [],
       };
 
       console.log(
@@ -180,6 +191,7 @@ export default function Pages(): ReactElement {
         cookiebotId: cookiebotId || null,
         matomoUrl: matomoUrl || null,
         matomoSiteId: matomoSiteId || null,
+        linkWithIconValues: linkWithIcon || [],
       };
 
       console.log(
@@ -199,6 +211,45 @@ export default function Pages(): ReactElement {
   const handleCancelClick = (): void => {
     setGeneralSettings(generalSettings);
     setErrors({});
+  };
+
+  const handleAddLinkWithIcon = (): void => {
+    if (linkWithIcon.length >= 3) {
+      openSnackbar('Es sind nur 3 Links erlaubt.', 'warning');
+      return;
+    }
+    if (linkWithIconTitle.trim() === '') {
+      openSnackbar('Titel muss ausgefüllt werden.', 'warning');
+      return;
+    }
+    if (linkWithIconUrl.trim() === '') {
+      openSnackbar('Url muss ausgefüllt werden.', 'warning');
+      return;
+    }
+    if (linkWithIconIcon.trim() === '') {
+      openSnackbar('Icon muss ausgefüllt werden.', 'warning');
+      return;
+    }
+
+    if (!validateUrl(linkWithIconUrl)) {
+      openSnackbar('Link mit Icon url is invalid!', 'error');
+    }
+    setLinkWithIcon((prev) => [
+      ...prev,
+      {
+        titel: linkWithIconTitle,
+        url: linkWithIconUrl,
+        icon: linkWithIconIcon,
+      },
+    ]);
+
+    setLinkWithIconTitle('');
+    setLinkWithIconUrl('');
+    setLinkWithIconIcon('');
+  };
+
+  const handleDeleteLinkWithIcon = (index: number): void => {
+    setLinkWithIcon((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -326,6 +377,82 @@ export default function Pages(): ReactElement {
           </div>
         </div>
         <HorizontalDivider />
+
+        <WizardLabel label="Link mit Icon" />
+
+        <div className="pb-2">
+          <div className="flex overflow-visible gap-4 w-full pb-2">
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="Titel hinzufügen" />
+              <WizardTextfield
+                value={linkWithIconTitle}
+                onChange={(value: string | number): void => {
+                  setLinkWithIconTitle(value.toString());
+                }}
+                borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+                backgroundColor={
+                  corporateInfo?.dashboardPrimaryColor || '#2B3244'
+                }
+                panelFontColor={corporateInfo?.panelFontColor}
+                panelBorderRadius={corporateInfo?.panelBorderRadius}
+                panelBorderSize={corporateInfo?.panelBorderSize}
+                placeholderText={'Titel'}
+              />
+            </div>
+            <div className="flex flex-col w-full pb-2">
+              <WizardLabel label="URL hinzufügen" />
+              <WizardUrlTextfield
+                value={linkWithIconUrl}
+                onChange={(value: string | number): void =>
+                  setLinkWithIconUrl(value.toString())
+                }
+                error={errors && errors.informationUrlError}
+                iconColor={corporateInfo?.fontColor ?? '#FFFFFF'}
+                borderColor={corporateInfo?.panelBorderColor ?? '#2B3244'}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Icon" />
+            <IconSelection
+              activeIcon={linkWithIconIcon}
+              handleIconSelect={(value: string): void => {
+                setLinkWithIconIcon(value);
+              }}
+              iconColor={corporateInfo?.fontColor ?? '#FFFFFF'}
+              borderColor={corporateInfo?.panelBorderColor ?? '#2B3244'}
+            />
+          </div>
+          <CreateDashboardElementButton
+            label="+ Add Link mit Icon"
+            handleClick={handleAddLinkWithIcon}
+          />
+        </div>
+        <div className="flex flex-col gap-4">
+          {linkWithIcon.map((element, index) => {
+            return (
+              <div
+                key={index}
+                className="w-full flex justify-between items-center"
+              >
+                <p className="px-2">{element.titel}</p>
+                <p className="px-2">{element.url}</p>
+                <FontAwesomeIcons
+                  iconName={element.icon}
+                  color={corporateInfo?.fontColor ?? '#FFFFFF'}
+                />
+                <button
+                  onClick={() => handleDeleteLinkWithIcon(index)}
+                  className="px-2 py-1 mx-1 bg-red-500 text-white rounded"
+                >
+                  Löschen
+                </button>
+              </div>
+            );
+          })}
+        </div>
+        <HorizontalDivider />
+
         <div className="flex align-center justify-end py-4 ">
           <div className="flex flex-row items-center w-full pb-2">
             <WizardLabel label="Farbschema-Wechsel erlauben" />

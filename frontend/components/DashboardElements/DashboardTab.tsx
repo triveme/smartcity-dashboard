@@ -12,6 +12,7 @@ import {
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
   TabWithQuery,
+  WeatherWarningType,
   WidgetWithContent,
 } from '@/types';
 import Radial180Chart from '@/ui/Charts/radial180/Radial180Chart';
@@ -803,6 +804,10 @@ export default async function DashboardTab(
                   }
                   customMapImageId={tab.customMapImageId}
                   customMapSensorValues={tab.customMapSensorData}
+                  allowMapPopupWidthChange={
+                    tab?.allowMapPopupWidthChange || false
+                  }
+                  mapPopupWidth={tab?.mapPopupWidth || 25}
                   pinMode={tab.pinMode}
                   multiAttributeConfigs={tab.multiAttributeConfigs}
                 />
@@ -907,6 +912,10 @@ export default async function DashboardTab(
                   }
                   customMapImageId={tab.customMapImageId}
                   customMapSensorValues={tab.customMapSensorData}
+                  allowMapPopupWidthChange={
+                    tab?.allowMapPopupWidthChange || false
+                  }
+                  mapPopupWidth={tab?.mapPopupWidth || 25}
                   pinMode={tab.pinMode}
                   multiAttributeConfigs={tab.multiAttributeConfigs}
                 />
@@ -938,7 +947,11 @@ export default async function DashboardTab(
       )}
       {tab.componentType === tabComponentTypeEnum.weatherWarning && (
         <WeatherWarning
-          data={tab.weatherWarnings || []}
+          data={
+            (tabData?.weatherWarnings as WeatherWarningType[]) ??
+            tab.weatherWarnings ??
+            []
+          }
           backgroundColor={ciColors.weatherWarningBgColor || '#3498DB'}
           headlineColor={ciColors.weatherWarningHeadlineColor || '#E74C3C'}
           instructionsColor={ciColors.weatherInstructionsColor || '#000000'}

@@ -267,6 +267,8 @@ export async function getTab(
     pharmacyDetails: '',
     pharmacyLastUpdate: '',
     barChartShowTimestampOnHover: true,
+    allowMapPopupWidthChange: false,
+    mapPopupWidth: 50,
     pinMode: 'single',
   };
 }

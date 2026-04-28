@@ -1,6 +1,6 @@
 {
   "name": "smartcity-dashboard-2.0",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "",
   "type": "module",
   "scripts": {
@@ -15,7 +15,8 @@
     "infra:start": "npm run db:start:dev && npm run sso:start",
     "infra:stop": "docker compose --project-name scs -f docker-compose.local.yml down",
     "test:e2e": "cd ./microservices && npm run test",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "version:bump": "node scripts/bump-version.cjs"
   },
   "repository": {
     "type": "git",
@@ -50,7 +51,7 @@
       "eslint --fix"
     ]
   },
-"overrides": {
+  "overrides": {
     "esbuild": "^0.25.9",
     "esm-loader": "tsx@^4.20.4"
   }

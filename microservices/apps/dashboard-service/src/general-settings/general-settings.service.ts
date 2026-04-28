@@ -58,6 +58,7 @@ export class GeneralSettingsService {
           cookiebotId: null,
           matomoSiteId: null,
           matomoUrl: null,
+          linkWithIconValues: null,
         };
   }
 

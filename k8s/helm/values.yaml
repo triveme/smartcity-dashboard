@@ -1,3 +1,5 @@
+global:
+  deployHash: ""
 trustedCAFile: "certificates/trusted_ca.pem"
 ## postgres config
 postgresql:

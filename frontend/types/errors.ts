@@ -20,6 +20,7 @@ export type WizardErrors = {
   imageJumpoffUrlError?: string;
   imprintUrlError?: string;
   informationUrlError?: string;
+  linkWithIconUrlError?: string;
   listviewNameError?: string;
   listviewFilterAttributeError?: string;
   listviewAddressAttributeError?: string;
