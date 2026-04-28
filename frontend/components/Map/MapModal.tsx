@@ -41,6 +41,8 @@ type MapModalProps = {
   onEditMarker?: (markerData: any) => void;
   onDeleteMarker?: (markerData: any) => void;
   isAdmin?: boolean;
+  allowMapPopupWidthChange?: boolean;
+  mapPopupWidth: number;
   values: number | string;
 };
 
@@ -55,7 +57,13 @@ export default function MapModal(props: MapModalProps): ReactElement {
     onEditMarker,
     onDeleteMarker,
     isAdmin = false,
+    allowMapPopupWidthChange,
+    mapPopupWidth,
   } = props;
+
+  const customPopupWidth: CSSProperties = allowMapPopupWidthChange
+    ? { width: mapPopupWidth > 50 ? `${50}%` : `${mapPopupWidth}%` }
+    : {};
 
   const fontStyle: CSSProperties = {
     color: ciColors?.informationTextFontColor ?? '#FFF',
@@ -134,8 +142,8 @@ export default function MapModal(props: MapModalProps): ReactElement {
     <>
       <div
         key={`map-modal-${selectedMarker.title}`}
-        className="fixed top-16 right-0 w-full lg:w-72 h-[calc(100%-4rem)] shadow-lg p-5 overflow-y-auto z-30"
-        style={menuStyle}
+        className={`${allowMapPopupWidthChange ? 'absolute top-0 right-0 w-full h-full shadow-lg p-5 overflow-y-auto z-30' : 'fixed top-16 right-0 w-full lg:w-72 h-[calc(100%-4rem)] shadow-lg p-5 overflow-y-auto z-30'}`}
+        style={{ ...menuStyle, ...customPopupWidth }}
       >
         {/* Modal header */}
         <div className="flex pb-8">

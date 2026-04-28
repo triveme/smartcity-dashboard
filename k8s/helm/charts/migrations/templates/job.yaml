@@ -2,6 +2,9 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "smart-city.fullname" . }}
+  annotations:
+    "helm.sh/hook": post-install # oder pre-install, post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded,before-hook-creation
 spec:
   template:
     spec:

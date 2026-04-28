@@ -311,3 +311,19 @@ export const getChartDateFormatter = (
       return undefined;
   }
 };
+
+export const sortFilteredData = (data: ChartData[]): ChartData[] => {
+  const sortedChartData = [...data].sort((a, b) =>
+    a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+  );
+
+  return sortedChartData;
+};
+
+// Sort sensor names to keep chart colors consistent
+export const sortChartSensorNames = (sensors: string[]): string[] => {
+  const sortedSensorsNames = [...sensors].sort((a, b) =>
+    a.toLowerCase().localeCompare(b.toLowerCase()),
+  );
+  return sortedSensorsNames;
+};

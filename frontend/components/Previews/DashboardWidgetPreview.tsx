@@ -596,6 +596,8 @@ export default function DashboardWidgetPreview(
               isCustomMap={false}
               mapSearch={tab.mapSearch}
               mapType={tab.componentSubType || ''}
+              allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
+              mapPopupWidth={tab?.mapPopupWidth || 25}
             />
           </div>
         )}
@@ -642,6 +644,8 @@ export default function DashboardWidgetPreview(
               customMapImageId={tab.customMapImageId || ''}
               customMapSensorValues={tab.customMapSensorData || []}
               mapSearch={tab.mapSearch}
+              allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
+              mapPopupWidth={tab?.mapPopupWidth || 25}
             />
           </div>
         )}

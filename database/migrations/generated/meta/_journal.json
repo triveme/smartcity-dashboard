@@ -295,6 +295,13 @@
       "when": 1775547522831,
       "tag": "0041_silent_giant_man_1.3.3",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "5",
+      "when": 1776070856235,
+      "tag": "0042_panoramic_leopardon_1.3.4",
+      "breakpoints": true
     }
   ]
 }

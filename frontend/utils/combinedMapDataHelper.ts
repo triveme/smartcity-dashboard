@@ -24,6 +24,20 @@ export function combineWidgetAttributes(
         // skip excluded keys
         if (attributesToBeExcluded.includes(key)) return;
 
+        // Special handling for mapMarkerIconColor: we want one color per
+        // combined widget (data source), with a white fallback
+        if (key === 'mapMarkerIconColor') {
+          if (!Array.isArray(combinedAttributes[key])) {
+            combinedAttributes[key] = [];
+          }
+          const colors = combinedAttributes[key] as (string | undefined)[];
+          if (colors[widgetIndex] == null) {
+            const value = (tab[key] as string | undefined) ?? 'white';
+            colors[widgetIndex] = value;
+          }
+          return;
+        }
+
         // initialize combinedAttributes[key] as an array if it's not a boolean
         if (
           !combinedAttributes[key] ||

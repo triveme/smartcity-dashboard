@@ -74,6 +74,56 @@ export const ZoomHandler = ({
   return null;
 };
 
+function unwrapComparableValue(input: unknown): unknown {
+  if (Array.isArray(input)) {
+    const firstDefined = input.find((item) => item != null);
+    return unwrapComparableValue(firstDefined);
+  }
+
+  if (input && typeof input === 'object') {
+    const candidate = input as Record<string, unknown>;
+    if ('value' in candidate) {
+      return unwrapComparableValue(candidate.value);
+    }
+    if ('@value' in candidate) {
+      return unwrapComparableValue(candidate['@value']);
+    }
+  }
+
+  return input;
+}
+
+function toComparableNumber(input: unknown): number | null {
+  const unwrapped = unwrapComparableValue(input);
+  if (typeof unwrapped === 'number') {
+    return Number.isFinite(unwrapped) ? unwrapped : null;
+  }
+
+  if (typeof unwrapped !== 'string') {
+    return null;
+  }
+
+  const normalized = unwrapped.replace(',', '.').trim();
+  if (!normalized) {
+    return null;
+  }
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toComparableText(input: unknown): string {
+  const unwrapped = unwrapComparableValue(input);
+  if (unwrapped == null) {
+    return '';
+  }
+
+  return String(unwrapped)
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '')
+    .toLowerCase();
+}
+
 export function getIconForValue(
   value: number | string,
   staticValues: (string | number)[],
@@ -81,43 +131,55 @@ export function getIconForValue(
   fallback: string,
 ): string {
   for (let i = 0; i < staticValues.length; i++) {
-    if (typeof staticValues[i] === 'number' && typeof value === 'number') {
-      if ((value as number) <= (staticValues[i] as number)) {
-        return staticValuesLogos[i];
-      }
-    } else {
-      let valueToCheck = value;
-      if (Array.isArray(value)) {
-        valueToCheck = value[0];
-      }
-      if (staticValues[i] === valueToCheck) {
-        return staticValuesLogos[i];
-      }
+    const comparableStaticNumber = toComparableNumber(staticValues[i]);
+    const comparableValueNumber = toComparableNumber(value);
+
+    if (
+      comparableStaticNumber !== null &&
+      comparableValueNumber !== null &&
+      comparableValueNumber <= comparableStaticNumber
+    ) {
+      return staticValuesLogos[i];
+    }
+
+    const comparableStaticText = toComparableText(staticValues[i]);
+    const comparableValueText = toComparableText(value);
+
+    if (
+      comparableStaticText.length > 0 &&
+      comparableStaticText === comparableValueText
+    ) {
+      return staticValuesLogos[i];
     }
   }
   return fallback;
 }
+
 export function getColorForValue(
   value: number | string | string[],
   staticValues: (string | number)[],
   staticValuesColors: string[],
 ): string {
   for (let i = 0; i < staticValues.length; i++) {
-    if (typeof staticValues[i] === 'number' && typeof value === 'number') {
-      if ((value as number) <= (staticValues[i] as number)) {
-        return staticValuesColors[i - 1 < 0 ? 0 : i - 1];
-      }
-    } else {
-      let valueToCheck = value;
-      if (Array.isArray(value)) {
-        valueToCheck = value[0];
-        // if (value.includes(staticValues[i])) {
-        //   return staticValuesColors[i];
-        // }
-      }
-      if (staticValues[i] === valueToCheck) {
-        return staticValuesColors[i];
-      }
+    const comparableStaticNumber = toComparableNumber(staticValues[i]);
+    const comparableValueNumber = toComparableNumber(value);
+
+    if (
+      comparableStaticNumber !== null &&
+      comparableValueNumber !== null &&
+      comparableValueNumber <= comparableStaticNumber
+    ) {
+      return staticValuesColors[i - 1 < 0 ? 0 : i - 1];
+    }
+
+    const comparableStaticText = toComparableText(staticValues[i]);
+    const comparableValueText = toComparableText(value);
+
+    if (
+      comparableStaticText.length > 0 &&
+      comparableStaticText === comparableValueText
+    ) {
+      return staticValuesColors[i];
     }
   }
   return staticValuesColors[staticValuesColors.length - 1];
@@ -160,6 +222,7 @@ export function createCustomIcon(
   iconIndex: number,
   isCombinedMap: boolean,
   iconName?: string,
+  dataSourceIndex?: number,
 ): L.Icon | L.DivIcon {
   const translateValue = getCustomTranslateForSvg(
     iconName || '',
@@ -176,6 +239,10 @@ export function createCustomIcon(
       </svg>`;
 
     const urlEncodedSvg = encodeURIComponent(iconSvg);
+    const className =
+      typeof dataSourceIndex === 'number'
+        ? `combined-marker-icon ds-${dataSourceIndex}`
+        : 'combined-marker-icon';
 
     return L.icon({
       iconUrl: `data:image/svg+xml,${urlEncodedSvg}`,
@@ -183,6 +250,7 @@ export function createCustomIcon(
       iconAnchor: [30, 60],
       popupAnchor: [0, -60],
       shadowSize: [41, 41],
+      className,
     });
   } else {
     const iconSvg = `
@@ -223,12 +291,44 @@ export function createClusterCustomIcon(
   let markerIconColor = '#FFF';
 
   if (isCombinedMap) {
-    markerColor = Array.isArray(mapMarkerColor)
-      ? mapMarkerColor[0] || '#257DC9'
-      : '#257DC9';
-    markerIconColor = Array.isArray(mapMarkerIconColor)
-      ? mapMarkerIconColor[0] || '#FFF'
-      : '#FFF';
+    // For combined maps, derive the cluster color from the dominant
+    // data source among all child markers (the one with most markers).
+    const childMarkers = cluster.getAllChildMarkers() as L.Marker[];
+    const counts: Record<number, number> = {};
+
+    childMarkers.forEach((m: L.Marker) => {
+      const icon = m?.options?.icon;
+      const className: string = icon?.options?.className ?? '';
+      const match = className.match(/ds-(\d+)/);
+      if (match) {
+        const idx = parseInt(match[1], 10);
+        if (!Number.isNaN(idx)) {
+          counts[idx] = (counts[idx] || 0) + 1;
+        }
+      }
+    });
+
+    let dominantIndex = 0;
+    let maxCount = -1;
+    for (const [idxStr, count] of Object.entries(counts)) {
+      const idx = parseInt(idxStr, 10);
+      if (!Number.isNaN(idx) && count > maxCount) {
+        maxCount = count;
+        dominantIndex = idx;
+      }
+    }
+
+    if (Array.isArray(mapMarkerColor) && mapMarkerColor.length > 0) {
+      markerColor =
+        mapMarkerColor[dominantIndex] ?? mapMarkerColor[0] ?? markerColor;
+    }
+
+    if (Array.isArray(mapMarkerIconColor) && mapMarkerIconColor.length > 0) {
+      markerIconColor =
+        mapMarkerIconColor[dominantIndex] ??
+        mapMarkerIconColor[0] ??
+        markerIconColor;
+    }
   } else {
     markerColor =
       typeof mapMarkerColor === 'string' ? mapMarkerColor : '#257DC9';
@@ -246,14 +346,24 @@ export function createClusterCustomIcon(
     const urlEncodedSvg = encodeURIComponent(iconSvg);
 
     return L.divIcon({
-      html: `<div style="background-image: url(data:image/svg+xml,${urlEncodedSvg}); background-size: cover; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;"></div>`,
+      html: `<div 
+        role="button" 
+        aria-label="Cluster with ${count} markers" 
+        title="Cluster with ${count} markers"
+        style="background-image: url(data:image/svg+xml,${urlEncodedSvg}); background-size: cover; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;"
+      ></div>`,
       className: 'custom-cluster-icon',
       iconSize: L.point(80, 80),
       iconAnchor: [20, 40],
     });
   } else {
     return L.divIcon({
-      html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
+      html: `<div 
+        role="button" 
+        aria-label="Cluster with ${count} markers" 
+        title="Cluster with ${count} markers"
+        class="custom-icon-wrapper"
+      >${iconSvg}</div>`,
       className: 'custom-marker-icon',
       iconSize: L.point(60, 60),
       iconAnchor: [30, 60],

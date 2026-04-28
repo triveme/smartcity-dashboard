@@ -116,6 +116,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   );
   const [maxZoom, setMaxZoom] = useState(tab?.mapMaxZoom || 20);
   const [minZoom, setMinZoom] = useState(tab?.mapMinZoom || 10);
+  const [popupWidth, setPopupWidth] = useState(25);
   const [standardZoom, setStandardZoom] = useState(tab?.mapStandardZoom || 15);
   const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['', '']);
   const [combinedMapWidgetsId, setCombinedMapWidgetsId] = useState<string[]>(
@@ -221,6 +222,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       }
       if (tab?.imageSrc && !tab?.imageUrl) {
         setImageSource('Datei');
+      }
+      if (tab?.mapPopupWidth) {
+        setPopupWidth(tab?.mapPopupWidth);
       }
     }
   }, [tab]);
@@ -1654,6 +1658,13 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       }
                       label="Legend"
                     />
+                    <WizardSelectBox
+                      checked={tab?.allowMapPopupWidthChange || false}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({ allowMapPopupWidthChange: value })
+                      }
+                      label="Popup Breite"
+                    />
                     {tab.componentSubType ==
                       tabComponentSubTypeEnum.custom_map && (
                       <div className="flex flex-col w-full pt-8 pb-2 gap-4">
@@ -1719,6 +1730,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         </div>
                       </>
                     )}
+
                     {tab.mapAllowFilter && (
                       <>
                         <HorizontalDivider />
@@ -1822,6 +1834,28 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                   mapLegendDisclaimer: value.toString(),
                                 })
                               }
+                              borderColor={borderColor}
+                              backgroundColor={backgroundColor}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {tab.allowMapPopupWidthChange && (
+                      <>
+                        <HorizontalDivider />
+                        <div className="flex flex-col w-full pb-2 gap-4">
+                          <div className="flex flex-col w-full">
+                            <WizardLabel label="Popup Breite in Prozent (max. 50%)" />
+                            <WizardTextfield
+                              value={popupWidth.toString()}
+                              onChange={(value: string | number): void => {
+                                handleTabChange({
+                                  mapPopupWidth: +value as number,
+                                });
+                                setPopupWidth(+value as number);
+                              }}
                               borderColor={borderColor}
                               backgroundColor={backgroundColor}
                             />

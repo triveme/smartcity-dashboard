@@ -60,6 +60,8 @@ export interface BaseMapProps {
   customMapImageId?: string;
   customMapSensorValues?: CustomMapSensor[];
   isCustomMap: boolean;
+  allowMapPopupWidthChange?: boolean;
+  mapPopupWidth?: number;
   pinMode?: 'single' | 'multi';
   multiAttributeConfigs?: MultiAttributeConfig[];
   values?: number | string;

@@ -150,6 +150,8 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'chartStaticValuesText',
       'customMapImageId',
       'customMapSensorData',
+      'allowMapPopupWidthChange',
+      'mapPopupWidth',
       'multiAttributeConfigs',
       ...this.commonFields,
     ],

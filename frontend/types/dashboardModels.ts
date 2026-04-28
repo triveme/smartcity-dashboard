@@ -365,6 +365,8 @@ export type Tab = {
   pharmacyLastUpdate?: string;
   pharmacyPassword?: unknown;
   barChartShowTimestampOnHover?: boolean;
+  allowMapPopupWidthChange?: boolean;
+  mapPopupWidth?: number;
   pinMode?: 'single' | 'multi';
   multiAttributeConfigs?: MultiAttributeConfig[];
 };
@@ -708,6 +710,12 @@ export type SliderOverviewType = {
   capacityCurrent: number;
 };
 
+export type LinkWithIconValues = {
+  titel: string;
+  url: string;
+  icon: string;
+};
+
 export type GeneralSettings = {
   id: string | undefined;
   tenant: string | undefined;
@@ -719,6 +727,7 @@ export type GeneralSettings = {
   cookiebotId?: string | null;
   matomoSiteId?: string | null;
   matomoUrl?: string | null;
+  linkWithIconValues?: LinkWithIconValues[];
 };
 
 export type WeatherWarningType = {

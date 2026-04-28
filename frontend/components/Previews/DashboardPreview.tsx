@@ -274,6 +274,10 @@ export default function DashboardPreview(
           isCustomMap={false}
           mapUnitsTexts={selectedTab?.mapUnitsTexts || []}
           mapSearch={selectedTab?.mapSearch || false}
+          allowMapPopupWidthChange={
+            selectedTab?.allowMapPopupWidthChange || false
+          }
+          mapPopupWidth={selectedTab?.mapPopupWidth || 25}
         />
       )}
       {dashboardType === dashboardTypeEnum.iframe && selectedTab?.iFrameUrl && (

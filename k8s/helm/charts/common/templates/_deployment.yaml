@@ -15,8 +15,9 @@ spec:
       {{- include "smart-city.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        smartcity-deploy-hash: {{ .Values.global.deployHash | default "" | quote }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

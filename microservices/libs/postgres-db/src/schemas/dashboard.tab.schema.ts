@@ -203,6 +203,8 @@ export const tabs = pgTable('tab', {
   pharmacyDetails: text('pharmacy_details'),
   pharmacyLastUpdate: text('pharmacy_last_update'),
   barChartShowTimestampOnHover: boolean('bar_chart_show_timestamp_on_hover'),
+  allowMapPopupWidthChange: boolean('allow_map_popup_width_change'),
+  mapPopupWidth: smallint('map_popup_width'),
   pinMode: text('pin_mode'),
 });
 
