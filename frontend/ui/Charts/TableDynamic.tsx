@@ -14,10 +14,11 @@ type TableDynamicProps = {
   tab: Tab;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData: any;
+  usesQueryParameter?: boolean;
 };
 
 export default function TableDynamic(props: TableDynamicProps): ReactElement {
-  const { tab, tabData } = props;
+  const { tab, tabData, usesQueryParameter = false } = props;
 
   const selectedYearIndex = useRef<number>(0);
   const selectedFeatures = useRef<string[]>([]);
@@ -146,6 +147,7 @@ export default function TableDynamic(props: TableDynamicProps): ReactElement {
       sendHoveredToDynamicTable={handleHoverFeatureFromTable}
       selectedColor={tab?.dynamicHighlightColor || '#3388ff'}
       isTableHeaderVisible={tab?.isTableHeaderVisible || false}
+      usesQueryParameter={usesQueryParameter}
     />
   );
 }

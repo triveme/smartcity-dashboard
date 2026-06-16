@@ -177,10 +177,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
 
   useEffect(() => {
     if (widgetsIsError) {
-      openSnackbar('Error: ' + widgetsError, 'error');
+      openSnackbar(`Error: ${widgetsError}`, 'error');
     }
     if (widgetWithChildrenByIdIsError) {
-      openSnackbar('Error: ' + widgetWithChildrenByIdError, 'error');
+      openSnackbar(`Error: ${widgetWithChildrenByIdError}`, 'error');
     }
   }, [widgetsIsError, widgetWithChildrenByIdError]);
 

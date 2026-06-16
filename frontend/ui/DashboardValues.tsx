@@ -21,6 +21,8 @@ type DashboardValuesProps = {
   showTime: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData?: any;
+  usesQueryParameter?: boolean;
+  hideThousandsSeparator?: boolean;
 };
 
 export function DashboardValues(props: DashboardValuesProps): ReactElement {
@@ -36,12 +38,14 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
     unitFontSize,
     showTime,
     tabData,
+    usesQueryParameter = false,
+    hideThousandsSeparator,
   } = props;
 
   let { value } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId && tabData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,11 +68,13 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
       formattedValue = applyUserLocaleToNumber(
         roundToDecimal(value, decimalPlaces),
         navigator.language || 'de-DE',
+        hideThousandsSeparator,
       );
     } else {
       formattedValue = applyUserLocaleToNumber(
         roundToDecimal(value),
         navigator.language || 'de-DE',
+        hideThousandsSeparator,
       );
     }
   } else if (
@@ -131,6 +137,7 @@ export function DashboardValues(props: DashboardValuesProps): ReactElement {
       setIcon('');
       setIconColor('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, staticValues]);
 
   return (

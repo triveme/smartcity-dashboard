@@ -34,15 +34,16 @@ import FontAwesomeIcons from '@/ui/Icons/FontAwesomeIcons';
 export default function Pages(): ReactElement {
   const auth = useAuth();
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const accessToken = auth.user?.access_token;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return <div className="pl-64">Nicht autorisiert für diesen Mandanten!</div>;
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht autorisiert für diesen Mandanten!</div>
+  );
 
   const [isCollapsed] = useState(false);
 
@@ -251,6 +252,10 @@ export default function Pages(): ReactElement {
   const handleDeleteLinkWithIcon = (index: number): void => {
     setLinkWithIcon((prev) => prev.filter((_, i) => i !== index));
   };
+
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
 
   return (
     <div style={dashboardStyle} className="h-full p-10">

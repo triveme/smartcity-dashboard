@@ -63,7 +63,11 @@ export type Position = {
 export type MapObject = {
   position: Position;
 };
-export type TabWithContent = Tab & { query?: Query } & {
+export type TabWithTimeframe = Tab & {
+  timeframe?: string | null;
+  authDataType?: string | null;
+};
+export type TabWithContent = TabWithTimeframe & { query?: Query } & {
   dataModel: DataModel;
 } & { chartData: ChartData[] } & { combinedWidgets: WidgetWithContent[] } & {
   weatherWarnings: WeatherWarningData[];

@@ -1,4 +1,4 @@
-import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
+import { useIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React, { CSSProperties, ReactElement, useEffect, useRef } from 'react';
@@ -21,7 +21,7 @@ export default function GeneralInfoMessageModal({
   infoModalFontColor,
 }: GeneralInfoMessageModalProps): ReactElement | null {
   const modalRef = useRef<HTMLDivElement>(null);
-  const isMobileView = determineIsMobileView();
+  const isMobileView = useIsMobileView();
 
   const fontStyle = {
     color: infoModalFontColor,

@@ -12,17 +12,16 @@ import InternalDataUploadWizard from '@/components/Wizards/InternalDataUploadWiz
 export default function Pages(): ReactElement {
   const auth = useAuth();
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const accessToken = auth.user?.access_token;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
   const { data } = useQuery({
     queryKey: ['corporate-info'],
     queryFn: () => getCorporateInfosWithLogos(tenant),
@@ -49,6 +48,10 @@ export default function Pages(): ReactElement {
     marginLeft: isCollapsed ? '80px' : '250px',
     color: data?.dashboardFontColor,
   };
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
+
   return (
     <div
       style={dashboardStyle}

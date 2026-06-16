@@ -52,6 +52,10 @@ import { InternalDataService } from 'apps/internal-data-service/src/internal-dat
 import { DataService } from 'apps/internal-data-service/src/data/data.service';
 import { QueryService as InternalDataQueryService } from '../../../internal-data-service/src/query/query.service';
 import { TransformationService } from 'apps/internal-data-service/src/transformation/transformation.service';
+import { UsiPlaformService } from 'apps/usi-platform-service/src/usi-platform.service';
+import { QueryService as UsiQueryService } from 'apps/usi-platform-service/src//query/query.service';
+import { QueryConfigService as UsiQueryConfigService } from 'apps/usi-platform-service/src/data/data.service';
+import { AuthService as UsiAuthService } from 'apps/usi-platform-service/src/auth/auth.service';
 import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
 import { TransformationService as SqlTransformationService } from 'apps/sql-view-service/src/transformation/transformation.service';
 
@@ -107,6 +111,10 @@ import { TransformationService as SqlTransformationService } from 'apps/sql-view
     DataService,
     InternalDataQueryService,
     TransformationService,
+    UsiPlaformService,
+    UsiQueryService,
+    UsiQueryConfigService,
+    UsiAuthService,
     SqlViewService,
     SqlTransformationService,
   ],

@@ -11,6 +11,9 @@ import { DataService as OrchideoDataService } from '../../../orchideo-connect-se
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
 import { DataService as InternlDataService } from '../../../internal-data-service/src/data/data.service';
+import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
+import { flattenNgsiExportData } from '../util/ngsi-export.util';
+import { CurrentAreaConfig } from '../widget/widget.model';
 
 @Injectable()
 export class DashboardDataService {
@@ -29,6 +32,7 @@ export class DashboardDataService {
   async downloadDashboardData(
     dashboardId: string,
     ids: string[],
+    currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
   ): Promise<string> {
     const allCsvData: string[] = [];
     const errorMessages: string[] = [];
@@ -89,8 +93,16 @@ export class DashboardDataService {
         }
       }
 
+      const currAreaConfing = Array.isArray(currentAreaConfig)
+        ? currentAreaConfig
+        : [currentAreaConfig];
+
       for (const panelWidget of expandedWidgets) {
         try {
+          const filterConfig = currAreaConfing.filter(
+            (item) => item.id === panelWidget.id,
+          )[0];
+
           const queryWithAllInfos =
             await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
               panelWidget.id,
@@ -119,9 +131,17 @@ export class DashboardDataService {
             queryBatch.auth_data.type === 'ngsi-ld' ||
             queryBatch.auth_data.type === 'ngsi-v2'
           ) {
-            queryBatch.query_config.aggrMode = 'none';
-            queryBatch.query_config.timeframe = 'year';
+            if (!queryBatch.query_config.aggrMode) {
+              queryBatch.query_config.aggrMode = 'none';
+            }
 
+            if (filterConfig.changeTimeFramePeriod === true) {
+              queryBatch.query_config.timeframe = filterConfig.timeFramePeriod;
+            } else {
+              if (!queryBatch.query_config.timeframe) {
+                queryBatch.query_config.timeframe = 'month';
+              }
+            }
             //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
             //
             //DOWNLOAD-TODO: Investigate use-case for download function. Use get for now.
@@ -157,63 +177,25 @@ export class DashboardDataService {
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
-
-          const flattenedData = rawDataArray.flatMap((dataItem) => {
-            // Check for 'attrs' or 'attributes' property
-
-            if (queryBatch.auth_data.type === 'internal') {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const allValues = dataItem.Values.map((v) => ({
-                ...v.Meta,
-                ...v.Time,
-                Value: v.Value,
-              }));
-
-              return allValues;
-            } else if (
-              queryBatch.auth_data.type === 'ngsi' ||
-              queryBatch.auth_data.type === 'ngsi-ld' ||
-              queryBatch.auth_data.type === 'ngsi-v2'
-            ) {
-              const attributes = dataItem.attrs || dataItem.attributes;
-
-              if (!attributes) {
-                console.warn('Missing attrs/attributes in rawData item');
-                return [];
-              }
-
-              return attributes.flatMap((attr) => {
-                // Handling case where returned object has no 'types' field
-                if (!attr.types || !Array.isArray(attr.types)) {
-                  console.warn(
-                    `Missing types for attribute: ${attr.attrName}. Processing without types.`,
-                  );
-
-                  // Process without types if not available
-                  return attr.values.map((value, index) => ({
-                    entityId: dataItem.entityId,
-                    attrName: attr.attrName,
-                    value: value,
-                    index: dataItem.index ? dataItem.index[index] : null,
+          const flattenedData =
+            queryBatch.auth_data.type === 'internal'
+              ? rawDataArray.flatMap((dataItem) => {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const allValues = dataItem.Values.map((v) => ({
+                    ...v.Meta,
+                    ...v.Time,
+                    Value: v.Value,
                   }));
-                }
 
-                return attr.types.flatMap((type) => {
-                  return type.entities.flatMap((entity) => {
-                    const index = entity.index || [];
-                    const values = entity.values || [];
-
-                    return values.map((value, i: number) => ({
-                      entityId: entity.entityId,
-                      attrName: attr.attrName,
-                      value: value,
-                      index: index[i] || null,
-                    }));
-                  });
-                });
-              });
-            }
-          });
+                  return allValues;
+                })
+              : queryBatch.auth_data.type === 'ngsi' ||
+                  queryBatch.auth_data.type === 'ngsi-ld' ||
+                  queryBatch.auth_data.type === 'ngsi-v2'
+                ? flattenNgsiExportData(rawDataArray, [
+                    ...(queryBatch.query_config.attributes || []),
+                  ])
+                : [];
 
           if (flattenedData.length === 0) {
             const warning = `No data found for widget with id: ${panelWidget.id}`;
@@ -243,7 +225,19 @@ export class DashboardDataService {
             }
 
             const parser = new Parser(opts);
-            const csv = parser.parse(flattenedData);
+
+            const normalizedCurrAreaConfing =
+              filterConfig.downloadCurrentArea === true
+                ? sortFlattenedTimeSeriesData(
+                    flattenedData,
+                    queryBatch.auth_data.type,
+                    filterConfig.selectedLegendNames,
+                    filterConfig.minRange,
+                    filterConfig.maxRange,
+                  )
+                : flattenedData;
+
+            const csv = parser.parse(normalizedCurrAreaConfing);
             allCsvData.push(csv);
           }
         } catch (widgetError) {

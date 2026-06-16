@@ -2,7 +2,7 @@
 
 import { ReactElement, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
+import { useAuth } from 'react-oidc-context';
 
 import { Dashboard, GroupingElement } from '@/types';
 import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
@@ -36,9 +36,12 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
   const [parentGroupId, setParentGroupId] = useState<string | undefined>();
   const [allDashboards, setAllDashboards] = useState<Dashboard[]>();
   const [menuElements, setMenuElements] = useState<GroupingElement[]>();
+  //all dashboar URLs
+  const [dashboardUrls, setDashboardUrls] = useState<string[]>([]);
+
   const { openSnackbar } = useSnackbar();
-  const cookie = Cookies.get('access_token');
-  const accessToken = cookie || '';
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token || '';
 
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;
@@ -52,19 +55,23 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
     isPending: isGroupingPending,
     isError: MenuGroupingElementsError,
   } = useQuery({
-    queryKey: ['menu'],
-    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
+    queryKey: ['menu', tenant, accessToken, true],
+    queryFn: () => getMenuGroupingElements(tenant, accessToken!, true),
+    enabled: !auth.isLoading,
   });
 
   // Query Dashboards to fill dropdown
   const { data: dashboards } = useQuery({
-    queryKey: ['dashboards'],
+    queryKey: ['dashboards', tenant, accessToken],
     queryFn: () => getDashboards(accessToken, false, tenant),
+    enabled: !auth.isLoading,
   });
 
   useEffect(() => {
     if (dashboards) {
       setAllDashboards(dashboards);
+      const urls = dashboards.map((dashboard) => dashboard.url);
+      setDashboardUrls(urls as string[]);
     }
   }, [dashboards]);
 
@@ -319,6 +326,7 @@ export default function MenuWizard(props: MenuWizardProps): ReactElement {
           backgroundColor={backgroundColor}
           fontColor={fontColor}
           geColor={geColor}
+          dashboardUrls={dashboardUrls ?? []}
         />
       )}
 

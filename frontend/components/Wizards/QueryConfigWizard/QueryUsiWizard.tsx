@@ -43,12 +43,19 @@ export default function QueryUsiWizard(
 
   const [selectedCollection, setSelectedCollection] = useState('');
   const [collections, setCollections] = useState<string[]>([]);
+  const [sources, setSources] = useState<UsiEventType[]>([]);
 
-  const [eventTypeData, setEventTypeData] = useState<UsiEventType[]>([]);
-  const [selectedEventType, setSelectedEventType] = useState<UsiEventType>();
+  const [sensors, setSensors] = useState<string[]>([]);
+  const [attributes, setAttributes] = useState<string[]>([]);
 
   const handleQueryConfigChange = (update: Partial<QueryConfig>): void => {
-    setQueryConfig((prevQueryConfig) => ({ ...prevQueryConfig, ...update }));
+    setQueryConfig((prevQueryConfig) => {
+      const base = prevQueryConfig || ({} as QueryConfig);
+      return {
+        ...base,
+        ...update,
+      };
+    });
   };
 
   const [loadingState, setLoadingState] = useState<{ [key: string]: boolean }>({
@@ -63,16 +70,33 @@ export default function QueryUsiWizard(
     toggleLoading('collections', true);
     try {
       const usiResponse = await getEventtypes(queryConfig?.dataSourceId);
-      setEventTypeData(usiResponse);
-      setCollections(['', ...usiResponse.map((e) => e.name)]);
+      setSources(usiResponse);
 
-      if (queryConfig?.fiwareService) {
-        const selectedEventType = usiResponse.find(
-          (eventType) => eventType.name === queryConfig.fiwareService,
+      const names = usiResponse.map((e) => e.name);
+      setCollections(names.length > 0 ? ['', ...names] : []);
+
+      const targetTypeName = queryConfig?.fiwareType || names[0];
+      if (targetTypeName) {
+        const matchedSource = usiResponse.find(
+          (source) => source.name === targetTypeName,
         );
-        if (selectedEventType) {
-          setSelectedEventType(selectedEventType);
-          setSelectedCollection(queryConfig.fiwareService);
+        if (matchedSource) {
+          setSelectedCollection(targetTypeName);
+          setSensors([...(matchedSource.sensors || [])]);
+          setAttributes([...(matchedSource.attributes || [])]);
+
+          if (!queryConfig?.entityIds || queryConfig.entityIds.length === 0) {
+            handleQueryConfigChange({
+              fiwareService: 'usi',
+              fiwareType: targetTypeName,
+              // Fallback to the first available sensor if it's a single widget, or take all/none depending on your needs
+              entityIds:
+                isSingleWidget && !usesQueryParameter
+                  ? [matchedSource.sensors?.[0] || '']
+                  : matchedSource.sensors || [],
+              attributes: queryConfig?.attributes || [],
+            });
+          }
         }
       }
     } catch (error) {
@@ -84,29 +108,48 @@ export default function QueryUsiWizard(
   };
 
   useEffect(() => {
-    requestCollections();
-  }, []);
+    if (queryConfig?.dataSourceId) {
+      requestCollections();
+    }
+  }, [queryConfig?.dataSourceId]);
+
+  const handleCollectionSelect = async (value: string): Promise<void> => {
+    setSelectedCollection(value);
+
+    const matchedSource = sources.find((source) => source.name === value);
+    if (matchedSource) {
+      setSensors([...(matchedSource.sensors || [])]);
+      setAttributes([...(matchedSource.attributes || [])]);
+      handleQueryConfigChange({
+        fiwareService: 'usi',
+        fiwareType: value,
+        entityIds: [...(matchedSource.sensors || [])],
+        attributes: [...(matchedSource.attributes || [])],
+      });
+    } else {
+      setSensors([]);
+      setAttributes([]);
+      handleQueryConfigChange({
+        fiwareService: 'usi',
+        fiwareType: value,
+        entityIds: [],
+        attributes: [],
+      });
+    }
+  };
 
   return (
     <div>
+      {/* Eventtypes Dropdown */}
       <div className="flex flex-col w-full pb-2">
         <WizardLabel label="Eventtypes" />
         <div className="flex flex-row items-center">
           <div className="flex-1">
             <WizardDropdownSelection
-              currentValue={selectedCollection || ''}
+              currentValue={queryConfig?.fiwareType || ''}
               selectableValues={collections || []}
-              onSelect={(value: string | number): void => {
-                handleQueryConfigChange({
-                  fiwareService: value.toString(),
-                  fiwareType: '',
-                  entityIds: [],
-                  attributes: [],
-                });
-                setSelectedCollection(value.toString());
-                setSelectedEventType(
-                  eventTypeData.find((eventType) => eventType.name === value),
-                );
+              onSelect={async (value: string | number): Promise<void> => {
+                await handleCollectionSelect(value.toString());
               }}
               error={errors && errors.fiwareServiceError}
               iconColor={iconColor}
@@ -123,14 +166,16 @@ export default function QueryUsiWizard(
           />
         </div>
       </div>
+
+      {/* Sensor Dropdown Selection */}
       {isSingleWidget && usesQueryParameter === false ? (
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label={'Sensor'} />
           <div className="flex flex-row items-center">
             <div className="flex-1">
               <WizardDropdownSelection
-                currentValue={queryConfig?.entityIds[0] || ''}
-                selectableValues={['', ...(selectedEventType?.sensors || [])]}
+                currentValue={queryConfig?.entityIds?.[0] || ''}
+                selectableValues={[...sensors]}
                 error={errors && errors.sensorError}
                 onSelect={(value: string | number): void => {
                   handleQueryConfigChange({
@@ -151,7 +196,7 @@ export default function QueryUsiWizard(
             <div className="flex-1">
               <WizardMultipleDropdownSelection
                 currentValue={queryConfig?.entityIds || []}
-                selectableValues={['', ...(selectedEventType?.sensors || [])]}
+                selectableValues={[...sensors]}
                 error={errors && errors.sensorError}
                 onSelect={(value: string[]): void => {
                   handleQueryConfigChange({ entityIds: value });
@@ -164,17 +209,16 @@ export default function QueryUsiWizard(
           </div>
         </div>
       )}
+
+      {/* Attribute Dropdown Selection */}
       {isSingleWidget ? (
         <div className="flex flex-col w-full pb-2">
           <WizardLabel label={'Attribut'} />
           <div className="flex flex-row items-center">
             <div className="flex-1">
               <WizardDropdownSelection
-                currentValue={queryConfig?.attributes[0] || ''}
-                selectableValues={[
-                  '',
-                  ...(selectedEventType?.attributes || []),
-                ]}
+                currentValue={queryConfig?.attributes?.[0] || ''}
+                selectableValues={[...attributes]}
                 error={errors && errors.attributeError}
                 onSelect={(value: string | number): void =>
                   handleQueryConfigChange({
@@ -189,29 +233,24 @@ export default function QueryUsiWizard(
           </div>
         </div>
       ) : (
-        <>
-          <div className="flex flex-col w-full pb-2">
-            <WizardLabel label="Attribute" />
-            <div className="flex flex-row items-center">
-              <div className="flex-1">
-                <WizardMultipleDropdownSelection
-                  currentValue={queryConfig?.attributes || []}
-                  error={errors && errors.attributeError}
-                  selectableValues={[
-                    '',
-                    ...(selectedEventType?.attributes || []),
-                  ]}
-                  onSelect={(value: string[]): void => {
-                    handleQueryConfigChange({ attributes: value });
-                  }}
-                  iconColor={iconColor}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
+        <div className="flex flex-col w-full pb-2">
+          <WizardLabel label="Attribute" />
+          <div className="flex flex-row items-center">
+            <div className="flex-1">
+              <WizardMultipleDropdownSelection
+                currentValue={queryConfig?.attributes || []}
+                error={errors && errors.attributeError}
+                selectableValues={[...attributes]}
+                onSelect={(value: string[]): void => {
+                  handleQueryConfigChange({ attributes: value });
+                }}
+                iconColor={iconColor}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

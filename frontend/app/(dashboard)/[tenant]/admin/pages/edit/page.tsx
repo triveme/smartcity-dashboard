@@ -13,6 +13,7 @@ import DashboardPreview from '@/components/Previews/DashboardPreview';
 import {
   Dashboard,
   dashboardTypeEnum,
+  GroupingElement,
   Panel,
   Tab,
   visibilityEnum,
@@ -28,21 +29,37 @@ import { WizardErrors } from '@/types/errors';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import { getMenuGroupingElements } from '@/api/menu-service';
+
+function collectGroupingElementUrls(elements: GroupingElement[]): string[] {
+  const urls: string[] = [];
+
+  for (const element of elements) {
+    if (!element.isDashboard && element.url) {
+      urls.push(element.url);
+    }
+
+    if (element.children && element.children.length > 0) {
+      urls.push(...collectGroupingElementUrls(element.children));
+    }
+  }
+
+  return urls;
+}
 
 export default function Pages(): ReactElement {
   const auth = useAuth();
+  const accessToken = auth.user?.access_token;
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
 
   const router = useRouter();
 
@@ -72,6 +89,8 @@ export default function Pages(): ReactElement {
   const [errors, setErrors] = useState<WizardErrors>({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInitDone, setIsInitDone] = useState(!itemId ? true : false);
+
+  const [groupingElementsUrl, setGroupingElementsUrl] = useState<string[]>([]);
 
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
@@ -120,6 +139,22 @@ export default function Pages(): ReactElement {
       getDashboardByIdWithStructure(auth?.user?.access_token, itemId!),
     enabled: !!itemId,
   });
+
+  // Query Menu Data
+  const { data: groupingElementsData } = useQuery({
+    queryKey: ['menu', tenant, accessToken],
+    queryFn: () => getMenuGroupingElements(tenant, accessToken ?? ''),
+    enabled: !auth.isLoading,
+  });
+
+  useEffect(() => {
+    if (!groupingElementsData) {
+      setGroupingElementsUrl([]);
+      return;
+    }
+
+    setGroupingElementsUrl(collectGroupingElementUrls(groupingElementsData));
+  }, [groupingElementsData]);
 
   useEffect(() => {
     if (
@@ -188,6 +223,18 @@ export default function Pages(): ReactElement {
     if (!dashboardUrl) errorsOccured.urlError = 'Url muss ausgefüllt werden!';
     if (dashboardUrl && dashboardUrl.length < 3)
       errorsOccured.urlError = 'Url muss mindestens drei Zeichen lang sein!';
+
+    // Validate that the dashboard URL is not identical to any existing group URL
+    if (dashboard.url) {
+      for (const url of groupingElementsUrl) {
+        if (url.trim() === dashboardUrl.trim()) {
+          errorsOccured.urlError =
+            'Die Dashboard-URL darf nicht identisch mit einer bestehenden Gruppenelement-URLs sein!';
+          break;
+        }
+      }
+    }
+
     if (dashboardVisibility === 'protected') {
       if (dashboardReadRoles.length === 0)
         errorsOccured.readRolesError = 'Leserechte müssen ausgefüllt werden!';
@@ -301,6 +348,10 @@ export default function Pages(): ReactElement {
     router.back();
   };
 
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
+
   if (!isInitDone) {
     return (
       <div
@@ -388,6 +439,7 @@ export default function Pages(): ReactElement {
             hoverColor={data?.menuHoverColor || '#59647D'}
             dashboardWidget={
               dashboardData?.type === dashboardTypeEnum.map ||
+              dashboardData?.type === dashboardTypeEnum.projectMap ||
               dashboardData?.type === dashboardTypeEnum.iframe
                 ? dashboardData?.panels[0]?.widgets[0]
                 : undefined

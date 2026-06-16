@@ -17,8 +17,8 @@ export default async function Page(props: {
   );
 
   const dashboardStyle: CSSProperties = {
-    backgroundColor: ciColors.dashboardPrimaryColor || '#2B3244',
-    color: ciColors.dashboardFontColor || '#FFFFFF',
+    backgroundColor: ciColors?.dashboardPrimaryColor || '#2B3244',
+    color: ciColors?.dashboardFontColor || '#FFFFFF',
   };
 
   if (params.tenant) {

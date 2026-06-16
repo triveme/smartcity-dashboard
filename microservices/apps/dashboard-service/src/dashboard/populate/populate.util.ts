@@ -4,6 +4,7 @@ import {
   MapObject,
   PanelWithContent,
   TabWithContent,
+  TabWithTimeframe,
   WidgetWithContent,
 } from '../dashboard.service';
 import { Panel, Tab, Widget } from '@app/postgres-db/schemas';
@@ -16,7 +17,7 @@ export function reduceDashboard(
   panelMap: Map<string, Panel>,
   widgetToPanelMap: Map<string, WidgetToPanel>,
   widgetMap: Map<string, Widget>,
-  tabMap: Map<string, Tab>,
+  tabMap: Map<string, TabWithTimeframe>,
   dataModelMap: Map<string, DataModel>,
   queryMap: Map<string, Query>,
 ): DashboardWithContent {
@@ -45,7 +46,7 @@ export function reducePanel(
   currentPanel: PanelWithContent,
   widgetToPanelMap: Map<string, WidgetToPanel>,
   widgetMap: Map<string, Widget>,
-  tabMap: Map<string, Tab>,
+  tabMap: Map<string, TabWithTimeframe>,
   dataModelMap: Map<string, DataModel>,
   queryMap: Map<string, Query>,
 ): PanelWithContent {
@@ -75,7 +76,7 @@ export function reducePanel(
 
 export function reduceWidget(
   currentWidget: WidgetWithContent,
-  tabMap: Map<string, Tab>,
+  tabMap: Map<string, TabWithTimeframe>,
   dataModelMap: Map<string, DataModel>,
   queryMap: Map<string, Query>,
 ): WidgetWithContent {
@@ -96,6 +97,7 @@ export function reduceWidget(
         mapObject: null,
         combinedWidgets: null,
         weatherWarnings: null,
+        timeframe: tab.timeframe ?? null,
       },
       dataModelMap,
       queryMap,

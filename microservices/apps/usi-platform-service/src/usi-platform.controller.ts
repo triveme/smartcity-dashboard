@@ -1,8 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import {
-  QueryConfigService,
-  UsiEventType,
-} from './query-config/query-config.service';
+import { QueryConfigService, UsiEventType } from './data/data.service';
 
 @Controller('usi-platform')
 export class UsiPlatformController {

@@ -1,11 +1,6 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
-import {
-  ChartData,
-  MapObject,
-  WeatherWarningData,
-  WidgetWithContent,
-} from '../data-translation.service';
+import { TabWithContent } from '../data-translation.service';
 import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
@@ -26,13 +21,7 @@ export class PopulateCombinedWidgetService {
     private readonly populateChartService: PopulateChartService,
   ) {}
 
-  async populateTab(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-    } & {
-      mapObject: MapObject[];
-    } & { combinedWidgets: WidgetWithContent[] },
-  ): Promise<void> {
+  async populateTab(tab: TabWithContent): Promise<void> {
     tab.combinedWidgets = [];
 
     if (!Array.isArray(tab.childWidgets) || tab.childWidgets.length === 0) {
@@ -142,13 +131,7 @@ export class PopulateCombinedWidgetService {
     }
   }
 
-  private async populateTabWithContents(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-    } & { mapObject: MapObject[] } & {
-      weatherWarnings: WeatherWarningData[];
-    } & { combinedWidgets: WidgetWithContent[] },
-  ): Promise<void> {
+  private async populateTabWithContents(tab: TabWithContent): Promise<void> {
     if (
       tab.componentType !== 'Informationen' &&
       tab.componentType !== 'Bild' &&

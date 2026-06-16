@@ -18,7 +18,7 @@ import {
 import { AuthenticatedRequest } from '@app/auth-helper';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { DashboardDataService } from './dashboard.data.service';
-import { PaginatedResult } from '../widget/widget.model';
+import { CurrentAreaConfig, PaginatedResult } from '../widget/widget.model';
 
 @Controller('dashboards')
 export class DashboardController {
@@ -193,7 +193,17 @@ export class DashboardController {
   async downloadData(
     @Param('dashboardId') dashboardId: string,
     @Query('ids') ids: string[],
+    @Query('currAreaConfig')
+    currAreaConfig: string,
   ): Promise<string> {
-    return this.dashboardDataService.downloadDashboardData(dashboardId, ids);
+    const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
+      | CurrentAreaConfig
+      | CurrentAreaConfig[];
+
+    return this.dashboardDataService.downloadDashboardData(
+      dashboardId,
+      ids,
+      parsedCurrAreaConfig,
+    );
   }
 }

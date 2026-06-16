@@ -134,6 +134,8 @@ export default function DashboardWidgetPreview(
               }
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
@@ -196,6 +198,7 @@ export default function DashboardWidgetPreview(
               staticValuesTexts={tab.chartStaticValuesTexts || ['Label']}
               value={tab.chartValues ? tab.chartValues[0] : 25.45}
               decimalPlaces={tab?.decimalPlaces || 0}
+              useDashboardFontColor={tab.useDashboardFontColor ?? false}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 && (
@@ -270,6 +273,8 @@ export default function DashboardWidgetPreview(
               }
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
@@ -310,6 +315,10 @@ export default function DashboardWidgetPreview(
               decimalPlaces={tab?.decimalPlaces || 0}
               chartAggregationMode={tab.chartAggregationMode}
               menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
+              timeFramePeriod={tab?.timeframe}
+              setXByTimeFramePeriod={
+                tab?.normalizeXAxisByTimeFramePeriod || false
+              }
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.barChart ||
@@ -344,6 +353,8 @@ export default function DashboardWidgetPreview(
               }
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
@@ -386,6 +397,11 @@ export default function DashboardWidgetPreview(
                   : true
               }
               menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
+              timeFramePeriod={tab?.timeframe}
+              authDataType={tab?.authDataType}
+              setXByTimeFramePeriod={
+                tab?.normalizeXAxisByTimeFramePeriod || false
+              }
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (

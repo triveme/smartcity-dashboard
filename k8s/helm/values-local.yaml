@@ -33,6 +33,8 @@ report-service:
 usi-platform-service:
   ingress:
     enabled: false
+  jwks: "http://localhost:28080/realms/testrealm/protocol/openid-connect/certs"
+  frontendUrl: "http://localhost:3000"
 
 data-translation-service:
   ingress:

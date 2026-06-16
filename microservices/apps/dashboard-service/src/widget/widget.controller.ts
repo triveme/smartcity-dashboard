@@ -13,6 +13,7 @@ import {
   Req,
 } from '@nestjs/common';
 import {
+  CurrentAreaConfig,
   PaginatedResult,
   WidgetWithChildren,
   WidgetWithComponentTypes,
@@ -228,7 +229,17 @@ export class WidgetController {
 
   @Public()
   @Get('/download-data/:widgetId')
-  async downloadData(@Param('widgetId') widgetId: string): Promise<string> {
-    return this.widgetDataService.downloadWidgetData(widgetId);
+  async downloadData(
+    @Param('widgetId') widgetId: string,
+    @Query('currAreaConfig') currAreaConfig: string,
+  ): Promise<string> {
+    const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
+      | CurrentAreaConfig
+      | CurrentAreaConfig[];
+
+    return this.widgetDataService.downloadWidgetData(
+      widgetId,
+      parsedCurrAreaConfig,
+    );
   }
 }

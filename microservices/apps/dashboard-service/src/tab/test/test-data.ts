@@ -104,6 +104,8 @@ export async function getTab(
     chartLegendAlign: 'Top',
     chartXAxisLabel: 'Month',
     chartYAxisLabel: 'Percentage',
+    chartHideXAxis: false,
+    chartHideYAxis: false,
     chartYAxisScale: 1,
     chartYAxisScaleChartMinValue: 1,
     chartYAxisScaleChartMaxValue: 10,
@@ -169,6 +171,7 @@ export async function getTab(
     imageJumpoffUrl: 'http://www.samplewebsite.com',
     iFrameUrl: null,
     textValue: 'Sample Text',
+    hideThousandsSeparator: false,
     valueFontSize: 50,
     valueUnitFontSize: 25,
     decimalPlaces: 2,
@@ -270,6 +273,8 @@ export async function getTab(
     allowMapPopupWidthChange: false,
     mapPopupWidth: 50,
     pinMode: 'single',
+    useDashboardFontColor: false,
+    normalizeXAxisByTimeFramePeriod: false,
   };
 }
 

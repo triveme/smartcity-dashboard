@@ -32,6 +32,7 @@ interface SliderProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData?: any;
   decimalPlaces?: number;
+  usesQueryParameter?: boolean;
 }
 
 export default function Slider(props: SliderProps): ReactElement {
@@ -53,6 +54,7 @@ export default function Slider(props: SliderProps): ReactElement {
     unitFontSize,
     tabData,
     decimalPlaces,
+    usesQueryParameter = false,
   } = props;
   let { value } = props;
 
@@ -61,7 +63,7 @@ export default function Slider(props: SliderProps): ReactElement {
   }
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId && tabData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

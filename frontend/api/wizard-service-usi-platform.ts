@@ -19,7 +19,7 @@ export async function getEventtypes(
       `${NEXT_PUBLIC_USI_PLATFORM_SERVICE_URL}/usi-platform/event-types`,
       {
         params: {
-          apiid: args,
+          apiId: args,
         },
       },
     );

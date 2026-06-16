@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactElement, useState, CSSProperties } from 'react';
-import Cookies from 'js-cookie';
+import { useAuth } from 'react-oidc-context';
 
 import SidebarFooter from './SidebarFooter';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
@@ -32,16 +32,17 @@ export default function DashboardSidebar(
   } = props;
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const cookie = Cookies.get('access_token');
-  const accessToken = cookie || '';
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token || '';
 
   // Multi Tenancy
   const tenant = getTenantOfPage();
 
   // Query Menu Structure
   const { data: groupingElements } = useQuery({
-    queryKey: ['menu'],
+    queryKey: ['menu', tenant, accessToken],
     queryFn: () => getMenuGroupingElements(tenant, accessToken!),
+    enabled: !auth.isLoading,
   });
 
   //Dynamic Styling
@@ -53,6 +54,12 @@ export default function DashboardSidebar(
   const toggleSidebar = (): void => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const sortedGroupingElements = groupingElements
+    ? [...groupingElements].sort(
+        (a, b) => (a.position ?? 0) - (b.position ?? 0),
+      )
+    : [];
 
   return (
     <>
@@ -100,14 +107,8 @@ export default function DashboardSidebar(
             style={sidebarStyle}
             className="w-full flex flex-col justify-start items-start flex-1 p-2"
           >
-            {groupingElements &&
-              groupingElements.length &&
-              groupingElements.length > 0 &&
-              groupingElements.sort &&
-              groupingElements.sort(
-                (a, b) => (a.position ?? 0) - (b.position ?? 0),
-              ) &&
-              groupingElements.map((element) =>
+            {sortedGroupingElements.length > 0 &&
+              sortedGroupingElements.map((element) =>
                 element.isDashboard ? (
                   <DashboardSidebarDashboard
                     key={element.id!}

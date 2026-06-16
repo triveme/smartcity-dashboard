@@ -17,6 +17,7 @@ type SliderOverviewProps = {
   fontColorGeneral: string;
   colorCurrent: string;
   colorMaximum: string;
+  usesQueryParameter?: boolean;
 };
 export default function SliderOverview(
   props: SliderOverviewProps,
@@ -30,11 +31,12 @@ export default function SliderOverview(
     fontColorGeneral,
     colorCurrent,
     colorMaximum,
+    usesQueryParameter = false,
   } = props;
   const sliders: SliderOverviewType[] = [];
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   try {
     const filteredData =

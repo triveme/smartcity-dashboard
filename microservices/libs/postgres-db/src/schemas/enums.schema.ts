@@ -9,6 +9,7 @@ export const aggregationEnum = pgEnum('aggregation', [
 ]);
 
 export const timeframeEnum = pgEnum('timeframe', [
+  'user_defined',
   'live',
   'day',
   'week',
@@ -76,9 +77,11 @@ export const tabComponentSubTypeEnum = pgEnum('tab_component_sub_type', [
 
 export const chartDateRepresentationEnum = pgEnum('chart_date_representation', [
   'Default',
+  'Default Without Month',
   'Only Year',
   'Only Month',
   'Only Labels',
+  'Weekdays',
 ]);
 
 export const authDataTypeEnum = pgEnum('auth_data_type', [

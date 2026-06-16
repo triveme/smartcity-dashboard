@@ -118,6 +118,7 @@ export default function Header(props: HeaderProps): ReactElement {
 
   // Determine marginLeft based on isPublic and isCollapsed states
   const marginLeftValue = isPublic ? '0' : isCollapsed ? '80px' : '256px';
+  const tenantHomeHref = tenant ? `/${tenant}` : '/';
 
   const getBgColorForHeader = (): BackgroundColorStyle => {
     return useColorTransitionHeader
@@ -201,7 +202,12 @@ export default function Header(props: HeaderProps): ReactElement {
       <div className="flex items-center">
         {showLogo && (
           <div className="p-3">
-            <HeaderLogo />
+            <Link
+              href={tenantHomeHref}
+              aria-label="Zur Startseite des Mandanten"
+            >
+              <HeaderLogo />
+            </Link>
           </div>
         )}
         <p className="text-md ml-9 sm:text-xl leading-7">{dynamicHeadline}</p>

@@ -74,6 +74,7 @@ export default async function DashboardTab(
   props: DashboardTabProps,
 ): Promise<ReactElement> {
   const { tab, tabData, tenant, widget } = props;
+  const usesQueryParameter = widget?.usesQueryParameter === true;
 
   const ciColors: CorporateInfo = await getCorporateInfosWithLogos(tenant);
   //Dynamic Styling
@@ -201,6 +202,7 @@ export default async function DashboardTab(
               fillColor={ciColors.degreeChart180FillColor}
               unitFontSize={ciColors.degreeChart180UnitFontSize}
               tabData={tabData}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 && (
@@ -218,6 +220,7 @@ export default async function DashboardTab(
               fillColor={ciColors.degreeChart360FillColor}
               unitFontSize={ciColors.degreeChart360UnitFontSize}
               tabData={tabData}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChart && (
@@ -253,6 +256,7 @@ export default async function DashboardTab(
               allowImageDownload={tab.chartAllowImageDownload || false}
               pieChartRadius={tab.chartPieRadius || 70}
               chartShowPercent={tab.chartShowPercent ?? true}
+              exportBackgroundColor={ciColors.widgetPrimaryColor}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.table && (
@@ -263,10 +267,15 @@ export default async function DashboardTab(
               oddRowColor={tab?.tableOddRowColor || '#2D3244'}
               evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
               isTableHeaderVisible={tab?.isTableHeaderVisible || false}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.tableDynamic && (
-            <TableDynamic tab={tab} tabData={tabData} />
+            <TableDynamic
+              tab={tab}
+              tabData={tabData}
+              usesQueryParameter={usesQueryParameter}
+            />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.pieChartDynamic && (
             <PieChartDynamic
@@ -277,6 +286,7 @@ export default async function DashboardTab(
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
+              widgetId={tab?.widgetId || ''}
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
                 tab?.chartYAxisScaleChartMinValue !== null
@@ -302,6 +312,8 @@ export default async function DashboardTab(
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               isStepline={tab.isStepline || false}
@@ -345,6 +357,13 @@ export default async function DashboardTab(
               decimalPlaces={tab?.decimalPlaces || 0}
               chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
               chartAggregationMode={tab?.chartAggregationMode}
+              timeFramePeriod={tab?.timeframe || undefined}
+              authDataType={tab?.authDataType || undefined}
+              setXByTimeFramePeriod={
+                tab?.normalizeXAxisByTimeFramePeriod || false
+              }
+              usesQueryParameter={usesQueryParameter}
+              exportBackgroundColor={ciColors.widgetPrimaryColor}
             />
           )}
           {tab.componentSubType ===
@@ -353,10 +372,12 @@ export default async function DashboardTab(
               tab={tab}
               tabData={tabData}
               corporateInfo={ciColors}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChart && (
             <BarChart
+              widgetId={tab?.widgetId || ''}
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
                 tab?.chartYAxisScaleChartMinValue !== null
@@ -381,6 +402,8 @@ export default async function DashboardTab(
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
@@ -424,6 +447,13 @@ export default async function DashboardTab(
                   ? tab.barChartShowTimestampOnHover
                   : true
               }
+              timeFramePeriod={tab?.timeframe || undefined}
+              authDataType={tab?.authDataType || undefined}
+              setXByTimeFramePeriod={
+                tab?.normalizeXAxisByTimeFramePeriod || false
+              }
+              usesQueryParameter={usesQueryParameter}
+              exportBackgroundColor={ciColors.widgetPrimaryColor}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.barChartDynamic && (
@@ -431,11 +461,13 @@ export default async function DashboardTab(
               tab={tab}
               tabData={tabData}
               corporateInfo={ciColors}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType ===
             tabComponentSubTypeEnum.barChartHorizontal && (
             <BarChartHorizontal
+              widgetId={tab?.widgetId || ''}
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
                 tab?.chartYAxisScaleChartMinValue !== null
@@ -460,6 +492,8 @@ export default async function DashboardTab(
               data={tabData.chartData || DUMMY_CHART_DATA}
               xAxisLabel={tab.chartXAxisLabel || ''}
               yAxisLabel={tab.chartYAxisLabel || ''}
+              hideXAxis={tab.chartHideXAxis || false}
+              hideYAxis={tab.chartHideYAxis || false}
               allowImageDownload={tab.chartAllowImageDownload || false}
               allowZoom={tab.mapAllowZoom || false}
               showLegend={tab.showLegend || false}
@@ -499,6 +533,10 @@ export default async function DashboardTab(
               setSortDescending={tab?.setSortDescending || false}
               setValueLimit={tab?.setValueLimit || false}
               userDefinedLimit={tab?.userDefinedLimit || 10}
+              timeFramePeriod={tab?.timeframe || undefined}
+              authDataType={tab?.authDataType || undefined}
+              usesQueryParameter={usesQueryParameter}
+              exportBackgroundColor={ciColors.widgetPrimaryColor}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.measurement && (
@@ -606,6 +644,8 @@ export default async function DashboardTab(
               ticksFontSize={ciColors.stageableChartTicksFontSize || '20'}
               decimalPlaces={tab?.decimalPlaces || 0}
               tabData={tabData}
+              usesQueryParameter={usesQueryParameter}
+              useDashboardFontColor={tab.useDashboardFontColor ?? false}
             />
           )}
         </div>
@@ -642,6 +682,7 @@ export default async function DashboardTab(
                 unitFontSize={ciColors.coloredSliderUnitFontSize || '35'}
                 tabData={tabData}
                 decimalPlaces={tab?.decimalPlaces || 0}
+                usesQueryParameter={usesQueryParameter}
               />
             </div>
           )}
@@ -655,6 +696,7 @@ export default async function DashboardTab(
               fontColorGeneral={ciColors.sliderGeneralFontColor || '#FFFFFF'}
               colorCurrent={ciColors.sliderCurrentColor || '#DC2626'}
               colorMaximum={ciColors.sliderMaximumColor || '#000000'}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
         </div>
@@ -689,6 +731,7 @@ export default async function DashboardTab(
           fontColor={ciColors.wertFontColor || '#FFF'}
           showTime={false}
           tabData={tabData}
+          usesQueryParameter={usesQueryParameter}
         />
       )}
       {tab.componentType === tabComponentTypeEnum.information && (

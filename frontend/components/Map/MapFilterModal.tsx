@@ -3,7 +3,7 @@ import React, { ReactElement, CSSProperties, JSX } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
 import CheckBox from '@/ui/CheckBox';
-import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
+import { useIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
 import { QueryDataWithAttributes } from '@/types';
 import { projectStatusOptions } from '@/utils/enumMapper';
@@ -38,7 +38,7 @@ export default function MapFilterModal(
     isCombinedMap,
   } = props;
 
-  const isMobileView = determineIsMobileView();
+  const isMobileView = useIsMobileView();
   const scrollRef = usePreventMapScroll();
   const handleSelectChange = (
     filterValue: string | number,

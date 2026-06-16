@@ -1,16 +1,15 @@
 import { GeneralSettings } from '@/types';
 import axios from 'axios';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getGeneralSettingsByTenant(
   tenant?: string | undefined,
 ): Promise<GeneralSettings> {
+  const backendUrl = getBackendUrl();
   try {
     const tenantParam = tenant && tenant !== '' ? `/tenant/${tenant}` : '';
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/general-settings${tenantParam}`,
+      `${backendUrl}/general-settings${tenantParam}`,
     );
 
     return response.data;
@@ -31,9 +30,10 @@ export async function createGeneralSettings(
   newGeneralSettings: GeneralSettings,
   accessToken?: string | undefined,
 ): Promise<GeneralSettings> {
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/general-settings`,
+      `${backendUrl}/general-settings`,
       newGeneralSettings,
       {
         headers: accessToken
@@ -60,9 +60,10 @@ export async function updateGeneralSettings(
   updatedGeneralSettings: GeneralSettings,
   accessToken?: string | undefined,
 ): Promise<GeneralSettings> {
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/general-settings/${updatedGeneralSettings.id}`,
+      `${backendUrl}/general-settings/${updatedGeneralSettings.id}`,
       updatedGeneralSettings,
       {
         headers: accessToken

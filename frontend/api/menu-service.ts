@@ -2,25 +2,30 @@
 import axios from 'axios';
 
 import { GroupingElement } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getMenuGroupingElements(
   tenant: string | undefined,
   accessToken: string,
+  includeEmptyGroups = false,
 ): Promise<GroupingElement[]> {
+  const backendUrl = getBackendUrl();
   try {
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
+    const params: Record<string, boolean> = {};
+
+    if (includeEmptyGroups) {
+      params.includeEmptyGroups = true;
+    }
 
     let url = '';
     if (tenant && tenant !== '') {
-      url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/tenant/${tenant}`;
+      url = `${backendUrl}/groupingElements/tenant/${tenant}`;
     }
 
-    const response = await axios.get(url, { headers });
+    const response = await axios.get(url, { headers, params });
 
     return response.data;
   } catch (err) {
@@ -40,10 +45,11 @@ export async function getMenuGroupingElementByUrl(
   urlParam: string,
   tenant: string,
 ): Promise<GroupingElement> {
+  const backendUrl = getBackendUrl();
   try {
     const params: any = {};
     params.abbreviation = tenant;
-    const url = `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/url/${urlParam}`;
+    const url = `${backendUrl}/groupingElements/url/${urlParam}`;
     const response = await axios.get(url, {
       params,
     });
@@ -66,6 +72,7 @@ export async function postMenuGroupingElement(
   accessToken: string | undefined,
   newGroup: GroupingElement,
 ): Promise<GroupingElement> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -76,7 +83,7 @@ export async function postMenuGroupingElement(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/groupingElements`,
+      `${backendUrl}/groupingElements`,
       newGroup,
       { headers: headers },
     );
@@ -98,6 +105,7 @@ export async function updateMenuGroupingElement(
   accessToken: string | undefined,
   newGroup: Partial<GroupingElement>,
 ): Promise<GroupingElement> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -108,7 +116,7 @@ export async function updateMenuGroupingElement(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/${newGroup.id}`,
+      `${backendUrl}/groupingElements/${newGroup.id}`,
       newGroup,
       { headers: headers },
     );
@@ -130,6 +138,7 @@ export async function deleteMenuGroupingElement(
   accessToken: string | undefined,
   id: string,
 ): Promise<GroupingElement> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -140,7 +149,7 @@ export async function deleteMenuGroupingElement(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/groupingElements/${id}`,
+      `${backendUrl}/groupingElements/${id}`,
       {
         headers: headers,
       },

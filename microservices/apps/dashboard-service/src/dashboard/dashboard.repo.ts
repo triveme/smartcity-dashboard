@@ -371,18 +371,18 @@ export class DashboardRepo {
       .where(
         and(
           inArray(dashboards.url, urls),
+          tenantFromRequestId
+            ? inArray(dashboards.id, dashboardIdsOfTenant)
+            : undefined,
           or(
             eq(dashboards.visibility, 'public'),
-            and(
-              or(
-                rolesFromRequest.length > 0
-                  ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
-                  : undefined,
-                rolesFromRequest.length > 0
-                  ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
-                  : undefined,
-              ),
-              inArray(dashboards.id, dashboardIdsOfTenant),
+            or(
+              rolesFromRequest.length > 0
+                ? arrayOverlaps(dashboards.readRoles, rolesFromRequest)
+                : undefined,
+              rolesFromRequest.length > 0
+                ? arrayOverlaps(dashboards.writeRoles, rolesFromRequest)
+                : undefined,
             ),
           ),
         ),

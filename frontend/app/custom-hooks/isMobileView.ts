@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const determineIsMobileView = (): boolean => {
+export function useIsMobileView(): boolean {
   const [isMobileView, setIsMobileView] = useState<boolean>(
     window.innerWidth <= 768,
   );
@@ -15,4 +15,4 @@ export const determineIsMobileView = (): boolean => {
   }, []);
 
   return isMobileView;
-};
+}

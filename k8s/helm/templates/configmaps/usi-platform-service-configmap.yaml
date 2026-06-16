@@ -6,5 +6,7 @@ metadata:
   name: usi-platform-service-configmap
 data:
   NODE_ENV: "development"
+  NEST_JWKS_URI: {{ index .Values "usi-platform-service" "jwks" }}
+  PASSWORD_ENCRYPT_KEY: {{ index .Values "usi-platform-service" "passwordEncryptKey" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "usi-platform-service" "frontendUrl" }}
 {{- end }}

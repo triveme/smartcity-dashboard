@@ -4,7 +4,7 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import React, { ReactElement, CSSProperties } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLocationPin, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
-import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
+import { useIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
 import { localSvgIconsList } from '@/ui/Icons/LocalSvgIcons';
 
@@ -29,7 +29,7 @@ export default function MapLegendModal(
     isFullscreenMap,
   } = props;
 
-  const isMobileView = determineIsMobileView();
+  const isMobileView = useIsMobileView();
   const scrollRef = usePreventMapScroll();
 
   const getLegendModalStyle = (): CSSProperties => {

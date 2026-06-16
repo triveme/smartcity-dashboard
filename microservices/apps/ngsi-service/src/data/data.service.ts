@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import axios from 'axios';
 import { QueryBatch, TabQueryWithAllInfos } from '../ngsi.service';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 
 // interface NgsiLdProperty {
@@ -29,9 +29,21 @@ interface NgsiV2Entity {
   index: string[];
   attributes: NgsiV2Attribute[];
 }
+
+const debugEntityId: string = '';
+const debugQueryConfigId: string = '';
+
 @Injectable()
 export class DataService {
   constructor(private readonly authService: AuthService) {}
+
+  private getErrorLogData(error: unknown): unknown {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data ?? error.message;
+    }
+
+    return error;
+  }
 
   async getDataFromDataSource(
     queryBatch: QueryBatch,
@@ -127,8 +139,15 @@ export class DataService {
 
         params = {
           type: query_config.fiwareType,
-          fromDate: this.getFromDate(query_config.timeframe),
-          toDate: new Date(Date.now()),
+          fromDate: this.getFromDate(
+            query_config.timeframe,
+            query_config.dataStartDate,
+          ),
+          toDate:
+            query_config.timeframe === 'user_defined' &&
+            query_config.dataUntilDate
+              ? new Date(query_config.dataUntilDate)
+              : new Date(Date.now()),
         };
 
         if (query_config.attributes && query_config.attributes.length > 0) {
@@ -177,20 +196,24 @@ export class DataService {
 
       return response.data;
     } catch (error) {
-      console.error(
-        'Could not get V2 data for queries with ids:',
-        queryIds,
-        '\nfrom query_config:',
-        query_config.id,
-        '\nfrom data_source:',
-        data_source.id,
-        '\nfrom auth_data:',
-        auth_data.id,
-        '\ndue to error:',
-        error && error.response && error.response.data
-          ? error.response.data
-          : error,
-      );
+      if (
+        (debugEntityId == '' ||
+          query_config.entityIds.includes(debugEntityId)) &&
+        (debugQueryConfigId == '' || query_config.id == debugQueryConfigId)
+      ) {
+        console.error(
+          'Could not get V2 data for queries with ids:',
+          queryIds,
+          '\nfrom query_config:',
+          query_config.id,
+          '\nfrom data_source:',
+          data_source.id,
+          '\nfrom auth_data:',
+          auth_data.id,
+          '\ndue to error:',
+          this.getErrorLogData(error),
+        );
+      }
     }
   }
 
@@ -257,8 +280,15 @@ export class DataService {
 
         params = {
           timerel: 'between',
-          timeAt: this.getFromDate(query_config.timeframe),
-          endTimeAt: new Date(Date.now()),
+          timeAt: this.getFromDate(
+            query_config.timeframe,
+            query_config.dataStartDate,
+          ),
+          endTimeAt:
+            query_config.timeframe === 'user_defined' &&
+            query_config.dataUntilDate
+              ? new Date(query_config.dataUntilDate)
+              : new Date(Date.now()),
         };
 
         if (query_config.aggrMode !== 'none') {
@@ -286,12 +316,15 @@ export class DataService {
           staticUrl = `${staticBaseUrl}/${query_config.entityIds[0]}`;
         }
 
-        // Workaround for aggregation attributes with a name attribute included
         if (
-          query_config.aggrMode !== 'none' &&
-          params.attrs &&
-          params.attrs.includes('name')
+          query_config.entityIds.includes(debugEntityId) ||
+          query_config.id == debugQueryConfigId
         ) {
+          console.log(params);
+        }
+
+        // Workaround for attributes with a name attribute included
+        if (params.attrs && params.attrs.includes('name')) {
           params.attrs = params.attrs.replace('name,', '');
           params.attrs = params.attrs.replace(',name', '');
           const aggrParams = { ...params };
@@ -311,6 +344,14 @@ export class DataService {
             axios.get(url, { headers, params: aggrParams }),
             axios.get(staticUrl, { headers, params: nameParams }),
           ]);
+
+          if (
+            query_config.entityIds.includes(debugEntityId) ||
+            query_config.id == debugQueryConfigId
+          ) {
+            console.log(aggrResponse.data);
+            console.log(nameResponse.data);
+          }
 
           if (aggrResponse.data.attrs && nameResponse.data.attrs) {
             const combinedAttrs = [
@@ -337,23 +378,35 @@ export class DataService {
         }
 
         const response = await axios.get(url, { headers, params });
+
+        if (
+          query_config.entityIds.includes(debugEntityId) ||
+          query_config.id == debugQueryConfigId
+        ) {
+          console.log(response.data);
+        }
+
         return response.data;
       }
     } catch (error) {
-      console.error(
-        'Could not get LD data for queries with ids:',
-        queryIds,
-        '\nfrom query_config:',
-        query_config.id,
-        '\nfrom data_source:',
-        data_source.id,
-        '\nfrom auth_data:',
-        auth_data.id,
-        '\ndue to error:',
-        error && error.response && error.response.data
-          ? error.response.data
-          : error,
-      );
+      if (
+        (debugEntityId == '' ||
+          query_config.entityIds.includes(debugEntityId)) &&
+        (debugQueryConfigId == '' || query_config.id == debugQueryConfigId)
+      ) {
+        console.error(
+          'Could not get LD data for queries with ids:',
+          queryIds,
+          '\nfrom query_config:',
+          query_config.id,
+          '\nfrom data_source:',
+          data_source.id,
+          '\nfrom auth_data:',
+          auth_data.id,
+          '\ndue to error:',
+          this.getErrorLogData(error),
+        );
+      }
     }
   }
 
@@ -390,9 +443,14 @@ export class DataService {
       (Array.isArray(data) && data.length === 0) ||
       Object.keys(data).length === 0
     ) {
-      console.warn(
-        `No data found for query with id: ${queryConfig.id} and entityIds: ${queryConfig.entityIds}`,
-      );
+      if (
+        (debugEntityId == '' ||
+          queryConfig.entityIds.includes(debugEntityId)) &&
+        (debugQueryConfigId == '' || queryConfig.id == debugQueryConfigId)
+      )
+        console.warn(
+          `No data found for query with id: ${queryConfig.id} and entityIds: ${queryConfig.entityIds}`,
+        );
       return;
     }
 
@@ -662,7 +720,7 @@ export class DataService {
         '\nfrom auth_data:',
         auth_data.id,
         '\ndue to error:',
-        error && error.data ? error.data : error,
+        this.getErrorLogData(error),
       );
     }
   }
@@ -699,6 +757,7 @@ export class DataService {
 
   private getFromDate(
     timeframe:
+      | 'user_defined'
       | 'hour'
       | 'day'
       | 'week'
@@ -706,30 +765,47 @@ export class DataService {
       | 'quarter'
       | 'year'
       | 'year2'
-      | 'year3',
+      | 'year3'
+      | null
+      | undefined,
+    dataStartDate?: Date | null,
   ): Date {
-    const now = new Date();
-    let fromDate: Date;
-
-    if (timeframe === 'hour') {
-      fromDate = new Date(now.getTime() - 60 * 60 * 1000);
-    } else if (timeframe === 'day') {
-      fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'week') {
-      fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'month') {
-      fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'quarter') {
-      fromDate = new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'year') {
-      fromDate = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'year2') {
-      fromDate = new Date(now.getTime() - 24 * 30 * 24 * 60 * 60 * 1000);
-    } else if (timeframe === 'year3') {
-      fromDate = new Date(now.getTime() - 36 * 30 * 24 * 60 * 60 * 1000);
+    if (timeframe == null) {
+      throw new Error('timeframe is required');
     }
 
-    return fromDate;
+    const now = new Date();
+
+    if (timeframe === 'user_defined') {
+      if (!dataStartDate) {
+        throw new Error(
+          'dataStartDate is required when timeframe is user_defined',
+        );
+      }
+
+      return new Date(dataStartDate);
+    }
+
+    switch (timeframe) {
+      case 'hour':
+        return new Date(now.getTime() - 60 * 60 * 1000);
+      case 'day':
+        return new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      case 'week':
+        return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      case 'month':
+        return new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      case 'quarter':
+        return new Date(now.getTime() - 3 * 30 * 24 * 60 * 60 * 1000);
+      case 'year':
+        return new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
+      case 'year2':
+        return new Date(now.getTime() - 24 * 30 * 24 * 60 * 60 * 1000);
+      case 'year3':
+        return new Date(now.getTime() - 36 * 30 * 24 * 60 * 60 * 1000);
+      default:
+        throw new Error(`Unsupported timeframe: ${timeframe}`);
+    }
   }
 
   // Helper functions for data processing

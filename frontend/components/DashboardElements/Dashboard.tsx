@@ -42,6 +42,10 @@ export default async function Dashboard(
   const { dashboard, tenant } = props;
   const cookieStore = await cookies();
   const isEditable = cookieStore.get('allowEdit')?.value === 'true';
+  const isMapDashboard =
+    dashboard.type === dashboardTypeEnum.map ||
+    dashboard.type === dashboardTypeEnum.projectMap;
+  const isProjectMapDashboard = dashboard.type === dashboardTypeEnum.projectMap;
 
   const Map = nextDynamic(() => import('@/components/Map/Map'), {
     // ssr: false,
@@ -85,7 +89,7 @@ export default async function Dashboard(
   let combinedMapData;
   let combinedQueryDataArray;
   let uiFilterData;
-  if (dashboard.type === dashboardTypeEnum.map) {
+  if (isMapDashboard) {
     tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
 
     if (tab?.componentType === tabComponentTypeEnum.map) {
@@ -155,67 +159,65 @@ export default async function Dashboard(
 
   return (
     <div style={dashboardStyle} className="w-full h-full overflow-auto">
-      {dashboard.type !== dashboardTypeEnum.map &&
-        dashboard.type !== dashboardTypeEnum.iframe && (
-          <div className="p-4 w-full">
-            <div className="w-full flex justify-between items-center">
-              <div className="w-full flex justify-start items-center gap-x-2">
-                <div>
-                  <PageHeadline
-                    headline={dashboard.name || 'Dashboardseite'}
-                    fontColor={
-                      props.dashboard.headlineColor ??
-                      ciColors.dashboardFontColor
-                    }
-                    fontSize={generateResponsiveFontSize(
-                      parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
-                    )}
-                  />
-                </div>
-                {dashboard.allowShare ? (
-                  <ShareLinkButton
-                    type="dashboard"
-                    id={dashboard.id || ''}
-                    widgetPrimaryColor={ciColors?.dashboardPrimaryColor}
-                    widgetFontColor={ciColors?.dashboardFontColor}
-                  />
-                ) : null}
-                {isEditable ? (
-                  <RedirectPageButton
-                    url={`/${tenant}/admin/pages/edit?id=${dashboard?.id}`}
-                    isShortStyle={true}
-                    headerPrimaryColor={ciColors.headerPrimaryColor}
-                    headerFontColor={ciColors.headerFontColor}
-                  />
-                ) : null}
-              </div>
-              {dashboard.allowDataExport && (
-                <DataExportButton
-                  id={dashboard.id || ''}
-                  type="dashboard"
-                  ciColors={ciColors}
-                  headerPrimaryColor={ciColors?.headerPrimaryColor}
-                  headerFontColor={ciColors?.headerFontColor}
-                  panelFontColor={ciColors?.panelFontColor}
-                  widgetFontColor={ciColors?.widgetFontColor}
+      {!isMapDashboard && dashboard.type !== dashboardTypeEnum.iframe && (
+        <div className="p-4 w-full">
+          <div className="w-full flex justify-between items-center">
+            <div className="w-full flex justify-start items-center gap-x-2">
+              <div>
+                <PageHeadline
+                  headline={dashboard.name || 'Dashboardseite'}
+                  fontColor={
+                    props.dashboard.headlineColor ?? ciColors.dashboardFontColor
+                  }
+                  fontSize={generateResponsiveFontSize(
+                    parseInt(ciColors.dashboardHeadlineFontSize || '18', 10),
+                  )}
                 />
-              )}
+              </div>
+              {dashboard.allowShare ? (
+                <ShareLinkButton
+                  type="dashboard"
+                  id={dashboard.id || ''}
+                  widgetPrimaryColor={ciColors?.dashboardPrimaryColor}
+                  widgetFontColor={ciColors?.dashboardFontColor}
+                />
+              ) : null}
+              {isEditable ? (
+                <RedirectPageButton
+                  url={`/${tenant}/admin/pages/edit?id=${dashboard?.id}`}
+                  isShortStyle={true}
+                  headerPrimaryColor={ciColors.headerPrimaryColor}
+                  headerFontColor={ciColors.headerFontColor}
+                />
+              ) : null}
             </div>
-
-            <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-12 gap-1 pt-2">
-              {dashboard.panels?.length > 0 &&
-                dashboard.panels.map((panel) => (
-                  <DashboardPanel
-                    key={`dashboardPanel-${panel.id}`}
-                    panel={panel}
-                    tenant={tenant}
-                    dashboardId={dashboard.id!}
-                  />
-                ))}
-            </div>
+            {dashboard.allowDataExport && (
+              <DataExportButton
+                id={dashboard.id || ''}
+                type="dashboard"
+                ciColors={ciColors}
+                headerPrimaryColor={ciColors?.headerPrimaryColor}
+                headerFontColor={ciColors?.headerFontColor}
+                panelFontColor={ciColors?.panelFontColor}
+                widgetFontColor={ciColors?.widgetFontColor}
+              />
+            )}
           </div>
-        )}
-      {dashboard.type === dashboardTypeEnum.map && (
+
+          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-12 gap-1 pt-2">
+            {dashboard.panels?.length > 0 &&
+              dashboard.panels.map((panel) => (
+                <DashboardPanel
+                  key={`dashboardPanel-${panel.id}`}
+                  panel={panel}
+                  tenant={tenant}
+                  dashboardId={dashboard.id!}
+                />
+              ))}
+          </div>
+        </div>
+      )}
+      {isMapDashboard && (
         <div id="map" className="w-full h-full">
           {dashboard?.panels?.[0].widgets?.[0].tabs?.[0].componentSubType !==
             tabComponentSubTypeEnum.geoJSONDynamic &&
@@ -367,6 +369,7 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       ?.chartValues?.[0] || 65
                   }
+                  isProjectMap={isProjectMapDashboard}
                 />
               ) : (
                 <Map
@@ -578,6 +581,7 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       ?.chartValues?.[0] || 65
                   }
+                  isProjectMap={isProjectMapDashboard}
                 />
               )}
             </>
@@ -601,6 +605,7 @@ export default async function Dashboard(
               combinedMapData={combinedMapData}
               combinedQueryData={combinedQueryDataArray}
               uiFilterData={uiFilterData}
+              isProjectMap={isProjectMapDashboard}
             />
           )}
         </div>

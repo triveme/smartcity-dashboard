@@ -1,9 +1,8 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
-import { ChartData, MapObject } from '../data-translation.service';
+import { ChartData, TabWithContent } from '../data-translation.service';
 import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
-import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
 import { FiwareAttribute, FiwareAttributeEntity } from './fiware.types';
@@ -21,15 +20,10 @@ export class PopulateChartService {
     private readonly roundingService: RoundingService,
   ) {}
 
-  async populateTab(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
-  ): Promise<void> {
+  async populateTab(tab: TabWithContent): Promise<string | null> {
     const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
     if (!query) {
-      return;
+      return null;
     }
 
     const queryConfig = await this.dataTranslationRepo.getQueryConfigById(
@@ -37,8 +31,10 @@ export class PopulateChartService {
     );
 
     if (!queryConfig) {
-      return;
+      return null;
     }
+
+    tab.timeframe = queryConfig.timeframe ?? null;
 
     const datasource = await this.dataTranslationRepo.getDatasourceById(
       queryConfig.dataSourceId,
@@ -60,7 +56,7 @@ export class PopulateChartService {
           queryConfig.roundingMode,
           queryConfig.roundingTarget,
         );
-        return;
+        return queryConfig.timeframe ?? null;
       }
       if (query && query.queryData && tab.componentSubType === 'Pie Chart') {
         this.populateTabWithQueryDataArray(
@@ -75,7 +71,7 @@ export class PopulateChartService {
           queryConfig.roundingMode,
           queryConfig.roundingTarget,
         );
-        return;
+        return queryConfig.timeframe ?? null;
       }
 
       if (query && query.queryData && tab.componentType === 'Karte') {
@@ -127,6 +123,8 @@ export class PopulateChartService {
       queryConfig.roundingMode,
       queryConfig.roundingTarget,
     );
+
+    return queryConfig.timeframe ?? null;
   }
 
   private populateSliderOverview(
@@ -179,10 +177,7 @@ export class PopulateChartService {
     query: Query,
     attribute: string,
     datasource: DataSource,
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
   ): void {
     // Piechart adjustment
     if (tab.componentSubType === 'Pie Chart') {
@@ -359,10 +354,7 @@ export class PopulateChartService {
     query: Query,
     attribute: string,
     queryConfig: QueryConfig,
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
     isSingleAttribute: boolean,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
@@ -377,10 +369,7 @@ export class PopulateChartService {
 
   private populateHistoricTab(
     queryConfig: QueryConfig,
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
     queryDataMap: Map<string, any>,
     attribute: string,
     isSingleAttribute: boolean,
@@ -398,10 +387,7 @@ export class PopulateChartService {
   }
 
   private populateHistoricTabWithSingleEntityId(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
     queryDataMap: Map<string, any>,
   ): void {
     const entityAttributes = queryDataMap.get('attributes');
@@ -439,10 +425,7 @@ export class PopulateChartService {
   }
 
   private populateHistoricTabWithMultipleEntityIds(
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
     isSingleAttribute: boolean,
@@ -554,10 +537,7 @@ export class PopulateChartService {
   private pushValuesToChartData(
     attributeObject: FiwareAttributeEntity,
     chartDataName: string,
-    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
-      chartData: ChartData[];
-      mapObject: MapObject[];
-    },
+    tab: TabWithContent,
   ): void {
     // isNan('') === false [0]
     const numberValues = attributeObject.values.map((value: number | string) =>

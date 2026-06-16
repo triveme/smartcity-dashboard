@@ -2,7 +2,10 @@
 
 import { ReactElement, useEffect, useRef } from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
-
+import {
+  resolveSingleValueChartNumber,
+  SingleValueChartTabData,
+} from '@/utils/chartHelper';
 import { ECharts, EChartsOption } from 'echarts';
 import { useSearchParams } from 'next/navigation';
 
@@ -10,14 +13,14 @@ type Radial180ChartProps = {
   minValue: number;
   maxValue: number;
   unit: string;
-  value: number;
+  value: number | string;
   fontColor: string;
   fontSize: string;
   backgroundColor: string;
   fillColor: string;
   unitFontSize: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tabData?: any;
+  tabData?: SingleValueChartTabData;
+  usesQueryParameter?: boolean;
 };
 
 export default function Radial180Chart(
@@ -33,29 +36,43 @@ export default function Radial180Chart(
     fillColor,
     unitFontSize,
     tabData,
+    usesQueryParameter = false,
   } = props;
-  let { value } = props;
+  const { value } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
+  const resolvedValue = resolveSingleValueChartNumber(value, tabData, entityId);
 
-  if (entityId && tabData) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const findValue = (tabData.chartData as any[]).find(
-      (x) => x.id === entityId,
-    );
-    if (findValue && findValue.values && findValue.values.length > 0) {
-      value = findValue.values[0];
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const chartInstanceRef = useRef<ECharts | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !chartRef.current) {
+      return;
     }
-  }
 
-  const chartRef = useRef(null);
-  let myChart: ECharts | null = null;
-
-  const initializeChart = (): void => {
-    myChart = echarts.init(chartRef.current, undefined, {
+    chartInstanceRef.current = echarts.init(chartRef.current, undefined, {
       locale: ECHARTS_LOCALE,
     });
+
+    const resizeChart = (): void => {
+      chartInstanceRef.current?.resize();
+    };
+
+    window.addEventListener('resize', resizeChart);
+
+    return () => {
+      window.removeEventListener('resize', resizeChart);
+      chartInstanceRef.current?.dispose();
+      chartInstanceRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartInstanceRef.current) {
+      return;
+    }
 
     const option: EChartsOption = {
       series: [
@@ -99,7 +116,7 @@ export default function Radial180Chart(
             fontSize: 16,
           },
           detail: {
-            formatter: () => `{value|${value}}\n{unitDisplay|${unit}}`,
+            formatter: () => `{value|${resolvedValue}}\n{unitDisplay|${unit}}`,
             offsetCenter: [0, '0%'],
             rich: {
               value: {
@@ -114,41 +131,22 @@ export default function Radial180Chart(
           },
           radius: '90%',
           center: ['50%', '70%'],
-          data: [{ value: value, itemStyle: { color: fontColor } }],
+          data: [{ value: resolvedValue, itemStyle: { color: fontColor } }],
         },
       ],
     };
 
-    myChart.setOption(option);
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      initializeChart();
-
-      const resizeChart = (): void => {
-        if (myChart !== null) {
-          myChart.resize();
-        }
-      };
-
-      window.addEventListener('resize', resizeChart);
-
-      return () => {
-        window.removeEventListener('resize', resizeChart);
-        if (myChart !== null) {
-          myChart.dispose();
-        }
-      };
-    }
+    chartInstanceRef.current.setOption(option, true);
   }, [
     minValue,
     maxValue,
     unit,
+    resolvedValue,
     fontColor,
     fontSize,
     backgroundColor,
     fillColor,
+    unitFontSize,
   ]);
 
   return <div className="w-full h-full" ref={chartRef} />;

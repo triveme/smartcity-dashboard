@@ -63,6 +63,8 @@ export const EMPTY_QUERY_CONFIG: QueryConfig = {
   aggrMode: aggregationEnum.none,
   aggrPeriod: aggregationPeriodEnum.hour,
   timeframe: timeframeEnum.day,
+  dataStartDate: '',
+  dataUntilDate: '',
 };
 
 export const EMPTY_MAP_MODAL_WIDGET: MapModalWidget = {

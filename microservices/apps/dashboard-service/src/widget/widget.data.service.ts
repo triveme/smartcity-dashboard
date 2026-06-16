@@ -10,7 +10,11 @@ import { DataService as OrchideoDataService } from '../../../orchideo-connect-se
 import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
 import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
+import { UsiPlaformService } from 'apps/usi-platform-service/src/usi-platform.service';
 import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
+import { CurrentAreaConfig } from './widget.model';
+import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
+import { flattenNgsiExportData } from '../util/ngsi-export.util';
 
 @Injectable()
 export class WidgetDataService {
@@ -22,10 +26,14 @@ export class WidgetDataService {
     private readonly internalDataService: InternalDataService,
     private readonly sqlViewService: SqlViewService,
     private readonly orchideoConnectService: OrchideoConnectService,
+    private readonly usiPlatformService: UsiPlaformService,
     private readonly tabService: TabService,
   ) {}
 
-  async downloadWidgetData(widgetId: string): Promise<string> {
+  async downloadWidgetData(
+    widgetId: string,
+    currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
+  ): Promise<string> {
     const errorMessages: string[] = [];
     const allCsvData: string[] = [];
 
@@ -85,6 +93,10 @@ export class WidgetDataService {
         expandedWidgets.push(currentWidget);
       }
 
+      const normalizedCurrAreaConfing = Array.isArray(currentAreaConfig)
+        ? currentAreaConfig[0]
+        : currentAreaConfig;
+
       // Process each widget (either the original widget or child widgets from combined widget)
       for (const widgetToProcess of expandedWidgets) {
         try {
@@ -102,7 +114,6 @@ export class WidgetDataService {
             );
             continue;
           }
-
           const queryBatch = {
             queryIds: [queryWithAllInfos.query.id],
             query_config: queryWithAllInfos.query_config,
@@ -116,9 +127,18 @@ export class WidgetDataService {
             queryBatch.auth_data.type === 'ngsi-ld' ||
             queryBatch.auth_data.type === 'ngsi-v2'
           ) {
-            // Configure query batch
-            queryBatch.query_config.aggrMode = 'none';
-            queryBatch.query_config.timeframe = 'year';
+            if (!queryBatch.query_config.aggrMode) {
+              queryBatch.query_config.aggrMode = 'none';
+            }
+
+            if (normalizedCurrAreaConfing.changeTimeFramePeriod === true) {
+              queryBatch.query_config.timeframe =
+                normalizedCurrAreaConfing.timeFramePeriod;
+            } else {
+              if (!queryBatch.query_config.timeframe) {
+                queryBatch.query_config.timeframe = 'month';
+              }
+            }
 
             rawData =
               await this.ngsiDataService.getDataFromDataSource(queryBatch);
@@ -135,50 +155,61 @@ export class WidgetDataService {
             const dataArray = Array.isArray(rawData) ? rawData : [rawData];
             rawData =
               this.orchideoConnectService.transformToTargetModel(dataArray);
+          } else if (queryBatch.auth_data.type === 'usi') {
+            rawData = await this.usiPlatformService.getDataFromDataSource({
+              ...queryBatch,
+            });
           }
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
+          const flattenedData =
+            queryBatch.auth_data.type === 'ngsi' ||
+            queryBatch.auth_data.type === 'ngsi-ld' ||
+            queryBatch.auth_data.type === 'ngsi-v2'
+              ? flattenNgsiExportData(
+                  rawDataArray,
+                  queryBatch.query_config.attributes || [],
+                )
+              : rawDataArray.flatMap((dataItem) => {
+                  // Check for 'attrs' or 'attributes' property
+                  const attributes = dataItem.attrs || dataItem.attributes;
 
-          const flattenedData = rawDataArray.flatMap((dataItem) => {
-            // Check for 'attrs' or 'attributes' property
-            const attributes = dataItem.attrs || dataItem.attributes;
+                  if (!attributes) {
+                    console.warn('Missing attrs/attributes in rawData item');
+                    return [];
+                  }
 
-            if (!attributes) {
-              console.warn('Missing attrs/attributes in rawData item');
-              return [];
-            }
+                  return attributes.flatMap((attr) => {
+                    if (!attr.types || !Array.isArray(attr.types)) {
+                      console.warn(
+                        `Missing types for attribute: ${attr.attrName}. Processing without types.`,
+                      );
 
-            return attributes.flatMap((attr) => {
-              if (!attr.types || !Array.isArray(attr.types)) {
-                console.warn(
-                  `Missing types for attribute: ${attr.attrName}. Processing without types.`,
-                );
+                      // Process without types if not available
+                      return attr.values.map((value, index) => ({
+                        entityId: dataItem.entityId,
+                        attrName: attr.attrName,
+                        value: value,
+                        index: dataItem.index ? dataItem.index[index] : null,
+                      }));
+                    }
 
-                // Process without types if not available
-                return attr.values.map((value, index) => ({
-                  entityId: dataItem.entityId,
-                  attrName: attr.attrName,
-                  value: value,
-                  index: dataItem.index ? dataItem.index[index] : null,
-                }));
-              }
+                    return attr.types.flatMap((type) => {
+                      return type.entities.flatMap((entity) => {
+                        const index = entity.index || [];
+                        const values = entity.values || [];
 
-              return attr.types.flatMap((type) => {
-                return type.entities.flatMap((entity) => {
-                  const index = entity.index || [];
-                  const values = entity.values || [];
-
-                  return values.map((value, i: number) => ({
-                    entityId: entity.entityId,
-                    attrName: attr.attrName,
-                    value: value,
-                    index: index[i] || null,
-                  }));
+                        return values.map((value, i: number) => ({
+                          entityId: entity.entityId,
+                          attrName: attr.attrName,
+                          value: value,
+                          index: index[i] || null,
+                        }));
+                      });
+                    });
+                  });
                 });
-              });
-            });
-          });
 
           if (flattenedData.length === 0) {
             const warning = `No data found for widget with id: ${widgetToProcess.id}`;
@@ -192,7 +223,19 @@ export class WidgetDataService {
               fields: ['entityId', 'attrName', 'value', 'index'],
             };
             const parser = new Parser(opts);
-            const csv = parser.parse(flattenedData);
+
+            const filteredFlattenedData =
+              normalizedCurrAreaConfing.downloadCurrentArea === true
+                ? sortFlattenedTimeSeriesData(
+                    flattenedData,
+                    queryBatch.auth_data.type,
+                    normalizedCurrAreaConfing.selectedLegendNames,
+                    normalizedCurrAreaConfing.minRange,
+                    normalizedCurrAreaConfing.maxRange,
+                  )
+                : flattenedData;
+
+            const csv = parser.parse(filteredFlattenedData);
             allCsvData.push(csv);
           }
         } catch (widgetError) {
@@ -254,6 +297,10 @@ export class WidgetDataService {
         newData =
           await this.internalDataService.getDataFromDataSource(queryBatch);
         await this.internalDataService.updateFiwareQueries();
+      } else if (queryBatch.auth_data.type === 'usi') {
+        newData =
+          await this.usiPlatformService.getDataFromDataSource(queryBatch);
+        await this.usiPlatformService.updateFiwareQueries();
       } else if (queryBatch.auth_data.type === 'sql') {
         newData = await this.sqlViewService.getDataFromDataSource(queryBatch);
         await this.sqlViewService.updateFiwareQueries();

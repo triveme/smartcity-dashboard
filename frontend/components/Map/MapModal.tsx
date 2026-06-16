@@ -23,6 +23,7 @@ import { DEFAULT_CI } from '@/utils/objectHelper';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 import SensorStatusComponent from '@/ui/SensorStatus';
+import JumpoffNavigateButton from '@/ui/Buttons/JumpoffNavigateButton';
 
 type Marker = {
   position: [number, number];
@@ -92,6 +93,41 @@ export default function MapModal(props: MapModalProps): ReactElement {
 
     // Simple structure - return the value directly
     return formatObjectValue(attribute);
+  };
+
+  const openNavigationUrl = (url: string, openInNewTab: boolean): void => {
+    if (openInNewTab) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    window.location.href = url;
+  };
+
+  const handleNavigateTo = (openInNewTab: boolean): void => {
+    const coordinates = getAttributeValue('position');
+
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isAndroid) {
+      // Opens the default navigation app on Android with the given destination coordinates.
+      // Depending on the device configuration, the user may also be able to choose another navigation app.
+      openNavigationUrl(`geo:0,0?q=${coordinates}`, openInNewTab);
+      return;
+    } else if (isIOS) {
+      // Opens Apple Maps on iOS and starts navigation to the given destination coordinates.
+      openNavigationUrl(
+        `https://maps.apple.com/?daddr=${coordinates}&dirflg=d`,
+        openInNewTab,
+      );
+      return;
+    } else {
+      // Opens Google Maps in the browser on desktop with driving directions to the destination.
+      openNavigationUrl(
+        `https://www.google.com/maps/dir/?api=1&destination=${coordinates}&travelmode=driving`,
+        openInNewTab,
+      );
+    }
   };
 
   const markerTypeRaw = getAttributeValue('type');
@@ -193,6 +229,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           )}
                           fontColor={ciColors?.wertFontColor || '#FFF'}
                           showTime={widget.showTimeOnDatetimeValues || false}
+                          hideThousandsSeparator={
+                            widget.hideThousandsSeparator || false
+                          }
                         />
                       </div>
                     )}
@@ -207,7 +246,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           }
                           thresholdMin={widget.thresholdMin || '25'}
                           thresholdMax={widget.thresholdMax || '65'}
-                          value={props.values}
+                          value={
+                            getAttributeValue(widget.attributes) ?? props.values
+                          }
                         />
                       </div>
                     )}
@@ -353,6 +394,18 @@ export default function MapModal(props: MapModalProps): ReactElement {
                         <div className="w-48">
                           <JumpoffButton
                             panel={widget}
+                            headerPrimaryColor={ciColors?.headerPrimaryColor}
+                            headerFontColor={ciColors?.headerFontColor}
+                          />
+                        </div>
+                      )}
+
+                    {widget.componentType === 'Button' &&
+                      widget.componentSubType === 'navigate-button' && (
+                        <div className="w-48">
+                          <JumpoffNavigateButton
+                            panel={widget}
+                            navigate={handleNavigateTo}
                             headerPrimaryColor={ciColors?.headerPrimaryColor}
                             headerFontColor={ciColors?.headerFontColor}
                           />

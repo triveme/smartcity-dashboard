@@ -25,6 +25,7 @@ type TableProps = {
   sendSelectedToDynamicTable?: (rows: string[]) => void;
   sendHoveredToDynamicTable?: (row: string) => void;
   isTableHeaderVisible: boolean;
+  usesQueryParameter?: boolean;
 };
 
 type TableTransformedDataItem = {
@@ -45,10 +46,11 @@ export default function Table(props: TableProps): ReactElement {
     hoveredRow,
     selectedColor,
     isTableHeaderVisible,
+    usesQueryParameter = false,
   } = props;
   let { data } = props;
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId) {
     data = data.filter((x) => x.id === entityId);

@@ -15,12 +15,13 @@ type LineChartDynamicProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData: any;
   corporateInfo: CorporateInfo;
+  usesQueryParameter?: boolean;
 };
 
 export default function LineChartDynamic(
   props: LineChartDynamicProps,
 ): ReactElement {
-  const { tab, tabData, corporateInfo } = props;
+  const { tab, tabData, corporateInfo, usesQueryParameter = false } = props;
 
   const selectedFeatures = useRef<string[]>([]);
   const hoveredFeature = useRef<string>('');
@@ -125,6 +126,8 @@ export default function LineChartDynamic(
         data={data === undefined ? DUMMY_CHART_DATA : data}
         xAxisLabel={tab.chartXAxisLabel || ''}
         yAxisLabel={tab.chartYAxisLabel || ''}
+        hideXAxis={tab.chartHideXAxis || false}
+        hideYAxis={tab.chartHideYAxis || false}
         allowImageDownload={tab.chartAllowImageDownload || false}
         allowZoom={tab.mapAllowZoom || false}
         isStepline={tab.isStepline || false}
@@ -169,6 +172,10 @@ export default function LineChartDynamic(
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
         chartAggregationMode={tab?.chartAggregationMode}
         menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
+        timeFramePeriod={tab.timeframe}
+        setXByTimeFramePeriod={tab.normalizeXAxisByTimeFramePeriod}
+        usesQueryParameter={usesQueryParameter}
+        exportBackgroundColor={corporateInfo.widgetPrimaryColor}
       />
     </>
   );

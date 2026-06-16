@@ -2,7 +2,7 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
-import { ChartData } from '@/types';
+import { ChartData, CurrentAreaConfig, timeframeEnum } from '@/types';
 import {
   formatYAxisLabel,
   calculateYAxisNameGap,
@@ -11,11 +11,16 @@ import {
   getUniqueField,
   getChartDateFormatter,
   getChartDateRichText,
+  getSelectedLegendNames,
+  getAdaptiveWeekdayFormatter,
 } from '@/utils/chartHelper';
 import { applyUserLocaleToNumber, roundToDecimal } from '@/utils/mathHelper';
 import DashboardIcon from '../../Icons/DashboardIcon';
 import FilterButton from '../../Buttons/FilterButton';
 import { useSearchParams } from 'next/navigation';
+import { debounce } from 'lodash';
+import { getVisibleDateRange } from '@/utils/lineChartUtil';
+import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -25,6 +30,8 @@ type BarChartProps = {
   data: ChartData[];
   xAxisLabel?: string;
   yAxisLabel?: string;
+  hideXAxis?: boolean;
+  hideYAxis?: boolean;
   allowImageDownload?: boolean;
   allowZoom?: boolean;
   showLegend?: boolean;
@@ -53,19 +60,33 @@ type BarChartProps = {
   setValueLimit: boolean;
   userDefinedLimit: number;
   menuHoverColor: string;
+  widgetId?: string;
+  usesQueryParameter?: boolean;
+  timeFramePeriod?: string | null;
+  authDataType?: string | null;
+  exportBackgroundColor?: string;
 };
 
 type SortValue = 'no-filter' | 'asc' | 'desc';
 type LimitValue = 'all' | number;
+type SnapshotDatum = {
+  color: string;
+  label: string;
+  timestamp: number | null;
+  value: number;
+};
 
 export default function BarChartHorizontal(props: BarChartProps): ReactElement {
   const {
+    widgetId,
     chartDateRepresentation,
     chartYAxisScale,
     chartYAxisScaleChartMinValue,
     chartYAxisScaleChartMaxValue,
     xAxisLabel,
     yAxisLabel,
+    hideXAxis = false,
+    hideYAxis = false,
     allowImageDownload,
     allowZoom,
     showLegend,
@@ -93,11 +114,15 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     setValueLimit,
     userDefinedLimit,
     menuHoverColor,
+    usesQueryParameter = false,
+    authDataType,
+    timeFramePeriod,
+    exportBackgroundColor,
   } = props;
   let { data } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId) {
     data = data.filter((x) => x.id === entityId);
@@ -115,8 +140,51 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
 
   const attributes = getUniqueField(data, false);
   const sensorNames = getUniqueField(data, true);
+  const axisData = filteredData.length > 0 ? filteredData : data;
+  const snapshotMode = sortingValue !== 'no-filter' || limitOfValues !== 'all';
 
-  const getSeriesSortKey = (values: ChartData['values']): number => {
+  const getLatestPoint = (
+    values: ChartData['values'],
+  ): { label: string; timestamp: number | null; value: number } => {
+    let latestTimestamp = -Infinity;
+    let latestValue = 0;
+    let latestLabel = '';
+
+    for (const valueEntry of values) {
+      const label = valueEntry?.[0];
+      const value = valueEntry?.[1];
+      const timestamp = new Date(label).getTime();
+
+      if (
+        typeof value !== 'number' ||
+        !Number.isFinite(value) ||
+        Number.isNaN(timestamp)
+      ) {
+        continue;
+      }
+
+      if (timestamp >= latestTimestamp) {
+        latestTimestamp = timestamp;
+        latestValue = value;
+        latestLabel = label;
+      }
+    }
+
+    return {
+      label: latestLabel,
+      timestamp: latestTimestamp === -Infinity ? null : latestTimestamp,
+      value: latestValue,
+    };
+  };
+
+  const getSeriesSortKey = (
+    values: ChartData['values'],
+    useSnapshotValue = false,
+  ): number => {
+    if (useSnapshotValue) {
+      return getLatestPoint(values).value;
+    }
+
     let max = -Infinity;
 
     for (const v of values) {
@@ -143,8 +211,8 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     if (order === 'no-filter') return data;
 
     return [...data].sort((a, b) => {
-      const aKey = getSeriesSortKey(a.values);
-      const bKey = getSeriesSortKey(b.values);
+      const aKey = getSeriesSortKey(a.values, snapshotMode);
+      const bKey = getSeriesSortKey(b.values, snapshotMode);
 
       if (aKey === bKey) {
         const aTie = a.id ?? a.name ?? '';
@@ -179,28 +247,68 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     const withMeta = ordered.map((item, idx) => ({
       item,
       idx,
-      key: getSeriesSortKey(item.values),
+      key: getSeriesSortKey(item.values, snapshotMode),
     }));
 
-    const topN = withMeta
-      .sort((a, b) => (a.key === b.key ? a.idx - b.idx : b.key - a.key))
-      .slice(0, n);
+    const selectComparator = (
+      a: (typeof withMeta)[number],
+      b: (typeof withMeta)[number],
+    ): number => {
+      if (a.key === b.key) return a.idx - b.idx;
+      if (order === 'asc') return a.key - b.key;
+      return b.key - a.key;
+    };
+
+    const displayComparator = (
+      a: (typeof withMeta)[number],
+      b: (typeof withMeta)[number],
+    ): number =>
+      a.key === b.key
+        ? (a.item.id ?? a.item.name ?? '').localeCompare(
+            b.item.id ?? b.item.name ?? '',
+          )
+        : order === 'asc'
+          ? a.key - b.key
+          : b.key - a.key;
+
+    const topN = withMeta.sort(selectComparator).slice(0, n);
 
     if (order === 'no-filter') {
       return topN.sort((a, b) => a.idx - b.idx).map((x) => x.item);
     }
 
-    return topN
-      .sort((a, b) =>
-        a.key === b.key
-          ? (a.item.id ?? a.item.name ?? '').localeCompare(
-              b.item.id ?? b.item.name ?? '',
-            )
-          : order === 'asc'
-            ? a.key - b.key
-            : b.key - a.key,
-      )
-      .map((x) => x.item);
+    return topN.sort(displayComparator).map((x) => x.item);
+  };
+
+  const update = debounce(() => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+
+    const range = getVisibleDateRange(chart);
+    if (!range) return;
+
+    const selectedLegendNames = getSelectedLegendNames(chart);
+
+    const currentAreaConfig = {
+      id: widgetId,
+      minRange: range.min,
+      maxRange: range.max,
+      selectedLegendNames,
+      downloadCurrentArea: false,
+      changeTimeFramePeriod: false,
+      timeFramePeriod: (timeFramePeriod as timeframeEnum) ?? '',
+      authDataType: authDataType ?? '',
+    };
+
+    // It is important to send it inside the debounce, so the data is only sent after the filter is finally set.
+    sendCurrentAreaChartData(currentAreaConfig);
+  }, 500);
+
+  // Function for sending the data visible on the axis
+  const sendCurrentAreaChartData = (currentAreaConfig: CurrentAreaConfig) => {
+    eventBus.emit(VISIBLE_CHART_DATA_DOWNLOAD_EVENT, {
+      data: currentAreaConfig,
+    });
   };
 
   const initializeChart = (): void => {
@@ -215,6 +323,13 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
       const splitNumber = Math.max(5, Math.floor(containerWidth / 100));
+      const weekdayFormatter =
+        chartDateRepresentation === 'Weekdays'
+          ? getAdaptiveWeekdayFormatter(
+              containerWidth / Math.max(splitNumber, 1),
+              axisFontSize,
+            )
+          : undefined;
 
       const resolveSeriesName = (
         fullName: string,
@@ -229,40 +344,88 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
 
       // Main data series
       const series: echarts.BarSeriesOption[] = [];
+      const orderedData =
+        filteredData && filteredData.length > 0
+          ? sortChartData(filteredData, sortingValue)
+          : [];
+      const limitedData = applyLimit(orderedData, limitOfValues, sortingValue);
+      const snapshotData: SnapshotDatum[] = snapshotMode
+        ? limitedData.map((item) => {
+            const latestPoint = getLatestPoint(item.values);
+            const displayName = item.name;
+            const sensorName = resolveSeriesName(item.name, sensorNames);
+            const colorIdx = Math.max(0, sensorNames.indexOf(sensorName));
+            const color =
+              currentValuesColors[colorIdx % currentValuesColors.length] ||
+              'black';
+
+            return {
+              color,
+              label: displayName,
+              timestamp: latestPoint.timestamp,
+              value: latestPoint.value,
+            };
+          })
+        : [];
+
       if (filteredData && filteredData.length > 0) {
-        const orderedData = sortChartData(filteredData, sortingValue);
-        const limitedData = applyLimit(
-          orderedData,
-          limitOfValues,
-          sortingValue,
-        );
+        if (snapshotMode) {
+          const markLineData = staticValues.map((value, index) => ({
+            xAxis: Number(value),
+            lineStyle: {
+              color: staticValuesColors[index] || fontColor,
+              type: 'solid' as const,
+            },
+            label: {
+              show: false,
+            },
+          }));
 
-        for (let i = 0; i < limitedData.length; i++) {
-          const item = limitedData[i];
-          const dataArray = item.values;
-          const displayName = resolveSeriesName(item.name, sensorNames);
-
-          const colorIdx = Math.max(0, sensorNames.indexOf(displayName));
-          const color =
-            currentValuesColors[colorIdx % currentValuesColors.length] ||
-            'black';
-
-          const tempSeries: echarts.BarSeriesOption = {
-            data: dataArray.map(([time, value]) => [
-              Number(value),
-              new Date(time).getTime(),
-            ]),
+          series.push({
+            data: snapshotData.map((item) => ({
+              value: item.value,
+              itemStyle: {
+                color: item.color,
+              },
+            })),
             type: 'bar',
-            name: displayName,
-            color,
-            ...(isStackedChart && { stack: 'a' }),
-          };
-          series.push(tempSeries);
+            name: xAxisLabel || 'Value',
+            ...(markLineData.length > 0 && {
+              markLine: {
+                symbol: 'none',
+                data: markLineData,
+              },
+            }),
+          });
+        } else {
+          for (let i = 0; i < limitedData.length; i++) {
+            const item = limitedData[i];
+            const dataArray = item.values;
+            const displayName = resolveSeriesName(item.name, sensorNames);
+
+            const colorIdx = Math.max(0, sensorNames.indexOf(displayName));
+            const color =
+              currentValuesColors[colorIdx % currentValuesColors.length] ||
+              'black';
+
+            const tempSeries: echarts.BarSeriesOption = {
+              data: dataArray.map(([time, value]) => [
+                Number(value),
+                new Date(time).getTime(),
+              ]),
+              type: 'bar',
+              name: displayName,
+              color,
+              ...(isStackedChart && { stack: 'a' }),
+            };
+            series.push(tempSeries);
+          }
         }
       }
 
       // Static value series
       const staticValueSeries: echarts.LineSeriesOption[] =
+        !snapshotMode &&
         staticValues &&
         staticValues.length > 0 &&
         filteredData &&
@@ -286,11 +449,11 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
 
       const option: EChartsOption = {
         xAxis: {
-          name: xAxisLabel,
+          name: hideXAxis ? '' : xAxisLabel,
           type: 'value',
           splitNumber: splitNumber,
           nameLocation: 'middle',
-          nameGap: 35,
+          nameGap: hideXAxis ? 0 : 35,
           nameTextStyle: {
             color: fontColor,
             fontSize: axisLabelSize,
@@ -300,13 +463,13 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
               color: axisColor,
               width: 2,
             },
-            show: true,
+            show: !hideXAxis,
           },
           axisLabel: {
             color: fontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
-            show: showXAxis,
+            show: !hideXAxis && showXAxis,
             formatter: (val: number) => {
               const absVal = Math.abs(val);
               if (absVal >= 1000000) {
@@ -332,9 +495,13 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
               : undefined,
         },
         yAxis: {
-          type: 'time',
-          name: formatYAxisLabel(yAxisLabel || ''),
-          nameGap: calculateYAxisNameGap(data),
+          type: snapshotMode ? 'category' : 'time',
+          ...(snapshotMode && {
+            data: snapshotData.map((item) => item.label),
+            inverse: true,
+          }),
+          name: hideYAxis ? '' : formatYAxisLabel(yAxisLabel || ''),
+          nameGap: hideYAxis ? 0 : calculateYAxisNameGap(axisData),
           nameLocation: 'middle',
           nameTextStyle: {
             color: fontColor,
@@ -345,14 +512,17 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
               color: axisColor,
               width: 2,
             },
-            show: true,
+            show: !hideYAxis,
           },
           axisLabel: {
             color: fontColor,
             fontSize: axisFontSize,
-            formatter: chartDateRepresentation
-              ? getChartDateFormatter(chartDateRepresentation)
-              : undefined,
+            show: !hideYAxis,
+            formatter: weekdayFormatter
+              ? weekdayFormatter
+              : chartDateRepresentation
+                ? getChartDateFormatter(chartDateRepresentation)
+                : undefined,
             rich: chartDateRepresentation
               ? getChartDateRichText(chartDateRepresentation)
               : undefined,
@@ -361,7 +531,7 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
             show: false,
           },
           splitLine: {
-            show: showGrid || false,
+            show: !hideYAxis && (showGrid || false),
             lineStyle: {
               color: gridColor,
             },
@@ -370,7 +540,7 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
         legend: {
           type: 'scroll',
           orient: legendAlignment === 'Top' ? 'horizontal' : 'horizontal',
-          show: showLegend,
+          show: snapshotMode ? false : showLegend,
           textStyle: {
             fontSize: legendFontSize,
             color: legendFontColor,
@@ -381,6 +551,7 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
+              backgroundColor: exportBackgroundColor,
               title: 'Als Bild herunterladen...    ',
               icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
@@ -399,10 +570,16 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
           },
         },
         grid: {
-          left: calculateLeftGrid(yAxisLabel || '', legendAlignment),
+          left: calculateLeftGrid(
+            hideYAxis ? '' : yAxisLabel || '',
+            legendAlignment,
+          ),
           right: 10,
           top: 30,
-          bottom: calculateBottomGrid(xAxisLabel || '', allowZoom),
+          bottom: calculateBottomGrid(
+            hideXAxis ? '' : xAxisLabel || '',
+            allowZoom,
+          ),
           containLabel: true,
         },
         series: [...series, ...staticValueSeries],
@@ -424,6 +601,57 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
           trigger: 'axis',
           formatter: (params: unknown) => {
             const paramArray = Array.isArray(params) ? params : [params];
+
+            if (snapshotMode) {
+              const firstParam = paramArray[0] as {
+                axisValue?: string;
+                dataIndex?: number;
+              };
+              const snapshotIndex = firstParam?.dataIndex ?? 0;
+              const snapshotDataPoint = snapshotData[snapshotIndex] ?? null;
+              const title = firstParam?.axisValue || '';
+              const formattedTimestamp =
+                snapshotDataPoint?.timestamp !== null &&
+                snapshotDataPoint?.timestamp !== undefined
+                  ? new Date(snapshotDataPoint.timestamp).toLocaleString(
+                      navigator.language || 'de-DE',
+                      {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      },
+                    )
+                  : null;
+
+              let tooltipContent = `<div style="font-weight: bold; margin-bottom: 8px;">${title}</div>`;
+              if (formattedTimestamp) {
+                tooltipContent += `<div style="margin-bottom: 8px;">${formattedTimestamp}</div>`;
+              }
+
+              paramArray.forEach((param: any) => {
+                const raw = Array.isArray(param.value)
+                  ? param.value[0]
+                  : param.value;
+                const isNum = typeof raw === 'number' && Number.isFinite(raw);
+                const formattedValue = isNum
+                  ? applyUserLocaleToNumber(
+                      roundToDecimal(raw, decimalPlaces),
+                      navigator.language || 'de-DE',
+                    )
+                  : null;
+                if (formattedValue == null) return;
+
+                tooltipContent += `
+            <div style="display:flex;align-items:center;margin:4px 0;">
+              <span style="display:inline-block;width:10px;height:10px;background-color:${param.color};border-radius:50%;margin-right:8px;"></span>
+              <span style="margin-right:8px;">${xAxisLabel || 'Value'}:</span>
+              <span style="font-weight:bold;">${formattedValue}</span>
+            </div>`;
+              });
+              return tooltipContent;
+            }
 
             // Get the timestamp from the first param and format it
             const firstParam = paramArray[0] as { axisValue: string };
@@ -469,6 +697,14 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
       };
 
       chartInstance.current.setOption(option);
+
+      chartInstance.current.off('legendselectchanged', update);
+      chartInstance.current.off('datazoom', update);
+      if (!snapshotMode) {
+        chartInstance.current.on('legendselectchanged', update);
+        chartInstance.current.on('datazoom', update);
+        update();
+      }
     }
   };
 
@@ -490,12 +726,12 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
         : 'no-filter';
 
     setSortingValue(calcSortingValue);
-  }, [setSortAscending, setSortDescending, setValueLimit]);
+  }, [setSortAscending, setSortDescending]);
 
   useEffect(() => {
     const valuesLimit = setValueLimit ? userDefinedLimit : 'all';
     setLimitOfValues(valuesLimit);
-  }, [setValueLimit]);
+  }, [setValueLimit, userDefinedLimit]);
 
   useEffect(() => {
     if (filteredData && filteredData.length > 0) {

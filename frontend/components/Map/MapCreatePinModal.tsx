@@ -4,10 +4,11 @@ import React, {
   useState,
   useRef,
   useEffect,
+  useContext,
   useMemo,
 } from 'react';
 import type { Map as LeafletMap } from 'leaflet';
-import { useMap } from 'react-leaflet';
+import { LeafletContext } from '@react-leaflet/core';
 import { useQuery } from '@tanstack/react-query';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,7 +16,7 @@ import {
   faMapPin,
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
-import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
+import { useIsMobileView } from '@/app/custom-hooks/isMobileView';
 import { usePreventMapScroll } from '@/app/custom-hooks/usePreventMapScroll';
 import { CorporateInfo, QueryDataWithAttributes } from '@/types';
 import { projectCategoryEnum, projectStatusEnum } from '@/types/enums';
@@ -120,7 +121,7 @@ export default function MapCreatePinModal(
     initialData,
   } = props;
 
-  const isMobileView = determineIsMobileView();
+  const isMobileView = useIsMobileView();
   const scrollRef = usePreventMapScroll();
   const tenant = getTenantOfPage();
   const { data: corporateInfo } = useQuery({
@@ -425,14 +426,9 @@ export default function MapCreatePinModal(
     }
   }, [initialData]);
 
-  // access the main map instance (MapCreatePinModal is rendered inside MapContainer)
-  let map: LeafletMap | null = null;
-  try {
-    map = useMap();
-  } catch (err) {
-    // useMap will throw if this component isn't inside a MapContainer; swallow
-    map = null;
-  }
+  // access the main map instance when rendered inside a MapContainer
+  const map =
+    (useContext(LeafletContext)?.map as LeafletMap | undefined) ?? null;
   // Control the centre-pin overlay visibility based on current step AND active method.
   // We call the parent visibility callback after a microtask to ensure the Map overlay
   // DOM has been mounted and the map can measure/attach the overlay correctly.
@@ -1053,7 +1049,9 @@ export default function MapCreatePinModal(
                           setCurrentStep(2);
                           try {
                             onRequestCenterPinVisibility?.(false);
-                          } catch (e) {}
+                          } catch (e) {
+                            // ignore
+                          }
                           return;
                         }
 
@@ -1099,7 +1097,9 @@ export default function MapCreatePinModal(
                           setCurrentStep(2);
                           try {
                             onRequestCenterPinVisibility?.(false);
-                          } catch (e) {}
+                          } catch (e) {
+                            // ignore
+                          }
                           return;
                         }
 
@@ -1117,7 +1117,9 @@ export default function MapCreatePinModal(
                             setCurrentStep(2);
                             try {
                               onRequestCenterPinVisibility?.(false);
-                            } catch (e) {}
+                            } catch (e) {
+                              // ignore
+                            }
                           }
                           return;
                         }
@@ -1482,7 +1484,9 @@ export default function MapCreatePinModal(
                         onRequestCenterPinVisibility?.(
                           activeMethod === 'map' || activeMethod === 'route',
                         );
-                      } catch (e) {}
+                      } catch (e) {
+                        // ignore
+                      }
                     }}
                   >
                     Zurück

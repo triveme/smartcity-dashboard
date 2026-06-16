@@ -2,7 +2,7 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
-import { ChartData } from '@/types';
+import { ChartData, CurrentAreaConfig, timeframeEnum } from '@/types';
 import {
   formatYAxisLabel,
   calculateYAxisNameGap,
@@ -14,11 +14,17 @@ import {
   getLabelMap,
   sortChartSensorNames,
   sortFilteredData,
+  getSelectedLegendNames,
+  setXAxisBounds,
+  getAdaptiveWeekdayFormatter,
 } from '@/utils/chartHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
 import { generateTooltipContent } from '@/utils/chartTooltipHelper';
 import { useSearchParams } from 'next/navigation';
+import { debounce } from 'lodash';
+import { getVisibleDateRange } from '@/utils/lineChartUtil';
+import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
 
 type BarChartProps = {
   chartDateRepresentation?: string | 'Default';
@@ -28,6 +34,8 @@ type BarChartProps = {
   data: ChartData[];
   xAxisLabel?: string;
   yAxisLabel?: string;
+  hideXAxis?: boolean;
+  hideYAxis?: boolean;
   allowImageDownload?: boolean;
   allowZoom?: boolean;
   showLegend?: boolean;
@@ -59,16 +67,25 @@ type BarChartProps = {
   chartHoverSingleValue?: boolean;
   showTimestampOnHover?: boolean;
   menuHoverColor: string;
+  widgetId?: string;
+  setXByTimeFramePeriod?: boolean;
+  timeFramePeriod?: string | null;
+  authDataType?: string | null;
+  usesQueryParameter?: boolean;
+  exportBackgroundColor?: string;
 };
 
 export default function BarChart(props: BarChartProps): ReactElement {
   const {
+    widgetId,
     chartDateRepresentation,
     chartYAxisScale,
     chartYAxisScaleChartMinValue,
     chartYAxisScaleChartMaxValue,
     xAxisLabel,
     yAxisLabel,
+    hideXAxis = false,
+    hideYAxis = false,
     allowImageDownload,
     allowZoom,
     showLegend,
@@ -99,11 +116,16 @@ export default function BarChart(props: BarChartProps): ReactElement {
     chartHoverSingleValue,
     showTimestampOnHover,
     menuHoverColor,
+    timeFramePeriod,
+    setXByTimeFramePeriod,
+    usesQueryParameter = false,
+    authDataType,
+    exportBackgroundColor,
   } = props;
   let { data } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId) {
     data = data.filter((x) => x.id === entityId);
@@ -113,11 +135,46 @@ export default function BarChart(props: BarChartProps): ReactElement {
   const [clickedAttribute, setClickedAttribute] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const [xAxisMax, setXAxisMax] = useState<number | undefined>();
+  const [xAxisMin, setXAxisMin] = useState<number | undefined>();
+
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
 
   const attributes = getUniqueField(data, false);
   const sensorNames = getUniqueField(data, true);
+  const axisData = filteredData.length > 0 ? filteredData : data;
+
+  const update = debounce(() => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+
+    const range = getVisibleDateRange(chart);
+    if (!range) return;
+
+    const selectedLegendNames = getSelectedLegendNames(chart);
+
+    const currentAreaConfig = {
+      id: widgetId,
+      minRange: range.min,
+      maxRange: range.max,
+      selectedLegendNames,
+      downloadCurrentArea: false,
+      changeTimeFramePeriod: false,
+      timeFramePeriod: (timeFramePeriod as timeframeEnum) ?? '',
+      authDataType: authDataType ?? '',
+    };
+
+    // It is important to send it inside the debounce, so the data is only sent after the filter is finally set.
+    sendCurrentAreaChartData(currentAreaConfig);
+  }, 500);
+
+  // Function for sending the data visible on the axis
+  const sendCurrentAreaChartData = (currentAreaConfig: CurrentAreaConfig) => {
+    eventBus.emit(VISIBLE_CHART_DATA_DOWNLOAD_EVENT, {
+      data: currentAreaConfig,
+    });
+  };
 
   const initializeChart = (): void => {
     if (chartRef.current) {
@@ -134,9 +191,13 @@ export default function BarChart(props: BarChartProps): ReactElement {
 
       // Main data series
       const series: echarts.BarSeriesOption[] = [];
-      if (filteredData && filteredData.length > 0) {
-        for (let i = 0; i < filteredData.length; i++) {
-          const dataArray = sortFilteredData(filteredData)[i].values;
+      const sortedData =
+        filteredData && filteredData.length > 0
+          ? sortFilteredData(filteredData)
+          : [];
+      if (sortedData && sortedData.length > 0) {
+        for (let i = 0; i < sortedData.length; i++) {
+          const dataArray = sortedData[i].values;
 
           const tempSeries: echarts.BarSeriesOption = {
             data: dataArray,
@@ -192,15 +253,25 @@ export default function BarChart(props: BarChartProps): ReactElement {
       );
       const seriesAll = [...series, ...staticValueSeries];
       const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
+      const weekdayFormatter =
+        chartDateRepresentation === 'Weekdays'
+          ? getAdaptiveWeekdayFormatter(
+              containerWidth / Math.max(splitNumber, 1),
+              axisFontSize,
+            )
+          : undefined;
 
       const option: EChartsOption = {
         animation: playAnimation,
         xAxis: {
-          name: xAxisLabel,
+          name: hideXAxis ? '' : xAxisLabel,
           type: 'time',
+          min: xAxisMin,
+          max: xAxisMax,
+          boundaryGap: [0, 0],
           splitNumber: splitNumber,
           nameLocation: 'middle',
-          nameGap: 35,
+          nameGap: hideXAxis ? 0 : 35,
           nameTextStyle: {
             color: fontColor,
             fontSize: axisLabelSize,
@@ -210,19 +281,21 @@ export default function BarChart(props: BarChartProps): ReactElement {
               color: axisColor,
               width: 2,
             },
-            show: true,
+            show: !hideXAxis,
           },
           axisLabel: {
             color: fontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
-            formatter: chartDateRepresentation
-              ? getChartDateFormatter(chartDateRepresentation, labelMap)
-              : undefined,
+            formatter: weekdayFormatter
+              ? weekdayFormatter
+              : chartDateRepresentation
+                ? getChartDateFormatter(chartDateRepresentation, labelMap)
+                : undefined,
             rich: chartDateRepresentation
               ? getChartDateRichText(chartDateRepresentation)
               : undefined,
-            show: showXAxis,
+            show: !hideXAxis && showXAxis,
           },
           axisTick: {
             show: false,
@@ -230,8 +303,8 @@ export default function BarChart(props: BarChartProps): ReactElement {
         },
         yAxis: {
           type: 'value',
-          name: formatYAxisLabel(yAxisLabel || ''),
-          nameGap: calculateYAxisNameGap(data),
+          name: hideYAxis ? '' : formatYAxisLabel(yAxisLabel || ''),
+          nameGap: hideYAxis ? 0 : calculateYAxisNameGap(axisData),
           nameLocation: 'middle',
           interval:
             chartYAxisScale && chartYAxisScale !== 0
@@ -246,11 +319,12 @@ export default function BarChart(props: BarChartProps): ReactElement {
               color: axisColor,
               width: 2,
             },
-            show: true,
+            show: !hideYAxis,
           },
           axisLabel: {
             color: fontColor,
             fontSize: axisFontSize,
+            show: !hideYAxis,
             formatter: (val: number) => {
               const absVal = Math.abs(val);
               if (absVal >= 1000000) {
@@ -263,7 +337,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
             show: false,
           },
           splitLine: {
-            show: showGrid || false,
+            show: !hideYAxis && (showGrid || false),
             lineStyle: {
               color: gridColor,
             },
@@ -291,6 +365,7 @@ export default function BarChart(props: BarChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
+              backgroundColor: exportBackgroundColor,
               title: 'Als Bild herunterladen...    ',
               icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
@@ -309,10 +384,16 @@ export default function BarChart(props: BarChartProps): ReactElement {
           },
         },
         grid: {
-          left: calculateLeftGrid(yAxisLabel || '', legendAlignment),
+          left: calculateLeftGrid(
+            hideYAxis ? '' : yAxisLabel || '',
+            legendAlignment,
+          ),
           right: hasEndLabel ? 100 * (14 / parseInt(legendFontSize)) : 10,
           top: 30,
-          bottom: calculateBottomGrid(xAxisLabel || '', allowZoom),
+          bottom: calculateBottomGrid(
+            hideXAxis ? '' : xAxisLabel || '',
+            allowZoom,
+          ),
           containLabel: true,
         },
         series: seriesAll,
@@ -349,7 +430,15 @@ export default function BarChart(props: BarChartProps): ReactElement {
         },
       };
 
+      chartInstance.current.off('legendselectchanged', update);
+      chartInstance.current.on('legendselectchanged', update);
+
       chartInstance.current.setOption(option);
+
+      chartInstance.current.off('datazoom', update);
+      chartInstance.current.on('datazoom', update);
+
+      update();
     }
   };
 
@@ -363,10 +452,25 @@ export default function BarChart(props: BarChartProps): ReactElement {
   };
 
   useEffect(() => {
+    const sortedData =
+      filteredData && filteredData.length > 0
+        ? sortFilteredData(filteredData)
+        : [];
+
+    setXAxisBounds(
+      sortedData,
+      timeFramePeriod ?? 'live',
+      setXByTimeFramePeriod ?? false,
+      setXAxisMin,
+      setXAxisMax,
+    );
+  }, [filteredData, timeFramePeriod, setXByTimeFramePeriod]);
+
+  useEffect(() => {
     if (filteredData && filteredData.length > 0) {
       initializeChart();
     }
-  }, [filteredData, props]);
+  }, [filteredData, props, xAxisMin, xAxisMax]);
 
   useEffect(() => {
     if (data && data.length > 0) {

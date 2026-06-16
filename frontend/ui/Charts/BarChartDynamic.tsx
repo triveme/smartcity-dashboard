@@ -16,12 +16,13 @@ type BarChartDynamicProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData: any;
   corporateInfo: CorporateInfo;
+  usesQueryParameter?: boolean;
 };
 
 export default function BarChartDynamic(
   props: BarChartDynamicProps,
 ): ReactElement {
-  const { tab, tabData, corporateInfo } = props;
+  const { tab, tabData, corporateInfo, usesQueryParameter = false } = props;
 
   const selectedYearIndex = useRef<number>(0);
   const selectedFeatures = useRef<string[]>([]);
@@ -155,6 +156,8 @@ export default function BarChartDynamic(
         data={data === undefined ? DUMMY_CHART_DATA : data}
         xAxisLabel={tab.chartXAxisLabel || ''}
         yAxisLabel={tab.chartYAxisLabel || ''}
+        hideXAxis={tab.chartHideXAxis || false}
+        hideYAxis={tab.chartHideYAxis || false}
         allowImageDownload={tab.chartAllowImageDownload || false}
         allowZoom={tab.mapAllowZoom || false}
         showLegend={tab.showLegend || false}
@@ -202,6 +205,10 @@ export default function BarChartDynamic(
             : true
         }
         menuHoverColor={corporateInfo.menuHoverColor || '#99a4c3ff'}
+        timeFramePeriod={tab?.timeframe}
+        setXByTimeFramePeriod={tab?.normalizeXAxisByTimeFramePeriod || false}
+        usesQueryParameter={usesQueryParameter}
+        exportBackgroundColor={corporateInfo.widgetPrimaryColor}
       />
     </>
   );

@@ -7,6 +7,7 @@ import {
   menuArrowDirectionEnum,
   dashboardTypeEnum,
   aggregationEnum,
+  timeframeEnum,
 } from '.';
 
 export type Dashboard = {
@@ -91,7 +92,7 @@ export type Widget = {
   visibility: visibilityEnum;
   width: number;
   writeRoles: string[];
-  widgetData: any;
+  widgetData?: WidgetDataPayload | null;
   usesQueryParameter?: boolean;
 };
 
@@ -111,7 +112,26 @@ export type WidgetWithContent = {
   writeRoles: string[];
   allowDataExport: boolean;
   tabs: Tab[];
-  widgetData: any;
+  widgetData?: WidgetDataPayload | null;
+  usesQueryParameter?: boolean;
+};
+
+export type WidgetRuntimeData = {
+  chartData?: ChartData[];
+  combinedWidgets?: WidgetWithContent[];
+  weatherWarnings?: WeatherWarningType[];
+  mapObject?: MapObject[];
+  chartValues?: number[];
+  textValue?: string;
+  listviewData?: Record<string, unknown>[];
+  queryData?: QueryData[];
+  timeframe?: string | null;
+};
+
+export type WidgetDataPayload = {
+  id?: string;
+  widgetId?: string;
+  data?: WidgetRuntimeData;
 };
 
 export type WidgetWithComponentTypes = {
@@ -179,6 +199,7 @@ export type MapModalWidget = {
   thresholdMin?: number | string;
   thresholdMax?: number | string;
   sensorStatusLayoutVertical?: boolean;
+  hideThousandsSeparator?: boolean;
 };
 
 export type MapModalLegend = {
@@ -217,6 +238,8 @@ export type Tab = {
   chartValues?: number[];
   chartXAxisLabel?: string;
   chartYAxisLabel?: string;
+  chartHideXAxis?: boolean;
+  chartHideYAxis?: boolean;
   childWidgets?: string[];
   chartYAxisScale?: number | null;
   chartYAxisScaleChartMinValue?: number | null;
@@ -230,6 +253,7 @@ export type Tab = {
   componentType?: string;
   dataModelId?: string;
   decimalPlaces?: number;
+  hideThousandsSeparator?: boolean;
   valueUnitFontSize?: number;
   valueFontSize?: number;
   dynamicHighlightColor?: string;
@@ -322,6 +346,8 @@ export type Tab = {
   listviewShowDescription?: boolean;
   listviewDescriptionAttribute?: string;
   queryId?: string;
+  timeframe?: string | null;
+  authDataType?: string | null;
   rangeStaticValuesMin?: number[];
   rangeStaticValuesMax?: number[];
   rangeStaticValuesColors?: string[];
@@ -369,6 +395,8 @@ export type Tab = {
   mapPopupWidth?: number;
   pinMode?: 'single' | 'multi';
   multiAttributeConfigs?: MultiAttributeConfig[];
+  useDashboardFontColor?: boolean;
+  normalizeXAxisByTimeFramePeriod?: boolean;
 };
 
 export type TabWithQuery = Tab & {
@@ -443,6 +471,8 @@ export type QueryConfig = {
   roundingMode?: string;
   roundingTarget?: number;
   aggrPeriod: string;
+  dataStartDate: string;
+  dataUntilDate: string;
 };
 
 export type ReportConfig = {
@@ -776,4 +806,15 @@ export type CustomMapSensor = {
   attribute: string;
   positionX: number;
   positionY: number;
+};
+
+export type CurrentAreaConfig = {
+  id: string | undefined;
+  minRange: string | Date;
+  maxRange: string | Date;
+  selectedLegendNames: string[];
+  changeTimeFramePeriod: boolean;
+  downloadCurrentArea: boolean;
+  timeFramePeriod: timeframeEnum | string;
+  authDataType: string;
 };

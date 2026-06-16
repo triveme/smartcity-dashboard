@@ -51,6 +51,10 @@ export default function DashboardPreview(
   const [activePanel, setActivePanel] = useState<Panel>();
   const { openSnackbar } = useSnackbar();
   const [isCreate, setIsCreate] = useState(false);
+  const isMapDashboard =
+    dashboardType === dashboardTypeEnum.map ||
+    dashboardType === dashboardTypeEnum.projectMap;
+  const isProjectMapDashboard = dashboardType === dashboardTypeEnum.projectMap;
 
   const handleEditPanelClick = (panel: Panel): void => {
     setIsCreate(false);
@@ -153,7 +157,7 @@ export default function DashboardPreview(
     <div className="h-full w-full rounded-lg">
       <div className="grid lg:grid-cols-12 sm:grid-cols-3 grid-flow-row gap-2">
         {panels &&
-          dashboardType !== dashboardTypeEnum.map &&
+          !isMapDashboard &&
           dashboardType !== dashboardTypeEnum.iframe &&
           panels.length > 0 &&
           panels
@@ -167,20 +171,19 @@ export default function DashboardPreview(
                 handleRemovePanelClick={handleClickDeleteIcon}
                 movePanel={handlePanelPositionChange}
                 index={index}
-                widgetSelectorFilterOnlyUrlParam={
-                  dashboardType === dashboardTypeEnum.entity
+                excludeQueryParameterWidgets={
+                  dashboardType !== dashboardTypeEnum.entity
                 }
               />
             ))}
       </div>
-      {dashboardType !== dashboardTypeEnum.map &&
-        dashboardType !== dashboardTypeEnum.iframe && (
-          <CreateDashboardElementButton
-            label="+ Panel hinzufügen"
-            handleClick={handleNewPanelClick}
-          />
-        )}
-      {dashboardType === dashboardTypeEnum.map && (
+      {!isMapDashboard && dashboardType !== dashboardTypeEnum.iframe && (
+        <CreateDashboardElementButton
+          label="+ Panel hinzufügen"
+          handleClick={handleNewPanelClick}
+        />
+      )}
+      {isMapDashboard && (
         <Map
           mapMaxZoom={selectedTab?.mapMaxZoom ? selectedTab.mapMaxZoom : 18}
           mapMinZoom={selectedTab?.mapMinZoom ? selectedTab.mapMinZoom : 0}
@@ -278,6 +281,7 @@ export default function DashboardPreview(
             selectedTab?.allowMapPopupWidthChange || false
           }
           mapPopupWidth={selectedTab?.mapPopupWidth || 25}
+          isProjectMap={isProjectMapDashboard}
         />
       )}
       {dashboardType === dashboardTypeEnum.iframe && selectedTab?.iFrameUrl && (

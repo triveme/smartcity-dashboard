@@ -2,6 +2,10 @@
 
 import { ReactElement, useEffect, useRef } from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import {
+  resolveSingleValueChartNumber,
+  SingleValueChartTabData,
+} from '@/utils/chartHelper';
 import { ECharts, EChartsOption } from 'echarts';
 import { useSearchParams } from 'next/navigation';
 
@@ -9,7 +13,7 @@ type Radial360ChartProps = {
   minValue: number;
   maxValue: number;
   unit: string;
-  value: number;
+  value: number | string;
   mainColor: string;
 
   fontColor: string;
@@ -17,8 +21,8 @@ type Radial360ChartProps = {
   backgroundColor: string;
   fillColor: string;
   unitFontSize: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tabData?: any;
+  tabData?: SingleValueChartTabData;
+  usesQueryParameter?: boolean;
 };
 
 export default function Radial360Chart(
@@ -35,132 +39,121 @@ export default function Radial360Chart(
     fillColor,
     unitFontSize,
     tabData,
+    usesQueryParameter = false,
   } = props;
-  let { value } = props;
+  const { value } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
-
-  if (entityId && tabData) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const findValue = (tabData.chartData as any[]).find(
-      (x) => x.id === entityId,
-    );
-    if (findValue && findValue.values && findValue.values.length > 0) {
-      value = findValue.values[0];
-    }
-  }
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
+  const resolvedValue = resolveSingleValueChartNumber(value, tabData, entityId);
 
   const chartRef = useRef<HTMLDivElement | null>(null);
-  let myChart: ECharts | null = null;
-
-  const initializeChart = (): void => {
-    if (chartRef.current) {
-      myChart = echarts.init(chartRef.current, undefined, {
-        locale: ECHARTS_LOCALE,
-      });
-
-      const option: EChartsOption = {
-        series: [
-          {
-            type: 'gauge',
-            startAngle: 0,
-            endAngle: 360,
-            min: minValue,
-            max: maxValue,
-            splitNumber: 1,
-            axisLine: {
-              lineStyle: {
-                width: 12,
-                color: [[1, backgroundColor]],
-              },
-            },
-            progress: {
-              show: true,
-              roundCap: true,
-              itemStyle: {
-                color: fillColor,
-              },
-            },
-            pointer: {
-              show: false,
-            },
-            axisTick: {
-              show: false,
-            },
-            splitLine: {
-              show: false,
-              length: 15,
-              lineStyle: {
-                width: 2,
-                color: mainColor,
-              },
-            },
-            axisLabel: {
-              show: false,
-              distance: 0,
-              color: fontColor,
-              fontSize: 16,
-            },
-            detail: {
-              formatter: function (params): string {
-                return `{value|${params}}\n{unit|${unit}}`;
-              },
-              color: fontColor,
-              offsetCenter: [0, '0%'],
-              rich: {
-                value: {
-                  fontSize: fontSize,
-                  color: fontColor,
-                },
-                unit: {
-                  color: fontColor,
-                  fontSize: unitFontSize,
-                },
-              },
-            },
-            radius: '80%',
-            center: ['50%', '50%'],
-            data: [{ value: value, itemStyle: { color: fontColor } }],
-          },
-        ],
-      };
-
-      myChart.setOption(option);
-    }
-  };
+  const chartInstanceRef = useRef<ECharts | null>(null);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      initializeChart();
-
-      const resizeChart = (): void => {
-        if (myChart !== null) {
-          myChart.resize();
-        }
-      };
-
-      window.addEventListener('resize', resizeChart);
-
-      return () => {
-        window.removeEventListener('resize', resizeChart);
-        if (myChart !== null) {
-          myChart.dispose();
-        }
-      };
+    if (typeof window === 'undefined' || !chartRef.current) {
+      return;
     }
+
+    chartInstanceRef.current = echarts.init(chartRef.current, undefined, {
+      locale: ECHARTS_LOCALE,
+    });
+
+    const resizeChart = (): void => {
+      chartInstanceRef.current?.resize();
+    };
+
+    window.addEventListener('resize', resizeChart);
+
+    return () => {
+      window.removeEventListener('resize', resizeChart);
+      chartInstanceRef.current?.dispose();
+      chartInstanceRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chartInstanceRef.current) {
+      return;
+    }
+
+    const option: EChartsOption = {
+      series: [
+        {
+          type: 'gauge',
+          startAngle: 0,
+          endAngle: 360,
+          min: minValue,
+          max: maxValue,
+          splitNumber: 1,
+          axisLine: {
+            lineStyle: {
+              width: 12,
+              color: [[1, backgroundColor]],
+            },
+          },
+          progress: {
+            show: true,
+            roundCap: true,
+            itemStyle: {
+              color: fillColor,
+            },
+          },
+          pointer: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          splitLine: {
+            show: false,
+            length: 15,
+            lineStyle: {
+              width: 2,
+              color: mainColor,
+            },
+          },
+          axisLabel: {
+            show: false,
+            distance: 0,
+            color: fontColor,
+            fontSize: 16,
+          },
+          detail: {
+            formatter: () => `{value|${resolvedValue}}\n{unit|${unit}}`,
+            color: fontColor,
+            offsetCenter: [0, '0%'],
+            rich: {
+              value: {
+                fontSize: fontSize,
+                color: fontColor,
+              },
+              unit: {
+                color: fontColor,
+                fontSize: unitFontSize,
+              },
+            },
+          },
+          radius: '80%',
+          center: ['50%', '50%'],
+          data: [{ value: resolvedValue, itemStyle: { color: fontColor } }],
+        },
+      ],
+    };
+
+    chartInstanceRef.current.setOption(option, true);
   }, [
     minValue,
     maxValue,
     unit,
-    value,
+    resolvedValue,
     mainColor,
     fontColor,
     fontSize,
     backgroundColor,
     fillColor,
     unitFontSize,
-  ]); // Added color props as dependencies
+  ]);
 
   return <div className="w-full h-full" ref={chartRef} />;
 }

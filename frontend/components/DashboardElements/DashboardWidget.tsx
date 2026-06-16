@@ -98,6 +98,7 @@ export default async function DashboardWidget({
               type="widget"
               widgetPrimaryColor={ciColors?.widgetPrimaryColor}
               widgetFontColor={ciColors?.widgetFontColor}
+              ciColors={ciColors}
             />
           )}
           {widget.allowShare && (
@@ -180,6 +181,11 @@ export default async function DashboardWidget({
         {widget.tabs &&
           widget.tabs.length > 0 &&
           widget.tabs.map((tab: Tab, index: number) => {
+            const resolvedTab: Tab = {
+              ...tab,
+              timeframe: tab.timeframe ?? widget?.widgetData?.data?.timeframe,
+            };
+
             // Determine what data to pass to the tab based on available properties
             let tabData;
             // First check if we have widgetData
@@ -210,7 +216,7 @@ export default async function DashboardWidget({
             return (
               <DashboardTab
                 key={`tab-in-widget-${tab.id}-${index}`}
-                tab={tab}
+                tab={resolvedTab}
                 tabData={tabData}
                 tenant={tenant}
                 isCombinedWidget={isCombinedWidget}

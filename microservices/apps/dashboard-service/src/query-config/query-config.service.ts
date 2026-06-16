@@ -15,6 +15,7 @@ import { QueryService } from '../query/query.service';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { createHash } from 'crypto';
 import { QueryConfigRepo } from './query-config.repo';
+import { timeframeEnum } from '@app/postgres-db/schemas/enums.schema';
 
 export type CreatedQueryConfig = QueryConfig & {
   queryId: string;
@@ -48,9 +49,9 @@ export class QueryConfigService {
     row: NewQueryConfig,
     transaction?: DbType,
   ): Promise<CreatedQueryConfig> {
+    this.normalizeWritePayload(row);
     row.hash = this.generateHash(row);
 
-    console.error('Create query config');
     const result = await this.queryConfigRepo.create(row, transaction);
 
     if (result) {
@@ -84,6 +85,7 @@ export class QueryConfigService {
     values: Partial<QueryConfig>,
     transaction?: DbType,
   ): Promise<QueryConfig> {
+    this.normalizeWritePayload(values);
     values.hash = this.generateHash(values);
 
     return this.queryConfigRepo.update(id, values, transaction);
@@ -102,6 +104,38 @@ export class QueryConfigService {
 
       return this.queryConfigRepo.delete(id, tx);
     });
+  }
+
+  private formatToStructureDate = (input: string | Date): string => {
+    if (!input) return '';
+    const date = new Date(input);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().replace('Z', '+0100');
+  };
+
+  private normalizeWritePayload(
+    values: Partial<QueryConfig> | NewQueryConfig,
+  ): void {
+    delete values.createdAt;
+    delete values.updatedAt;
+
+    if (values.timeframe === timeframeEnum.enumValues[0]) {
+      values.dataStartDate = this.normalizeDateValue(values.dataStartDate);
+      values.dataUntilDate = this.normalizeDateValue(values.dataUntilDate);
+      return;
+    }
+
+    values.dataStartDate = null;
+    values.dataUntilDate = null;
+  }
+
+  private normalizeDateValue(input?: string | Date | null): Date | null {
+    if (!input) return null;
+
+    const normalizedValue = this.formatToStructureDate(input);
+    if (!normalizedValue) return null;
+
+    return new Date(normalizedValue);
   }
 
   private generateHash(object: Partial<QueryConfig> | NewQueryConfig): string {

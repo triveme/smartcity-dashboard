@@ -40,6 +40,7 @@ import {
   ZoomHandler,
   getColorForValue,
   createCustomIcon,
+  createSearchResultIcon,
   createClusterCustomIcon,
   findValidWmsConfig,
   getIconForValue,
@@ -84,18 +85,13 @@ import {
   createSelectCoordinatesHandler,
   createSelectRouteHandler,
 } from './MapProjectUtils';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-const defaultSearchIcon = L.icon({
+const defaultPinDraftIcon = L.icon({
   iconUrl: markerIcon.src,
-  iconRetinaUrl: markerIcon2x.src,
-  shadowUrl: markerShadow.src,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowSize: [41, 41],
 });
 
 // Union type for the component props
@@ -170,7 +166,11 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     Record<string, (string | number)[]>
   >({});
   const [selectedDataSources, setSelectedDataSources] = useState<number[]>([]);
-  const [searchMarker, setSearchMarker] = useState<{
+  const [searchResultMarker, setSearchResultMarker] = useState<{
+    position: LatLngExpression;
+    label: string;
+  } | null>(null);
+  const [pinDraftMarker, setPinDraftMarker] = useState<{
     position: LatLngExpression;
     label: string;
     routePoints?: LatLngExpression[];
@@ -186,6 +186,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
   const requiredRole = 'scs-project-admin';
   const isProjectAdmin = roleOptions.includes(requiredRole);
+  const showProjectPinControls = Boolean(props.isProjectMap) && isProjectAdmin;
 
   // Extract roles from JWT token when auth changes
   useEffect(
@@ -765,18 +766,16 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       return true;
     });
 
-    // If the user selected an address in the modal, append it to the marker list
+    // If the user selected an address in the pin modal, append it to the marker list
     // so it is rendered using the same icon generation logic as other markers.
     // Only show the pin if it is NOT a route (route shows dashed line only).
-    if (searchMarker && !searchMarker.routePoints) {
+    if (pinDraftMarker && !pinDraftMarker.routePoints) {
       try {
-        const pos = Array.isArray(searchMarker.position)
-          ? (searchMarker.position as [number, number])
-          : // if it's an object like {lat, lng}
-            [
-              (searchMarker.position as any).lat,
-              (searchMarker.position as any).lng,
-            ];
+        const pos = toMarkerTuple(pinDraftMarker);
+
+        if (!pos) {
+          return base;
+        }
 
         const hasMatch = base.some((marker) => {
           const [lat, lng] = marker.position;
@@ -787,21 +786,21 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           return base;
         }
 
-        const searchMarkerEntry: MarkerType = {
+        const pinDraftMarkerEntry: MarkerType = {
           position: pos as [number, number],
-          title: searchMarker.label || 'Ausgewählt',
+          title: pinDraftMarker.label || 'Ausgewählt',
           details: {
-            id: 'search-marker',
-            routePoints: (searchMarker as any).routePoints,
+            id: 'pin-draft-marker',
+            routePoints: pinDraftMarker.routePoints,
           },
           dataSource: 0,
           iconIndex: -1,
         };
 
-        return [...base, searchMarkerEntry];
+        return [...base, pinDraftMarkerEntry];
       } catch (err) {
         // Fall back to base if anything unexpected happens
-        console.error('Error adding searchMarker to filtered markers', err);
+        console.error('Error adding pinDraftMarker to filtered markers', err);
         return base;
       }
     }
@@ -1362,10 +1361,45 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         isProjectAdmin,
       );
       setLocalData(updater);
-      setSearchMarker(null); // remove grey pin
+      setPinDraftMarker(null); // remove grey pin
     } catch (err) {
       console.error('handleProjectCreated failed to append project', err);
     }
+  };
+
+  const toMarkerTuple = (
+    marker: { position: LatLngExpression } | null,
+  ): [number, number] | null => {
+    if (!marker) {
+      return null;
+    }
+
+    if (Array.isArray(marker.position)) {
+      return marker.position as [number, number];
+    }
+
+    const latLng = marker.position as { lat?: number; lng?: number };
+    if (typeof latLng.lat === 'number' && typeof latLng.lng === 'number') {
+      return [latLng.lat, latLng.lng];
+    }
+
+    return null;
+  };
+
+  const markerListHasPosition = (
+    markers: MarkerType[],
+    target: [number, number] | null,
+  ): boolean => {
+    if (!target) {
+      return false;
+    }
+
+    return markers.some((marker) => {
+      const [lat, lng] = marker.position;
+      return (
+        Math.abs(lat - target[0]) < 1e-6 && Math.abs(lng - target[1]) < 1e-6
+      );
+    });
   };
 
   // Get marker colors and icons based on map type
@@ -1611,7 +1645,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
               <SearchControl
                 position="topright"
                 onResultSelect={(result) => {
-                  setSearchMarker(result);
+                  setSearchResultMarker(result);
                   if (result)
                     mapRef.current?.panTo(result.position, { duration: 1.2 });
                 }}
@@ -1679,9 +1713,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                       const isSelected = selectedMarker.id === index;
                       let finalColor = markerProps.color; // This already handles active vs default color
 
-                      // If this is the transient search marker inserted by the modal,
+                      // If this is the transient pin draft marker inserted by the modal,
                       // force a grey color so it visually differs from existing markers.
-                      if (marker?.details?.id === 'search-marker') {
+                      if (marker?.details?.id === 'pin-draft-marker') {
                         finalColor = tempMarkerColor;
                       }
 
@@ -1862,9 +1896,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 })()}
 
                 {/* If a route was created in the modal, render it as a polyline (single visual line) */}
-                {searchMarker?.routePoints && (
+                {pinDraftMarker?.routePoints && (
                   <Polyline
-                    positions={searchMarker.routePoints as LatLngExpression[]}
+                    positions={pinDraftMarker.routePoints as LatLngExpression[]}
                     pathOptions={{
                       color: tempMarkerColor,
                       weight: 5,
@@ -1875,6 +1909,20 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 )}
               </MarkerClusterGroup>
             )}
+
+            {props.mapSearch &&
+              searchResultMarker &&
+              !markerListHasPosition(
+                getFilteredMarkers(),
+                toMarkerTuple(searchResultMarker),
+              ) && (
+                <Marker
+                  position={searchResultMarker.position}
+                  icon={createSearchResultIcon()}
+                >
+                  <Popup>{searchResultMarker.label}</Popup>
+                </Marker>
+              )}
 
             <SetViewToBounds
               markerPositions={markerPositions}
@@ -1934,7 +1982,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                     />
                   </div>
                 )}
-              {isProjectAdmin && (
+              {showProjectPinControls && (
                 <div
                   className="flex flex-row items-center justify-between p-2 rounded-lg shadow-lg cursor-pointer"
                   onClick={togglePinModal}
@@ -2008,7 +2056,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 isFullscreenMap={isFullscreenMap}
               />
             )}
-            {isProjectAdmin && isPinModalOpen && (
+            {showProjectPinControls && isPinModalOpen && (
               <MapCreatePinModal
                 menuStyle={{ ...menuStyle, width: '25rem' }}
                 ciColors={ciColors}
@@ -2016,12 +2064,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 initialData={editingMarker}
                 onProjectCreated={handleProjectCreated}
                 onSelectCoordinates={createSelectCoordinatesHandler(
-                  setSearchMarker,
+                  setPinDraftMarker,
                   mapRef,
                 )}
                 onRequestCenterPinVisibility={setCenterPinVisible}
                 onSelectRoute={createSelectRouteHandler(
-                  setSearchMarker,
+                  setPinDraftMarker,
                   mapRef,
                 )}
               />
@@ -2220,12 +2268,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 );
               })}
 
-              {props.mapSearch && searchMarker && (
+              {props.mapSearch && pinDraftMarker && (
                 <Marker
-                  position={searchMarker.position}
-                  icon={defaultSearchIcon}
+                  position={pinDraftMarker.position}
+                  icon={defaultPinDraftIcon}
                 >
-                  <Popup>{searchMarker.label}</Popup>
+                  <Popup>{pinDraftMarker.label}</Popup>
                 </Marker>
               )}
             </MapContainer>
