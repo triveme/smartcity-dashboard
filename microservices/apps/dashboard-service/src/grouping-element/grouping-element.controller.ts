@@ -48,11 +48,17 @@ export class GroupingElementController {
   @Get('/tenant/:abbreviation')
   async getByTenantAbbreviation(
     @Param('abbreviation') abbreviation: string,
+    @Query('includeEmptyGroups') includeEmptyGroups: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<GroupingElementWithChildren[]> {
     const roles = request.roles ?? [];
     const tenant = request.tenant ?? undefined;
-    return this.service.getByTenantAbbreviation(abbreviation, roles, tenant);
+    return this.service.getByTenantAbbreviation(
+      abbreviation,
+      roles,
+      tenant,
+      includeEmptyGroups === 'true',
+    );
   }
 
   @Public()
@@ -66,8 +72,12 @@ export class GroupingElementController {
 
   @Public()
   @Post('/')
-  async create(@Body() row: NewGroupingElement): Promise<GroupingElement> {
-    return this.service.create(row);
+  async create(
+    @Body() row: NewGroupingElement,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<GroupingElement> {
+    const roles = request.roles ?? [];
+    return this.service.create(row, roles);
   }
 
   @Public()
@@ -85,7 +95,9 @@ export class GroupingElementController {
   @Delete('/:id')
   async delete(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() request: AuthenticatedRequest,
   ): Promise<GroupingElement> {
-    return this.service.delete(id);
+    const roles = request.roles ?? [];
+    return this.service.delete(id, roles);
   }
 }

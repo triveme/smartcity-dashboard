@@ -2,6 +2,7 @@ import {
   QueryConfig,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
+  timeframeEnum,
 } from '@/types';
 import { WizardErrors } from '@/types/errors';
 
@@ -14,6 +15,7 @@ export function validateQueryConfig(
   usesQueryParameter?: boolean,
 ): WizardErrors {
   const errorsOccured: WizardErrors = {};
+  const isNgsiDatasource = origin === 'ngsi-v2' || origin === 'ngsi-ld';
 
   if (
     queryConfig?.interval === undefined ||
@@ -35,18 +37,16 @@ export function validateQueryConfig(
   if (!queryConfig?.aggrMode) {
     errorsOccured.aggregationsError = 'Aggregationsmodus ist erforderlich';
   }
+  if (isNgsiDatasource && !queryConfig.timeframe) {
+    errorsOccured.timeValueError = 'Zeitraum ist erforderlich';
+  }
+
   if (
-    componentType !== tabComponentTypeEnum.map &&
-    componentSubType !== tabComponentSubTypeEnum.degreeChart180 &&
-    componentSubType !== tabComponentSubTypeEnum.degreeChart360 &&
-    componentSubType !== tabComponentSubTypeEnum.measurement &&
-    componentSubType !== tabComponentSubTypeEnum.stageableChart &&
-    componentType !== tabComponentTypeEnum.value &&
-    componentType !== tabComponentTypeEnum.image &&
-    componentType !== tabComponentTypeEnum.iframe &&
-    !queryConfig.timeframe
+    isNgsiDatasource &&
+    queryConfig.timeframe === timeframeEnum.user_defined &&
+    !queryConfig.dataStartDate
   ) {
-    errorsOccured.timeValueError = 'Zeitwert ist erforderlich';
+    errorsOccured.timeValueError = 'Startdatum ist erforderlich';
   }
   if (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) {
     errorsOccured.sensorError = 'Sensoren sind erforderlich';

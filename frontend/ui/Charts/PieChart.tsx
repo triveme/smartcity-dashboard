@@ -21,6 +21,7 @@ type PieChartProps = {
   unhighlightedColor?: string;
   menuHoverColor: string;
   chartShowPercent?: boolean;
+  exportBackgroundColor?: string;
 };
 
 export default function PieChart(props: PieChartProps): ReactElement {
@@ -38,6 +39,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
     unhighlightedColor,
     menuHoverColor,
     chartShowPercent,
+    exportBackgroundColor,
   } = props;
 
   const chartRef = useRef<HTMLDivElement>(null);
@@ -122,6 +124,7 @@ export default function PieChart(props: PieChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
+              backgroundColor: exportBackgroundColor,
               title: 'Als Bild herunterladen...    ',
               icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {

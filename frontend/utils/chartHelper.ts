@@ -1,7 +1,45 @@
 import { ChartData } from '@/types';
+import { ECharts } from 'echarts';
 import { Dictionary } from 'lodash';
 
 type LabelMap = Map<number, [number, number, string]>;
+const germanWeekdayFormatter = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'short',
+});
+const germanWeekdayLongFormatter = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'long',
+});
+
+export type WeekdayLabelMode = 'short' | 'long';
+
+const getFontSizeInPx = (
+  fontSize: string | number | undefined,
+  fallback = 12,
+): number => {
+  if (typeof fontSize === 'number' && Number.isFinite(fontSize)) {
+    return fontSize;
+  }
+
+  const parsedSize =
+    typeof fontSize === 'string' ? Number.parseInt(fontSize, 10) : Number.NaN;
+
+  return Number.isFinite(parsedSize) ? parsedSize : fallback;
+};
+
+export type SingleValueChartDatum =
+  | number
+  | string
+  | [string, number | string, string?];
+
+export type SingleValueChartTabData = {
+  chartValues?: Array<number | string>;
+  chartData?: Array<{
+    id?: string;
+    name?: string;
+    values?: unknown[];
+  }>;
+  textValue?: string | number | null;
+};
 
 function isSameDay(ts1: number, ts2: number): boolean {
   const d1 = new Date(ts1);
@@ -181,6 +219,7 @@ export const getChartDateRichText = (
 ): Dictionary<object> | undefined => {
   switch (representation) {
     case 'Default':
+    case 'Default Without Month':
       return {
         yearStyle: {
           fontWeight: 'bold',
@@ -272,6 +311,14 @@ export const getChartDateFormatter = (
         hour: '{hourStyle|{HH}:{mm}}',
         second: '{secondStyle|{mm}:{ss}}',
       };
+    case 'Default Without Month':
+      return {
+        year: '{yearStyle|{yyyy}}',
+        month: '',
+        day: '{dayStyle|{dd}.{M}.}',
+        hour: '{hourStyle|{HH}:{mm}}',
+        second: '{secondStyle|{mm}:{ss}}',
+      };
     case 'Only Year':
       return {
         year: '{yearStyle|{yyyy}}',
@@ -305,11 +352,218 @@ export const getChartDateFormatter = (
           day: '',
         };
       }
+    case 'Weekdays':
+      return (value: number): string => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return '';
+        }
+        return germanWeekdayFormatter.format(date).replace(/\./g, '');
+      };
 
     /* If the representation not known, deactivate the date formatter */
     default:
       return undefined;
   }
+};
+
+export const formatGermanWeekday = (
+  value: number,
+  mode: WeekdayLabelMode,
+): string => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  if (mode === 'long') {
+    return germanWeekdayLongFormatter.format(date);
+  }
+
+  return germanWeekdayFormatter.format(date).replace(/\./g, '');
+};
+
+export const getAdaptiveWeekdayFormatter = (
+  availablePixelsPerTick: number,
+  fontSize: string | number | undefined,
+): ((value: number) => string) => {
+  const resolvedFontSize = getFontSizeInPx(fontSize);
+  const estimatedLongLabelWidth = 'Donnerstag'.length * resolvedFontSize * 0.62;
+  const labelMode: WeekdayLabelMode =
+    availablePixelsPerTick >= estimatedLongLabelWidth + 12 ? 'long' : 'short';
+
+  return (value: number): string => formatGermanWeekday(value, labelMode);
+};
+
+// Consistent time label formatter (overrides eCharts auto switching)
+export const formatTickByAggrPeriod = (
+  tickValue: number | string,
+  aggrPeriod: string,
+  range?: { min: Date | number; max: Date | number } | null,
+): string => {
+  const d = new Date(tickValue);
+  if (isNaN(d.getTime())) return '';
+
+  const pad2 = (n: number): string => (n < 10 ? `0${n}` : String(n));
+  const getTimeValue = (value: Date | number): number =>
+    value instanceof Date ? value.getTime() : new Date(value).getTime();
+
+  const yyyy = d.getFullYear();
+  const MM = pad2(d.getMonth() + 1);
+  const DD = pad2(d.getDate());
+  const HH = pad2(d.getHours());
+  const mm = pad2(d.getMinutes());
+
+  switch (aggrPeriod) {
+    case 'live':
+    case 'day':
+      return `${HH}:${mm}`;
+
+    case 'week':
+    case 'month':
+      return `${DD}.${MM}`;
+
+    case 'quarter': {
+      const quarter = Math.floor(d.getMonth() / 3) + 1;
+      return `Q${quarter} ${yyyy}`;
+    }
+
+    case 'year':
+      return `${MM}.${yyyy}`;
+
+    case 'year2':
+    case 'year3':
+      return `${yyyy}`;
+
+    case 'user_defined': {
+      const minTime =
+        range?.min !== undefined ? getTimeValue(range.min) : Number.NaN;
+      const maxTime =
+        range?.max !== undefined ? getTimeValue(range.max) : Number.NaN;
+      const spanMs =
+        Number.isFinite(minTime) && Number.isFinite(maxTime)
+          ? Math.abs(maxTime - minTime)
+          : Number.NaN;
+      const dayMs = 24 * 60 * 60 * 1000;
+
+      if (Number.isFinite(spanMs) && spanMs <= 2 * dayMs) {
+        return `${DD}.${MM}. ${HH}:${mm}`;
+      }
+
+      if (Number.isFinite(spanMs) && spanMs <= 90 * dayMs) {
+        return `${DD}.${MM}`;
+      }
+
+      if (Number.isFinite(spanMs) && spanMs <= 730 * dayMs) {
+        return `${MM}.${yyyy}`;
+      }
+
+      return `${yyyy}`;
+    }
+
+    default:
+      return '';
+  }
+};
+
+const getXAxisBounds = (
+  sortedData: ChartData[],
+  aggrPeriod: string,
+  setXByAggrPeriod: boolean,
+): { min?: number; max?: number } => {
+  if (!sortedData || sortedData.length === 0) {
+    return {
+      min: undefined,
+      max: undefined,
+    };
+  }
+
+  let minTime = Infinity;
+  let maxTime = -Infinity;
+
+  sortedData.forEach((seriesItem) => {
+    seriesItem.values.forEach(([timestamp]) => {
+      const time = new Date(timestamp).getTime();
+
+      if (!Number.isNaN(time)) {
+        if (time < minTime) minTime = time;
+        if (time > maxTime) maxTime = time;
+      }
+    });
+  });
+
+  if (minTime === Infinity || maxTime === -Infinity) {
+    return {
+      min: undefined,
+      max: undefined,
+    };
+  }
+
+  if (!setXByAggrPeriod || aggrPeriod === 'live') {
+    return {
+      min: minTime,
+      max: maxTime,
+    };
+  }
+
+  const end = new Date(maxTime);
+  const start = new Date(maxTime);
+
+  switch (aggrPeriod) {
+    case 'day': {
+      start.setTime(end.getTime() - 24 * 60 * 60 * 1000);
+      break;
+    }
+
+    case 'week': {
+      start.setTime(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+      break;
+    }
+
+    case 'month': {
+      start.setMonth(start.getMonth() - 1);
+      break;
+    }
+
+    case 'quarter': {
+      start.setMonth(start.getMonth() - 3);
+      break;
+    }
+
+    case 'year': {
+      start.setFullYear(start.getFullYear() - 1);
+      break;
+    }
+
+    case 'year2': {
+      start.setFullYear(start.getFullYear() - 2);
+      break;
+    }
+
+    case 'year3': {
+      start.setFullYear(start.getFullYear() - 3);
+      break;
+    }
+
+    case 'user_defined': {
+      return {
+        min: minTime,
+        max: maxTime,
+      };
+    }
+
+    default: {
+      return {
+        min: minTime,
+        max: maxTime,
+      };
+    }
+  }
+
+  return {
+    min: start.getTime(),
+    max: end.getTime(),
+  };
 };
 
 export const sortFilteredData = (data: ChartData[]): ChartData[] => {
@@ -327,3 +581,105 @@ export const sortChartSensorNames = (sensors: string[]): string[] => {
   );
   return sortedSensorsNames;
 };
+
+export const setXAxisBounds = (
+  sortedData: ChartData[],
+  aggrPeriod: string,
+  setXByAggrPeriod: boolean,
+  setXAxisMin: (value?: number) => void,
+  setXAxisMax: (value?: number) => void,
+): void => {
+  const { min, max } = getXAxisBounds(sortedData, aggrPeriod, setXByAggrPeriod);
+
+  setXAxisMin(min);
+  setXAxisMax(max);
+};
+
+export const extractNumericChartValue = (value: unknown): number | null => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().replace(',', '.');
+    if (normalized === '') {
+      return null;
+    }
+
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return null;
+    }
+
+    if (value.length > 1 && typeof value[0] === 'string') {
+      return extractNumericChartValue(value[1]);
+    }
+
+    return extractNumericChartValue(value[value.length - 1]);
+  }
+
+  if (value && typeof value === 'object' && 'value' in value) {
+    return extractNumericChartValue((value as { value: unknown }).value);
+  }
+
+  return null;
+};
+
+export const resolveSingleValueChartNumber = (
+  propValue: number | string,
+  tabData?: SingleValueChartTabData,
+  entityId?: string | null,
+): number => {
+  if (entityId && Array.isArray(tabData?.chartData)) {
+    const entityMatch = tabData.chartData.find(
+      (item) => item.id === entityId || item.name === entityId,
+    );
+    const entityValue = extractNumericChartValue(entityMatch?.values?.[0]);
+
+    if (entityValue !== null) {
+      return entityValue;
+    }
+  }
+
+  const directValue = extractNumericChartValue(propValue);
+  if (directValue !== null) {
+    return directValue;
+  }
+
+  const chartValue = extractNumericChartValue(tabData?.chartValues?.[0]);
+  if (chartValue !== null) {
+    return chartValue;
+  }
+
+  const firstChartDataValue = extractNumericChartValue(
+    tabData?.chartData?.[0]?.values?.[0],
+  );
+  if (firstChartDataValue !== null) {
+    return firstChartDataValue;
+  }
+
+  const textValue = extractNumericChartValue(tabData?.textValue);
+  if (textValue !== null) {
+    return textValue;
+  }
+
+  return 0;
+};
+
+export function getSelectedLegendNames(chart: ECharts): string[] {
+  const option = chart.getOption();
+  const legend = Array.isArray(option.legend)
+    ? option.legend[0]
+    : option.legend;
+  const selected = legend?.selected as Record<string, boolean> | undefined;
+  const series = Array.isArray(option.series) ? option.series : [];
+
+  return series
+    .map((seriesItem) => seriesItem?.name)
+    .filter((name): name is string => typeof name === 'string' && name !== '')
+    .filter((name) => selected?.[name] !== false);
+}

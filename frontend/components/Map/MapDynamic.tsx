@@ -41,6 +41,7 @@ type MapDynamicProps = {
   combinedMapData: any;
   combinedQueryData?: QueryDataWithAttributes[];
   uiFilterData?: QueryDataWithAttributes[];
+  isProjectMap?: boolean;
 };
 
 export default function MapDynamic(props: MapDynamicProps): ReactElement {
@@ -58,6 +59,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
     widgetDownloadId,
     tab,
     combinedMapData,
+    isProjectMap,
   } = props;
 
   const [filteredData, setFilteredData] = useState<GeoJSONSensorData[]>([]);
@@ -279,6 +281,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           handleOnMarkerClick={handleOnMarkerClick}
           allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
           mapPopupWidth={tab?.mapPopupWidth || 25}
+          isProjectMap={isProjectMap}
         />
       ) : (
         <Map
@@ -371,6 +374,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           handleOnMarkerClick={handleOnMarkerClick}
           allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
           mapPopupWidth={tab?.mapPopupWidth || 25}
+          isProjectMap={isProjectMap}
         />
       )}
     </>

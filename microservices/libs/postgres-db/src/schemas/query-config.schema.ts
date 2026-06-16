@@ -41,6 +41,8 @@ export const queryConfigs = pgTable('query_config', {
   updatedAt: timestamp('updated_at', { mode: 'date', precision: 6 })
     .notNull()
     .default(sql`now()`),
+  dataStartDate: timestamp('data_start_date', { mode: 'date', precision: 6 }),
+  dataUntilDate: timestamp('data_until_date', { mode: 'date', precision: 6 }),
 });
 
 export const queryConfigsRelations = relations(queryConfigs, ({ one }) => ({

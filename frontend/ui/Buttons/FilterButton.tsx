@@ -18,7 +18,7 @@ export default function FilterButton(props: FilterButtonProps): ReactElement {
   } = props;
 
   return (
-    <div className="hidden sm:flex flex-col items-center gap-4 px-3 w-[250px]">
+    <div className="hidden sm:flex shrink-0 flex-col items-center gap-4 px-3 w-[220px] xl:w-[250px]">
       {attributes.length > 0 &&
         attributes.map((attribute) => (
           <button

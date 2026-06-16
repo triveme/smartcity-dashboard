@@ -50,9 +50,9 @@ export async function getCorporateInfosWithLogos(
     if (Array.isArray(data) && data.length > 0 && isLight) {
       ciColors = data[0];
     } else {
-      ciColors = data[1];
+      ciColors = data[1] ?? data[0];
     }
-    return ciColors;
+    return ciColors ?? DEFAULT_CI;
   } catch (error) {
     console.error('Failed to fetch corporate info:', error);
     return DEFAULT_CI;

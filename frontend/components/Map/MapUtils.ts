@@ -169,7 +169,7 @@ export function getColorForValue(
       comparableValueNumber !== null &&
       comparableValueNumber <= comparableStaticNumber
     ) {
-      return staticValuesColors[i - 1 < 0 ? 0 : i - 1];
+      return staticValuesColors[i];
     }
 
     const comparableStaticText = toComparableText(staticValues[i]);
@@ -244,14 +244,17 @@ export function createCustomIcon(
         ? `combined-marker-icon ds-${dataSourceIndex}`
         : 'combined-marker-icon';
 
-    return L.icon({
+    const options: L.IconOptions & { renderedMarkerColor: string } = {
       iconUrl: `data:image/svg+xml,${urlEncodedSvg}`,
       iconSize: [50, 50],
       iconAnchor: [30, 60],
       popupAnchor: [0, -60],
       shadowSize: [41, 41],
       className,
-    });
+      renderedMarkerColor: color,
+    };
+
+    return L.icon(options);
   } else {
     const iconSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="${color}">
@@ -261,14 +264,33 @@ export function createCustomIcon(
     </g>
     </svg>
     `;
-    return L.divIcon({
+    const options: L.DivIconOptions & { renderedMarkerColor: string } = {
       html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
       className: 'custom-marker-icon',
       iconSize: L.point(60, 60),
       iconAnchor: [30, 60],
       popupAnchor: [0, -60],
-    });
+      renderedMarkerColor: color,
+    };
+
+    return L.divIcon(options);
   }
+}
+
+export function createSearchResultIcon(): L.DivIcon {
+  const iconSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" fill="#EA4335">
+      <path d="M15 2C10.58 2 7 5.58 7 10c0 6.627 8 16 8 16s8-9.373 8-16c0-4.42-3.58-8-8-8z"/>
+    </svg>
+  `;
+
+  return L.divIcon({
+    html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
+    className: 'custom-marker-icon search-result-marker-icon',
+    iconSize: L.point(42, 42),
+    iconAnchor: [21, 42],
+    popupAnchor: [0, -38],
+  });
 }
 
 export function createClusterCustomIcon(
@@ -289,11 +311,34 @@ export function createClusterCustomIcon(
 
   let markerColor = '#257DC9';
   let markerIconColor = '#FFF';
+  let dominantRenderedMarkerColor: string | null = null;
+
+  const childMarkers = cluster.getAllChildMarkers() as L.Marker[];
+  const renderedColorCounts: Record<string, number> = {};
+
+  childMarkers.forEach((m: L.Marker) => {
+    const icon = m?.options?.icon;
+    const renderedMarkerColor = (
+      icon?.options as { renderedMarkerColor?: string } | undefined
+    )?.renderedMarkerColor;
+
+    if (renderedMarkerColor) {
+      renderedColorCounts[renderedMarkerColor] =
+        (renderedColorCounts[renderedMarkerColor] || 0) + 1;
+    }
+  });
+
+  let maxRenderedColorCount = -1;
+  for (const [color, count] of Object.entries(renderedColorCounts)) {
+    if (count > maxRenderedColorCount) {
+      maxRenderedColorCount = count;
+      dominantRenderedMarkerColor = color;
+    }
+  }
 
   if (isCombinedMap) {
     // For combined maps, derive the cluster color from the dominant
     // data source among all child markers (the one with most markers).
-    const childMarkers = cluster.getAllChildMarkers() as L.Marker[];
     const counts: Record<number, number> = {};
 
     childMarkers.forEach((m: L.Marker) => {
@@ -318,7 +363,9 @@ export function createClusterCustomIcon(
       }
     }
 
-    if (Array.isArray(mapMarkerColor) && mapMarkerColor.length > 0) {
+    if (dominantRenderedMarkerColor) {
+      markerColor = dominantRenderedMarkerColor;
+    } else if (Array.isArray(mapMarkerColor) && mapMarkerColor.length > 0) {
       markerColor =
         mapMarkerColor[dominantIndex] ?? mapMarkerColor[0] ?? markerColor;
     }
@@ -330,8 +377,11 @@ export function createClusterCustomIcon(
         markerIconColor;
     }
   } else {
-    markerColor =
-      typeof mapMarkerColor === 'string' ? mapMarkerColor : '#257DC9';
+    markerColor = dominantRenderedMarkerColor
+      ? dominantRenderedMarkerColor
+      : typeof mapMarkerColor === 'string'
+        ? mapMarkerColor
+        : '#257DC9';
     markerIconColor =
       typeof mapMarkerIconColor === 'string' ? mapMarkerIconColor : '#FFF';
   }

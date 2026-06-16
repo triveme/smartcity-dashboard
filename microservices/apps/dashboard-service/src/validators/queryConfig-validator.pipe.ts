@@ -3,6 +3,7 @@ import {
   Injectable,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 
@@ -14,11 +15,16 @@ interface QueryConfigWithTypes extends QueryConfig {
 
 @Injectable()
 export class SanitizeQueryConfigPipe implements PipeTransform {
+  private readonly logger = new Logger(SanitizeQueryConfigPipe.name);
+
   transform(queryConfig: QueryConfigWithTypes): QueryConfig {
-    if (queryConfig.id) {
-      return queryConfig;
-    }
+    const isExistingQueryConfig = Boolean(queryConfig.id);
     const errorsOccured: string[] = [];
+    const fatalErrorsOccured: string[] = [];
+    const isNgsiDatasource =
+      queryConfig.dataSourceType === 'ngsi-v2' ||
+      queryConfig.dataSourceType === 'ngsi-ld';
+
     if (queryConfig.componentSubType === 'Measurement') {
       queryConfig.aggrMode = 'none';
     }
@@ -48,6 +54,26 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
         errorsOccured.push('Sensoren sind erforderlich');
       }
     }
+
+    if (
+      isNgsiDatasource &&
+      (queryConfig.timeframe === undefined || queryConfig.timeframe === null)
+    ) {
+      const error = 'Zeitraum ist erforderlich';
+      errorsOccured.push(error);
+      fatalErrorsOccured.push(error);
+    }
+
+    if (
+      isNgsiDatasource &&
+      queryConfig.timeframe === 'user_defined' &&
+      !queryConfig.dataStartDate
+    ) {
+      const error = 'Startdatum ist erforderlich';
+      errorsOccured.push(error);
+      fatalErrorsOccured.push(error);
+    }
+
     if (
       queryConfig.componentType !== 'Karte' &&
       queryConfig.componentType !== 'Wert' &&
@@ -83,10 +109,18 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       }
     }
     if (errorsOccured.length > 0) {
-      throw new HttpException(
-        `Errors in query config: ${JSON.stringify(errorsOccured)}`,
-        HttpStatus.BAD_REQUEST,
-      );
+      if (fatalErrorsOccured.length > 0 || !isExistingQueryConfig) {
+        throw new HttpException(
+          `Errors in query config: ${JSON.stringify(errorsOccured)}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      if (isExistingQueryConfig) {
+        this.logger.warn(
+          `Allowing existing query config ${queryConfig.id} despite validation errors: ${JSON.stringify(errorsOccured)}`,
+        );
+      }
     }
     delete queryConfig.componentType;
     delete queryConfig.componentSubType;

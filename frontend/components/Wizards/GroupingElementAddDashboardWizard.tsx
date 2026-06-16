@@ -31,6 +31,7 @@ type GroupingElementWizardProps = {
   backgroundColor: string;
   fontColor: string;
   geColor: string;
+  dashboardUrls: string[];
 };
 
 export default function GroupingElementAddDashboardWizard(
@@ -48,6 +49,7 @@ export default function GroupingElementAddDashboardWizard(
     backgroundColor,
     fontColor,
     geColor,
+    dashboardUrls,
   } = props;
   const auth = useAuth();
   const { openSnackbar } = useSnackbar();
@@ -113,6 +115,17 @@ export default function GroupingElementAddDashboardWizard(
     if (!element.url) errorsOccured.urlError = 'Url muss ausgefüllt werden!';
     if (element.url && element.url.length < 3)
       errorsOccured.urlError = 'Url muss mindestens drei Zeichen lang sein!';
+
+    // Validate that the group URL is not identical to any existing dashboard URL.
+    if (element.url) {
+      for (const url of dashboardUrls) {
+        if (url.trim() === groupUrl.trim()) {
+          errorsOccured.urlError =
+            'Die Gruppenelement-URL darf nicht identisch mit einer bestehenden Dashboard-URLs sein!';
+          break;
+        }
+      }
+    }
 
     if (Object.keys(errorsOccured).length) {
       for (const key in errorsOccured) {

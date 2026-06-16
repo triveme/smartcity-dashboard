@@ -11,17 +11,16 @@ import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 export default function Menu(): ReactElement {
   const auth = useAuth();
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const accessToken = auth.user?.access_token;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
 
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -48,6 +47,10 @@ export default function Menu(): ReactElement {
     backgroundColor: corporateInfo?.dashboardPrimaryColor || '#2B3244',
     marginLeft: isCollapsed ? '80px' : '256px',
   };
+
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
 
   return (
     <div

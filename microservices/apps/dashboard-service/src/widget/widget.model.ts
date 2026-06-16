@@ -50,3 +50,22 @@ export type TabComponentType =
 
 export type TabSubComponentType =
   typeof tabComponentSubTypeEnum extends PgEnum<infer T> ? T[number] : never;
+
+export type CurrentAreaConfig = {
+  id: string;
+  minRange: string | Date;
+  maxRange: string | Date;
+  selectedLegendNames: string[];
+  downloadCurrentArea: boolean;
+  changeTimeFramePeriod: boolean;
+  timeFramePeriod:
+    | 'user_defined'
+    | 'live'
+    | 'day'
+    | 'week'
+    | 'month'
+    | 'quarter'
+    | 'year'
+    | 'year2'
+    | 'year3';
+};

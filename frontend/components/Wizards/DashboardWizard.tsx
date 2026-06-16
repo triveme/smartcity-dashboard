@@ -73,6 +73,13 @@ type DashboardWizardProps = {
   originalDashboardType?: dashboardTypeEnum;
 };
 
+type TokenClaims = {
+  roles?: string[];
+  realm_access?: {
+    roles?: string[];
+  };
+};
+
 export default function DashboardWizard(
   props: DashboardWizardProps,
 ): ReactElement {
@@ -109,20 +116,21 @@ export default function DashboardWizard(
     originalDashboardType,
     setSelectedTab,
   } = props;
+  const isMapDashboardType = (type: dashboardTypeEnum | undefined): boolean =>
+    type === dashboardTypeEnum.map || type === dashboardTypeEnum.projectMap;
 
   // Keycloak roles
   const auth = useAuth();
-  const [roleOptions, setRoleOptions] = useState([]);
+  const [roleOptions, setRoleOptions] = useState<string[]>([]);
   const [previousWidgetId, setPreviousWidgetId] = useState<string | undefined>(
     undefined,
   );
 
   useEffect(() => {
     if (auth && auth.user && auth.user?.access_token) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const decoded: any = jwtDecode(auth?.user?.access_token);
+      const decoded = jwtDecode<TokenClaims>(auth.user.access_token);
       const roles = decoded.roles || decoded.realm_access?.roles;
-      setRoleOptions(roles);
+      setRoleOptions(roles || []);
     }
   }, [auth]);
 
@@ -135,9 +143,9 @@ export default function DashboardWizard(
   >(undefined);
   const [mapWidgets, setMapWidgets] = useState<WidgetWithChildren[]>([]);
   const [iframeWidgets, setIFrameWidgets] = useState<WidgetWithChildren[]>([]);
-  const [selectedWidget, setSelectedWidget] = dashboardWidget
-    ? useState<Widget>(dashboardWidget)
-    : useState<Widget>();
+  const [selectedWidget, setSelectedWidget] = useState<Widget | undefined>(
+    dashboardWidget,
+  );
 
   const { data: widgets } = useQuery({
     queryKey: ['widgets'],
@@ -217,8 +225,11 @@ export default function DashboardWizard(
   useEffect(() => {
     const fetchPanel = async (): Promise<void> => {
       // delete previously attached panels when user changes dashboardType
+      const switchedWithinMapFamily =
+        isMapDashboardType(originalDashboardType) &&
+        isMapDashboardType(dashboardType);
       if (
-        originalDashboardType !== dashboardType ||
+        (!switchedWithinMapFamily && originalDashboardType !== dashboardType) ||
         prevDashboardType == dashboardTypeEnum.general
       ) {
         await clearPanels();
@@ -227,7 +238,7 @@ export default function DashboardWizard(
       // only runs when user changes dashboardType to Karte or iFrame
       // either when creating a new dashboard or editing type from Allgemein to Karte/iFrame
       const isCurrentSpecial =
-        dashboardType === dashboardTypeEnum.map ||
+        isMapDashboardType(dashboardType) ||
         dashboardType === dashboardTypeEnum.iframe;
       if (prevDashboardType === dashboardTypeEnum.general && isCurrentSpecial) {
         try {
@@ -314,14 +325,11 @@ export default function DashboardWizard(
       }
       setIFrameWidgets(response || []);
     };
-    if (dashboardType === dashboardTypeEnum.map) {
+    if (isMapDashboardType(dashboardType)) {
       getWidgetsWithMapType();
-      if (originalDashboardType !== dashboardTypeEnum.map) {
+      if (!isMapDashboardType(originalDashboardType)) {
         setSelectedWidgetInDropdown('');
-      } else if (
-        originalDashboardType === dashboardTypeEnum.map &&
-        dashboardWidget
-      ) {
+      } else if (dashboardWidget) {
         setSelectedWidgetInDropdown(dashboardWidget.name);
       }
     } else if (dashboardType === dashboardTypeEnum.iframe) {
@@ -434,7 +442,7 @@ export default function DashboardWizard(
           backgroundColor={backgroundColor}
         />
       </div>
-      {dashboardType === dashboardTypeEnum.map && (
+      {isMapDashboardType(dashboardType) && (
         <div className="flex flex-col w-full pb-2 z-0">
           <SearchableDropdown
             value={selectedWidgetInDropdown}

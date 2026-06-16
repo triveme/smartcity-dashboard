@@ -391,25 +391,25 @@ export default function DataPlatformWizard(
         ) : type === authDataTypeEnum.usi ? (
           <div className="flex flex-col justify-start items-start content-center grow w-full">
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Client Id" />
+              <WizardLabel label="App User" />
               <WizardTextfield
-                value={clientId}
+                value={appUser}
                 onChange={(value: string | number): void =>
-                  setClientId(value.toString())
+                  setAppUser(value.toString())
                 }
-                error={errors && errors.clientError}
+                error={errors && errors.appUserError}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
               />
             </div>
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Client Secret" />
+              <WizardLabel label="App User Password" />
               <WizardPasswordTextfield
-                value={clientSecret}
+                value={appUserPassword}
                 onChange={(value: string | number): void =>
-                  setClientSecret(value.toString())
+                  setAppUserPassword(value.toString())
                 }
-                error={errors && errors.clientError}
+                error={errors && errors.appUserError}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
                 iconColor={iconColor}
@@ -428,13 +428,13 @@ export default function DataPlatformWizard(
               />
             </div>
             <div className="flex flex-col w-full pb-2">
-              <WizardLabel label="Authentifizierungs Url" />
+              <WizardLabel label="API Url" />
               <WizardUrlTextfield
-                value={authUrl}
+                value={apiUrl}
                 onChange={(value: string | number): void =>
-                  setAuthUrl(value.toString())
+                  setApiUrl(value.toString())
                 }
-                error={errors && errors.authUrlError}
+                error={errors && errors.apiUrlError}
                 iconColor={iconColor}
                 borderColor={borderColor}
               />
@@ -454,7 +454,7 @@ export default function DataPlatformWizard(
             <div className="flex flex-col w-full pb-2">
               <WizardLabel label="Eventtypes" />
               <WizardTextfield
-                value={collections.join(',')}
+                value={collections.join(',') || 'sensors,eventtypes'}
                 onChange={(value: string | number): void =>
                   handleCollectionChange(value.toString().replace(' ', ','))
                 }

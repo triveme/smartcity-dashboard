@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactElement, useState } from 'react';
-import Cookies from 'js-cookie';
+import { useAuth } from 'react-oidc-context';
 
 import CancelButton from '@/ui/Buttons/CancelButton';
 import SaveButton from '@/ui/Buttons/SaveButton';
@@ -46,8 +46,8 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
     panelHeadlineColorProp,
   } = props;
 
-  const cookie = Cookies.get('access_token');
-  const accessToken = cookie || '';
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token || '';
   const { openSnackbar } = useSnackbar();
 
   const [panelName, setPanelName] = useState(activePanel?.name || '');

@@ -1,12 +1,23 @@
 'use client';
-import { ReactElement, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
-import { aggregationEnum, ChartData } from '@/types';
+import {
+  aggregationEnum,
+  ChartData,
+  CurrentAreaConfig,
+  timeframeEnum,
+} from '@/types';
 import {
   formatYAxisLabel,
   calculateYAxisNameGap,
-  calculateLeftGrid,
   calculateBottomGrid,
   getUniqueField,
   calculateMinYAxisValue,
@@ -14,6 +25,10 @@ import {
   getChartDateFormatter,
   getChartDateRichText,
   getLabelMap,
+  getSelectedLegendNames,
+  formatTickByAggrPeriod,
+  setXAxisBounds,
+  getAdaptiveWeekdayFormatter,
 } from '@/utils/chartHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
@@ -32,11 +47,16 @@ import WizardLabel from '../WizardLabel';
 import { useSearchParams } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
+// import { downloadChartDataCsv } from '@/utils/downloadHelper';
 
 type LegendSelectedMap = Record<string, boolean>;
 
 type LineChartProps = {
   chartDateRepresentation?: string | 'Default';
+  setXByTimeFramePeriod?: boolean;
+  timeFramePeriod?: string | null;
+  authDataType?: string | null;
   chartYAxisScale?: number | undefined;
   chartYAxisScaleChartMinValue?: number | undefined;
   chartYAxisScaleChartMaxValue?: number | undefined;
@@ -44,6 +64,8 @@ type LineChartProps = {
   data: ChartData[];
   xAxisLabel?: string;
   yAxisLabel?: string;
+  hideXAxis?: boolean;
+  hideYAxis?: boolean;
   allowImageDownload: boolean;
   allowZoom?: boolean;
   isStepline?: boolean;
@@ -79,17 +101,48 @@ type LineChartProps = {
   highlightedColor?: string;
   unhighlightedColor?: string;
   menuHoverColor: string;
+  widgetId?: string;
+  usesQueryParameter?: boolean;
+  exportBackgroundColor?: string;
 };
+
+function filterSeriesDataByAttribute(
+  sourceData: ChartData[],
+  attribute: string,
+): ChartData[] {
+  if (!attribute) {
+    return sourceData;
+  }
+
+  return sourceData.filter((item) => item.name.endsWith(attribute));
+}
+
+function getSelectedChartData(
+  sourceData: ChartData[],
+  attribute: string,
+  hasAdditionalSelection: boolean,
+): ChartData[] {
+  if (!hasAdditionalSelection) {
+    return sourceData;
+  }
+
+  return filterSeriesDataByAttribute(sourceData, attribute);
+}
 
 export default function LineChart(props: LineChartProps): ReactElement {
   const {
+    widgetId,
     chartDateRepresentation,
+    setXByTimeFramePeriod,
+    timeFramePeriod,
     chartYAxisScale,
     chartYAxisScaleChartMinValue,
     chartYAxisScaleChartMaxValue,
     data,
     xAxisLabel,
     yAxisLabel,
+    hideXAxis = false,
+    hideYAxis = false,
     allowImageDownload,
     allowZoom,
     isStepline,
@@ -124,47 +177,110 @@ export default function LineChart(props: LineChartProps): ReactElement {
     unhighlightedColor,
     chartAggregationMode = aggregationEnum.none,
     menuHoverColor,
+    usesQueryParameter = false,
+    authDataType,
+    exportBackgroundColor,
   } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
-
-  const [chartData] = useState<ChartData[]>(
-    entityId ? data.filter((x) => x.id === entityId) : data,
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
+  const initialChartData = entityId
+    ? data.filter((x) => x.id === entityId)
+    : data;
+  const initialAttributes = getUniqueField(initialChartData, false);
+  const initialClickedAttribute =
+    hasAdditionalSelection && initialAttributes.length > 0
+      ? initialAttributes[0]
+      : '';
+  const initialFilteredData = getSelectedChartData(
+    initialChartData,
+    initialClickedAttribute,
+    hasAdditionalSelection,
   );
 
-  const [filteredData, setFilteredData] = useState<ChartData[]>(
-    hasAdditionalSelection ? [] : data,
+  const [chartData] = useState<ChartData[]>(initialChartData);
+
+  const [filteredData, setFilteredData] =
+    useState<ChartData[]>(initialFilteredData);
+  const [clickedAttribute, setClickedAttribute] = useState<string>(
+    initialClickedAttribute,
   );
-  const [clickedAttribute, setClickedAttribute] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [xAxisMin, setXAxisMin] = useState<number | undefined>();
+  const [xAxisMax, setXAxisMax] = useState<number | undefined>();
 
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<ECharts | null>(null);
-  const chartInitialized = useRef<boolean>(false);
+  const resizeFrameRef = useRef<number | null>(null);
+  const textMeasureCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const attributes = getUniqueField(chartData, false);
+  const axisData = filteredData.length > 0 ? filteredData : chartData;
 
-  const xFullRange = getXMinMax(filteredData); // TODO This should maybe update on filter
-  const [xRange, setXRange] = useState(xFullRange);
+  const xFullRange = useMemo(
+    () =>
+      xAxisMin !== undefined && xAxisMax !== undefined
+        ? {
+            min: new Date(xAxisMin),
+            max: new Date(xAxisMax),
+          }
+        : getXMinMax(filteredData),
+    [filteredData, xAxisMax, xAxisMin],
+  );
+  const [xRange, setXRange] = useState<{ min: Date; max: Date } | null>(null);
   const hasEndLabel = useRef<echarts.LineSeriesOption | undefined>(undefined);
 
   const [minDate, setMinDate] = useState<Date | undefined>(new Date());
   const [maxDate, setMaxDate] = useState<Date | undefined>(new Date());
-
-  const textMeasureCanvas = document.createElement('canvas');
-
   const update = debounce(() => {
     const chart = chartInstance.current;
     if (!chart) return;
 
     const range = getVisibleDateRange(chart);
     if (!range) return;
+
+    const selectedLegendNames = getSelectedLegendNames(chart);
+
+    const currentAreaConfig = {
+      id: widgetId,
+      minRange: range.min,
+      maxRange: range.max,
+      selectedLegendNames,
+      downloadCurrentArea: false,
+      changeTimeFramePeriod: false,
+      timeFramePeriod: (timeFramePeriod as timeframeEnum) ?? '',
+      authDataType: authDataType ?? '',
+    };
+
+    // It is important to send it inside the debounce, so the data is only sent after the filter is finally set.
+    sendCurrentAreaChartData(currentAreaConfig);
+
     setXRange(range);
     const daysIntervall = getIntervalDaysFromChart(chart, 20, range);
     const allSeries = getAllSeries(daysIntervall);
     chart.setOption({ series: allSeries }, false);
   }, 500);
+
+  // Function for sending the data visible on the axis
+  const sendCurrentAreaChartData = (currentAreaConfig: CurrentAreaConfig) => {
+    eventBus.emit(VISIBLE_CHART_DATA_DOWNLOAD_EVENT, {
+      data: currentAreaConfig,
+    });
+  };
+
+  const getBaseBottomGrid = (): number => {
+    const baseBottom = calculateBottomGrid(
+      hideXAxis ? '' : xAxisLabel || '',
+      allowZoom,
+      advancedDateSelection,
+    );
+
+    if (allowZoom && !advancedDateSelection && !hideXAxis && xAxisLabel) {
+      return baseBottom + 12;
+    }
+
+    return baseBottom;
+  };
 
   const initializeChart = (): void => {
     if (chartRef.current) {
@@ -175,7 +291,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
         locale: ECHARTS_LOCALE,
       });
 
-      chartInitialized.current = true;
       const seriesAll = getAllSeries(0);
       const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
       hasEndLabel.current = seriesAll.find((value) => value.endLabel?.show);
@@ -183,19 +298,36 @@ export default function LineChart(props: LineChartProps): ReactElement {
       // Calculate dynamic splitNumber based on the container width
       const containerWidth = chartRef.current.clientWidth;
       const splitNumber = Math.max(5, Math.floor(containerWidth / 100));
+      const hasYAxisTitle = !hideYAxis && Boolean(yAxisLabel?.trim());
+      const horizontalLeftInset = hasYAxisTitle ? 12 : 6;
+      const horizontalRightInset = allowImageDownload ? 30 : 12;
+      const xAxisNameGap = hideXAxis
+        ? 0
+        : isShownInMapModal
+          ? 32
+          : allowZoom && xAxisLabel && !advancedDateSelection
+            ? 30
+            : 41;
+      const weekdayFormatter =
+        chartDateRepresentation === 'Weekdays'
+          ? getAdaptiveWeekdayFormatter(
+              containerWidth / Math.max(splitNumber, 1),
+              axisFontSize,
+            )
+          : undefined;
       const option: EChartsOption = {
         animation: playAnimation,
         animationDuration: 2000,
         animationEasing: 'cubicOut',
         animationDelay: 0,
-        animationDurationUpdate: 500,
+        animationDurationUpdate: 0,
         animationEasingUpdate: 'cubicOut',
         xAxis: {
-          name: xAxisLabel,
+          name: hideXAxis ? '' : xAxisLabel,
           type: 'time',
           splitNumber: splitNumber,
           nameLocation: 'middle',
-          nameGap: isShownInMapModal ? 26 : 35,
+          nameGap: xAxisNameGap,
           nameTextStyle: {
             color: axisLabelFontColor,
             fontSize: axisLabelSize,
@@ -205,18 +337,34 @@ export default function LineChart(props: LineChartProps): ReactElement {
               color: axisLineColor,
               width: 2,
             },
-            show: true,
+            show: !hideXAxis,
           },
           axisLabel: {
             color: axisTicksFontColor,
             fontSize: axisFontSize,
             hideOverlap: true,
-            formatter: chartDateRepresentation
-              ? getChartDateFormatter(chartDateRepresentation, labelMap)
-              : undefined,
-            rich: chartDateRepresentation
-              ? getChartDateRichText(chartDateRepresentation)
-              : undefined,
+            show: !hideXAxis,
+            // When setXByTimeFramePeriod is true, enforce a fixed format for all ticks
+            formatter:
+              setXByTimeFramePeriod && timeFramePeriod
+                ? (value: unknown): string =>
+                    formatTickByAggrPeriod(
+                      value as number | string,
+                      timeFramePeriod,
+                      xFullRange,
+                    )
+                : weekdayFormatter
+                  ? weekdayFormatter
+                  : chartDateRepresentation
+                    ? getChartDateFormatter(chartDateRepresentation, labelMap)
+                    : undefined,
+            // Disable rich text when custom formatter is active to avoid mixed styles
+            rich:
+              setXByTimeFramePeriod && timeFramePeriod
+                ? undefined
+                : chartDateRepresentation
+                  ? getChartDateRichText(chartDateRepresentation)
+                  : undefined,
           },
           axisTick: {
             show: false,
@@ -225,8 +373,8 @@ export default function LineChart(props: LineChartProps): ReactElement {
           max: xFullRange?.max,
         },
         yAxis: {
-          name: formatYAxisLabel(yAxisLabel || ''),
-          nameGap: calculateYAxisNameGap(chartData),
+          name: hideYAxis ? '' : formatYAxisLabel(yAxisLabel || ''),
+          nameGap: hideYAxis ? 0 : calculateYAxisNameGap(axisData),
           nameLocation: 'middle',
           interval:
             chartYAxisScale !== undefined && chartYAxisScale !== 0
@@ -241,11 +389,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
               color: axisLineColor,
               width: 2,
             },
-            show: true,
+            show: !hideYAxis,
           },
           axisLabel: {
             color: axisTicksFontColor,
             fontSize: axisFontSize,
+            show: !hideYAxis,
             formatter: (val: number) => {
               const absVal = Math.abs(val);
               if (absVal >= 1000000) {
@@ -258,7 +407,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
             show: false,
           },
           splitLine: {
-            show: true,
+            show: !hideYAxis,
             lineStyle: {
               color: gridColor,
               type: 'dashed',
@@ -268,13 +417,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
             chartYAxisScale !== undefined
               ? chartYAxisScaleChartMinValue
               : chartHasAutomaticZoom
-                ? calculateMinYAxisValue(chartData, decimalPlaces)
+                ? calculateMinYAxisValue(axisData, decimalPlaces)
                 : undefined,
           max:
             chartYAxisScale !== undefined
               ? chartYAxisScaleChartMaxValue
               : chartHasAutomaticZoom
-                ? calculateMaxYAxisValue(chartData, decimalPlaces)
+                ? calculateMaxYAxisValue(axisData, decimalPlaces)
                 : undefined,
         },
         legend: getLegendOptions(
@@ -290,6 +439,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
           show: allowImageDownload,
           feature: {
             saveAsImage: {
+              backgroundColor: exportBackgroundColor,
               title: 'Als Bild herunterladen...    ',
               icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
               iconStyle: {
@@ -311,12 +461,9 @@ export default function LineChart(props: LineChartProps): ReactElement {
           isShownInMapModal,
           hasEndLabel.current,
           parseInt(legendFontSize),
-          calculateLeftGrid(yAxisLabel || '', legendAlignment),
-          calculateBottomGrid(
-            xAxisLabel || '',
-            allowZoom,
-            advancedDateSelection,
-          ),
+          horizontalLeftInset,
+          getBaseBottomGrid(),
+          horizontalRightInset,
         ),
         dataZoom: allowZoom
           ? [
@@ -326,7 +473,9 @@ export default function LineChart(props: LineChartProps): ReactElement {
                 filterMode: 'none',
                 start: 0,
                 end: 100,
-                bottom: advancedDateSelection ? 70 : undefined,
+                bottom: advancedDateSelection ? 54 : undefined,
+                left: horizontalLeftInset,
+                right: horizontalRightInset,
               },
               {
                 type: 'inside',
@@ -334,7 +483,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
                 filterMode: 'none',
                 start: 0,
                 end: 100,
-                bottom: advancedDateSelection ? 70 : undefined,
+                bottom: advancedDateSelection ? 54 : undefined,
               },
             ]
           : [],
@@ -351,38 +500,44 @@ export default function LineChart(props: LineChartProps): ReactElement {
             return tooltipContent;
           },
         },
+        series: seriesAll,
       };
 
       chartInstance.current.setOption(option);
-      update();
+      syncChartLayout(chartInstance.current, containerWidth);
 
-      const listener = (params: unknown): void => {
+      const legendListener = (params: unknown): void => {
         const p = params as { name: string; selected: Record<string, boolean> };
-        handleLegendSelect(p);
+        if (singleSelectLegend) {
+          handleLegendSelect(p);
+        }
+        update();
       };
-      if (singleSelectLegend) {
-        chartInstance.current.on('legendselectchanged', listener);
-      }
+
+      chartInstance.current.off('legendselectchanged', legendListener);
+      chartInstance.current.on('legendselectchanged', legendListener);
+
+      chartInstance.current.off('datazoom', update);
       chartInstance.current.on('datazoom', update);
       // Clean up previous listeners on dispose
       chartRef.current.addEventListener('dispose', () => {
         chartInstance.current?.off('datazoom', update);
-        chartInstance.current?.off('legendselectchanged', listener);
+        chartInstance.current?.off('legendselectchanged', legendListener);
       });
+
+      update();
     }
   };
 
-  const handleFilterButtonClicked = (clickedAttribute: string): void => {
-    const tempData = chartData;
-    let newFilteredData = tempData.filter((item) =>
-      item.name.endsWith(clickedAttribute),
-    );
-    if (entityId) {
-      newFilteredData = newFilteredData.filter((x) => x.id === entityId);
-    }
-    setClickedAttribute(clickedAttribute);
-    setFilteredData(newFilteredData);
-  };
+  const handleFilterButtonClicked = useCallback(
+    (nextAttribute: string): void => {
+      setClickedAttribute(nextAttribute);
+      setFilteredData(
+        getSelectedChartData(chartData, nextAttribute, hasAdditionalSelection),
+      );
+    },
+    [chartData, hasAdditionalSelection],
+  );
 
   const handleLegendSelect = useCallback(
     (params: { name: string; selected: LegendSelectedMap }) => {
@@ -419,64 +574,84 @@ export default function LineChart(props: LineChartProps): ReactElement {
   );
 
   useEffect(() => {
+    const relevantData = filteredData.length > 0 ? filteredData : chartData;
+
+    setXAxisBounds(
+      relevantData,
+      timeFramePeriod ?? 'live',
+      setXByTimeFramePeriod ?? false,
+      setXAxisMin,
+      setXAxisMax,
+    );
+  }, [filteredData, chartData, timeFramePeriod, setXByTimeFramePeriod]);
+
+  useEffect(() => {
+    setXRange(xFullRange);
+  }, [xFullRange]);
+
+  useEffect(() => {
     setMaxDate(xRange?.max);
     setMinDate(xRange?.min);
   }, [xRange]);
 
   useEffect(() => {
-    if (filteredData && filteredData.length > 0) {
+    if (filteredData && filteredData.length > 0 && xFullRange) {
       initializeChart();
     }
 
-    if (singleSelectLegend) {
-      const chart = chartInstance.current;
-      if (!chart) return;
-
-      const width = chart.getWidth();
-      const seriesData = [...filteredData];
-      const names = seriesData.map((s) => s.name);
-
-      const legendHeight = estimateLegendHeight(names, width);
-      chart.setOption({
-        grid: {
-          bottom:
-            legendHeight +
-            calculateBottomGrid(
-              xAxisLabel || '',
-              allowZoom,
-              advancedDateSelection,
-            ),
-        },
-      });
-    }
-  }, [filteredData, props]);
+    const chart = chartInstance.current;
+    if (!chart) return;
+    syncChartLayout(chart, chartRef.current?.clientWidth);
+  }, [filteredData, props, xAxisMin, xAxisMax]);
 
   useEffect(() => {
     if (chartData && chartData.length > 0) {
       if (hasAdditionalSelection) {
-        setClickedAttribute(attributes[0]);
-        handleFilterButtonClicked(attributes[0]);
+        if (!clickedAttribute && attributes[0]) {
+          handleFilterButtonClicked(attributes[0]);
+        }
       } else {
-        setFilteredData(filteredData);
+        setFilteredData(chartData);
       }
     }
-  }, [chartData, entityId]);
+  }, [
+    attributes,
+    chartData,
+    clickedAttribute,
+    handleFilterButtonClicked,
+    hasAdditionalSelection,
+  ]);
 
   // Observe the window size
   useEffect(() => {
+    const chartElement = chartRef.current;
     const observer = new ResizeObserver(() => {
       if (chartInstance.current) {
-        chartInstance.current.resize();
+        if (resizeFrameRef.current !== null) {
+          cancelAnimationFrame(resizeFrameRef.current);
+        }
+
+        resizeFrameRef.current = requestAnimationFrame(() => {
+          if (chartInstance.current) {
+            syncChartLayout(
+              chartInstance.current,
+              chartRef.current?.clientWidth,
+            );
+          }
+        });
       }
     });
 
-    if (chartRef.current) {
-      observer.observe(chartRef.current);
+    if (chartElement) {
+      observer.observe(chartElement);
     }
 
     return () => {
-      if (chartRef.current) {
-        observer.unobserve(chartRef.current);
+      if (resizeFrameRef.current !== null) {
+        cancelAnimationFrame(resizeFrameRef.current);
+      }
+      if (chartElement) {
+        observer.unobserve(chartElement);
       }
       if (chartInstance.current && singleSelectLegend) {
         chartInstance.current.dispose();
@@ -485,7 +660,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, []);
 
   return (
-    <div className="w-full h-full flex flex-col sm:flex-row">
+    <div className="w-full h-full min-w-0 flex flex-col sm:flex-row">
       {hasAdditionalSelection && (
         <>
           {/* Dropdown for small screens */}
@@ -544,67 +719,69 @@ export default function LineChart(props: LineChartProps): ReactElement {
           ></FilterButton>
         </>
       )}
-      <div className="w-full h-full flex flex-col sm:flex-col">
-        <div className="w-full h-full test" ref={chartRef} />
+      <div className="min-w-0 h-full flex flex-1 flex-col">
+        <div className="w-full min-h-0 flex-1" ref={chartRef} />
         {allowZoom && xRange && advancedDateSelection && (
-          <div className="w-full flex" style={{ marginTop: -50 }}>
-            <div className="flex w-1/2 mt-1 ml-4">
-              <WizardLabel label="Beginn" />
-              <DatePicker
-                selected={minDate}
-                onChange={(date: Date | null): void => {
-                  const chart = chartInstance.current;
-                  if (!chart) return;
-                  const newDate = new Date(date as Date);
-                  newDate.setHours(0, 0, 0); // Set time to start of date
-                  setMinDate(newDate);
-                  setVisibleDateRange(chart, newDate, maxDate as Date);
-                }}
-                wrapperClassName="w-full"
-                customInput={
-                  <input
-                    className="block h-14 w-full border-4 rounded-lg p-4 text-base w-full"
-                    style={{
-                      color: 'white',
-                      backgroundColor: filterColor ?? '#F1B434',
-                      border: filterColor ?? '#F1B434',
-                      borderRadius: '6px',
-                    }}
-                  />
-                }
-                dateFormat={'yyyy-dd-MM'}
-                maxDate={xRange.max}
-                minDate={xRange.min}
-              />
-            </div>
-            <div className="flex w-1/2 mt-1 ml-4">
-              <WizardLabel label="Ende" />
-              <DatePicker
-                selected={maxDate}
-                onChange={(date: Date | null): void => {
-                  const chart = chartInstance.current;
-                  if (!chart) return;
-                  const newDate = new Date(date as Date);
-                  newDate.setHours(23, 59, 59); // Set time to end of date
-                  setMaxDate(newDate);
-                  setVisibleDateRange(chart, minDate as Date, newDate);
-                }}
-                wrapperClassName="w-full"
-                customInput={
-                  <input
-                    className="flex h-14 w-full border-4 rounded-lg p-4 text-base w-full"
-                    style={{
-                      color: 'white',
-                      backgroundColor: filterColor ?? '#F1B434',
-                      border: filterColor ?? '#F1B434',
-                      borderRadius: '6px',
-                    }}
-                  />
-                }
-                dateFormat={'yyyy-dd-MM'}
-                maxDate={xRange.max}
-                minDate={xRange.min}
-              />
+          <div className="w-full shrink-0 px-4 -mt-4">
+            <div className="flex flex-wrap items-center gap-1">
+              <div className="flex min-w-[320px] flex-1 items-center gap-2">
+                <WizardLabel label="Beginn" />
+                <DatePicker
+                  selected={minDate}
+                  onChange={(date: Date | null): void => {
+                    const chart = chartInstance.current;
+                    if (!chart) return;
+                    const newDate = new Date(date as Date);
+                    newDate.setHours(0, 0, 0); // Set time to start of date
+                    setMinDate(newDate);
+                    setVisibleDateRange(chart, newDate, maxDate as Date);
+                  }}
+                  wrapperClassName="w-full min-w-0 flex-1"
+                  customInput={
+                    <input
+                      className="block h-14 w-full min-w-0 rounded-lg border-4 p-4 text-base"
+                      style={{
+                        color: 'white',
+                        backgroundColor: filterColor ?? '#F1B434',
+                        border: filterColor ?? '#F1B434',
+                        borderRadius: '6px',
+                      }}
+                    />
+                  }
+                  dateFormat={'yyyy-dd-MM'}
+                  maxDate={xFullRange?.max}
+                  minDate={xFullRange?.min}
+                />
+              </div>
+              <div className="flex min-w-[320px] flex-1 items-center gap-2">
+                <WizardLabel label="Ende" />
+                <DatePicker
+                  selected={maxDate}
+                  onChange={(date: Date | null): void => {
+                    const chart = chartInstance.current;
+                    if (!chart) return;
+                    const newDate = new Date(date as Date);
+                    newDate.setHours(23, 59, 59); // Set time to end of date
+                    setMaxDate(newDate);
+                    setVisibleDateRange(chart, minDate as Date, newDate);
+                  }}
+                  wrapperClassName="w-full min-w-0 flex-1"
+                  customInput={
+                    <input
+                      className="block h-14 w-full min-w-0 rounded-lg border-4 p-4 text-base"
+                      style={{
+                        color: 'white',
+                        backgroundColor: filterColor ?? '#F1B434',
+                        border: filterColor ?? '#F1B434',
+                        borderRadius: '6px',
+                      }}
+                    />
+                  }
+                  dateFormat={'yyyy-dd-MM'}
+                  maxDate={xFullRange?.max}
+                  minDate={xFullRange?.min}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -614,15 +791,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
 
   function getAllSeries(intervallDays: number): echarts.LineSeriesOption[] {
     const series: echarts.LineSeriesOption[] = [];
-    let seriesData = [...filteredData];
-    if (entityId) {
-      seriesData = seriesData.filter((x) => x.id === entityId);
-    }
-    if (clickedAttribute) {
-      seriesData = seriesData.filter((item) =>
-        item.name.includes(clickedAttribute),
-      );
-    }
+    const seriesData = filteredData;
     if (seriesData && seriesData.length > 0) {
       for (let i = 0; i < seriesData.length; i++) {
         const dataArray =
@@ -709,7 +878,11 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }
 
   function measureText(text: string, font = '12px sans-serif'): number {
-    const context = textMeasureCanvas.getContext('2d');
+    if (!textMeasureCanvasRef.current) {
+      textMeasureCanvasRef.current = document.createElement('canvas');
+    }
+
+    const context = textMeasureCanvasRef.current.getContext('2d');
     if (context) {
       context.font = font;
       return context.measureText(text).width;
@@ -747,5 +920,95 @@ export default function LineChart(props: LineChartProps): ReactElement {
     });
 
     return Math.ceil(rows * rowHeight) + 20;
+  }
+
+  function getVisibleLegendNames(chart?: ECharts): string[] {
+    if (filteredData.length > 0) {
+      return filteredData.map((series) => series.name);
+    }
+
+    if (chart) {
+      const option = chart.getOption();
+      const chartSeries = Array.isArray(option.series)
+        ? option.series
+        : option.series
+          ? [option.series]
+          : [];
+
+      return chartSeries
+        .map((series) =>
+          typeof series?.name === 'string' ? series.name : undefined,
+        )
+        .filter((name): name is string => Boolean(name));
+    }
+
+    return [];
+  }
+
+  function syncChartLayout(chart: ECharts, nextWidth?: number): void {
+    const width =
+      nextWidth ?? chartRef.current?.clientWidth ?? chart.getWidth();
+    const height = chartRef.current?.clientHeight ?? chart.getHeight();
+
+    applyResponsiveGridBottom(chart, width);
+    chart.resize({
+      width,
+      height,
+      silent: true,
+    });
+  }
+
+  function applyResponsiveGridBottom(chart: ECharts, nextWidth?: number): void {
+    const baseBottom = getBaseBottomGrid();
+
+    if (!showLegend || !advancedDateSelection) {
+      setGridBottom(chart, baseBottom);
+      return;
+    }
+
+    const legendNames = getVisibleLegendNames(chart);
+    if (legendNames.length === 0) {
+      setGridBottom(chart, baseBottom);
+      return;
+    }
+
+    const chartWidth =
+      nextWidth ?? chartRef.current?.clientWidth ?? chart.getWidth();
+    const legendHeight = estimateLegendHeight(
+      legendNames,
+      chartWidth,
+      24,
+      0.72,
+    );
+    const legendBottomOffset = advancedDateSelection ? 12 : 8;
+    let responsiveWidthReserve = 0;
+
+    if (chartWidth < 1200) responsiveWidthReserve += 10;
+    if (chartWidth < 1024) responsiveWidthReserve += 8;
+    if (chartWidth < 860) responsiveWidthReserve += 8;
+
+    const extraLegendSpace =
+      Math.max(0, legendHeight - 48) +
+      legendBottomOffset +
+      responsiveWidthReserve;
+
+    setGridBottom(chart, baseBottom + extraLegendSpace);
+  }
+
+  function setGridBottom(chart: ECharts, bottom: number): void {
+    chart.setOption(
+      {
+        grid: [
+          {
+            bottom,
+          },
+        ],
+      },
+      {
+        replaceMerge: ['grid'],
+        lazyUpdate: false,
+        silent: true,
+      },
+    );
   }
 }

@@ -65,6 +65,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const result = await request(app.getHttpServer())
         .post('/groupingElements')
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .send(groupingElement)
         .expect(201);
 
@@ -79,10 +80,20 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const result = await request(app.getHttpServer())
         .post('/groupingElements')
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .send(groupingElement)
         .expect(201);
 
       expect(result.body).toEqual(groupingElement);
+    });
+
+    it('/groupingElements (POST) with forbidden', async () => {
+      const groupingElement = await getGroupingElement();
+
+      await request(app.getHttpServer())
+        .post('/groupingElements')
+        .send(groupingElement)
+        .expect(403);
     });
 
     // create
@@ -92,6 +103,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/groupingElements')
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .send(groupingElement)
         .expect(400);
     });
@@ -292,10 +304,25 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/groupingElements/' + groupingElement.id)
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .send(updateGroupingElement)
         .expect(200);
 
       expect(response.body).toMatchObject(updateGroupingElement);
+    });
+
+    it('/groupingElements/:id (PATCH) with forbidden', async () => {
+      const groupingElement = await createGroupingElementByObject(
+        db,
+        getGroupingElement(),
+      );
+
+      await request(app.getHttpServer())
+        .patch('/groupingElements/' + groupingElement.id)
+        .send({
+          name: 'Updated Group1',
+        })
+        .expect(403);
     });
 
     // update
@@ -317,6 +344,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       const response = await request(app.getHttpServer())
         .patch('/groupingElements/' + groupingElement.id)
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .send(updateGroupingElement)
         .expect(200);
 
@@ -353,11 +381,23 @@ describe('DashboardServiceControllers (e2e)', () => {
 
       await request(app.getHttpServer())
         .delete('/groupingElements/' + groupingElement.id)
+        .set('Authorization', `Bearer ${jwtToken1}`)
         .expect(200);
 
       await request(app.getHttpServer())
         .get('/groupingElements' + groupingElement.id)
         .expect(404);
+    });
+
+    it('/groupingElements/:id (DELETE) with forbidden', async () => {
+      const groupingElement = await createGroupingElementByObject(
+        db,
+        getGroupingElement(),
+      );
+
+      await request(app.getHttpServer())
+        .delete('/groupingElements/' + groupingElement.id)
+        .expect(403);
     });
   });
 
@@ -373,6 +413,7 @@ describe('DashboardServiceControllers (e2e)', () => {
 
     await request(app.getHttpServer())
       .delete('/groupingElements/' + groupingElement.id)
+      .set('Authorization', `Bearer ${jwtToken1}`)
       .expect(200);
 
     await request(app.getHttpServer())
@@ -477,6 +518,118 @@ describe('DashboardServiceControllers (e2e)', () => {
     expect(response.body[0].children[0].url).toBe(dashboard1.url);
   });
 
+  it('prunes nested groups without visible dashboard descendants', async () => {
+    const tenant = await createTenantByObject(db, getTenant());
+
+    const visibleDashboard = await createDashboardByObject(
+      db,
+      getDashboard('visible-dashboard'),
+    );
+    const hiddenDashboardObject = getDashboard('hidden-dashboard');
+    hiddenDashboardObject.visibility = 'protected';
+    hiddenDashboardObject.readRoles = ['role-that-not-exists'];
+    hiddenDashboardObject.writeRoles = ['role-that-not-exists'];
+    const hiddenDashboard = await createDashboardByObject(
+      db,
+      hiddenDashboardObject,
+    );
+
+    await createDashboardToTenant(db, visibleDashboard.id, tenant.id);
+    await createDashboardToTenant(db, hiddenDashboard.id, tenant.id);
+
+    const rootGroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(false, 'root-group', null, 0, tenant.abbreviation),
+    );
+    const hiddenSubgroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        false,
+        'hidden-subgroup',
+        rootGroup.id,
+        0,
+        tenant.abbreviation,
+      ),
+    );
+    const visibleSubgroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        false,
+        'visible-subgroup',
+        rootGroup.id,
+        1,
+        tenant.abbreviation,
+      ),
+    );
+
+    await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        true,
+        hiddenDashboard.url,
+        hiddenSubgroup.id,
+        0,
+        tenant.abbreviation,
+      ),
+    );
+    const visibleDashboardGroupingElement = await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        true,
+        visibleDashboard.url,
+        visibleSubgroup.id,
+        0,
+        tenant.abbreviation,
+      ),
+    );
+
+    const response = await request(app.getHttpServer())
+      .get(`/groupingElements/tenant/${tenant.abbreviation}`)
+      .set('Authorization', `Bearer ${jwtToken1}`)
+      .expect(200);
+
+    expect(response.body.length).toBe(1);
+    expect(response.body[0].id).toBe(rootGroup.id);
+    expect(response.body[0].children.length).toBe(1);
+    expect(response.body[0].children[0].id).toBe(visibleSubgroup.id);
+    expect(response.body[0].children[0].children.length).toBe(1);
+    expect(response.body[0].children[0].children[0].id).toBe(
+      visibleDashboardGroupingElement.id,
+    );
+  });
+
+  it('returns empty groups for the tenant endpoint when includeEmptyGroups is true', async () => {
+    const tenant = await createTenantByObject(db, getTenant());
+
+    const rootGroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(false, 'root-group', null, 0, tenant.abbreviation),
+    );
+    const emptySubgroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        false,
+        'empty-subgroup',
+        rootGroup.id,
+        0,
+        tenant.abbreviation,
+      ),
+    );
+
+    const response = await request(app.getHttpServer())
+      .get(
+        `/groupingElements/tenant/${tenant.abbreviation}?includeEmptyGroups=true`,
+      )
+      .set('Authorization', `Bearer ${jwtToken1}`)
+      .expect(200);
+
+    expect(response.body.length).toBe(1);
+    expect(response.body[0].id).toBe(rootGroup.id);
+    expect(response.body[0].children.length).toBe(1);
+    expect(response.body[0].children[0].id).toBe(emptySubgroup.id);
+    expect(response.body[0].children[0].children.length).toBe(0);
+  });
+
   it('returns public dashboards for differing tenant then configured, even differing tenant not exists', async () => {
     const tenant = await createTenantByObject(db, getTenant());
 
@@ -546,5 +699,94 @@ describe('DashboardServiceControllers (e2e)', () => {
     expect(response.body[0].children.length).toBe(1);
     expect(response.body[0].children[0].id).toBe(groupingElement2.id);
     expect(response.body[0].children[0].url).toBe(dashboard1.url);
+  });
+
+  it('returns protected dashboards for the requested tenant when roles match, even if request tenant differs', async () => {
+    const tenant = await createTenantByObject(db, getTenant());
+    await createTenantByObject(db, getTenant('menden'));
+
+    const protectedDashboardObject = getDashboard('tenant-protected-dashboard');
+    protectedDashboardObject.visibility = 'protected';
+    protectedDashboardObject.readRoles = [process.env.ADMIN_ROLE];
+    protectedDashboardObject.writeRoles = [process.env.ADMIN_ROLE];
+    const protectedDashboard = await createDashboardByObject(
+      db,
+      protectedDashboardObject,
+    );
+
+    await createDashboardToTenant(db, protectedDashboard.id, tenant.id);
+
+    const rootGroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(false, 'root-group', null, 0, tenant.abbreviation),
+    );
+    const protectedDashboardGroupingElement =
+      await createGroupingElementByObject(
+        db,
+        getGroupingElement(
+          true,
+          protectedDashboard.url,
+          rootGroup.id,
+          0,
+          tenant.abbreviation,
+        ),
+      );
+
+    const response = await request(app.getHttpServer())
+      .get(`/groupingElements/tenant/${tenant.abbreviation}`)
+      .set('Authorization', `Bearer ${jwtToken2}`)
+      .expect(200);
+
+    expect(response.body.length).toBe(1);
+    expect(response.body[0].id).toBe(rootGroup.id);
+    expect(response.body[0].children.length).toBe(1);
+    expect(response.body[0].children[0].id).toBe(
+      protectedDashboardGroupingElement.id,
+    );
+    expect(response.body[0].children[0].url).toBe(protectedDashboard.url);
+  });
+
+  it('hides groups for protected dashboards when only another tenant has a public dashboard with the same url', async () => {
+    const tenantOne = await createTenantByObject(db, getTenant('edag'));
+    const tenantTwo = await createTenantByObject(db, getTenant('smart-city'));
+
+    const protectedDashboardObject = getDashboard('shared-dashboard-url');
+    protectedDashboardObject.visibility = 'protected';
+    protectedDashboardObject.readRoles = ['role-that-not-exists'];
+    protectedDashboardObject.writeRoles = ['role-that-not-exists'];
+    const protectedDashboard = await createDashboardByObject(
+      db,
+      protectedDashboardObject,
+    );
+
+    const publicDashboard = await createDashboardByObject(
+      db,
+      getDashboard('shared-dashboard-url'),
+    );
+
+    await createDashboardToTenant(db, protectedDashboard.id, tenantOne.id);
+    await createDashboardToTenant(db, publicDashboard.id, tenantTwo.id);
+
+    const rootGroup = await createGroupingElementByObject(
+      db,
+      getGroupingElement(false, 'root-group', null, 0, tenantOne.abbreviation),
+    );
+    await createGroupingElementByObject(
+      db,
+      getGroupingElement(
+        true,
+        protectedDashboard.url,
+        rootGroup.id,
+        0,
+        tenantOne.abbreviation,
+      ),
+    );
+
+    const response = await request(app.getHttpServer())
+      .get(`/groupingElements/tenant/${tenantOne.abbreviation}`)
+      .set('Authorization', `Bearer ${jwtToken1}`)
+      .expect(200);
+
+    expect(response.body.length).toBe(0);
   });
 });

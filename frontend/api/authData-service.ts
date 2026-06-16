@@ -1,22 +1,18 @@
 import axios from 'axios';
 import { AuthData } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getAuthDatasByTenant(
   accessToken: string | undefined,
   tenant: string | undefined,
 ): Promise<AuthData[]> {
+  const backendUrl = getBackendUrl();
   const headers = accessToken
     ? { Authorization: `Bearer ${accessToken}` }
     : undefined;
-  const fetched = await fetch(
-    `${NEXT_PUBLIC_BACKEND_URL}/auth-datas/tenant/${tenant}`,
-    {
-      headers,
-    },
-  )
+  const fetched = await fetch(`${backendUrl}/auth-datas/tenant/${tenant}`, {
+    headers,
+  })
     .then((res) => res.json())
     .catch((err) => {
       console.error(err);
@@ -28,15 +24,13 @@ export async function getAuthDataById(
   accessToken: string | undefined,
   authDataId: string,
 ): Promise<AuthData> {
+  const backendUrl = getBackendUrl();
   try {
-    const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/auth-datas/${authDataId}`,
-      {
-        headers: accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : undefined,
-      },
-    );
+    const response = await axios.get(`${backendUrl}/auth-datas/${authDataId}`, {
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
+    });
     return response.data;
   } catch (err) {
     console.error(err);
@@ -48,6 +42,7 @@ export async function updateAuthData(
   accessToken: string | undefined,
   updateAuthData: AuthData,
 ): Promise<AuthData> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -58,7 +53,7 @@ export async function updateAuthData(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/auth-datas/${updateAuthData.id}`,
+      `${backendUrl}/auth-datas/${updateAuthData.id}`,
       updateAuthData,
       { headers: headers },
     );
@@ -78,6 +73,7 @@ export async function postAuthData(
   accessToken: string | undefined,
   newAuthData: AuthData,
 ): Promise<AuthData> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -87,11 +83,9 @@ export async function postAuthData(
   }
 
   try {
-    const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/auth-datas`,
-      newAuthData,
-      { headers: headers },
-    );
+    const response = await axios.post(`${backendUrl}/auth-datas`, newAuthData, {
+      headers: headers,
+    });
 
     return response.data;
   } catch (err) {
@@ -108,6 +102,7 @@ export async function deleteAuthData(
   accessToken: string | undefined,
   authDataId: string,
 ): Promise<void> {
+  const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {};
 
   if (accessToken) {
@@ -115,7 +110,7 @@ export async function deleteAuthData(
   }
 
   try {
-    await axios.delete(`${NEXT_PUBLIC_BACKEND_URL}/auth-datas/${authDataId}`, {
+    await axios.delete(`${backendUrl}/auth-datas/${authDataId}`, {
       headers: headers,
     });
   } catch (err) {

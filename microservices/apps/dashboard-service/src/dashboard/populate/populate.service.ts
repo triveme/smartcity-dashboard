@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable, Logger } from '@nestjs/common';
-import { DashboardWithContent } from '../dashboard.service';
-import { Dashboard, Panel, Tab, Widget } from '@app/postgres-db/schemas';
+import { DashboardWithContent, TabWithTimeframe } from '../dashboard.service';
+import { Dashboard, Panel, Widget } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
@@ -9,6 +9,8 @@ import { WidgetToPanelService } from '../../widget-to-panel/widget-to-panel.serv
 import { reduceDashboard } from './populate.util';
 import { TabService } from '../../tab/tab.service';
 import { FlatDashboardData } from '../dashboard.model';
+import { QueryConfigService } from '../../query-config/query-config.service';
+import { DataSourceService } from '../../data-source/data-source.service';
 
 @Injectable()
 export class PopulateService {
@@ -17,6 +19,8 @@ export class PopulateService {
   constructor(
     private readonly widgetToPanelService: WidgetToPanelService,
     private readonly tabService: TabService,
+    private readonly queryConfigService: QueryConfigService,
+    private readonly dataSourceService: DataSourceService,
   ) {}
 
   async populateDashboardsWithContent(
@@ -40,7 +44,7 @@ export class PopulateService {
     const panelMap = new Map<string, Panel>();
     const widgetToPanelMap = new Map<string, WidgetToPanel>();
     const widgetMap = new Map<string, Widget>();
-    const tabMap = new Map<string, Tab>();
+    const tabMap = new Map<string, TabWithTimeframe>();
     const dataModelMap = new Map<string, DataModel>();
     const queryMap = new Map<string, Query>();
 
@@ -67,7 +71,25 @@ export class PopulateService {
       }
       if (row.tab) {
         await this.tabService.handleSpecialTabs(row.tab);
-        tabMap.set(row.tab.id, row.tab);
+        let timeframe = null;
+        let authDataType = null;
+        if (row.query?.queryConfigId) {
+          const queryConfig = await this.queryConfigService.getById(
+            row.query.queryConfigId,
+          );
+          timeframe = queryConfig?.timeframe ?? null;
+          if (queryConfig?.dataSourceId) {
+            const dataSource = await this.dataSourceService.getById(
+              queryConfig.dataSourceId,
+            );
+            authDataType = dataSource?.origin ?? null;
+          }
+        }
+        tabMap.set(row.tab.id, {
+          ...row.tab,
+          timeframe,
+          authDataType,
+        });
       }
       if (row.data_model) {
         dataModelMap.set(row.data_model.id, row.data_model);

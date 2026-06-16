@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { UsiPlatformModule } from './usi-platform.module';
+import { ScheduleService } from './schedule.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(UsiPlatformModule);
@@ -10,6 +11,9 @@ async function bootstrap(): Promise<void> {
     credentials: true,
   });
 
+  const schedulerService = app.get(ScheduleService);
+
+  await schedulerService.runSchedule();
   await app.listen(8088);
 }
 

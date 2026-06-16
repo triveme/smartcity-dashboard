@@ -1,23 +1,19 @@
 import axios from 'axios';
 
 import { Tab } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function getTabByWidgetId(
   accessToken: string | undefined,
   widgetId: string,
 ): Promise<Tab> {
+  const backendUrl = getBackendUrl();
   try {
-    const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/tabs/widget/${widgetId}`,
-      {
-        headers: accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : undefined,
-      },
-    );
+    const response = await axios.get(`${backendUrl}/tabs/widget/${widgetId}`, {
+      headers: accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : undefined,
+    });
     return response.data[0] || {};
   } catch (err) {
     console.error(err);
@@ -30,9 +26,10 @@ export async function getTabByComponentTypeByTenant(
   tenant: string,
   componentType: string,
 ): Promise<Tab> {
+  const backendUrl = getBackendUrl();
   try {
     const response = await axios.get(
-      `${NEXT_PUBLIC_BACKEND_URL}/tabs/tenant/${tenant}?type=${componentType}`,
+      `${backendUrl}/tabs/tenant/${tenant}?type=${componentType}`,
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }

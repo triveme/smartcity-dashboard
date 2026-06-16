@@ -130,6 +130,7 @@ export default function StaticValuesFieldMapWidgets(
       return [
         { label: '', value: '' },
         { label: 'Jumpoff URL', value: 'jumpoff-url' },
+        { label: 'Navigation', value: 'navigate-button' },
         { label: 'Jumpoff Sensor Attribute', value: 'jumpoff-attribute' },
         { label: 'Edit Button', value: 'edit-button' },
         { label: 'Delete Button', value: 'delete-button' },
@@ -279,6 +280,7 @@ export default function StaticValuesFieldMapWidgets(
                   {(value.componentType === tabComponentTypeEnum.value ||
                     value.componentType === tabComponentTypeEnum.valueToImage ||
                     value.componentType === tabComponentTypeEnum.diagram ||
+                    value.componentType === tabComponentTypeEnum.sensorStatus ||
                     (value.componentType === tabComponentTypeEnum.image &&
                       value.componentSubType ===
                         widgetImageSourceEnum.sensor)) && (
@@ -549,6 +551,27 @@ export default function StaticValuesFieldMapWidgets(
                                 ? {
                                     ...widget,
                                     showTimeOnDatetimeValues: isSelected,
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-row justify-between gap-x-2 pb-4">
+                      <WizardSelectBox
+                        label={'Tausendertrennzeichen ausblenden'}
+                        checked={value.hideThousandsSeparator || false}
+                        onChange={(isSelected: boolean) => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    hideThousandsSeparator: isSelected,
                                   }
                                 : widget,
                           );
@@ -995,6 +1018,78 @@ export default function StaticValuesFieldMapWidgets(
                           iconColor={iconColor}
                           borderColor={borderColor}
                         />
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardSelectBox
+                          label="Link in neuem Tab öffnen"
+                          checked={value?.openJumpoffLinkInNewTab ?? true}
+                          onChange={(linkValue: boolean): void => {
+                            const updatedMapWidgetValues = mapWidgetValues.map(
+                              (widget, idx) =>
+                                idx === index
+                                  ? {
+                                      ...widget,
+                                      openJumpoffLinkInNewTab: linkValue,
+                                    }
+                                  : widget,
+                            );
+                            handleTabChange({
+                              mapWidgetValues: updatedMapWidgetValues,
+                            });
+                            setMapWidgetValues(updatedMapWidgetValues);
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
+                {/* jumpoff navigation button*/}
+                {value.componentType === 'Button' &&
+                  value.componentSubType === 'navigate-button' && (
+                    <>
+                      <div className="flex flex-row w-full gap-x-4 pb-2">
+                        <div className="flex flex-col w-1/2">
+                          <WizardLabel label="Icon" />
+                          <IconSelection
+                            activeIcon={value?.jumpoffIcon || ''}
+                            handleIconSelect={(iconName: string): void => {
+                              const updatedMapWidgetValues =
+                                mapWidgetValues.map((widget, idx) =>
+                                  idx === index
+                                    ? { ...widget, jumpoffIcon: iconName }
+                                    : widget,
+                                );
+                              handleTabChange({
+                                mapWidgetValues: updatedMapWidgetValues,
+                              });
+                              setMapWidgetValues(updatedMapWidgetValues);
+                            }}
+                            iconColor={iconColor}
+                            borderColor={borderColor}
+                          />
+                        </div>
+                        <div className="flex flex-col w-1/2">
+                          <WizardLabel label="Beschriftung" />
+                          <WizardTextfield
+                            value={value?.jumpoffLabel || ''}
+                            onChange={(textValue: string | number): void => {
+                              const updatedMapWidgetValues =
+                                mapWidgetValues.map((widget, idx) =>
+                                  idx === index
+                                    ? {
+                                        ...widget,
+                                        jumpoffLabel: textValue.toString(),
+                                      }
+                                    : widget,
+                                );
+                              handleTabChange({
+                                mapWidgetValues: updatedMapWidgetValues,
+                              });
+                              setMapWidgetValues(updatedMapWidgetValues);
+                            }}
+                            borderColor={borderColor}
+                            backgroundColor={backgroundColor}
+                          />
+                        </div>
                       </div>
                       <div className="flex flex-col w-full pb-2">
                         <WizardSelectBox

@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { AuthHelperUtility } from '@app/auth-helper';
 
 import { DbType } from '@app/postgres-db';
 import {
@@ -25,6 +26,7 @@ export class GroupingElementService {
     private readonly dashboardRepo: DashboardRepo,
     private readonly groupingElementRepo: GroupingElementRepo,
     private readonly tenantRepo: TenantRepo,
+    private readonly authHelperUtility: AuthHelperUtility,
   ) {}
 
   private readonly logger = new Logger(GroupingElementService.name);
@@ -40,19 +42,20 @@ export class GroupingElementService {
       roles,
     );
 
-    return await this.buildResponse(dbResult, dashboardsFromDb, roles);
+    return await this.buildResponse(dbResult, dashboardsFromDb);
   }
 
   async getByTenantAbbreviation(
     abbreviation: string,
     roles: string[],
     tenantFromRequest: string,
+    includeEmptyGroups = false,
   ): Promise<GroupingElementWithChildren[]> {
     const dbResult: GroupingElement[] =
       await this.groupingElementRepo.getByTenantAbbreviation(abbreviation);
     const dashboardsFromDb = await this.getDashboardsForGroupingElements(
       dbResult,
-      tenantFromRequest,
+      abbreviation || tenantFromRequest,
       roles,
     );
 
@@ -62,7 +65,11 @@ export class GroupingElementService {
       );
     }
 
-    return await this.buildResponse(dbResult, dashboardsFromDb, roles);
+    return await this.buildResponse(
+      dbResult,
+      dashboardsFromDb,
+      includeEmptyGroups,
+    );
   }
 
   async getByUrlAndTenant(
@@ -87,8 +94,8 @@ export class GroupingElementService {
   private async buildHierarchy(
     element: GroupingElement,
     dbResult: GroupingElement[],
-    roles: string[],
     dashboardsFromDb: Dashboard[],
+    includeEmptyGroups = false,
   ): Promise<GroupingElementWithChildren[]> {
     const children: GroupingElementWithChildren[] = [];
 
@@ -121,11 +128,17 @@ export class GroupingElementService {
         dbElementWithChildren.children = await this.buildHierarchy(
           dbElement,
           dbResult,
-          roles,
           dashboardsFromDb,
+          includeEmptyGroups,
         );
 
-        children.push(dbElementWithChildren);
+        if (
+          dbElementWithChildren.isDashboard ||
+          includeEmptyGroups ||
+          dbElementWithChildren.children.length > 0
+        ) {
+          children.push(dbElementWithChildren);
+        }
       }
     }
 
@@ -145,6 +158,11 @@ export class GroupingElementService {
     tenantFromRequest: string,
   ): Promise<GroupingElement> {
     const groupingElementById = await this.groupingElementRepo.getById(id);
+
+    if (!groupingElementById) {
+      throw new NotFoundException("Grouping Element wasn't found");
+    }
+
     const dashboardsFromDb = await this.getDashboardsForGroupingElements(
       [groupingElementById],
       tenantFromRequest,
@@ -162,7 +180,11 @@ export class GroupingElementService {
     }
   }
 
-  async create(row: NewGroupingElement): Promise<GroupingElement> {
+  async create(
+    row: NewGroupingElement,
+    roles: string[],
+  ): Promise<GroupingElement> {
+    this.ensureAdminOrEditor(roles);
     await this.validateTenantAbbreviation(row);
 
     if (row.url) {
@@ -206,12 +228,18 @@ export class GroupingElementService {
       throw new NotFoundException("Grouping Element wasn't found");
     }
 
+    this.ensureAdminOrEditor(roles);
+
     if (values.url) {
       const newUrlLower = values.url.toLowerCase();
+      const targetTenantAbbreviation =
+        values.tenantAbbreviation ?? existingGroupingElement.tenantAbbreviation;
+      const targetIsDashboard =
+        values.isDashboard ?? existingGroupingElement.isDashboard;
 
       const existingGroupingElements =
         await this.groupingElementRepo.getByTenantAbbreviation(
-          values.tenantAbbreviation,
+          targetTenantAbbreviation,
         );
 
       const groupingElementWithNewUrl = existingGroupingElements.find(
@@ -219,13 +247,13 @@ export class GroupingElementService {
           element.id !== id && element.url.toLowerCase() === newUrlLower,
       );
 
-      if (!values.isDashboard) {
+      if (!targetIsDashboard) {
         if (groupingElementWithNewUrl) {
           this.logger.warn(
-            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${targetTenantAbbreviation}`,
           );
           throw new HttpException(
-            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${values.tenantAbbreviation}`,
+            `Grouping Element with the updated URL "${groupingElementWithNewUrl.url}" already exists for Tenant: ${targetTenantAbbreviation}`,
             HttpStatus.CONFLICT,
           );
         }
@@ -236,12 +264,20 @@ export class GroupingElementService {
     return await this.groupingElementRepo.update(id, values, transaction);
   }
 
-  async delete(id: string): Promise<GroupingElement> {
+  async delete(id: string, roles: string[]): Promise<GroupingElement> {
+    const groupingElementToDelete = await this.groupingElementRepo.getById(id);
+
+    if (!groupingElementToDelete) {
+      throw new NotFoundException("Grouping Element wasn't found");
+    }
+
+    this.ensureAdminOrEditor(roles);
+
     const children =
       await this.groupingElementRepo.getChildrenForGroupingElementById(id);
 
     for (const child of children) {
-      await this.delete(child.id);
+      await this.delete(child.id, roles);
     }
 
     return this.groupingElementRepo.delete(id);
@@ -314,7 +350,7 @@ export class GroupingElementService {
   private async buildResponse(
     groupingElementsFromDb: GroupingElement[],
     dashboardsFromDb: Dashboard[],
-    roles: Array<string>,
+    includeEmptyGroups = false,
   ): Promise<GroupingElementWithChildren[]> {
     const result: GroupingElementWithChildren[] = [];
     const positionSet = new Set<number>(); // Track used positions for root elements
@@ -345,11 +381,17 @@ export class GroupingElementService {
         groupingElement.children = await this.buildHierarchy(
           element,
           groupingElementsFromDb,
-          roles,
           dashboardsFromDb,
+          includeEmptyGroups,
         );
 
-        result.push(groupingElement);
+        if (
+          groupingElement.isDashboard ||
+          includeEmptyGroups ||
+          groupingElement.children.length > 0
+        ) {
+          result.push(groupingElement);
+        }
       }
     }
 
@@ -402,6 +444,15 @@ export class GroupingElementService {
     }
 
     return true;
+  }
+
+  private ensureAdminOrEditor(roles: string[]): void {
+    if (
+      !this.authHelperUtility.isAdmin(roles) &&
+      !this.authHelperUtility.isEditor(roles)
+    ) {
+      throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+    }
   }
 
   private async getDashboardsForGroupingElements(

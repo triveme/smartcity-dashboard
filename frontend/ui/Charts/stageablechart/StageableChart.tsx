@@ -24,6 +24,8 @@ type StageableChartProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabData?: any;
   decimalPlaces?: number;
+  usesQueryParameter?: boolean;
+  useDashboardFontColor?: boolean;
 };
 
 type ColorStage = [number, string];
@@ -46,11 +48,13 @@ export default function StageableChart(
     showAxisLabels,
     tabData,
     decimalPlaces,
+    usesQueryParameter = false,
+    useDashboardFontColor = false,
   } = props;
   let { value } = props;
 
   const searchParams = useSearchParams();
-  const entityId = searchParams.get('entityId');
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId && tabData) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,6 +139,29 @@ export default function StageableChart(
   }
   colorConfig.push([1, staticValuesColors[staticValuesColors.length - 1]]);
 
+  function getAxisLabelPrecision(): number {
+    if (!tiles || maxValue === minValue) {
+      return decimalPlaces ?? 0;
+    }
+
+    const step = (maxValue - minValue) / tiles;
+
+    if (Number.isInteger(step)) {
+      return 0;
+    }
+
+    if (decimalPlaces !== undefined) {
+      return decimalPlaces;
+    }
+
+    return 1;
+  }
+
+  function formatAxisLabel(rawValue: number): string {
+    const roundedValue = roundToDecimal(rawValue, getAxisLabelPrecision());
+    return `${roundedValue}`;
+  }
+
   useEffect(() => {
     if (myChartRef.current) {
       const option: EChartsOption = {
@@ -144,6 +171,7 @@ export default function StageableChart(
             splitNumber: tiles,
             min: minValue,
             max: maxValue,
+            color: fontColor,
             startAngle: 210,
             endAngle: -30,
             radius: '65%',
@@ -168,9 +196,10 @@ export default function StageableChart(
             },
             axisLabel: {
               show: showAxisLabels !== false,
-              color: ticksFontColor,
+              color: useDashboardFontColor ? ticksFontColor : undefined,
               distance: -50,
               fontSize: autoScaleAxisLabelFont,
+              formatter: (rawValue: number) => formatAxisLabel(rawValue),
             },
             detail: {
               offsetCenter: [0, '70%'],
@@ -204,6 +233,7 @@ export default function StageableChart(
     ticksFontColor,
     showAxisLabels,
     autoScaleAxisLabelFont,
+    decimalPlaces,
   ]);
 
   return (

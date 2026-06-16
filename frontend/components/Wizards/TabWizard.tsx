@@ -604,6 +604,17 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       backgroundColor={backgroundColor}
                     />
                   </div>
+                  <div className="flex w-full items-center py-4">
+                    <WizardSelectBox
+                      checked={tab?.useDashboardFontColor || false}
+                      label=" Achsbeschriftungen in normaler Schriftfarbe"
+                      onChange={(value: boolean): void =>
+                        handleTabChange({
+                          useDashboardFontColor: value,
+                        })
+                      }
+                    />
+                  </div>
                   <div className="flex flex-col w-full pb-2 gap-4">
                     <WizardLabel label="Statische Werte" />
                     <StaticValuesField
@@ -659,6 +670,30 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       backgroundColor={backgroundColor}
                     />
                   </div>
+                  <div className="flex w-full items-center">
+                    <div className="min-w-[220px]">
+                      <WizardLabel label="X-Achse ausblenden?" />
+                    </div>
+                    <WizardSelectBox
+                      checked={tab?.chartHideXAxis || false}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({ chartHideXAxis: value })
+                      }
+                      label=" X-Achse"
+                    />
+                  </div>
+                  <div className="flex w-full items-center">
+                    <div className="min-w-[220px]">
+                      <WizardLabel label="Y-Achse ausblenden?" />
+                    </div>
+                    <WizardSelectBox
+                      checked={tab?.chartHideYAxis || false}
+                      onChange={(value: boolean): void =>
+                        handleTabChange({ chartHideYAxis: value })
+                      }
+                      label=" Y-Achse"
+                    />
+                  </div>
                   <div className="flex flex-col w-full pb-2">
                     <WizardLabel label="Anzahl Dezimalstellen" />
                     <WizardDropdownSelection
@@ -676,7 +711,14 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   </div>
                   <div className="flex w-full items-center">
                     <div className="flex flex-col w-full pb-2">
-                      <WizardLabel label="Format Datumsanzeige xAchse" />
+                      <WizardLabel
+                        label={
+                          tab?.componentSubType ===
+                          tabComponentSubTypeEnum.barChartHorizontal
+                            ? 'Format Datumsanzeige yAchse'
+                            : 'Format Datumsanzeige xAchse'
+                        }
+                      />
                       <WizardDropdownSelection
                         currentValue={
                           chartDateRepresentation.find(
@@ -937,6 +979,31 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label=" Interval"
                       />
                     </div>
+                    {(tab?.componentSubType ===
+                      tabComponentSubTypeEnum.barChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.barChartDynamic ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart ||
+                      tab?.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) && (
+                      <div className="flex w-full items-center">
+                        <div className="min-w-[220px]">
+                          <WizardLabel label="X-Achse nach Zeitbereich normalisieren?" />
+                        </div>
+                        <WizardSelectBox
+                          checked={
+                            tab?.normalizeXAxisByTimeFramePeriod || false
+                          }
+                          onChange={(value: boolean): void =>
+                            handleTabChange({
+                              normalizeXAxisByTimeFramePeriod: value,
+                            })
+                          }
+                          label=" Normalisierung"
+                        />
+                      </div>
+                    )}
                     {tab?.componentSubType ===
                       tabComponentSubTypeEnum.barChartHorizontal && (
                       <>
@@ -951,6 +1018,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             }
                             disabled={tab?.setSortDescending || false}
                             label=" Aufsteigend"
+                            tooltipText={
+                              'Bei aktiver Sortierung wird das Diagramm als Snapshot dargestellt. Fuer den Vergleich wird nur der jeweils neueste Wert pro Datenreihe verwendet.'
+                            }
                           />
                         </div>
                         <div className="flex w-full items-center">
@@ -964,6 +1034,9 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             }
                             disabled={tab?.setSortAscending || false}
                             label=" Absteigend"
+                            tooltipText={
+                              'Bei aktiver Sortierung wird das Diagramm als Snapshot dargestellt. Fuer den Vergleich wird nur der jeweils neueste Wert pro Datenreihe verwendet.'
+                            }
                           />
                         </div>
                         <div className="flex w-full items-center">

@@ -26,17 +26,16 @@ const tableConfig: TableConfig<InternalData> = {
 export default function InternalDataPage(): ReactElement {
   const auth = useAuth();
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const accessToken = auth.user?.access_token;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
 
   const { openSnackbar } = useSnackbar();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -77,6 +76,10 @@ export default function InternalDataPage(): ReactElement {
       openSnackbar('Fehler beim Abfragen der Dataplattform!', 'error');
     }
   }, [isSuccess, isError, openSnackbar]);
+
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
 
   if (isError) {
     return (

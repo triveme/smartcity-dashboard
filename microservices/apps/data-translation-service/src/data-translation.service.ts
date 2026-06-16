@@ -105,6 +105,8 @@ export type TabWithContent = Tab & { query?: Query } & {
   mapObject: MapObject[];
 } & {
   listviewData: InterestingPlace[];
+} & {
+  timeframe: string | null;
 };
 export type WidgetWithContent = Widget & { tabs: TabWithContent[] };
 export type PanelWithContent = Panel & { widgets: WidgetWithContent[] };
@@ -134,6 +136,7 @@ const wrapTabWithDefaultData = (tab: Tab): TabWithContent => {
     weatherWarnings: [],
     mapObject: [],
     listviewData: [],
+    timeframe: null,
     // Initialize properties that might be null from database
     chartValues: tab.chartValues || [],
     textValue: tab.textValue || '',
@@ -158,6 +161,8 @@ export class DataTranslationService {
       const data = await this.dataTranslationRepo.getAllTabs();
       const tabPromises = data.map(async (tab) => {
         try {
+          let widgetTimeframe: string | null = null;
+
           // Skip tabs that don't have a valid widget ID
           // console.log(`Refresh Tab ${tab.id} with widget ${tab.widgetId}`);
           if (!tab.widgetId) {
@@ -198,7 +203,8 @@ export class DataTranslationService {
               tab.componentSubType === 'Slider Übersicht') ||
             tab.componentType === 'Interaktive Komponente'
           ) {
-            await this.populateChartService.populateTab(tabWithContent);
+            widgetTimeframe =
+              await this.populateChartService.populateTab(tabWithContent);
           }
 
           if (
@@ -207,6 +213,7 @@ export class DataTranslationService {
             tabWithContent.mapObject.length > 0 ||
             tabWithContent.listviewData.length > 0 ||
             tabWithContent.combinedWidgets.length > 0 ||
+            widgetTimeframe !== null ||
             (tabWithContent.chartValues &&
               tabWithContent.chartValues.length > 0) ||
             (tabWithContent.textValue && tabWithContent.textValue !== '')
@@ -246,6 +253,7 @@ export class DataTranslationService {
                 tabWithContent.listviewData.length > 0
                   ? tabWithContent.listviewData
                   : existingData?.listviewData || [],
+              timeframe: widgetTimeframe || existingData?.timeframe || null,
             });
           }
         } catch (error) {

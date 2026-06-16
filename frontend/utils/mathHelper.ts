@@ -3,8 +3,15 @@ export function roundToDecimal(value: number, decimals = 1): number {
   return Math.round(value * factor) / factor;
 }
 
-export function applyUserLocaleToNumber(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale).format(value);
+export function applyUserLocaleToNumber(
+  value: number,
+  locale: string,
+  // Some widgets need plain year values like "1981" instead of locale-grouped "1.981".
+  hideThousandsSeparator?: boolean,
+): string {
+  return new Intl.NumberFormat(locale, {
+    useGrouping: !hideThousandsSeparator,
+  }).format(value);
 }
 
 export function roundToDecimalIfValueHasDecimal(

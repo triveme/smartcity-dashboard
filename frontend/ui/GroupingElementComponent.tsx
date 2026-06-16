@@ -1,6 +1,6 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
+import { useAuth } from 'react-oidc-context';
 
 import { GroupingElement } from '@/types';
 import DashboardIcons from './Icons/DashboardIcon';
@@ -52,16 +52,17 @@ export default function GroupingElementComponent(
     borderColor,
   } = props;
   const { openSnackbar } = useSnackbar();
-  const cookie = Cookies.get('access_token');
-  const accessToken = cookie || '';
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token || '';
   const [verticalHeight, setVerticalHeight] = useState(0);
 
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;
 
   const { refetch } = useQuery({
-    queryKey: ['menu'],
-    queryFn: () => getMenuGroupingElements(tenant, accessToken!),
+    queryKey: ['menu', tenant, accessToken, true],
+    queryFn: () => getMenuGroupingElements(tenant, accessToken!, true),
+    enabled: !auth.isLoading,
   });
 
   const screenWidth = window.innerWidth;

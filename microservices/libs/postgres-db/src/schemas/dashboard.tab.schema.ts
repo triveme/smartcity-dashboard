@@ -49,6 +49,8 @@ export const tabs = pgTable('tab', {
   chartValues: real('chart_values').array(),
   chartXAxisLabel: text('chart_x_axis_label'),
   chartYAxisLabel: text('chart_y_axis_label'),
+  chartHideXAxis: boolean('chart_hide_x_axis').default(false),
+  chartHideYAxis: boolean('chart_hide_y_axis').default(false),
   chartYAxisScale: real('chart_y_axis_scale'),
   chartYAxisScaleChartMinValue: real('chart_y_axis_scale_chart_min_value'),
   chartYAxisScaleChartMaxValue: real('chart_y_axis_scale_chart_max_value'),
@@ -64,6 +66,7 @@ export const tabs = pgTable('tab', {
   componentType: tabComponentTypeEnum('component_type'),
   dataModelId: uuid('data_model_id').references(() => dataModels.id),
   decimalPlaces: smallint('decimal_places'),
+  hideThousandsSeparator: boolean('hide_thousands_separator').default(false),
   valueFontSize: smallint('value_font_size'),
   valueUnitFontSize: smallint('value_unit_font_size'),
   dynamicHighlightColor: text('dynamic_highlight_color'),
@@ -206,6 +209,10 @@ export const tabs = pgTable('tab', {
   allowMapPopupWidthChange: boolean('allow_map_popup_width_change'),
   mapPopupWidth: smallint('map_popup_width'),
   pinMode: text('pin_mode'),
+  useDashboardFontColor: boolean('use_dashboard_font_color'),
+  normalizeXAxisByTimeFramePeriod: boolean(
+    'normalize_x_axis_by_time_frame_period',
+  ),
 });
 
 export const tabsRelations = relations(tabs, ({ one, many }) => ({

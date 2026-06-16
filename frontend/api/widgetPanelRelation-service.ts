@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 import { WidgetToPanel } from '@/types';
-import { env } from 'next-dynenv';
-
-const NEXT_PUBLIC_BACKEND_URL = env('NEXT_PUBLIC_BACKEND_URL');
+import { getBackendUrl } from '@/utils/envHelper';
 
 export async function postWidgetToPanelRelation(
   accessToken: string | undefined,
@@ -11,6 +9,8 @@ export async function postWidgetToPanelRelation(
   panelId: string,
   position: number,
 ): Promise<WidgetToPanel> {
+  const backendUrl = getBackendUrl();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -21,7 +21,7 @@ export async function postWidgetToPanelRelation(
 
   try {
     const response = await axios.post(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/`,
+      `${backendUrl}/widgets-to-panels/`,
       {
         widgetId: widgetId,
         panelId: panelId,
@@ -47,6 +47,8 @@ export async function bulkUpdateWidgetToPanelRelations(
   accessToken: string | undefined,
   updates: WidgetToPanel[],
 ): Promise<WidgetToPanel[]> {
+  const backendUrl = getBackendUrl();
+
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -57,7 +59,7 @@ export async function bulkUpdateWidgetToPanelRelations(
     }
 
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/bulk-update`,
+      `${backendUrl}/widgets-to-panels/bulk-update`,
       updates,
       { headers: headers },
     );
@@ -81,6 +83,8 @@ export async function deleteWidgetToPanelRelation(
   widgetId: string,
   panelId: string,
 ): Promise<WidgetToPanel> {
+  const backendUrl = getBackendUrl();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -91,7 +95,7 @@ export async function deleteWidgetToPanelRelation(
 
   try {
     const response = await axios.delete(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/${widgetId}/${panelId}`,
+      `${backendUrl}/widgets-to-panels/${widgetId}/${panelId}`,
       { headers: headers },
     );
 
@@ -115,6 +119,8 @@ export async function patchWidgetToPanelRelation(
   newWidgetId: string,
   panelId: string,
 ): Promise<WidgetToPanel> {
+  const backendUrl = getBackendUrl();
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -125,7 +131,7 @@ export async function patchWidgetToPanelRelation(
 
   try {
     const response = await axios.patch(
-      `${NEXT_PUBLIC_BACKEND_URL}/widgets-to-panels/${widgetId}/${panelId}`,
+      `${backendUrl}/widgets-to-panels/${widgetId}/${panelId}`,
       {
         widgetId: newWidgetId,
       },

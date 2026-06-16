@@ -171,7 +171,7 @@ export function getLegendOptions(
         fontSize: legendFontSize,
         color: legendFontColor,
       },
-      bottom: advancedDateSelection ? 120 : 65,
+      ...(advancedDateSelection ? { bottom: 120 } : {}),
       selectedMode: true,
     };
   }
@@ -183,6 +183,7 @@ export function getLegendOptions(
       fontSize: legendFontSize,
       color: legendFontColor,
     },
+    ...(advancedDateSelection ? { bottom: 72 } : {}),
     right: allowImageDownload ? '30' : 'auto',
     selectedMode: 'multiple',
   };
@@ -194,10 +195,11 @@ export function getGridOptions(
   legendFontSize: number,
   lGrid: number,
   bGrid: number,
+  rGrid?: number,
 ): echarts.GridComponentOption {
   return {
     left: isShownInMapModal ? 10 : lGrid,
-    right: hasEndLabel ? 100 * (14 / legendFontSize) : 10,
+    right: rGrid ?? (hasEndLabel ? 100 * (14 / legendFontSize) : 10),
     top: isShownInMapModal ? 20 : 30,
     bottom: isShownInMapModal ? 20 : bGrid,
     containLabel: true,

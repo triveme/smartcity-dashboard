@@ -49,11 +49,10 @@ export default function GroupingElementWizard(
   const [errors, setErrors] = useState<WizardErrors>({});
   const { openSnackbar } = useSnackbar();
   const auth = useAuth();
+  const params = useParams();
+  const tenant = (params.tenant as string) || undefined;
 
   const handleSaveClick = async (): Promise<void> => {
-    const params = useParams();
-    const tenant = (params.tenant as string) || undefined;
-
     const tGroup: GroupingElement = {
       id: groupId || undefined,
       name: groupName,

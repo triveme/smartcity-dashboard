@@ -55,6 +55,18 @@ export const timeFrameWithoutLive = [
   { label: '3 Jahre', value: timeframeEnum.year3 },
 ];
 
+export const timeFrameWithoutLiveWithExakt = [
+  { label: '', value: '' },
+  { label: 'Benutzerdefiniert', value: timeframeEnum.user_defined },
+  { label: 'Tag', value: timeframeEnum.day },
+  { label: 'Woche', value: timeframeEnum.week },
+  { label: 'Monat', value: timeframeEnum.month },
+  { label: 'Quartal', value: timeframeEnum.quarter },
+  { label: 'Jahr', value: timeframeEnum.year },
+  { label: '2 Jahre', value: timeframeEnum.year2 },
+  { label: '3 Jahre', value: timeframeEnum.year3 },
+];
+
 export const mapComponentSubTypes = [
   { label: '', value: '' },
   { label: 'Pin', value: tabComponentSubTypeEnum.pin },
@@ -121,6 +133,10 @@ export const chartComponentSubTypes = [
 
 export const chartDateRepresentation = [
   { label: 'Standard', value: chartDateRepresentaionEnum.default },
+  {
+    label: 'Standard (ohne Monat)',
+    value: chartDateRepresentaionEnum.defaultWithoutMonth,
+  },
   { label: 'nur Jahr', value: chartDateRepresentaionEnum.onlyJear },
   {
     label: 'nur Monat (Jahr beim Jahreswechsel)',
@@ -130,6 +146,7 @@ export const chartDateRepresentation = [
     label: 'nur Zeit-Labels (müssen im Datensatz vorhanden sein)',
     value: chartDateRepresentaionEnum.onlyLabels,
   },
+  { label: 'Wochentage', value: chartDateRepresentaionEnum.weekdays },
 ];
 
 export const sliderComponentSubTypes = [
@@ -215,7 +232,7 @@ export const dataPlatformTypes = [
   { label: 'NGSIld', value: authDataTypeEnum.ngsild },
   { label: 'Orchideo Connect', value: authDataTypeEnum.api },
   { label: 'Statischer Endpunkt', value: authDataTypeEnum.staticendpoint },
-  { label: 'Urban Institute', value: authDataTypeEnum.usi },
+  { label: 'Cosma21', value: authDataTypeEnum.usi },
   { label: 'Intern', value: authDataTypeEnum.internal },
   { label: 'SQL', value: authDataTypeEnum.sql },
 ];

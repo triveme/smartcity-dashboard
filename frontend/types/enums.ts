@@ -13,6 +13,7 @@ export enum roundingModeEnum {
 }
 
 export enum timeframeEnum {
+  user_defined = 'user_defined',
   live = 'live',
   day = 'day',
   week = 'week',
@@ -31,6 +32,7 @@ export enum visibilityEnum {
 export enum dashboardTypeEnum {
   general = 'Allgemein',
   map = 'Karte',
+  projectMap = 'Projektkarte',
   iframe = 'iFrame',
   entity = 'Entität URL Param',
 }
@@ -92,9 +94,11 @@ export enum tabComponentSubTypeEnum {
 
 export enum chartDateRepresentaionEnum {
   default = 'Default',
+  defaultWithoutMonth = 'Default Without Month',
   onlyJear = 'Only Year',
   onlyMonth = 'Only Month',
   onlyLabels = 'Only Labels',
+  weekdays = 'Weekdays',
 }
 
 export enum widgetImageSourceEnum {

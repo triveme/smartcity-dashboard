@@ -6,7 +6,7 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import Link from 'next/link';
-import { determineIsMobileView } from '@/app/custom-hooks/isMobileView';
+import { useIsMobileView } from '@/app/custom-hooks/isMobileView';
 
 type DashboardSidebarDashboardProps = {
   name: string;
@@ -22,7 +22,7 @@ export default function DashboardSidebarDashboard(
   const { name, icon, url, elementUrl, onDashboardClick } = props;
   const params = useParams();
   const [isHovered, setIsHovered] = useState(false);
-  const isMobileView = determineIsMobileView();
+  const isMobileView = useIsMobileView();
   const defaultBgColor = '#3D4760';
   const tenant = getTenantOfPage();
 

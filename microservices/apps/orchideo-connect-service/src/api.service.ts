@@ -143,6 +143,7 @@ export class OrchideoConnectService {
       reducedItem['timestamp'] = item['timestamp'];
 
       for (const attribute of attributes) {
+        // eslint-disable-next-line no-prototype-builtins
         if (item.hasOwnProperty(attribute)) {
           reducedItem[attribute] = item[attribute];
         }
@@ -497,6 +498,7 @@ export class OrchideoConnectService {
 
 type AggregationMode = 'none' | 'min' | 'max' | 'sum' | 'avg';
 type Timeframe =
+  | 'user_defined'
   | 'live'
   | 'day'
   | 'week'

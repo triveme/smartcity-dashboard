@@ -302,6 +302,20 @@
       "when": 1776070856235,
       "tag": "0042_panoramic_leopardon_1.3.4",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "5",
+      "when": 1777401591170,
+      "tag": "0043_woozy_bill_hollister_1.3.5",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "5",
+      "when": 1781092498726,
+      "tag": "0044_mute_dakota_north_1.3.6",
+      "breakpoints": true
     }
   ]
 }

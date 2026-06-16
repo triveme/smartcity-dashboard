@@ -12,17 +12,16 @@ import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 export default function SupportRequest(): ReactElement {
   const auth = useAuth();
   const tenant = getTenantOfPage();
-  let isPageAllowed = true;
+  const accessToken = auth.user?.access_token;
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
 
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Tracking window size and adjust sidebar visibility
@@ -50,6 +49,10 @@ export default function SupportRequest(): ReactElement {
     color: corporateInfo?.dashboardFontColor || '#fff',
     borderColor: corporateInfo?.panelBorderColor || '#fff',
   };
+
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
 
   return (
     <div style={dashboardStyle} className="p-10 h-full flex flex-col ">

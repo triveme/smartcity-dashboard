@@ -1,15 +1,19 @@
 import { ReactElement } from 'react';
 
+import WizardTooltipIcon from '@/ui/WizardTooltipIcon';
+
 type CheckBoxProps = {
   label: string;
   value: boolean;
   handleSelectChange: (isSelected: boolean) => void;
+  tooltipText?: string;
 };
 
 export default function CheckBox({
   label,
   value,
   handleSelectChange,
+  tooltipText,
 }: CheckBoxProps): ReactElement {
   const handleTouchStart = (e: React.TouchEvent): void => {
     e.preventDefault();
@@ -19,7 +23,7 @@ export default function CheckBox({
 
   return (
     <label
-      className="flex items-center space-x-2 cursor-pointer select-none w-fit h-full"
+      className="flex w-full items-center space-x-2 cursor-pointer select-none h-full"
       role="checkbox"
       aria-checked={value}
       tabIndex={0}
@@ -33,7 +37,7 @@ export default function CheckBox({
         className="hidden"
       />
       <div
-        className={`w-5 h-5 flex items-center justify-center rounded-md border-2 transition-all ${
+        className={`w-5 min-w-5 h-5 min-h-5 shrink-0 flex items-center justify-center rounded-md border-2 transition-all ${
           value ? 'border-blue-500 bg-blue-500' : 'border-gray-400 bg-white'
         }`}
       >
@@ -50,6 +54,7 @@ export default function CheckBox({
         )}
       </div>
       <span>{label}</span>
+      {tooltipText && <WizardTooltipIcon text={tooltipText} />}
     </label>
   );
 }

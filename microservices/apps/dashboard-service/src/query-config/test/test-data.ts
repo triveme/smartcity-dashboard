@@ -32,6 +32,8 @@ export function getQueryConfig(dataSourceId: string): QueryConfig {
     updatedAt: undefined,
     aggrPeriod: null,
     tenantId: null,
+    dataStartDate: undefined,
+    dataUntilDate: undefined,
   };
 
   queryConfig.hash = generateHash(queryConfig);

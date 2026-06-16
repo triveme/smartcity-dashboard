@@ -65,6 +65,7 @@ export interface BaseMapProps {
   pinMode?: 'single' | 'multi';
   multiAttributeConfigs?: MultiAttributeConfig[];
   values?: number | string;
+  isProjectMap?: boolean;
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {

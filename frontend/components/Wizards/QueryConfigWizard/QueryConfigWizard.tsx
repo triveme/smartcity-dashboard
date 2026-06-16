@@ -23,6 +23,7 @@ import {
   aggregationPeriods,
   roundingModes,
   timeFrameWithoutLive,
+  timeFrameWithoutLiveWithExakt,
 } from '@/utils/enumMapper';
 import ReportConfigWizard from '../ReportConfigWizard';
 import QueryNgsiWizard from './QueryNgsiWizard';
@@ -155,6 +156,33 @@ export default function QueryConfigWizard(
     }
   }, [widgetType]);
 
+  const dataSourceSelection = (
+    <div className="flex flex-col w-full pb-2">
+      <WizardLabel label="Datenplattform" />
+      <DataSourceDropdownSelection
+        selectedDataSource={queryConfig?.dataSourceId}
+        onSelectDataSource={(
+          value: string,
+          origin: string,
+          collectionsFromDatasource: string[],
+        ): void => {
+          handleQueryConfigChange({
+            dataSourceId: value,
+          });
+          setDatasourceOrigin(origin);
+          setOrigin(origin);
+          if (collectionsFromDatasource) {
+            setNgsiCollections(collectionsFromDatasource);
+          }
+        }}
+        iconColor={iconColor}
+        borderColor={borderColor}
+        backgroundColor={backgroundColor}
+        usesQueryParameter={usesQueryParameter}
+      />
+    </div>
+  );
+
   return (
     <>
       <div className="flex flex-col w-full pb-2">
@@ -168,30 +196,7 @@ export default function QueryConfigWizard(
       </div>
       {queryConfigFormIsOpen ? (
         <>
-          <div className="flex flex-col w-full pb-2">
-            <WizardLabel label="Datenplattform" />
-            <DataSourceDropdownSelection
-              selectedDataSource={queryConfig?.dataSourceId}
-              onSelectDataSource={(
-                value: string,
-                origin: string,
-                collectionsFromDatasource: string[],
-              ): void => {
-                handleQueryConfigChange({
-                  dataSourceId: value,
-                });
-                setDatasourceOrigin(origin);
-                setOrigin(origin);
-                if (collectionsFromDatasource) {
-                  setNgsiCollections(collectionsFromDatasource);
-                }
-              }}
-              iconColor={iconColor}
-              borderColor={borderColor}
-              backgroundColor={backgroundColor}
-              usesQueryParameter={usesQueryParameter}
-            />
-          </div>
+          {dataSourceSelection}
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Aktualisierungs-Intervall (in Sekunden)" />
             <WizardTextfield
@@ -347,31 +352,117 @@ export default function QueryConfigWizard(
                   </div>
                 </>
               )}
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label="Zeitbereich" />
-                <WizardDropdownSelection
-                  currentValue={
-                    timeFrameWithoutLive.find(
-                      (option) => option.value === queryConfig?.timeframe,
-                    )?.label || ''
-                  }
-                  selectableValues={timeFrameWithoutLive.map(
-                    (option) => option.label,
+              {datasourceOrigin !== 'usi' ? (
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label="Zeitbereich" />
+                  <WizardDropdownSelection
+                    currentValue={
+                      timeFrameWithoutLive.find(
+                        (option) => option.value === queryConfig?.timeframe,
+                      )?.label || ''
+                    }
+                    selectableValues={timeFrameWithoutLive.map(
+                      (option) => option.label,
+                    )}
+                    onSelect={(label: string | number): void => {
+                      const enumValue = timeFrameWithoutLive.find(
+                        (option) => option.label === label,
+                      )?.value;
+                      handleQueryConfigChange({
+                        timeframe: enumValue as timeframeEnum,
+                      });
+                    }}
+                    error={errors && errors.timeValueError}
+                    iconColor={iconColor}
+                    borderColor={borderColor}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col w-full pb-2">
+                    <WizardLabel label="Zeitbereich" />
+                    <WizardDropdownSelection
+                      currentValue={
+                        timeFrameWithoutLiveWithExakt.find(
+                          (option) => option.value === queryConfig?.timeframe,
+                        )?.label || ''
+                      }
+                      selectableValues={timeFrameWithoutLiveWithExakt.map(
+                        (option) => option.label,
+                      )}
+                      onSelect={(label: string | number): void => {
+                        const enumValue = timeFrameWithoutLiveWithExakt.find(
+                          (option) => option.label === label,
+                        )?.value;
+                        handleQueryConfigChange({
+                          timeframe: enumValue as timeframeEnum,
+                        });
+                      }}
+                      error={errors && errors.timeValueError}
+                      iconColor={iconColor}
+                      borderColor={borderColor}
+                      backgroundColor={backgroundColor}
+                    />
+                  </div>
+                  {queryConfig?.timeframe === timeframeEnum.user_defined && (
+                    <>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="Start Abrufdatum" />
+                        <div className="flex flex-row items-center">
+                          <div className="flex-1">
+                            <input
+                              type="datetime-local"
+                              className="w-full p-2 border rounded"
+                              style={{
+                                borderColor: borderColor,
+                                backgroundColor: backgroundColor,
+                                color: iconColor,
+                              }}
+                              value={
+                                queryConfig?.dataStartDate
+                                  ? queryConfig.dataStartDate.substring(0, 16)
+                                  : ''
+                              }
+                              onChange={(e) => {
+                                handleQueryConfigChange({
+                                  dataStartDate: e.target.value,
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col w-full pb-2">
+                        <WizardLabel label="End Abrufdatum" />
+                        <div className="flex flex-row items-center">
+                          <div className="flex-1">
+                            <input
+                              type="datetime-local"
+                              className="w-full p-2 border rounded"
+                              style={{
+                                borderColor: borderColor,
+                                backgroundColor: backgroundColor,
+                                color: iconColor,
+                              }}
+                              value={
+                                queryConfig?.dataUntilDate
+                                  ? queryConfig.dataUntilDate.substring(0, 16)
+                                  : ''
+                              }
+                              onChange={(e) => {
+                                handleQueryConfigChange({
+                                  dataUntilDate: e.target.value,
+                                });
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
-                  onSelect={(label: string | number): void => {
-                    const enumValue = timeFrameWithoutLive.find(
-                      (option) => option.label === label,
-                    )?.value;
-                    handleQueryConfigChange({
-                      timeframe: enumValue as timeframeEnum,
-                    });
-                  }}
-                  error={errors && errors.timeValueError}
-                  iconColor={iconColor}
-                  borderColor={borderColor}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
+                </>
+              )}
             </div>
           ) : null}
           {showRoundingOptions && (
@@ -443,7 +534,9 @@ export default function QueryConfigWizard(
             />
           )}
         </>
-      ) : null}
+      ) : (
+        <div className="hidden">{dataSourceSelection}</div>
+      )}
     </>
   );
 }

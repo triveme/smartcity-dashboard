@@ -28,16 +28,16 @@ export default function Pages(): ReactElement {
   const tenant = getTenantOfPage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const accessToken = auth.user?.access_token;
 
-  let isPageAllowed = true;
-  if (tenant) {
-    isPageAllowed = isUserMatchingTenant(auth.user!.access_token, tenant);
-  }
-  if (!isPageAllowed) {
-    return (
-      <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
-    );
-  }
+  const isPageAllowed = tenant
+    ? accessToken
+      ? isUserMatchingTenant(accessToken, tenant)
+      : false
+    : true;
+  const unauthorizedView = (
+    <div className="pl-64">Nicht authorisiert für diesen Mandanten!</div>
+  );
 
   const { openSnackbar } = useSnackbar();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -106,6 +106,10 @@ export default function Pages(): ReactElement {
       openSnackbar('Fehler beim Abfragen der Dashboardseiten!', 'error');
     }
   }, [isSuccess, isError, openSnackbar]);
+
+  if (!isPageAllowed) {
+    return unauthorizedView;
+  }
 
   if (isError) {
     return (

@@ -26,7 +26,8 @@ export async function fetchAndCacheProjectCategories(params: {
     .map((m) => getProjectId(m))
     .filter(
       (id): id is string =>
-        id !== null && !projectCategoryCache.hasOwnProperty(id),
+        id !== null &&
+        !Object.prototype.hasOwnProperty.call(projectCategoryCache, id),
     );
 
   if (idsToFetch.length === 0) return;
@@ -111,9 +112,9 @@ export type RoutePoint = {
 };
 
 /**
- * Search marker state type
+ * Pin draft marker state type
  */
-export type SearchMarkerState = {
+export type PinDraftMarkerState = {
   position: LatLngExpression;
   label: string;
   routePoints?: LatLngExpression[];
@@ -121,22 +122,22 @@ export type SearchMarkerState = {
 
 /**
  * Creates a handler for coordinate selection from MapCreatePinModal
- * @param setSearchMarker - State setter for search marker
+ * @param setPinDraftMarker - State setter for the pin draft marker
  * @param mapRef - Reference to the map container
  * @returns Handler function for onSelectCoordinates
  */
 export const createSelectCoordinatesHandler = (
-  setSearchMarker: (marker: SearchMarkerState) => void,
+  setPinDraftMarker: (marker: PinDraftMarkerState) => void,
   mapRef: React.RefObject<MapRef | null>,
 ): ((coords: CoordinateSelection) => void) => {
   return (coords: CoordinateSelection): void => {
     queueMicrotask(() => {
       try {
         if (!coords) {
-          setSearchMarker(null);
+          setPinDraftMarker(null);
           return;
         }
-        setSearchMarker({
+        setPinDraftMarker({
           position: [coords.lat, coords.lng],
           label: coords.label || '',
         });
@@ -159,12 +160,12 @@ export const createSelectCoordinatesHandler = (
 
 /**
  * Creates a handler for route selection from MapCreatePinModal
- * @param setSearchMarker - State setter for search marker
+ * @param setPinDraftMarker - State setter for the pin draft marker
  * @param mapRef - Reference to the map container
  * @returns Handler function for onSelectRoute
  */
 export const createSelectRouteHandler = (
-  setSearchMarker: (marker: SearchMarkerState) => void,
+  setPinDraftMarker: (marker: PinDraftMarkerState) => void,
   mapRef: React.RefObject<MapRef | null>,
 ): ((points: RoutePoint[]) => void) => {
   return (points: RoutePoint[]): void => {
@@ -172,14 +173,14 @@ export const createSelectRouteHandler = (
     queueMicrotask(() => {
       try {
         if (!points || points.length === 0) {
-          setSearchMarker(null);
+          setPinDraftMarker(null);
           return;
         }
         const last = points[points.length - 1];
         const routePositions = points.map(
           (p) => [p.lat, p.lng] as [number, number],
         );
-        setSearchMarker({
+        setPinDraftMarker({
           position: [last.lat, last.lng],
           label: 'Strecke',
           routePoints: routePositions,
@@ -349,13 +350,16 @@ export const createProjectCategoryIcon = (
       <path d="M15 2C10.58 2 7 5.58 7 10c0 6.627 8 16 8 16s8-9.373 8-16c0-4.42-3.58-8-8-8z"/>
       <g transform="translate(10.2,5) scale(0.4)">${categoryIconPath}</g>
     </svg>`;
-  return L.divIcon({
+  const options: L.DivIconOptions & { renderedMarkerColor: string } = {
     html: `<div class="custom-icon-wrapper">${iconSvg}</div>`,
     className: 'custom-marker-icon',
     iconSize: L.point(60, 60),
     iconAnchor: [30, 60],
     popupAnchor: [0, -60],
-  });
+    renderedMarkerColor: color,
+  };
+
+  return L.divIcon(options);
 };
 
 /**

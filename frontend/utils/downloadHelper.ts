@@ -6,7 +6,12 @@ import {
   getWidgetDownloadData,
   getWidgetWithChildrenById,
 } from '@/api/widget-service';
-import { DashboardWithContent, WidgetWithChildren } from '@/types';
+import {
+  ChartData,
+  CurrentAreaConfig,
+  DashboardWithContent,
+  WidgetWithChildren,
+} from '@/types';
 
 export const getAvailableWidgets = async (
   accessToken: string,
@@ -52,6 +57,7 @@ export const downloadCSV = async (
   id: string,
   type: string,
   openSnackbar: (message: string, variant: 'success' | 'error') => void,
+  currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
   widgetIds?: string[],
 ): Promise<void> => {
   try {
@@ -63,6 +69,7 @@ export const downloadCSV = async (
         try {
           csvData = await getDashboardDownloadData(
             accessToken,
+            currentAreaConfig,
             widgetIds ? widgetIds : [],
             id,
           );
@@ -80,7 +87,11 @@ export const downloadCSV = async (
         }
       case 'widget':
         try {
-          csvData = await getWidgetDownloadData(accessToken, id);
+          csvData = await getWidgetDownloadData(
+            currentAreaConfig,
+            accessToken,
+            id,
+          );
           break;
         } catch (error) {
           console.error('Widget-Daten konnten nicht abgerufen werden:', error);
@@ -112,3 +123,44 @@ export const downloadCSV = async (
     openSnackbar('Der Download der CSV-Datei ist fehlgeschlagen.', 'error');
   }
 };
+
+export function downloadChartDataCsv(data: ChartData[]): void {
+  const headers = ['entityId', 'attrName', 'value', 'index'];
+
+  const escapeCsv = (value: unknown): string => {
+    const text = String(value ?? '');
+
+    if (text.includes(',') || text.includes('"') || text.includes('\n')) {
+      return `"${text.replaceAll('"', '""')}"`;
+    }
+
+    return text;
+  };
+
+  const rows = data.flatMap((series) =>
+    series.values.map(([index, value]) => [
+      series.id ?? '',
+      series.name,
+      value,
+      index,
+    ]),
+  );
+
+  const csv = [
+    headers.join(','),
+    ...rows.map((row) => row.map(escapeCsv).join(',')),
+  ].join('\n');
+
+  const blob = new Blob(['\uFEFF' + csv], {
+    type: 'text/csv;charset=utf-8;',
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = 'chart-data.csv';
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
