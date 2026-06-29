@@ -5,6 +5,7 @@ kind: ConfigMap
 metadata:
   name: mail-service-configmap
 data:
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "mail-service" "frontendUrl" }}
   # Mailer Variables
   DEFECT_REPORT_EMAIL: "smart.city@edag.com"
   # SMTP server configuration

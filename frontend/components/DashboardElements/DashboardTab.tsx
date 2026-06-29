@@ -41,6 +41,12 @@ import {
   DUMMY_PIE_CHART_LABELS,
   DUMMY_PIE_CHART_VALUES,
 } from '@/utils/objectHelper';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from '@/components/Map/CustomMapZoomDefaults';
 import WeatherWarning from '@/ui/WeatherWarning';
 import NoDataWarning from '@/ui/NoDataWarning';
 import { MapModalChartStyle } from '@/types/mapRelatedModels';
@@ -48,7 +54,7 @@ import { ListView } from '../listview/listview';
 import Table from '@/ui/Charts/Table';
 import BarChartDynamic from '@/ui/Charts/BarChartDynamic';
 import LineChartDynamic from '@/ui/Charts/LineChartDynamic';
-import BarChartHorizontal from '@/ui/Charts/BarChartHorizonal/BarChartHorizontal';
+import BarChartHorizontal from '@/ui/Charts/BarChartHorizontal';
 import TableDynamic from '@/ui/Charts/TableDynamic';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
@@ -262,10 +268,10 @@ export default async function DashboardTab(
           {tab.componentSubType === tabComponentSubTypeEnum.table && (
             <Table
               data={tabData?.chartData}
-              fontColor={tab?.tableFontColor || '#000000'}
-              headerColor={tab?.tableHeaderColor || '#005b9e'}
+              fontColor={tab?.tableFontColor || '#fff'}
+              headerColor={tab?.tableHeaderColor || '#2B3244'}
               oddRowColor={tab?.tableOddRowColor || '#2D3244'}
-              evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+              evenRowColor={tab?.tableEvenRowColor || '#2B3244'}
               isTableHeaderVisible={tab?.isTableHeaderVisible || false}
               usesQueryParameter={usesQueryParameter}
             />
@@ -646,6 +652,9 @@ export default async function DashboardTab(
               tabData={tabData}
               usesQueryParameter={usesQueryParameter}
               useDashboardFontColor={tab.useDashboardFontColor ?? false}
+              usePreviousStageColorOnBoundary={
+                tab.usePreviousStageColorOnBoundary ?? false
+              }
             />
           )}
         </div>
@@ -856,14 +865,27 @@ export default async function DashboardTab(
                 />
               ) : (
                 <Map
-                  mapMaxZoom={tab.mapMaxZoom ? tab.mapMaxZoom : 18}
-                  mapMinZoom={tab.mapMinZoom ? tab.mapMinZoom : 0}
+                  mapMaxZoom={resolveMapZoomSetting(
+                    tab.mapMaxZoom,
+                    tab.componentSubType,
+                    18,
+                    CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+                  )}
+                  mapMinZoom={resolveMapZoomSetting(
+                    tab.mapMinZoom,
+                    tab.componentSubType,
+                    0,
+                    CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+                  )}
                   mapAllowPopups={
                     tab.mapAllowPopups ? tab.mapAllowPopups : false
                   }
-                  mapStandardZoom={
-                    tab.mapStandardZoom ? tab.mapStandardZoom : 13
-                  }
+                  mapStandardZoom={resolveMapZoomSetting(
+                    tab.mapStandardZoom,
+                    tab.componentSubType,
+                    13,
+                    CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+                  )}
                   mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
                   mapAllowScroll={
                     tab.mapAllowScroll ? tab.mapAllowScroll : false

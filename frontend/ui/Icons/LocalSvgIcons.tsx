@@ -28,6 +28,7 @@ import {
   Accessibility,
   EasySpeech,
   SignLanguage,
+  SmallCircle,
 } from '../../assets/icons';
 
 type IconType = 'fontawesome' | 'svg';
@@ -72,6 +73,7 @@ export const localSvgIconsList: IconOption[] = [
   { name: 'Accessibility', type: 'svg' },
   { name: 'EasySpeech', type: 'svg' },
   { name: 'SignLanguage', type: 'svg' },
+  { name: 'SmallCircle', type: 'svg' },
   // Add other SVG icons here
 ];
 
@@ -137,6 +139,8 @@ export default function LocalSvgIcons(props: DashboardSvgProps): ReactElement {
       return <EasySpeech fontColor={fontColor} height={height} />;
     case 'SignLanguage':
       return <SignLanguage fontColor={fontColor} height={height} />;
+    case 'SmallCircle':
+      return <SmallCircle fontColor={fontColor} height={height} />;
     // Add other SVG icons here
     default:
       return <div></div>;

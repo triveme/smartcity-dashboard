@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactElement, useEffect, useRef } from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { applyUserLocaleToNumber } from '@/utils/mathHelper';
 import { PieChartDataItem } from '@/types/dashboardModels';

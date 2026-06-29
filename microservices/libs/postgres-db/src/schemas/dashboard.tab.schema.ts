@@ -213,6 +213,9 @@ export const tabs = pgTable('tab', {
   normalizeXAxisByTimeFramePeriod: boolean(
     'normalize_x_axis_by_time_frame_period',
   ),
+  usePreviousStageColorOnBoundary: boolean(
+    'use_previous_stage_color_on_boundary',
+  ),
 });
 
 export const tabsRelations = relations(tabs, ({ one, many }) => ({

@@ -1,11 +1,16 @@
 'use client';
 
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
 import { useSearchParams } from 'next/navigation';
 import { roundToDecimal } from '@/utils/mathHelper';
+import {
+  getAxisLabelRich,
+  getAxisLabelStyleName,
+  getStageLabel,
+} from '@/utils/stageableChartHelper';
 
 type StageableChartProps = {
   unit: string;
@@ -26,6 +31,7 @@ type StageableChartProps = {
   decimalPlaces?: number;
   usesQueryParameter?: boolean;
   useDashboardFontColor?: boolean;
+  usePreviousStageColorOnBoundary?: boolean;
 };
 
 type ColorStage = [number, string];
@@ -50,6 +56,7 @@ export default function StageableChart(
     decimalPlaces,
     usesQueryParameter = false,
     useDashboardFontColor = false,
+    usePreviousStageColorOnBoundary = false,
   } = props;
   let { value } = props;
 
@@ -102,20 +109,9 @@ export default function StageableChart(
     }
   }, []);
 
-  // Function to get the corresponding label based on the value
-  function getLabelForValue(value: number): string {
-    for (let i = 0; i < staticValues.length; i++) {
-      if (value <= staticValues[i]) {
-        return staticValuesTexts[i];
-      }
-    }
-    return staticValuesTexts[staticValuesTexts.length - 1];
-  }
-
-  // Set the label whenever the value or staticValues change
   useEffect(() => {
-    setLabel(getLabelForValue(value));
-  }, [value, staticValues]);
+    setLabel(getStageLabel(value, staticValuesTexts, staticValues));
+  }, [value, staticValues, staticValuesTexts]);
 
   function convertWholeNumberToDecimals(
     minValue: number,
@@ -162,6 +158,28 @@ export default function StageableChart(
     return `${roundedValue}`;
   }
 
+  const axisLabelRich = getAxisLabelRich(
+    staticValuesColors,
+    ticksFontColor,
+    autoScaleAxisLabelFont,
+  );
+
+  function formatAxisLabelWithStageColor(rawValue: number): string {
+    const formattedValue = formatAxisLabel(rawValue);
+
+    if (!usePreviousStageColorOnBoundary) {
+      return formattedValue;
+    }
+
+    const styleName = getAxisLabelStyleName(
+      rawValue,
+      staticValues,
+      axisLabelRich,
+    );
+
+    return `{${styleName}|${formattedValue}}`;
+  }
+
   useEffect(() => {
     if (myChartRef.current) {
       const option: EChartsOption = {
@@ -196,10 +214,16 @@ export default function StageableChart(
             },
             axisLabel: {
               show: showAxisLabels !== false,
-              color: useDashboardFontColor ? ticksFontColor : undefined,
+              color: usePreviousStageColorOnBoundary
+                ? undefined
+                : useDashboardFontColor
+                  ? ticksFontColor
+                  : undefined,
               distance: -50,
               fontSize: autoScaleAxisLabelFont,
-              formatter: (rawValue: number) => formatAxisLabel(rawValue),
+              formatter: (rawValue: number) =>
+                formatAxisLabelWithStageColor(rawValue),
+              rich: usePreviousStageColorOnBoundary ? axisLabelRich : undefined,
             },
             detail: {
               offsetCenter: [0, '70%'],
@@ -234,6 +258,8 @@ export default function StageableChart(
     showAxisLabels,
     autoScaleAxisLabelFont,
     decimalPlaces,
+    usePreviousStageColorOnBoundary,
+    axisLabelRich,
   ]);
 
   return (

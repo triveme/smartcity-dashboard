@@ -275,6 +275,7 @@ export async function getTab(
     pinMode: 'single',
     useDashboardFontColor: false,
     normalizeXAxisByTimeFramePeriod: false,
+    usePreviousStageColorOnBoundary: false,
   };
 }
 

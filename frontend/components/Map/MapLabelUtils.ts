@@ -13,169 +13,203 @@ export function getFormattedDate(value: string): string {
         day: '2-digit',
       });
 }
+
+const WORKBOOK_SENSOR_ATTRIBUTE_LABELS: Record<string, string> = {
+  ADDRESSREGION: 'Region',
+  ADRESSLOCALITY: 'Ort',
+  ALERTDESCRIPTION: 'Warntext',
+  ALERTSOURCE: 'Warnquelle',
+  ALL_GATEWAYS: 'Gateways',
+  AVAILABLESPOTNUMBER: 'freie Plätze',
+  AVG_CO2_MONTHLY: 'CO2 Durchschnitt Monat',
+  AVG_CO2_PREV_DAY: 'CO2 Durchschnitt Vortag',
+  AVG_OCCUPIED_HOURS_30D: 'Parkdauer Durchschnitt',
+  AVG_OCCUPIED_HOURS_ALL_30D: 'Parkdauer Durchschnitt in Stunden',
+  AVG_OCCUPIED_MIN_DAILY: 'Parkdauer Durchschnitt täglich',
+  AVG_OCCUPIED_MIN_WEEKLY: 'Parkdauer Durchschnitt wöchentlich',
+  AVG_OCCUPIED_PERCENT_ALL_30D: 'Parkdauer Durchschnitt in %',
+  AVG_OCCUPIED_PERCENT_DAILY: 'Parkdauer Durchschnitt täglich in Prozent',
+  AVG_OCCUPIED_PERCENT_WEEKLY: 'Parkdauer Durchschnitt wöchentlich in Prozent',
+  AVG_TEMP_DEW_DIFF_MONTHLY: 'Taupunktdiff. Durchschnitt Monat',
+  AVG_TEMP_DEW_DIFF_PREV_DAY: 'Taupunktdiff. Durchschnitt Vortag',
+  AVG_TEMP_MONTHLY: 'Temperatur Durchschnitt Monat',
+  AVG_TEMP_PREV_DAY: 'Temperatur Durchschnitt Vortag',
+  BATTERY: 'Batterie',
+  BATTERYSTATUS: 'Batteriestatus',
+  CAREUNIT: 'Pflegestatus',
+  DATA: 'Daten',
+  DATEFELLED: 'Fälldatum',
+  DATEISSUED: 'Ausgabedatum',
+  DAYS: 'Tage',
+  DETAILURL: 'Details',
+  DURATIONTEXT: 'Dauer Textformat',
+  EAST_WINDSPEED: 'Windgeschwindigkeit Ost',
+  END_DATE: 'Ende',
+  FREE_SLOTS: 'Freie Plätze',
+  GATEWAY_ID: 'Gateway ID',
+  HOTTEST_DAY: 'Heißster Tag',
+  HOUR: 'Stunde',
+  INCLINATION_DEGREE: 'Neigung',
+  INSTRUCTION: 'Handlungsempfehlung',
+  LIGHTNING_AVERAGE_DISTANCE: 'Blitzdistanz',
+  LIGHTNING_STRIKE_COUNTER: 'Blitzanzahl',
+  LIGHTNING_STRIKE_DATE: 'letzter Blitzeinschlag',
+  LINPERCENTVALUE: 'Füllstand',
+  LOCATION: 'Ort',
+  MAX_CO2_MONTHLY: 'CO2 max. Monat',
+  MAX_CO2_PREV_DAY: 'CO2 max. Vortag',
+  MAX_PRECIPITATION: 'max. Niederschlag',
+  MAX_TEMP_DEW_DIFF_MONTHLY: 'Taupunktdiff. max. Monat',
+  MAX_TEMP_DEW_DIFF_PREV_DAY: 'Taupunktdiff. max. Vortag',
+  MAX_TEMP_MONTHLY: 'Temperatur max. Monat',
+  MAX_TEMP_PREV_DAY: 'Temperatur max. Vortag',
+  MAXCURRENTLEVEL: 'max. Wasserstand',
+  MAXDATEOBSERVED: 'max. Wasserstand Datum',
+  MAXLVL_DATE: 'max. Pegelstand Datum',
+  MEASUREDDISTANCE: 'Abstand gemessen',
+  MIN_CO2_MONTHLY: 'CO2 min. Monat',
+  MIN_CO2_PREV_DAY: 'CO2 min. Vortag',
+  MIN_TEMP_DEW_DIFF_MONTHLY: 'Taupunktdiff. min. Monat',
+  MIN_TEMP_DEW_DIFF_PREV_DAY: 'Taupunktdiff. min. Vortag',
+  MIN_TEMP_MONTHLY: 'Temperatur min. Monat',
+  MIN_TEMP_PREV_DAY: 'Temperatur min. Vortag',
+  MINCURRENTLEVEL: 'min. Wasserstand',
+  MINDATEOBSERVED: 'min. Wasserstand Datum',
+  MINLVL_DATE: 'min. Pegelstand Datum',
+  NORTH_WINDSPEED: 'Windgeschwindigkeit Nord',
+  NUM_DAYS: 'Anzahl Tage',
+  OCCUPIED_SECONDS: 'Parkdauer Sek.',
+  OCCUPIED_SLOTS: 'Belegte Plätze',
+  PERCENTVALUE: 'Messwert Prozent',
+  PICTURE: 'Bild',
+  RAIN_VALUE: 'Regenmenge',
+  RAINDURATION_MIN: 'Regendauer',
+  RAINRATE10MIN: 'Regenmenge (10 min)',
+  REFPARKINGSITE: 'Parkplatz',
+  RESULT: 'Ergebnis',
+  RSSI: 'Signal RSSi',
+  SCALEDVALUE: 'Messwert',
+  SEVERITY: 'Stufe',
+  SNR: 'Signal SNR',
+  SOILMOISTUREVWC_10CM: 'Bodenfeuchte 10cm',
+  SOILMOISTUREVWC_20CM: 'Bodenfeuchte 20cm',
+  SOILMOISTUREVWC_30CM: 'Bodenfeuchte 30cm',
+  SOILMOISTUREVWC_45CM: 'Bodenfeuchte 45cm',
+  SOILMOISTUREVWC_60CM: 'Bodenfeuchte 60cm',
+  SOILMOISTUREVWC_90CM: 'Bodenfeuchte 90cm',
+  START_DATE: 'Start',
+  STREETADDRESS: 'Straße',
+  SUBCATEGORY: 'Unterkategorie',
+  TEXT: 'Text',
+  TEXT_COUNTER: 'Anzahl Textformat',
+  TEXT_YEARLY_MAX: 'Text jährlich',
+  TREEHEIGHT: 'Höhe',
+  TREETYPEBOTANICAL: 'Baumart botanisch',
+  UNKNOWN_SLOTS: 'Unbekannte Plätze',
+  VALIDFROM: 'gültig ab',
+  VALIDTO: 'gültig bis',
+  WATERLEAK1: 'Leckage Sensor 1',
+  WATERLEAK2: 'Leckage Sensor 2',
+  WATERLEAKOVERALL: 'Leckagestatus',
+  WATERREQUIREMET: 'Wasserbedarf',
+  WEEKDAY: 'Wochentag',
+  YEARPLANTED: 'Pflanzjahr',
+};
+
+const LEGACY_SENSOR_ATTRIBUTE_LABELS: Record<string, string> = {
+  CONTACTPOINT: 'Kontaktinformation',
+  CATEGORY: 'Kategorie',
+  TITLE: 'Title',
+  TOTALCONSUMPTION: 'Gesamtverbrauch',
+  METERTYPE: 'Messtyp',
+  OBSERVATIONDATETIME: 'Messdatum',
+  DATEOBSERVED: 'Messdatum',
+  ADDRESS: 'Adresse',
+  TEMPERATURE: 'Temperatur (°C)',
+  STATUS: 'Status',
+  STATUS_DE: 'Status',
+  NAME: 'Name',
+  ALTERNATENAME: 'Alternativer Name',
+  DESCRIPTION: 'Beschreibung',
+  TREETYPE: 'Baumart',
+  WATERLEVEL: 'Pegelstand',
+  NOMINALCAPACITY: 'Nennkapazität',
+  OPERATOR: 'Betreiber',
+  SOCKETTYPE: 'Steckanschlüsse',
+  CAPACITY: 'Ladeplätze',
+  CURRENTLEVEL: 'Aktueller Pegel',
+  REFERENCELEVEL: 'Referenz Pegel',
+  MONTHLYCONSUMPTIONSUMGAS: 'Monatlicher Gasverbrauch',
+  MONTHLYCONSUMPTIONSUMWATER: 'Monatlicher Wasserverbrauch',
+  CO2: 'Kohlenstoffdioxid (ppm)',
+  SOILMOISTUREEC: 'Bodenfeuchtigkeit',
+  SOILMOISTUREVWC: 'Bodenfeuchtigkeit',
+  SOILMOISTUREVWC_TIEFE_1: 'Bodenfeuchtigkeit 10cm',
+  SOILMOISTUREVWC_TIEFE_2: 'Bodenfeuchtigkeit 25cm',
+  SOILMOISTUREVWC_TIEFE_3: 'Bodenfeuchtigkeit 50cm',
+  SOILMOISTUREVWC_TIEFE_4: 'Bodenfeuchtigkeit 75cm',
+  SOILMOISTUREVWC_TIEFE_5: 'Bodenfeuchtigkeit 90cm',
+  SOILMOISTUREVWC_TIEFE_6: 'Bodenfeuchtigkeit 1m',
+  SOILMOISTUREVWC_TIEFE_10CM: 'Bodenfeuchtigkeit 10cm',
+  SOILMOISTUREVWC_TIEFE_20CM: 'Bodenfeuchtigkeit 20cm',
+  SOILMOISTUREVWC_TIEFE_30CM: 'Bodenfeuchtigkeit 30cm',
+  SOILMOISTUREVWC_TIEFE_45CM: 'Bodenfeuchtigkeit 45cm',
+  SOILMOISTUREVWC_TIEFE_60CM: 'Bodenfeuchtigkeit 60cm',
+  SOILMOISTUREVWC_TIEFE_90CM: 'Bodenfeuchtigkeit 90cm',
+  SOILTEMPERATURE: 'Bodentemperatur (°C)',
+  TOTALCONSUMPTIONSUM_GAS: 'Gesamtverbrauch Gas',
+  TOTALCONSUMPTIONSUM_WATER: 'Gesamtverbrauch Wasser',
+  CO2AVG: 'CO2 Durchschnitt',
+  CURRENT_LEVEL: 'Pegelstand',
+  DEWPOINT: 'Taupunkt',
+  RELATIVEHUMIDITY: 'Relative Luftfeuchte (%)',
+  SOILTEMPERATUR: 'Bodentemperatur (°C)',
+  PRECIPITATION: 'Niederschlag',
+  RAINRATEINTERVAL: 'Niederschlag',
+  IRRADIATION: 'Sonneneinstrahlung',
+  PRESSURE: 'Luftdruck (hPa)',
+  SOLARRADIATION: 'Solareinstrahlung',
+  LIGHTNING_STRIKE_COUNT: 'Blitzeinschläge',
+  LIGHTNING_STRIKE_DISTANCE: 'Blitzentfernung',
+  WINDDIRECTION: 'Windrichtung',
+  MAXIMUM_WINDSPEED: 'Windböe',
+  WINDSPEED: 'Windgeschwindigkeit',
+  TOTAL_COVERAGE: 'Bewölkung',
+  MAXLVL: 'Höchster Pegelstand',
+  MINLVL: 'Niedrigster Pegelstand',
+  ATMOSPHERICPRESSURE: 'Luftdruck (hPa)',
+  VEHICLETYPE: 'Fahrzeugtyp',
+  STREETNAME: 'Straßenname',
+  INTENSITY: 'Auslastung',
+  STATUS_ISOCCUPIEDSUM: 'Belegung',
+  DATUM: 'Letzte Aktualisierung',
+  PEGELSTAND: 'Pegelstand (cm)',
+  ANZAHL_GESAMT: 'Gesamte Anzahl',
+  ANZAHL_FREI: 'Anzahl frei',
+  GESAMT_24H: 'Gesamt (letzte 24 Stunden)',
+  GESAMT_1H: 'Gesamt (letzte Stunde)',
+  ARIQUALITYINDEX: 'Luftqualitätsindex',
+  TOTALACTIVEPOWER: 'Gesamte Wirkleistung',
+  TOTALACTIVEENERGYIMPORT: 'Gesamter Energie-Import',
+};
+
+const SENSOR_ATTRIBUTE_LABELS: Record<string, string> = {
+  ...WORKBOOK_SENSOR_ATTRIBUTE_LABELS,
+  ...LEGACY_SENSOR_ATTRIBUTE_LABELS,
+};
+
+function normalizeSensorAttributeLabelKey(sensorAttribute: string): string {
+  return sensorAttribute.trim().toUpperCase();
+}
+
 export function getGermanLabelForSensorAttribute(
   sensorAttribute: string,
 ): string {
-  switch (sensorAttribute) {
-    case 'CONTACTPOINT':
-      return 'Kontaktinformation';
-    case 'CATEGORY':
-      return 'Kategorie';
-    case 'TITLE':
-      return 'Title';
-    case 'TOTALCONSUMPTION':
-      return 'Gesamtverbrauch';
-    case 'METERTYPE':
-      return 'Messtyp';
-    case 'OBSERVATIONDATETIME':
-      return 'Messdatum';
-    case 'DATEOBSERVED':
-      return 'Messdatum';
-    case 'ADDRESS':
-      return 'Adresse';
-    case 'TEMPERATURE':
-      return 'Temperatur (°C)';
-    case 'STATUS':
-      return 'Status';
-    case 'STATUS_DE':
-      return 'Status';
-    case 'NAME':
-      return 'Name';
-    case 'ALTERNATENAME':
-      return 'Alternativer Name';
-    case 'DESCRIPTION':
-      return 'Beschreibung';
-    case 'TREETYPE':
-      return 'Baumart';
-    case 'WATERLEVEL':
-      return 'Pegelstand';
-    case 'NOMINALCAPACITY':
-      return 'Nennkapazität';
-    case 'OPERATOR':
-      return 'Betreiber';
-    case 'SOCKETTYPE':
-      return 'Steckanschlüsse';
-    case 'CAPACITY':
-      return 'Ladeplätze';
-    case 'CURRENTLEVEL':
-      return 'Aktueller Pegel';
-    case 'REFERENCELEVEL':
-      return 'Referenz Pegel';
-    case 'MONTHLYCONSUMPTIONSUMGAS':
-      return 'Monatlicher Gasverbrauch';
-    case 'MONTHLYCONSUMPTIONSUMWATER':
-      return 'Monatlicher Wasserverbrauch';
-    case 'CO2':
-      return 'Kohlenstoffdioxid (ppm)';
-    case 'SOILMOISTUREEC':
-      return 'Bodenfeuchtigkeit';
-    case 'SOILMOISTUREVWC':
-      return 'Bodenfeuchtigkeit';
-    case 'SOILMOISTUREVWC_TIEFE_1':
-      return 'Bodenfeuchtigkeit 10cm';
-    case 'SOILMOISTUREVWC_TIEFE_2':
-      return 'Bodenfeuchtigkeit 25cm';
-    case 'SOILMOISTUREVWC_TIEFE_3':
-      return 'Bodenfeuchtigkeit 50cm';
-    case 'SOILMOISTUREVWC_TIEFE_4':
-      return 'Bodenfeuchtigkeit 75cm';
-    case 'SOILMOISTUREVWC_TIEFE_5':
-      return 'Bodenfeuchtigkeit 90cm';
-    case 'SOILMOISTUREVWC_TIEFE_6':
-      return 'Bodenfeuchtigkeit 1m';
-
-    case 'SOILMOISTUREVWC_TIEFE_10CM':
-      return 'Bodenfeuchtigkeit 10cm';
-    case 'SOILMOISTUREVWC_TIEFE_20CM':
-      return 'Bodenfeuchtigkeit 20cm';
-    case 'SOILMOISTUREVWC_TIEFE_30CM':
-      return 'Bodenfeuchtigkeit 30cm';
-    case 'SOILMOISTUREVWC_TIEFE_45CM':
-      return 'Bodenfeuchtigkeit 45cm';
-    case 'SOILMOISTUREVWC_TIEFE_60CM':
-      return 'Bodenfeuchtigkeit 60cm';
-    case 'SOILMOISTUREVWC_TIEFE_90CM':
-      return 'Bodenfeuchtigkeit 90cm';
-
-    case 'SOILTEMPERATURE':
-      return 'Bodentemperatur (°C)';
-    case 'TOTALCONSUMPTIONSUM_GAS':
-      return 'Gesamtverbrauch Gas';
-    case 'TOTALCONSUMPTIONSUM_WATER':
-      return 'Gesamtverbrauch Wasser';
-    case 'CO2AVG':
-      return 'CO2 Durchschnitt';
-    case 'TEMPERATURE':
-      return 'Temperatur (°C)';
-    case 'CURRENTLEVEL':
-      return 'Pegelstand';
-    case 'CURRENT_LEVEL':
-      return 'Pegelstand';
-    case 'DEWPOINT':
-      return 'Taupunkt';
-    case 'RELATIVEHUMIDITY':
-      return 'Relative Luftfeuchte (%)';
-    case 'SOILTEMPERATUR':
-      return 'Bodentemperatur (°C)';
-    case 'PRECIPITATION':
-      return 'Niederschlag';
-    case 'RAINRATEINTERVAL':
-      return 'Niederschlag';
-    case 'IRRADIATION':
-      return 'Sonneneinstrahlung';
-    case 'PRESSURE':
-      return 'Luftdruck (hPa)';
-    case 'SOLARRADIATION':
-      return 'Solareinstrahlung';
-    case 'LIGHTNING_STRIKE_COUNT':
-      return 'Blitzeinschläge';
-    case 'LIGHTNING_STRIKE_DISTANCE':
-      return 'Blitzentfernung';
-    case 'WINDDIRECTION':
-      return 'Windrichtung';
-    case 'MAXIMUM_WINDSPEED':
-      return 'Windböe';
-    case 'WINDSPEED':
-      return 'Windgeschwindigkeit';
-    case 'TOTAL_COVERAGE':
-      return 'Bewölkung';
-    case 'MAXLVL':
-      return 'Höchster Pegelstand';
-    case 'MINLVL':
-      return 'Niedrigster Pegelstand';
-    case 'ATMOSPHERICPRESSURE':
-      return 'Luftdruck (hPa)';
-    case 'VEHICLETYPE':
-      return 'Fahrzeugtyp';
-    case 'STREETNAME':
-      return 'Straßenname';
-    case 'INTENSITY':
-      return 'Auslastung';
-    case 'STATUS_ISOCCUPIEDSUM':
-      return 'Belegung';
-    case 'DATUM':
-      return 'Letzte Aktualisierung';
-    case 'PEGELSTAND':
-      return 'Pegelstand (cm)';
-    case 'ANZAHL_GESAMT':
-      return 'Gesamte Anzahl';
-    case 'ANZAHL_FREI':
-      return 'Anzahl frei';
-    case 'GESAMT_24H':
-      return 'Gesamt (letzte 24 Stunden)';
-    case 'GESAMT_1H':
-      return 'Gesamt (letzte Stunde)';
-    case 'ARIQUALITYINDEX':
-      return 'Luftqualitätsindex';
-
-    case 'TOTALACTIVEPOWER':
-      return 'Gesamte Wirkleistung';
-    case 'TOTALACTIVEENERGYIMPORT':
-      return 'Gesamter Energie-Import';
-
-    default:
-      return sensorAttribute;
-  }
+  return (
+    SENSOR_ATTRIBUTE_LABELS[
+      normalizeSensorAttributeLabelKey(sensorAttribute)
+    ] ?? sensorAttribute
+  );
 }
 
 export function getValueString(

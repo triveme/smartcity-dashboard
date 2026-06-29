@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import { EChartsOption } from 'echarts';
 
 type ColumnChartProps = {

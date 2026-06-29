@@ -316,6 +316,13 @@
       "when": 1781092498726,
       "tag": "0044_mute_dakota_north_1.3.6",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "5",
+      "when": 1782733776194,
+      "tag": "0045_overconfident_thundra_1.3.8",
+      "breakpoints": true
     }
   ]
 }

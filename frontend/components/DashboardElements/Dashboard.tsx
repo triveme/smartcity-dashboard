@@ -18,6 +18,12 @@ import {
   WidgetWithContent,
 } from '@/types';
 import DashboardPanel from './DashboardPanel';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from '@/components/Map/CustomMapZoomDefaults';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import DataExportButton from '@/ui/Buttons/DataExportButton';
 import {
@@ -373,22 +379,32 @@ export default async function Dashboard(
                 />
               ) : (
                 <Map
-                  mapMaxZoom={
-                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapMaxZoom ||
-                    18
-                  }
-                  mapMinZoom={
-                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapMinZoom ||
-                    0
-                  }
+                  mapMaxZoom={resolveMapZoomSetting(
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapMaxZoom,
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .componentSubType,
+                    18,
+                    CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+                  )}
+                  mapMinZoom={resolveMapZoomSetting(
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapMinZoom,
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .componentSubType,
+                    0,
+                    CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+                  )}
                   mapAllowPopups={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapAllowPopups || false
                   }
-                  mapStandardZoom={
+                  mapStandardZoom={resolveMapZoomSetting(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
-                      .mapStandardZoom || 13
-                  }
+                      .mapStandardZoom,
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .componentSubType,
+                    13,
+                    CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+                  )}
                   mapAllowZoom={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapAllowZoom || false

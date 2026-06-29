@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { ProjectDataModule } from './project-data.module';
+import { parseCorsOrigins } from '@app/common';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(ProjectDataModule);
-
   app.enableCors({
-    origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
+    origin: parseCorsOrigins(process.env.NEXT_PUBLIC_FRONTEND_URL),
     methods: ['GET', 'DELETE', 'POST', 'PATCH'],
     credentials: true,
   });

@@ -95,6 +95,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'isTableHeaderVisible',
       'useDashboardFontColor',
       'normalizeXAxisByTimeFramePeriod',
+      'usePreviousStageColorOnBoundary',
       ...this.commonFields,
     ],
     iframe: ['iFrameUrl', ...this.commonFields],

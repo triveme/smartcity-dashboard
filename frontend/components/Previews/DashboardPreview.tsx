@@ -4,6 +4,12 @@ import dynamic from 'next/dynamic';
 
 import CreateDashboardElementButton from '@/ui/Buttons/CreateDashboardElementButton';
 import DashboardPanelPreview from '@/components/Previews/DashboardPanelPreview';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from '@/components/Map/CustomMapZoomDefaults';
 import PanelWizard from '@/components/Wizards/PanelWizard';
 import { dashboardTypeEnum, Panel, Tab } from '@/types';
 import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
@@ -185,14 +191,27 @@ export default function DashboardPreview(
       )}
       {isMapDashboard && (
         <Map
-          mapMaxZoom={selectedTab?.mapMaxZoom ? selectedTab.mapMaxZoom : 18}
-          mapMinZoom={selectedTab?.mapMinZoom ? selectedTab.mapMinZoom : 0}
+          mapMaxZoom={resolveMapZoomSetting(
+            selectedTab?.mapMaxZoom,
+            selectedTab?.componentSubType,
+            18,
+            CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+          )}
+          mapMinZoom={resolveMapZoomSetting(
+            selectedTab?.mapMinZoom,
+            selectedTab?.componentSubType,
+            0,
+            CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+          )}
           mapAllowPopups={
             selectedTab?.mapAllowPopups ? selectedTab.mapAllowPopups : false
           }
-          mapStandardZoom={
-            selectedTab?.mapStandardZoom ? selectedTab.mapStandardZoom : 13
-          }
+          mapStandardZoom={resolveMapZoomSetting(
+            selectedTab?.mapStandardZoom,
+            selectedTab?.componentSubType,
+            13,
+            CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+          )}
           mapAllowZoom={
             selectedTab?.mapAllowZoom ? selectedTab.mapAllowZoom : false
           }

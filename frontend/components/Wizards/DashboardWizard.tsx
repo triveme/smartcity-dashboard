@@ -9,10 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from 'react-oidc-context';
 import { jwtDecode } from 'jwt-decode';
 
-import {
-  getWidgets,
-  getWidgetsByTenantAndTabComponentType,
-} from '@/api/widget-service';
+import { getWidgetsByTenantAndTabComponentType } from '@/api/widget-service';
 import SearchableDropdown from '@/ui/SearchableDropdown';
 import {
   dashboardTypeEnum,
@@ -24,10 +21,6 @@ import {
 } from '@/types';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
 import { deletePanel, postPanel } from '@/api/panel-service';
-import {
-  patchWidgetToPanelRelation,
-  postWidgetToPanelRelation,
-} from '@/api/widgetPanelRelation-service';
 import { visibilityEnum } from '@/types';
 import RoleSelection from '@/components/RoleSelecton';
 import WizardSuffixUrlTextfield from '@/ui/WizardSuffixUrlTextfield';
@@ -59,7 +52,7 @@ type DashboardWizardProps = {
   dashboardAllowDataExport: boolean;
   setDashboardAllowDataExport: (type: boolean) => void;
   selectedTab: Tab | undefined;
-  setSelectedTab: (tab: Tab) => void;
+  setSelectedTab: (tab: Tab | undefined) => void;
   panels: Panel[] | undefined;
   setPanels: (panel: Panel[]) => void;
   tenant: string | undefined;
@@ -70,6 +63,8 @@ type DashboardWizardProps = {
   backgroundColor: string;
   hoverColor: string;
   dashboardWidget?: Widget;
+  selectedDashboardWidgetId?: string;
+  setSelectedDashboardWidgetId: (widgetId: string | undefined) => void;
   originalDashboardType?: dashboardTypeEnum;
 };
 
@@ -108,11 +103,14 @@ export default function DashboardWizard(
     setPanels,
     tenant,
     errors,
+    setErrors,
     iconColor,
     borderColor,
     backgroundColor,
     hoverColor,
     dashboardWidget,
+    selectedDashboardWidgetId,
+    setSelectedDashboardWidgetId,
     originalDashboardType,
     setSelectedTab,
   } = props;
@@ -122,9 +120,6 @@ export default function DashboardWizard(
   // Keycloak roles
   const auth = useAuth();
   const [roleOptions, setRoleOptions] = useState<string[]>([]);
-  const [previousWidgetId, setPreviousWidgetId] = useState<string | undefined>(
-    undefined,
-  );
 
   useEffect(() => {
     if (auth && auth.user && auth.user?.access_token) {
@@ -137,20 +132,11 @@ export default function DashboardWizard(
   const [selectedWidgetInDropdown, setSelectedWidgetInDropdown] = useState(
     dashboardWidget ? dashboardWidget.name : '',
   );
-  const [allWidgets, setAllWidgets] = useState<Widget[]>([]);
   const [prevDashboardType, setprevDashboardType] = useState<
     dashboardTypeEnum | undefined
   >(undefined);
   const [mapWidgets, setMapWidgets] = useState<WidgetWithChildren[]>([]);
   const [iframeWidgets, setIFrameWidgets] = useState<WidgetWithChildren[]>([]);
-  const [selectedWidget, setSelectedWidget] = useState<Widget | undefined>(
-    dashboardWidget,
-  );
-
-  const { data: widgets } = useQuery({
-    queryKey: ['widgets'],
-    queryFn: () => getWidgets(auth?.user?.access_token, tenant),
-  });
 
   const { data: widgetsWithMapType } = useQuery({
     queryKey: ['widgetsWithMapType'],
@@ -184,12 +170,6 @@ export default function DashboardWizard(
   });
 
   useEffect(() => {
-    if (widgets) {
-      setAllWidgets(widgets);
-    }
-  }, [widgets]);
-
-  useEffect(() => {
     if (widgetsWithMapType) {
       setMapWidgets(widgetsWithMapType);
     }
@@ -202,12 +182,34 @@ export default function DashboardWizard(
   }, [widgetsWithIFrameType]);
 
   useEffect(() => {
-    allWidgets.map((widget) => {
-      if (widget.name === selectedWidgetInDropdown) {
-        setSelectedWidget(widget);
-      }
-    });
-  }, [selectedWidgetInDropdown]);
+    const isCurrentMapType = isMapDashboardType(dashboardType);
+    const isCurrentIFrameType = dashboardType === dashboardTypeEnum.iframe;
+    const selectedWidgets = isCurrentIFrameType ? iframeWidgets : mapWidgets;
+
+    if (!isCurrentMapType && !isCurrentIFrameType) {
+      setSelectedTab(undefined);
+      return;
+    }
+
+    if (!selectedDashboardWidgetId) {
+      setSelectedTab(undefined);
+      return;
+    }
+
+    const selectedWidget = selectedWidgets.find(
+      (widget) => widget.widget.id === selectedDashboardWidgetId,
+    );
+
+    if (selectedWidget) {
+      setSelectedTab(selectedWidget.tab);
+    }
+  }, [
+    dashboardType,
+    iframeWidgets,
+    mapWidgets,
+    selectedDashboardWidgetId,
+    setSelectedTab,
+  ]);
 
   const clearPanels = async (): Promise<void> => {
     try {
@@ -233,7 +235,6 @@ export default function DashboardWizard(
         prevDashboardType == dashboardTypeEnum.general
       ) {
         await clearPanels();
-        setPreviousWidgetId(undefined);
       }
       // only runs when user changes dashboardType to Karte or iFrame
       // either when creating a new dashboard or editing type from Allgemein to Karte/iFrame
@@ -253,50 +254,10 @@ export default function DashboardWizard(
         }
       }
     };
-    setPreviousWidgetId(selectedWidget?.id);
     setprevDashboardType(dashboardType);
 
     fetchPanel();
   }, [dashboardType]);
-
-  useEffect(() => {
-    const handleWidgetClick = async (): Promise<void> => {
-      const match =
-        allWidgets && allWidgets.length
-          ? allWidgets?.find(
-              (widget: Widget) => widget.name === selectedWidgetInDropdown,
-            )
-          : undefined;
-
-      if (match && match.id && panels && panels.length > 0 && panels[0].id) {
-        if (previousWidgetId) {
-          await patchWidgetToPanelRelation(
-            auth?.user?.access_token,
-            previousWidgetId!,
-            match.id!,
-            panels[0].id,
-          );
-        } else {
-          await postWidgetToPanelRelation(
-            auth?.user?.access_token,
-            match.id!,
-            panels[0].id!,
-            0,
-          );
-        }
-        if (dashboardType === dashboardTypeEnum.iframe) {
-          const widget = iframeWidgets.find(
-            (x) => x.widget.name === match.name,
-          );
-          if (widget) {
-            setSelectedTab(widget.tab);
-          }
-        }
-        setPreviousWidgetId(match?.id);
-      }
-    };
-    handleWidgetClick();
-  }, [selectedWidget]);
 
   useEffect(() => {
     const getWidgetsWithMapType = async (): Promise<void> => {
@@ -329,6 +290,8 @@ export default function DashboardWizard(
       getWidgetsWithMapType();
       if (!isMapDashboardType(originalDashboardType)) {
         setSelectedWidgetInDropdown('');
+        setSelectedDashboardWidgetId(undefined);
+        setSelectedTab(undefined);
       } else if (dashboardWidget) {
         setSelectedWidgetInDropdown(dashboardWidget.name);
       }
@@ -336,14 +299,74 @@ export default function DashboardWizard(
       getWidgetsWithIFrameType();
       if (originalDashboardType !== dashboardTypeEnum.iframe) {
         setSelectedWidgetInDropdown('');
+        setSelectedDashboardWidgetId(undefined);
+        setSelectedTab(undefined);
       } else if (
         originalDashboardType === dashboardTypeEnum.iframe &&
         dashboardWidget
       ) {
         setSelectedWidgetInDropdown(dashboardWidget.name);
       }
+    } else {
+      setSelectedWidgetInDropdown('');
+      setSelectedDashboardWidgetId(undefined);
+      setSelectedTab(undefined);
     }
   }, [dashboardType]);
+
+  useEffect(() => {
+    const isCurrentSpecialType =
+      isMapDashboardType(dashboardType) ||
+      dashboardType === dashboardTypeEnum.iframe;
+    const matchesOriginalType =
+      (isMapDashboardType(dashboardType) &&
+        isMapDashboardType(originalDashboardType)) ||
+      (dashboardType === dashboardTypeEnum.iframe &&
+        originalDashboardType === dashboardTypeEnum.iframe);
+
+    if (!isCurrentSpecialType || !matchesOriginalType || !dashboardWidget) {
+      return;
+    }
+
+    if (!selectedWidgetInDropdown) {
+      setSelectedWidgetInDropdown(dashboardWidget.name);
+    }
+
+    if (!selectedDashboardWidgetId) {
+      setSelectedDashboardWidgetId(dashboardWidget.id);
+    }
+  }, [
+    dashboardType,
+    dashboardWidget,
+    originalDashboardType,
+    selectedDashboardWidgetId,
+    selectedWidgetInDropdown,
+    setSelectedDashboardWidgetId,
+  ]);
+
+  const handleDashboardWidgetSelect = (widgetName: string): void => {
+    const selectedWidgets =
+      dashboardType === dashboardTypeEnum.iframe ? iframeWidgets : mapWidgets;
+    const selectedWidget = selectedWidgets.find(
+      (widget) => widget.widget.name === widgetName,
+    );
+
+    setSelectedWidgetInDropdown(widgetName);
+    setSelectedDashboardWidgetId(selectedWidget?.widget.id);
+    setSelectedTab(selectedWidget?.tab);
+    if (errors?.dashboardWidgetError) {
+      setErrors({ ...errors, dashboardWidgetError: undefined });
+    }
+  };
+
+  const handleDashboardWidgetClear = (): void => {
+    setSelectedWidgetInDropdown('');
+    setSelectedDashboardWidgetId(undefined);
+    setSelectedTab(undefined);
+    if (errors?.dashboardWidgetError) {
+      setErrors({ ...errors, dashboardWidgetError: undefined });
+    }
+  };
 
   return (
     <div>
@@ -449,7 +472,9 @@ export default function DashboardWizard(
             options={
               mapWidgets ? mapWidgets.map((widget) => widget.widget.name) : []
             }
-            onSelect={setSelectedWidgetInDropdown}
+            onSelect={handleDashboardWidgetSelect}
+            onClear={handleDashboardWidgetClear}
+            error={errors && errors.dashboardWidgetError}
             backgroundColor={backgroundColor}
             borderColor={borderColor}
             hoverColor={hoverColor}
@@ -465,7 +490,9 @@ export default function DashboardWizard(
                 ? iframeWidgets.map((widget) => widget.widget.name)
                 : []
             }
-            onSelect={setSelectedWidgetInDropdown}
+            onSelect={handleDashboardWidgetSelect}
+            onClear={handleDashboardWidgetClear}
+            error={errors && errors.dashboardWidgetError}
             backgroundColor={backgroundColor}
             borderColor={borderColor}
             hoverColor={hoverColor}

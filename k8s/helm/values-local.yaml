@@ -8,6 +8,7 @@ dashboard-service:
 ngsi-service:
   ingress:
     enabled: false
+  frontendUrl: "http://localhost:3000"
 
 orchideo-connect-service:
   ingress:
@@ -17,18 +18,22 @@ orchideo-connect-service:
 mail-service:
   ingress:
     enabled: false
+  frontendUrl: "http://localhost:3000"
 
 infopin-service:
   ingress:
     enabled: false
+  frontendUrl: "http://localhost:3000"
 
 static-data-service:
   ingress:
     enabled: false
+  frontendUrl: "http://localhost:3000"
 
 report-service:
   ingress:
     enabled: false
+  frontendUrl: "http://localhost:3000"
 
 usi-platform-service:
   ingress:

@@ -7,5 +7,6 @@ metadata:
 data:
   NODE_ENV: "development"
   NEST_JWKS_URI: {{ index .Values "infopin-service" "jwks" }}
+  NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "infopin-service" "frontendUrl" }}
   IMAGE_DIR: "../../../../apps/infopin-service/images" # for local development, stepping out of the 'dist' folder is required
 {{- end }}

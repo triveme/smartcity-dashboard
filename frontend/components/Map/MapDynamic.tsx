@@ -3,6 +3,12 @@
 import { CSSProperties, ReactElement, useEffect, useState } from 'react';
 import Map from './Map';
 import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from './CustomMapZoomDefaults';
+import {
   CorporateInfo,
   MapModalLegend,
   MapModalWidget,
@@ -285,10 +291,25 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
         />
       ) : (
         <Map
-          mapMaxZoom={tab?.mapMaxZoom || 18}
-          mapMinZoom={tab?.mapMinZoom || 0}
+          mapMaxZoom={resolveMapZoomSetting(
+            tab?.mapMaxZoom,
+            tab?.componentSubType,
+            18,
+            CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+          )}
+          mapMinZoom={resolveMapZoomSetting(
+            tab?.mapMinZoom,
+            tab?.componentSubType,
+            0,
+            CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+          )}
           mapAllowPopups={tab?.mapAllowPopups || false}
-          mapStandardZoom={tab?.mapStandardZoom || 13}
+          mapStandardZoom={resolveMapZoomSetting(
+            tab?.mapStandardZoom,
+            tab?.componentSubType,
+            13,
+            CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+          )}
           mapAllowZoom={tab?.mapAllowZoom || false}
           mapAllowScroll={tab?.mapAllowScroll || false}
           mapMarkerColor={tab?.mapMarkerColor || '#257dc9'}

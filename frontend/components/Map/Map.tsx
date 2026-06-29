@@ -13,7 +13,6 @@ import {
   GeoJSON,
   Polyline,
   ImageOverlay,
-  useMap,
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility';
@@ -26,6 +25,12 @@ import { env } from 'next-dynenv';
 
 import '@/components/Map/map.css';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
+import CustomMapViewport from './CustomMap/CustomMapViewport';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+} from './CustomMapZoomDefaults';
 import SetViewToBounds from './SetViewToBounds';
 import { CustomMapImage, tabComponentSubTypeEnum } from '@/types';
 import MapModal from './MapModal';
@@ -105,14 +110,6 @@ function isCombinedMapProps(props: MapNewProps): props is CombinedMapProps {
     props.mapType === tabComponentSubTypeEnum.combinedMap
   );
 }
-
-const FitBounds = ({ bounds }: { bounds: L.LatLngBoundsExpression }): null => {
-  const map = useMap();
-  React.useEffect(() => {
-    map.fitBounds(bounds);
-  }, [bounds]);
-  return null;
-};
 
 export default function MapNew(props: MapNewProps): JSX.Element {
   const auth = useAuth();
@@ -223,6 +220,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   const [customMapBounds, setCustomMapBounds] = useState<
     L.LatLngBoundsExpression | undefined
   >(undefined);
+  const customMapStandardZoomOffset =
+    props.mapStandardZoom ?? CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT;
+  const customMapMinZoomOffset =
+    props.mapMinZoom ?? CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT;
+  const customMapMaxZoomOffset =
+    props.mapMaxZoom ?? CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT;
 
   useEffect(() => {
     if (
@@ -579,6 +582,11 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       let cancelled = false;
 
       const applyVisibility = async (): Promise<void> => {
+        if (!props.isProjectMap) {
+          setLocalData(normalizeIncomingMapData(props.data || []));
+          return;
+        }
+
         // Admins can see all project pins regardless of is_public
         if (isProjectAdmin) {
           setLocalData(normalizeIncomingMapData(props.data || []));
@@ -594,6 +602,11 @@ export default function MapNew(props: MapNewProps): JSX.Element {
               .filter((id): id is string => Boolean(id)),
           ),
         );
+
+        if (projectIds.length === 0) {
+          setLocalData(normalizeIncomingMapData(incoming));
+          return;
+        }
 
         const visibilityMap: Record<string, boolean> = {};
 
@@ -633,7 +646,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         cancelled = true;
       };
     },
-    [props.data, auth?.user?.access_token, isProjectAdmin, tenant],
+    [
+      props.data,
+      props.isProjectMap,
+      auth?.user?.access_token,
+      isProjectAdmin,
+      tenant,
+    ],
   );
 
   const markerPositions: MarkerType[] = (localData || []).map(
@@ -1605,6 +1624,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                   ]
             }
             zoom={props.mapStandardZoom}
+            minZoom={props.mapMinZoom}
+            maxZoom={props.mapMaxZoom}
             zoomControl={props.mapAllowZoom}
             scrollWheelZoom={props.mapAllowZoom}
             touchZoom={props.mapAllowZoom}
@@ -1688,9 +1709,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                     isCombinedMap,
                   )
                 }
-                disableClusteringAtZoom={
-                  props.mapMaxZoom ? props.mapMaxZoom : 16
-                }
+                disableClusteringAtZoom={props.mapMaxZoom ?? 16}
               >
                 {((): Array<JSX.Element | null> => {
                   const filteredMarkers =
@@ -1946,6 +1965,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                     props.mapLongitude ||
                     13.404954,
               ]}
+              initialZoom={props.mapStandardZoom}
             />
 
             {/* filter and legend button toggle */}
@@ -2111,13 +2131,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           customMapImageWidth &&
           customMapImageHeight && (
             <MapContainer
+              key={`custom-map-container-${customMapImageId}-${props.mapAllowZoom}-${props.mapAllowScroll}-${customMapMaxZoomOffset}-${customMapMinZoomOffset}-${customMapStandardZoomOffset}`}
               className="transparent-bg"
               crs={L.CRS.Simple}
               center={[customMapImageHeight / 2, customMapImageWidth / 2]}
               style={{ height: '100%', width: '100%' }}
-              zoom={props.mapStandardZoom}
+              zoom={customMapStandardZoomOffset}
               zoomControl={props.mapAllowZoom}
-              minZoom={props.mapMinZoom}
               scrollWheelZoom={props.mapAllowZoom}
               touchZoom={props.mapAllowZoom}
               ref={mapRef}
@@ -2129,9 +2149,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 bounds={customMapBounds}
               />
 
-              <FitBounds bounds={customMapBounds} />
-
-              {/* <ZoomHandler onZoomChange={setMapZoom} /> */}
+              <CustomMapViewport
+                bounds={customMapBounds}
+                zoomOffset={customMapStandardZoomOffset}
+                minZoomOffset={customMapMinZoomOffset}
+                maxZoomOffset={customMapMaxZoomOffset}
+                onZoomChange={setMapZoom}
+              />
 
               {((): MarkerType[] => {
                 const list =

@@ -29,7 +29,7 @@ type TableProps = {
 };
 
 type TableTransformedDataItem = {
-  values: [string, number][];
+  values: [string, string | number][];
   color: string | undefined;
   attributes: Attribute[];
   id?: string;
@@ -86,7 +86,7 @@ export default function Table(props: TableProps): ReactElement {
     }
 
     const rValue: TableTransformedDataItem = {
-      values: obj.values.map(([s, n]) => [s, n]),
+      values: obj.values.map(([s, value]) => [s, value as string | number]),
       color: obj.color ?? undefined,
       attributes,
     };
@@ -224,7 +224,11 @@ export default function Table(props: TableProps): ReactElement {
                     </td>
                   ))}
                   <td className={s.valueCell}>
-                    {row.values[0][1] ? row.values[0][1] : 'Keine Daten'}
+                    {row.values[0]?.[1] !== null &&
+                    row.values[0]?.[1] !== undefined &&
+                    row.values[0]?.[1] !== ''
+                      ? row.values[0][1]
+                      : 'Keine Daten'}
                   </td>
                 </tr>
               );

@@ -46,7 +46,7 @@ export function isSingleValueTab(tab: Tab): boolean {
 
 export type ChartData = {
   name: string;
-  values: [string, number, string?][];
+  values: [string, number | string, string?][];
   color?: string;
   id?: string;
 };

@@ -55,6 +55,12 @@ import TableColorPickerPanel from '@/ui/TableColorPickerPanel';
 import ValuesToImageFields from '@/ui/ValuesToImageFields';
 import CustomMapUpload from '@/components/Map/CustomMap/CustomMapUpload';
 import CustomMapSensorConfigurator from '@/components/Map/CustomMap/CustomMapSensorConfigurator';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from '@/components/Map/CustomMapZoomDefaults';
 import UnitsField from '@/ui/UnitsField';
 import WizardPasswordTextfield from '@/ui/WizardPasswordTextfield';
 import { limitOfDecimalPlaces } from '@/utils/objectHelper';
@@ -114,10 +120,31 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   const [latitude, setLatitude] = useState(
     tab?.mapLatitude || 50.585075277802574,
   );
-  const [maxZoom, setMaxZoom] = useState(tab?.mapMaxZoom || 20);
-  const [minZoom, setMinZoom] = useState(tab?.mapMinZoom || 10);
+  const [maxZoom, setMaxZoom] = useState(
+    resolveMapZoomSetting(
+      tab?.mapMaxZoom,
+      tab?.componentSubType,
+      20,
+      CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+    ),
+  );
+  const [minZoom, setMinZoom] = useState(
+    resolveMapZoomSetting(
+      tab?.mapMinZoom,
+      tab?.componentSubType,
+      10,
+      CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+    ),
+  );
   const [popupWidth, setPopupWidth] = useState(25);
-  const [standardZoom, setStandardZoom] = useState(tab?.mapStandardZoom || 15);
+  const [standardZoom, setStandardZoom] = useState(
+    resolveMapZoomSetting(
+      tab?.mapStandardZoom,
+      tab?.componentSubType,
+      15,
+      CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+    ),
+  );
   const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['', '']);
   const [combinedMapWidgetsId, setCombinedMapWidgetsId] = useState<string[]>(
     tab?.childWidgets || [''],
@@ -278,6 +305,74 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       )?.value;
     }
   }, [tab?.componentType, tab?.componentSubType]);
+
+  useEffect(() => {
+    if (tab?.componentType !== tabComponentTypeEnum.map) {
+      return;
+    }
+
+    setMaxZoom(
+      resolveMapZoomSetting(
+        tab?.mapMaxZoom,
+        tab?.componentSubType,
+        20,
+        CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+      ),
+    );
+    setMinZoom(
+      resolveMapZoomSetting(
+        tab?.mapMinZoom,
+        tab?.componentSubType,
+        10,
+        CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+      ),
+    );
+    setStandardZoom(
+      resolveMapZoomSetting(
+        tab?.mapStandardZoom,
+        tab?.componentSubType,
+        15,
+        CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+      ),
+    );
+  }, [
+    tab?.componentType,
+    tab?.componentSubType,
+    tab?.mapMaxZoom,
+    tab?.mapMinZoom,
+    tab?.mapStandardZoom,
+  ]);
+
+  useEffect(() => {
+    if (
+      tab?.componentType !== tabComponentTypeEnum.map ||
+      tab.componentSubType !== tabComponentSubTypeEnum.custom_map
+    ) {
+      return;
+    }
+
+    const zoomDefaults: Partial<Tab> = {};
+
+    if (tab.mapMaxZoom == null) {
+      zoomDefaults.mapMaxZoom = CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT;
+    }
+    if (tab.mapMinZoom == null) {
+      zoomDefaults.mapMinZoom = CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT;
+    }
+    if (tab.mapStandardZoom == null) {
+      zoomDefaults.mapStandardZoom = CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT;
+    }
+
+    if (Object.keys(zoomDefaults).length > 0) {
+      handleTabChange(zoomDefaults);
+    }
+  }, [
+    tab?.componentType,
+    tab?.componentSubType,
+    tab?.mapMaxZoom,
+    tab?.mapMinZoom,
+    tab?.mapStandardZoom,
+  ]);
 
   useEffect(() => {
     if (tab) {
@@ -604,16 +699,29 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       backgroundColor={backgroundColor}
                     />
                   </div>
-                  <div className="flex w-full items-center py-4">
-                    <WizardSelectBox
-                      checked={tab?.useDashboardFontColor || false}
-                      label=" Achsbeschriftungen in normaler Schriftfarbe"
-                      onChange={(value: boolean): void =>
-                        handleTabChange({
-                          useDashboardFontColor: value,
-                        })
-                      }
-                    />
+                  <div className="w-full flex flex-col py-4">
+                    <div>
+                      <WizardSelectBox
+                        checked={tab?.useDashboardFontColor || false}
+                        label=" Achsbeschriftungen in normaler Schriftfarbe"
+                        onChange={(value: boolean): void =>
+                          handleTabChange({
+                            useDashboardFontColor: value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <WizardSelectBox
+                        checked={tab?.usePreviousStageColorOnBoundary || false}
+                        label=" Grenzwerte mit Farbe der vorherigen Stufe"
+                        onChange={(value: boolean): void =>
+                          handleTabChange({
+                            usePreviousStageColorOnBoundary: value,
+                          })
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col w-full pb-2 gap-4">
                     <WizardLabel label="Statische Werte" />
@@ -2772,6 +2880,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           handleTabChange({ mapMaxZoom: value as number });
                           setMaxZoom(value as number);
                         }}
+                        isNumeric={true}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}
                       />
@@ -2782,6 +2891,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           handleTabChange({ mapMinZoom: value as number });
                           setMinZoom(value as number);
                         }}
+                        isNumeric={true}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}
                       />
@@ -2792,10 +2902,21 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           handleTabChange({ mapStandardZoom: value as number });
                           setStandardZoom(value as number);
                         }}
+                        isNumeric={true}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}
                       />
                     </div>
+                    {tab.componentSubType ===
+                      tabComponentSubTypeEnum.custom_map && (
+                      <div
+                        className="w-full pb-2 text-sm"
+                        style={{ color: fontColor }}
+                      >
+                        Bei Custom Maps bedeutet Standard-Zoom 0, dass das ganze
+                        Bild sichtbar ist.
+                      </div>
+                    )}
                     {tab.componentSubType !==
                       tabComponentSubTypeEnum.custom_map && (
                       <>

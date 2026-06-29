@@ -34,10 +34,16 @@ import {
   DUMMY_POI_DATA,
 } from '@/utils/objectHelper';
 import Table from '@/ui/Charts/Table';
-import BarChartHorizontal from '@/ui/Charts/BarChartHorizonal/BarChartHorizontal';
+import BarChartHorizontal from '@/ui/Charts/BarChartHorizontal';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
 import SensorStatusComponent from '@/ui/SensorStatus';
+import {
+  CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+  CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+  resolveMapZoomSetting,
+} from '@/components/Map/CustomMapZoomDefaults';
 import PharmacyComponent from '@/ui/Pharmacy';
 
 const Map = dynamic(() => import('@/components/Map/Map'), {
@@ -96,10 +102,10 @@ export default function DashboardWidgetPreview(
           {tab.componentSubType === tabComponentSubTypeEnum.table && (
             <Table
               data={[]}
-              fontColor={tab?.tableFontColor || '#000000ff'}
-              headerColor={tab?.tableHeaderColor || '#005b9e'}
-              oddRowColor={tab?.tableOddRowColor || '#2D3244'}
-              evenRowColor={tab?.tableEvenRowColor || '#FFFFFF'}
+              fontColor={tab?.tableFontColor || '#fff'}
+              headerColor={tab?.tableHeaderColor || '#2B3244'}
+              oddRowColor={tab?.tableOddRowColor || '#2B3244'}
+              evenRowColor={tab?.tableEvenRowColor || '#2B3244'}
               isTableHeaderVisible={tab?.isTableHeaderVisible || false}
             />
           )}
@@ -199,6 +205,9 @@ export default function DashboardWidgetPreview(
               value={tab.chartValues ? tab.chartValues[0] : 25.45}
               decimalPlaces={tab?.decimalPlaces || 0}
               useDashboardFontColor={tab.useDashboardFontColor ?? false}
+              usePreviousStageColorOnBoundary={
+                tab.usePreviousStageColorOnBoundary ?? false
+              }
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 && (
@@ -574,10 +583,25 @@ export default function DashboardWidgetPreview(
         tab.componentSubType !== tabComponentSubTypeEnum.custom_map && (
           <div id="map" className="h-full w-full">
             <Map
-              mapMaxZoom={tab.mapMaxZoom || 18}
-              mapMinZoom={tab.mapMinZoom || 0}
+              mapMaxZoom={resolveMapZoomSetting(
+                tab.mapMaxZoom,
+                tab.componentSubType,
+                18,
+                CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+              )}
+              mapMinZoom={resolveMapZoomSetting(
+                tab.mapMinZoom,
+                tab.componentSubType,
+                0,
+                CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+              )}
               mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
-              mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
+              mapStandardZoom={resolveMapZoomSetting(
+                tab.mapStandardZoom,
+                tab.componentSubType,
+                13,
+                CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+              )}
               mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
               mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
               mapMarkerColor={
@@ -621,10 +645,25 @@ export default function DashboardWidgetPreview(
         tab.componentSubType == tabComponentSubTypeEnum.custom_map && (
           <div id="map" className="h-full w-full">
             <Map
-              mapMaxZoom={tab.mapMaxZoom || 18}
-              mapMinZoom={tab.mapMinZoom || 0}
+              mapMaxZoom={resolveMapZoomSetting(
+                tab.mapMaxZoom,
+                tab.componentSubType,
+                18,
+                CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
+              )}
+              mapMinZoom={resolveMapZoomSetting(
+                tab.mapMinZoom,
+                tab.componentSubType,
+                0,
+                CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
+              )}
               mapAllowPopups={tab.mapAllowPopups ? tab.mapAllowPopups : false}
-              mapStandardZoom={tab.mapStandardZoom ? tab.mapStandardZoom : 13}
+              mapStandardZoom={resolveMapZoomSetting(
+                tab.mapStandardZoom,
+                tab.componentSubType,
+                13,
+                CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
+              )}
               mapAllowZoom={tab.mapAllowZoom ? tab.mapAllowZoom : false}
               mapAllowScroll={tab.mapAllowScroll ? tab.mapAllowScroll : false}
               mapMarkerColor={

@@ -14,6 +14,7 @@ export type WizardErrors = {
   combinedBottomWidgetError?: string;
   combinedMapWidgetError?: string;
   combinedTopWidgetError?: string;
+  dashboardWidgetError?: string;
   descriptionError?: string;
   fiwareServiceError?: string;
   fiwareTypeError?: string;
