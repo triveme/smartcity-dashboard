@@ -190,7 +190,7 @@ export const calculateMaxYAxisValue = (
   if (maxValue < 0) {
     maxValue = Math.floor(maxValue * 0.9);
   } else {
-    maxValue = Math.floor(maxValue * 1.1);
+    maxValue = Math.ceil(maxValue * 1.1);
   }
   maxValue = maxValue / factor;
   return maxValue;
@@ -206,7 +206,7 @@ export const calculateMinYAxisValue = (
   const factor = Math.pow(10, decimalPlaces ? decimalPlaces : 0);
   minValue = minValue * factor;
   if (minValue < 0) {
-    minValue = Math.floor(minValue * 1.1);
+    minValue = Math.ceil(minValue * 1.1);
   } else {
     minValue = Math.floor(minValue * 0.9);
   }
@@ -466,7 +466,7 @@ export const formatTickByAggrPeriod = (
   }
 };
 
-const getXAxisBounds = (
+export const getXAxisBounds = (
   sortedData: ChartData[],
   aggrPeriod: string,
   setXByAggrPeriod: boolean,

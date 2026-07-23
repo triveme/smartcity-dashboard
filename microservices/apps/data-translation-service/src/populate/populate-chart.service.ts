@@ -5,9 +5,9 @@ import { Tab } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { DataSource } from '@app/postgres-db/schemas/data-source.schema';
+import { getGermanLabelForAttribute } from '@app/common';
 import { FiwareAttribute, FiwareAttributeEntity } from './fiware.types';
 import { PopulateMapService } from './populate-map.service';
-import { getGermanLabelForAttribute } from './populate.util';
 import { DataTranslationRepo } from '../data-translation.repo';
 import { parseCleanNumber } from 'apps/internal-data-service/src/helper';
 import { RoundingService } from '../transformation/rounding.service';
@@ -66,6 +66,21 @@ export class PopulateChartService {
           datasource,
           tab,
         );
+        this.postProcessValue(
+          tab.chartData,
+          queryConfig.roundingMode,
+          queryConfig.roundingTarget,
+        );
+        return queryConfig.timeframe ?? null;
+      }
+
+      if (
+        query &&
+        Array.isArray(query.queryData) &&
+        (tab.componentSubType === 'Table' ||
+          tab.componentSubType === 'Table (dynamisch)')
+      ) {
+        this.populateTableTabWithQueryDataArray(queryConfig, query, tab);
         this.postProcessValue(
           tab.chartData,
           queryConfig.roundingMode,
@@ -350,6 +365,76 @@ export class PopulateChartService {
     }
   }
 
+  private populateTableTabWithQueryDataArray(
+    queryConfig: QueryConfig,
+    query: Query,
+    tab: TabWithContent,
+  ): void {
+    const attributes = queryConfig.attributes.filter((attr) => attr !== 'name');
+    const isSingleAttribute = attributes.length === 1;
+
+    (query.queryData as Record<string, any>[]).forEach((entry, index) => {
+      const rowId =
+        typeof entry.id === 'string'
+          ? entry.id
+          : typeof entry.entityId === 'string'
+            ? entry.entityId
+            : undefined;
+      const sensorName =
+        typeof entry.name === 'string'
+          ? entry.name
+          : typeof entry.name?.value === 'string'
+            ? entry.name.value
+            : rowId || `Sensor ${index + 1}`;
+
+      attributes.forEach((attribute) => {
+        const rawValue = entry[attribute];
+        const value =
+          rawValue &&
+          typeof rawValue === 'object' &&
+          'value' in rawValue &&
+          rawValue.value !== undefined
+            ? rawValue.value
+            : rawValue;
+
+        if (value === null || value === undefined || value === '') {
+          return;
+        }
+
+        let normalizedValue: number | string | null = null;
+        if (typeof value === 'number') {
+          normalizedValue = value;
+        } else if (typeof value === 'string') {
+          const parsed = Number(value);
+          normalizedValue = Number.isNaN(parsed)
+            ? (parseCleanNumber(value) ?? value)
+            : parsed;
+        }
+        if (normalizedValue === null) {
+          return;
+        }
+
+        const timestamp =
+          typeof entry.timestamp === 'string'
+            ? entry.timestamp
+            : typeof entry.observedAt === 'string'
+              ? entry.observedAt
+              : typeof rawValue?.observedAt === 'string'
+                ? rawValue.observedAt
+                : typeof rawValue?.metadata?.timestamp?.value === 'string'
+                  ? rawValue.metadata.timestamp.value
+                  : attribute;
+
+        tab.chartData.push({
+          name: this.utilNameFunction(attribute, sensorName, isSingleAttribute),
+          values: [[timestamp, normalizedValue]],
+          color: null,
+          id: rowId,
+        });
+      });
+    });
+  }
+
   private populateTabWithQueryDataObject(
     query: Query,
     attribute: string,
@@ -358,12 +443,16 @@ export class PopulateChartService {
     isSingleAttribute: boolean,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
+    const preserveTextValues =
+      tab.componentSubType === 'Table' ||
+      tab.componentSubType === 'Table (dynamisch)';
     this.populateHistoricTab(
       queryConfig,
       tab,
       queryDataMap,
       attribute,
       isSingleAttribute,
+      preserveTextValues,
     );
   }
 
@@ -373,15 +462,21 @@ export class PopulateChartService {
     queryDataMap: Map<string, any>,
     attribute: string,
     isSingleAttribute: boolean,
+    preserveTextValues = false,
   ): void {
     if (queryConfig.entityIds.length === 1 && queryDataMap.has('attributes')) {
-      this.populateHistoricTabWithSingleEntityId(tab, queryDataMap);
+      this.populateHistoricTabWithSingleEntityId(
+        tab,
+        queryDataMap,
+        preserveTextValues,
+      );
     } else {
       this.populateHistoricTabWithMultipleEntityIds(
         tab,
         queryDataMap,
         attribute,
         isSingleAttribute,
+        preserveTextValues,
       );
     }
   }
@@ -389,6 +484,7 @@ export class PopulateChartService {
   private populateHistoricTabWithSingleEntityId(
     tab: TabWithContent,
     queryDataMap: Map<string, any>,
+    preserveTextValues = false,
   ): void {
     const entityAttributes = queryDataMap.get('attributes');
     const entityId: string = queryDataMap.get('entityId');
@@ -418,6 +514,7 @@ export class PopulateChartService {
             attributeObject,
             `${getGermanLabelForAttribute(attrName)}`,
             tab,
+            preserveTextValues,
           );
         }
       });
@@ -429,6 +526,7 @@ export class PopulateChartService {
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
     isSingleAttribute: boolean,
+    preserveTextValues = false,
   ): void {
     let sensorName: string = null;
     if (attribute === 'name') return; // Skip if the attribute itself is "name"
@@ -512,6 +610,7 @@ export class PopulateChartService {
               entity,
               this.utilNameFunction(attribute, sensorName, isSingleAttribute),
               tab,
+              preserveTextValues,
             );
 
             // Reset sensorName for the next iteration
@@ -538,22 +637,22 @@ export class PopulateChartService {
     attributeObject: FiwareAttributeEntity,
     chartDataName: string,
     tab: TabWithContent,
+    preserveTextValues = false,
   ): void {
-    // isNan('') === false [0]
-    const numberValues = attributeObject.values.map((value: number | string) =>
-      value === '' || value === null || isNaN(value as number)
-        ? parseCleanNumber(value?.toString())
-        : Number(value),
+    const normalizedValues = attributeObject.values.map(
+      (value: number | string) =>
+        this.normalizeChartValue(value, preserveTextValues),
     );
     const timeValues = attributeObject.index.map((timevalue) => timevalue);
 
-    const resultArray: [string, number, string?][] = [];
+    const resultArray: [string, number | string, string?][] = [];
     for (let i = 0; i < timeValues.length; i++) {
       const tl = attributeObject.timeLabels
         ? attributeObject.timeLabels[i]
         : undefined;
+      const normalizedValue = normalizedValues[i] as number | string;
 
-      resultArray.push([timeValues[i], numberValues[i], tl]);
+      resultArray.push([timeValues[i], normalizedValue, tl]);
     }
 
     tab.chartData.push({
@@ -562,6 +661,31 @@ export class PopulateChartService {
       color: null,
       id: attributeObject.entityId,
     });
+  }
+
+  private normalizeChartValue(
+    value: number | string,
+    preserveTextValues = false,
+  ): number | string | null {
+    if (value === '' || value === null || value === undefined) {
+      return null;
+    }
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    const parsedNumber = Number(value);
+    if (!Number.isNaN(parsedNumber)) {
+      return parsedNumber;
+    }
+
+    const cleanedNumber = parseCleanNumber(value);
+    if (cleanedNumber !== null) {
+      return cleanedNumber;
+    }
+
+    return preserveTextValues ? value : null;
   }
 
   private postProcessValue(
@@ -573,6 +697,10 @@ export class PopulateChartService {
 
     chartData.forEach((entry) => {
       entry.values = entry.values.map(([label, value, note]) => {
+        if (typeof value !== 'number') {
+          return [label, value, note] as [string, number | string, string?];
+        }
+
         const rounded = this.roundingService.round(
           value,
           roundingTarget,

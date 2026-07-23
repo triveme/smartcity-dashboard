@@ -100,7 +100,7 @@ export default function MapPopupContent({
             index++;
             return (
               <div key={key}>
-                {getGermanLabelForSensorAttribute(key.toUpperCase())}:{' '}
+                {getGermanLabelForSensorAttribute(key)}:{' '}
                 <strong>
                   {' '}
                   {tempValue.value
@@ -173,7 +173,7 @@ export default function MapPopupContent({
             index++;
             return (
               <div key={key}>
-                {getGermanLabelForSensorAttribute(key.toUpperCase())}:{' '}
+                {getGermanLabelForSensorAttribute(key)}:{' '}
                 <strong>
                   {' '}
                   {getValueString(tempValue, decimalSeparator)}{' '}

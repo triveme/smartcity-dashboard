@@ -1452,6 +1452,28 @@ export default function StaticValuesFieldMapWidgets(
                         label="Achsenbeschriftungen anzeigen"
                       />
                     </div>
+                    <div className="w-full pb-4">
+                      <WizardSelectBox
+                        checked={value.usePreviousStageColorOnBoundary || false}
+                        onChange={(newValue: boolean): void => {
+                          const updatedMapWidgetValues = mapWidgetValues.map(
+                            (widget, idx) =>
+                              idx === index
+                                ? {
+                                    ...widget,
+                                    usePreviousStageColorOnBoundary:
+                                      newValue as boolean,
+                                  }
+                                : widget,
+                          );
+                          handleTabChange({
+                            mapWidgetValues: updatedMapWidgetValues,
+                          });
+                          setMapWidgetValues(updatedMapWidgetValues);
+                        }}
+                        label="Grenzwerte mit Farbe der vorherigen Stufe"
+                      />
+                    </div>
                     <div className="flex flex-col w-full">
                       <WizardLabel label="Minimum" />
                       <WizardTextfield

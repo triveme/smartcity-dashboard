@@ -26,3 +26,4 @@ export { default as Handyman } from './Handyman';
 export { default as Accessibility } from './Accessibility';
 export { default as EasySpeech } from './EasySpeech';
 export { default as SignLanguage } from './SignLanguage';
+export { default as SmallCircle } from './SmallCircle';

@@ -1,1014 +1,695 @@
 'use client';
-import {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
-import { ECharts, EChartsOption } from 'echarts';
-import {
-  aggregationEnum,
-  ChartData,
-  CurrentAreaConfig,
-  timeframeEnum,
-} from '@/types';
-import {
-  formatYAxisLabel,
-  calculateYAxisNameGap,
-  calculateBottomGrid,
-  getUniqueField,
-  calculateMinYAxisValue,
-  calculateMaxYAxisValue,
-  getChartDateFormatter,
-  getChartDateRichText,
-  getLabelMap,
-  getSelectedLegendNames,
-  formatTickByAggrPeriod,
-  setXAxisBounds,
-  getAdaptiveWeekdayFormatter,
-} from '@/utils/chartHelper';
-import DashboardIcon from '../Icons/DashboardIcon';
-import FilterButton from '../Buttons/FilterButton';
-import { generateTooltipContent } from '@/utils/chartTooltipHelper';
-import {
-  getIntervalDaysFromChart,
-  downsampleValues,
-  getXMinMax,
-  getVisibleDateRange,
-  setVisibleDateRange,
-  getGridOptions,
-  getLegendOptions,
-} from '@/utils/lineChartUtil';
-import { debounce } from 'lodash';
-import WizardLabel from '../WizardLabel';
+
+import { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
+import { ECharts } from 'echarts';
+import { aggregationEnum, ChartData, CurrentAreaConfig } from '@/types';
 import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
-// import { downloadChartDataCsv } from '@/utils/downloadHelper';
+import {
+  getSelectedLegendNames,
+  getUniqueField,
+} from '@/utils/Charts/chartHelper';
+import {
+  getDesiredLineChartPointCount,
+  getDisplayedLineChartData,
+  getEffectiveLineChartDateRange,
+  getVisibleRangeFromChart,
+  filterLineChartDataByAttribute,
+  LineChartDateRange,
+} from '@/utils/Charts/lineChartZoom';
+import {
+  areSingleSelectionLegendStatesEqual,
+  buildSingleSelectionLegendSelectedMap,
+  getEffectiveSingleSelectionLegendNames,
+  getLineChartLegendNames,
+  getNextSingleSelectionLegendState,
+  reconcileSingleSelectionLegendState,
+  SingleSelectionLegendState,
+} from '@/utils/Charts/lineChartLegendSelection';
+import { getXMinMax } from '@/utils/Charts/lineChartUtil';
+import { buildLineChartOption } from './ChartOptions/LineChartOptions';
+import LineChartDateRangeControls from './Components/LineChartDateRangeControls';
+import LineChartFilterControls from './Components/LineChartFilterControls';
+import LineChartLegendSelectionControls from './Components/LineChartLegendSelectionControls';
+import {
+  ChartCartesianAxisProps,
+  ChartCartesianStyleProps,
+  ChartDataProps,
+  ChartExportProps,
+  ChartFilterProps,
+  ChartHighlightProps,
+  ChartInteractionProps,
+  ChartLegendProps,
+  ChartSeriesStyleProps,
+  ChartStaticValueProps,
+  ChartTimeProps,
+} from '../../types/chartSharedProps';
 
-type LegendSelectedMap = Record<string, boolean>;
-
-type LineChartProps = {
-  chartDateRepresentation?: string | 'Default';
-  setXByTimeFramePeriod?: boolean;
-  timeFramePeriod?: string | null;
-  authDataType?: string | null;
-  chartYAxisScale?: number | undefined;
-  chartYAxisScaleChartMinValue?: number | undefined;
-  chartYAxisScaleChartMaxValue?: number | undefined;
-  labels: string[] | undefined;
-  data: ChartData[];
-  xAxisLabel?: string;
-  yAxisLabel?: string;
-  hideXAxis?: boolean;
-  hideYAxis?: boolean;
-  allowImageDownload: boolean;
-  allowZoom?: boolean;
+type LineChartSpecificProps = {
   isStepline?: boolean;
-  isStackedChart: boolean;
-  chartHasAutomaticZoom?: boolean;
-  showLegend?: boolean;
-  singleSelectLegend?: boolean;
-  advancedDateSelection?: boolean;
-  staticValues: number[];
-  staticValuesColors: string[];
   chartAggregationMode?: aggregationEnum;
-  staticValuesTicks?: number[];
-  staticValuesTexts?: string[];
-
-  axisLabelFontColor: string;
-  axisLineColor: string;
-  legendFontSize: string;
-  legendFontColor: string;
-  axisFontSize: string;
-  axisLabelSize: string;
-  currentValuesColors: string[];
-  gridColor: string;
-  axisTicksFontColor: string;
-  legendAlignment: string;
-  hasAdditionalSelection: boolean;
-  filterColor?: string;
-  filterTextColor?: string;
-  showTooltip?: boolean;
-  hideTimeDetails?: boolean;
-  decimalPlaces?: number;
-  isShownInMapModal?: boolean;
-  playAnimation?: boolean;
-  highlightedColor?: string;
-  unhighlightedColor?: string;
-  menuHoverColor: string;
-  widgetId?: string;
-  usesQueryParameter?: boolean;
-  exportBackgroundColor?: string;
 };
 
-function filterSeriesDataByAttribute(
-  sourceData: ChartData[],
-  attribute: string,
-): ChartData[] {
-  if (!attribute) {
-    return sourceData;
-  }
+type LineChartProps = ChartTimeProps &
+  ChartDataProps &
+  ChartCartesianAxisProps &
+  ChartExportProps &
+  ChartCartesianStyleProps &
+  ChartLegendProps &
+  ChartFilterProps &
+  ChartInteractionProps &
+  ChartHighlightProps &
+  ChartStaticValueProps &
+  ChartSeriesStyleProps &
+  LineChartSpecificProps;
 
-  return sourceData.filter((item) => item.name.endsWith(attribute));
+type NormalizedLineChartProps = Omit<
+  LineChartProps,
+  'data' | 'usesQueryParameter'
+> & {
+  chartData: ChartData[];
+};
+
+function normalizeLineChartProps(
+  props: LineChartProps,
+  entityId: string | null,
+): NormalizedLineChartProps {
+  const chartData = entityId
+    ? props.data.filter((series) => series.id === entityId)
+    : props.data;
+  const {
+    data: _data,
+    usesQueryParameter: _usesQueryParameter,
+    ...restProps
+  } = props;
+
+  return {
+    ...restProps,
+    chartData,
+    decimalPlaces: props.decimalPlaces ?? 0,
+    chartDateRepresentation: props.chartDateRepresentation ?? 'Default',
+    timeFramePeriod: props.timeFramePeriod ?? null,
+    setXByTimeFramePeriod: props.setXByTimeFramePeriod ?? false,
+    xAxisLabel: props.xAxisLabel ?? '',
+    yAxisLabel: props.yAxisLabel ?? '',
+    hideXAxis: props.hideXAxis ?? false,
+    hideYAxis: props.hideYAxis ?? false,
+    chartHasAutomaticZoom: props.chartHasAutomaticZoom ?? false,
+    allowZoom: props.allowZoom ?? false,
+    advancedDateSelection: props.advancedDateSelection ?? false,
+    showTooltip: props.showTooltip ?? true,
+    hideTimeDetails: props.hideTimeDetails ?? false,
+    playAnimation: props.playAnimation ?? true,
+    isShownInMapModal: props.isShownInMapModal ?? false,
+    isStepline: props.isStepline ?? false,
+    chartAggregationMode: props.chartAggregationMode ?? aggregationEnum.none,
+    staticValuesTicks: props.staticValuesTicks ?? [],
+    staticValuesTexts: props.staticValuesTexts ?? [],
+    showLegend: props.showLegend ?? false,
+    singleSelectLegend: props.singleSelectLegend ?? false,
+  };
 }
 
-function getSelectedChartData(
-  sourceData: ChartData[],
-  attribute: string,
-  hasAdditionalSelection: boolean,
-): ChartData[] {
-  if (!hasAdditionalSelection) {
-    return sourceData;
+function normalizeStartOfDay(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0);
+  return normalizedDate;
+}
+
+function normalizeEndOfDay(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(23, 59, 59, 999);
+  return normalizedDate;
+}
+
+function getCurrentAreaConfigKey(config: CurrentAreaConfig): string {
+  const minRange =
+    config.minRange instanceof Date
+      ? config.minRange.getTime()
+      : new Date(config.minRange).getTime();
+  const maxRange =
+    config.maxRange instanceof Date
+      ? config.maxRange.getTime()
+      : new Date(config.maxRange).getTime();
+
+  return [
+    config.id ?? '',
+    minRange,
+    maxRange,
+    config.selectedLegendNames.join('|'),
+    config.changeTimeFramePeriod ? '1' : '0',
+    config.downloadCurrentArea ? '1' : '0',
+    config.timeFramePeriod,
+    config.authDataType,
+  ].join('::');
+}
+
+function getLegendSelectionChangedName(event: unknown): string | undefined {
+  if (!event || typeof event !== 'object' || !('name' in event)) {
+    return undefined;
   }
 
-  return filterSeriesDataByAttribute(sourceData, attribute);
+  return typeof event.name === 'string' ? event.name : undefined;
 }
 
 export default function LineChart(props: LineChartProps): ReactElement {
-  const {
-    widgetId,
-    chartDateRepresentation,
-    setXByTimeFramePeriod,
-    timeFramePeriod,
-    chartYAxisScale,
-    chartYAxisScaleChartMinValue,
-    chartYAxisScaleChartMaxValue,
-    data,
-    xAxisLabel,
-    yAxisLabel,
-    hideXAxis = false,
-    hideYAxis = false,
-    allowImageDownload,
-    allowZoom,
-    isStepline,
-    isStackedChart,
-    showLegend,
-    singleSelectLegend,
-    advancedDateSelection,
-    staticValues,
-    staticValuesColors,
-    staticValuesTexts = [],
-    staticValuesTicks = [],
-    axisLabelFontColor,
-    chartHasAutomaticZoom,
-    currentValuesColors,
-    gridColor,
-    axisTicksFontColor,
-    axisFontSize,
-    axisLabelSize,
-    axisLineColor,
-    legendFontSize,
-    legendFontColor,
-    legendAlignment,
-    hasAdditionalSelection,
-    filterColor,
-    filterTextColor,
-    showTooltip = true,
-    hideTimeDetails = false,
-    decimalPlaces,
-    isShownInMapModal = false,
-    playAnimation = true,
-    highlightedColor,
-    unhighlightedColor,
-    chartAggregationMode = aggregationEnum.none,
-    menuHoverColor,
-    usesQueryParameter = false,
-    authDataType,
-    exportBackgroundColor,
-  } = props;
-
   const searchParams = useSearchParams();
-  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
-  const initialChartData = entityId
-    ? data.filter((x) => x.id === entityId)
-    : data;
-  const initialAttributes = getUniqueField(initialChartData, false);
-  const initialClickedAttribute =
-    hasAdditionalSelection && initialAttributes.length > 0
-      ? initialAttributes[0]
-      : '';
-  const initialFilteredData = getSelectedChartData(
-    initialChartData,
-    initialClickedAttribute,
-    hasAdditionalSelection,
+  const entityId =
+    props.usesQueryParameter === true ? searchParams.get('entityId') : null;
+  const config = useMemo(
+    () => normalizeLineChartProps(props, entityId),
+    [entityId, props],
   );
-
-  const [chartData] = useState<ChartData[]>(initialChartData);
-
-  const [filteredData, setFilteredData] =
-    useState<ChartData[]>(initialFilteredData);
-  const [clickedAttribute, setClickedAttribute] = useState<string>(
-    initialClickedAttribute,
+  const [selectedAttribute, setSelectedAttribute] = useState('');
+  const [selectedMinDate, setSelectedMinDate] = useState<Date | null>(null);
+  const [selectedMaxDate, setSelectedMaxDate] = useState<Date | null>(null);
+  const [visibleRange, setVisibleRange] = useState<LineChartDateRange | null>(
+    null,
   );
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [xAxisMin, setXAxisMin] = useState<number | undefined>();
-  const [xAxisMax, setXAxisMax] = useState<number | undefined>();
-
+  const [singleSelectionLegendState, setSingleSelectionLegendState] =
+    useState<SingleSelectionLegendState>(null);
+  const [chartWidth, setChartWidth] = useState(0);
   const chartRef = useRef<HTMLDivElement>(null);
-  const chartInstance = useRef<ECharts | null>(null);
-  const resizeFrameRef = useRef<number | null>(null);
-  const textMeasureCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const attributes = getUniqueField(chartData, false);
-  const axisData = filteredData.length > 0 ? filteredData : chartData;
-
-  const xFullRange = useMemo(
-    () =>
-      xAxisMin !== undefined && xAxisMax !== undefined
-        ? {
-            min: new Date(xAxisMin),
-            max: new Date(xAxisMax),
-          }
-        : getXMinMax(filteredData),
-    [filteredData, xAxisMax, xAxisMin],
+  const chartInstanceRef = useRef<ECharts | null>(null);
+  const lastCurrentAreaConfigKeyRef = useRef('');
+  const availableAttributes = useMemo(
+    () => getUniqueField(config.chartData, false),
+    [config.chartData],
   );
-  const [xRange, setXRange] = useState<{ min: Date; max: Date } | null>(null);
-  const hasEndLabel = useRef<echarts.LineSeriesOption | undefined>(undefined);
+  const attributeFilteredChartData = useMemo(() => {
+    if (!config.hasAdditionalSelection || !selectedAttribute) {
+      return config.chartData;
+    }
 
-  const [minDate, setMinDate] = useState<Date | undefined>(new Date());
-  const [maxDate, setMaxDate] = useState<Date | undefined>(new Date());
-  const update = debounce(() => {
-    const chart = chartInstance.current;
-    if (!chart) return;
+    return filterLineChartDataByAttribute(config.chartData, selectedAttribute);
+  }, [config.chartData, config.hasAdditionalSelection, selectedAttribute]);
+  const fullDateRange = useMemo(
+    () => getXMinMax(attributeFilteredChartData),
+    [attributeFilteredChartData],
+  );
+  const isAdvancedDateSelectionEnabled =
+    config.allowZoom && config.advancedDateSelection && fullDateRange !== null;
+  const effectiveDateRange = useMemo(
+    () =>
+      isAdvancedDateSelectionEnabled && fullDateRange
+        ? getEffectiveLineChartDateRange(
+            fullDateRange,
+            selectedMinDate,
+            selectedMaxDate,
+          )
+        : null,
+    [
+      fullDateRange,
+      isAdvancedDateSelectionEnabled,
+      selectedMaxDate,
+      selectedMinDate,
+    ],
+  );
+  const dateFilteredSourceChartData = useMemo(
+    () =>
+      effectiveDateRange
+        ? getDisplayedLineChartData({
+            sourceData: attributeFilteredChartData,
+            dateRange: effectiveDateRange,
+          })
+        : attributeFilteredChartData,
+    [attributeFilteredChartData, effectiveDateRange],
+  );
+  const zoomBaseRange = useMemo(
+    () => getXMinMax(dateFilteredSourceChartData),
+    [dateFilteredSourceChartData],
+  );
+  const effectiveVisibleRange = useMemo(
+    () =>
+      zoomBaseRange
+        ? getEffectiveLineChartDateRange(
+            zoomBaseRange,
+            visibleRange?.min ?? null,
+            visibleRange?.max ?? null,
+          )
+        : null,
+    [visibleRange, zoomBaseRange],
+  );
+  const desiredPointCount = useMemo(
+    () => getDesiredLineChartPointCount(chartWidth),
+    [chartWidth],
+  );
+  const displayedChartData = useMemo(
+    () =>
+      config.allowZoom
+        ? getDisplayedLineChartData({
+            sourceData: dateFilteredSourceChartData,
+            aggregationMode: config.chartAggregationMode,
+            desiredPoints: desiredPointCount,
+            visibleRange: effectiveVisibleRange ?? zoomBaseRange,
+          })
+        : dateFilteredSourceChartData,
+    [
+      config.allowZoom,
+      config.chartAggregationMode,
+      dateFilteredSourceChartData,
+      desiredPointCount,
+      effectiveVisibleRange,
+      zoomBaseRange,
+    ],
+  );
+  const dynamicLegendNames = useMemo(
+    () => getLineChartLegendNames(displayedChartData),
+    [displayedChartData],
+  );
+  const effectiveSingleSelectionLegendNames = useMemo(
+    () =>
+      getEffectiveSingleSelectionLegendNames(
+        dynamicLegendNames,
+        singleSelectionLegendState,
+      ),
+    [dynamicLegendNames, singleSelectionLegendState],
+  );
+  const showSingleSelectionLegendControls =
+    config.showLegend &&
+    config.singleSelectLegend &&
+    dynamicLegendNames.length > 0;
+  const isAllLegendsSelected =
+    dynamicLegendNames.length > 0 &&
+    effectiveSingleSelectionLegendNames.length === dynamicLegendNames.length;
+  const isLegendSelectionEmpty =
+    effectiveSingleSelectionLegendNames.length === 0;
+  const singleSelectionLegendSelectedMap = useMemo(
+    () =>
+      config.showLegend && config.singleSelectLegend
+        ? buildSingleSelectionLegendSelectedMap(
+            dynamicLegendNames,
+            singleSelectionLegendState,
+          )
+        : undefined,
+    [
+      config.showLegend,
+      config.singleSelectLegend,
+      dynamicLegendNames,
+      singleSelectionLegendState,
+    ],
+  );
+  const filteredConfig = useMemo(
+    () => ({
+      ...config,
+      chartData: displayedChartData,
+    }),
+    [config, displayedChartData],
+  );
+  const optionConfig = useMemo(
+    () => ({
+      ...filteredConfig,
+      legendSelectedMap: singleSelectionLegendSelectedMap,
+    }),
+    [filteredConfig, singleSelectionLegendSelectedMap],
+  );
 
-    const range = getVisibleDateRange(chart);
-    if (!range) return;
+  const emitCurrentAreaConfig = (
+    chart: ECharts,
+    rangeOverride?: LineChartDateRange | null,
+    selectedLegendNamesOverride?: string[],
+  ): void => {
+    const resolvedRange =
+      rangeOverride ?? getVisibleRangeFromChart(chart) ?? zoomBaseRange;
 
-    const selectedLegendNames = getSelectedLegendNames(chart);
+    if (!resolvedRange) {
+      return;
+    }
 
-    const currentAreaConfig = {
-      id: widgetId,
-      minRange: range.min,
-      maxRange: range.max,
-      selectedLegendNames,
-      downloadCurrentArea: false,
+    const currentAreaConfig: CurrentAreaConfig = {
+      id: config.widgetId,
+      minRange: resolvedRange.min,
+      maxRange: resolvedRange.max,
+      selectedLegendNames:
+        selectedLegendNamesOverride ?? getSelectedLegendNames(chart),
       changeTimeFramePeriod: false,
-      timeFramePeriod: (timeFramePeriod as timeframeEnum) ?? '',
-      authDataType: authDataType ?? '',
+      downloadCurrentArea: false,
+      timeFramePeriod: config.timeFramePeriod ?? '',
+      authDataType: config.authDataType ?? '',
     };
+    const nextConfigKey = getCurrentAreaConfigKey(currentAreaConfig);
 
-    // It is important to send it inside the debounce, so the data is only sent after the filter is finally set.
-    sendCurrentAreaChartData(currentAreaConfig);
+    if (lastCurrentAreaConfigKeyRef.current === nextConfigKey) {
+      return;
+    }
 
-    setXRange(range);
-    const daysIntervall = getIntervalDaysFromChart(chart, 20, range);
-    const allSeries = getAllSeries(daysIntervall);
-    chart.setOption({ series: allSeries }, false);
-  }, 500);
-
-  // Function for sending the data visible on the axis
-  const sendCurrentAreaChartData = (currentAreaConfig: CurrentAreaConfig) => {
+    lastCurrentAreaConfigKeyRef.current = nextConfigKey;
     eventBus.emit(VISIBLE_CHART_DATA_DOWNLOAD_EVENT, {
       data: currentAreaConfig,
     });
   };
 
-  const getBaseBottomGrid = (): number => {
-    const baseBottom = calculateBottomGrid(
-      hideXAxis ? '' : xAxisLabel || '',
-      allowZoom,
-      advancedDateSelection,
-    );
-
-    if (allowZoom && !advancedDateSelection && !hideXAxis && xAxisLabel) {
-      return baseBottom + 12;
+  useEffect(() => {
+    if (!config.hasAdditionalSelection) {
+      setSelectedAttribute('');
+      return;
     }
 
-    return baseBottom;
+    if (availableAttributes.length === 0) {
+      setSelectedAttribute('');
+      return;
+    }
+
+    setSelectedAttribute((currentAttribute) =>
+      availableAttributes.includes(currentAttribute)
+        ? currentAttribute
+        : availableAttributes[0],
+    );
+  }, [availableAttributes, config.hasAdditionalSelection]);
+
+  useEffect(() => {
+    if (!isAdvancedDateSelectionEnabled || !fullDateRange) {
+      setSelectedMinDate(null);
+      setSelectedMaxDate(null);
+      return;
+    }
+
+    setSelectedMinDate((currentDate) =>
+      currentDate
+        ? new Date(Math.max(currentDate.getTime(), fullDateRange.min.getTime()))
+        : null,
+    );
+    setSelectedMaxDate((currentDate) =>
+      currentDate
+        ? new Date(Math.min(currentDate.getTime(), fullDateRange.max.getTime()))
+        : null,
+    );
+  }, [fullDateRange, isAdvancedDateSelectionEnabled]);
+
+  useEffect(() => {
+    if (!config.allowZoom || !zoomBaseRange) {
+      setVisibleRange(null);
+      return;
+    }
+
+    setVisibleRange((currentRange) => {
+      const nextRange = currentRange
+        ? getEffectiveLineChartDateRange(
+            zoomBaseRange,
+            currentRange.min,
+            currentRange.max,
+          )
+        : zoomBaseRange;
+
+      if (
+        currentRange &&
+        currentRange.min.getTime() === nextRange.min.getTime() &&
+        currentRange.max.getTime() === nextRange.max.getTime()
+      ) {
+        return currentRange;
+      }
+
+      return nextRange;
+    });
+  }, [config.allowZoom, zoomBaseRange]);
+
+  useEffect(() => {
+    if (!config.showLegend || !config.singleSelectLegend) {
+      setSingleSelectionLegendState((currentState) =>
+        currentState === null ? currentState : null,
+      );
+      return;
+    }
+
+    setSingleSelectionLegendState((currentState) => {
+      const nextState = reconcileSingleSelectionLegendState(
+        dynamicLegendNames,
+        currentState,
+      );
+
+      return areSingleSelectionLegendStatesEqual(currentState, nextState)
+        ? currentState
+        : nextState;
+    });
+  }, [config.showLegend, config.singleSelectLegend, dynamicLegendNames]);
+
+  const handleMinDateChange = (date: Date | null): void => {
+    if (!date) {
+      setSelectedMinDate(null);
+      return;
+    }
+
+    const nextMinDate = normalizeStartOfDay(date);
+    setSelectedMinDate(nextMinDate);
+    setSelectedMaxDate((currentDate) =>
+      currentDate && currentDate.getTime() < nextMinDate.getTime()
+        ? normalizeEndOfDay(date)
+        : currentDate,
+    );
   };
 
-  const initializeChart = (): void => {
-    if (chartRef.current) {
-      if (chartInstance.current) {
-        chartInstance.current.dispose();
-      }
-      chartInstance.current = echarts.init(chartRef.current, undefined, {
+  const handleMaxDateChange = (date: Date | null): void => {
+    if (!date) {
+      setSelectedMaxDate(null);
+      return;
+    }
+
+    const nextMaxDate = normalizeEndOfDay(date);
+    setSelectedMaxDate(nextMaxDate);
+    setSelectedMinDate((currentDate) =>
+      currentDate && currentDate.getTime() > nextMaxDate.getTime()
+        ? normalizeStartOfDay(date)
+        : currentDate,
+    );
+  };
+
+  const handleSelectAllLegends = (): void => {
+    setSingleSelectionLegendState(null);
+  };
+
+  const handleDeselectAllLegends = (): void => {
+    setSingleSelectionLegendState([]);
+  };
+
+  useEffect(() => {
+    const chartElement = chartRef.current;
+    if (!chartElement) {
+      return;
+    }
+
+    if (!chartInstanceRef.current) {
+      chartInstanceRef.current = echarts.init(chartElement, undefined, {
         locale: ECHARTS_LOCALE,
       });
-
-      const seriesAll = getAllSeries(0);
-      const labelMap = getLabelMap(chartDateRepresentation, seriesAll);
-      hasEndLabel.current = seriesAll.find((value) => value.endLabel?.show);
-
-      // Calculate dynamic splitNumber based on the container width
-      const containerWidth = chartRef.current.clientWidth;
-      const splitNumber = Math.max(5, Math.floor(containerWidth / 100));
-      const hasYAxisTitle = !hideYAxis && Boolean(yAxisLabel?.trim());
-      const horizontalLeftInset = hasYAxisTitle ? 12 : 6;
-      const horizontalRightInset = allowImageDownload ? 30 : 12;
-      const xAxisNameGap = hideXAxis
-        ? 0
-        : isShownInMapModal
-          ? 32
-          : allowZoom && xAxisLabel && !advancedDateSelection
-            ? 30
-            : 41;
-      const weekdayFormatter =
-        chartDateRepresentation === 'Weekdays'
-          ? getAdaptiveWeekdayFormatter(
-              containerWidth / Math.max(splitNumber, 1),
-              axisFontSize,
-            )
-          : undefined;
-      const option: EChartsOption = {
-        animation: playAnimation,
-        animationDuration: 2000,
-        animationEasing: 'cubicOut',
-        animationDelay: 0,
-        animationDurationUpdate: 0,
-        animationEasingUpdate: 'cubicOut',
-        xAxis: {
-          name: hideXAxis ? '' : xAxisLabel,
-          type: 'time',
-          splitNumber: splitNumber,
-          nameLocation: 'middle',
-          nameGap: xAxisNameGap,
-          nameTextStyle: {
-            color: axisLabelFontColor,
-            fontSize: axisLabelSize,
-          },
-          axisLine: {
-            lineStyle: {
-              color: axisLineColor,
-              width: 2,
-            },
-            show: !hideXAxis,
-          },
-          axisLabel: {
-            color: axisTicksFontColor,
-            fontSize: axisFontSize,
-            hideOverlap: true,
-            show: !hideXAxis,
-            // When setXByTimeFramePeriod is true, enforce a fixed format for all ticks
-            formatter:
-              setXByTimeFramePeriod && timeFramePeriod
-                ? (value: unknown): string =>
-                    formatTickByAggrPeriod(
-                      value as number | string,
-                      timeFramePeriod,
-                      xFullRange,
-                    )
-                : weekdayFormatter
-                  ? weekdayFormatter
-                  : chartDateRepresentation
-                    ? getChartDateFormatter(chartDateRepresentation, labelMap)
-                    : undefined,
-            // Disable rich text when custom formatter is active to avoid mixed styles
-            rich:
-              setXByTimeFramePeriod && timeFramePeriod
-                ? undefined
-                : chartDateRepresentation
-                  ? getChartDateRichText(chartDateRepresentation)
-                  : undefined,
-          },
-          axisTick: {
-            show: false,
-          },
-          min: xFullRange?.min,
-          max: xFullRange?.max,
-        },
-        yAxis: {
-          name: hideYAxis ? '' : formatYAxisLabel(yAxisLabel || ''),
-          nameGap: hideYAxis ? 0 : calculateYAxisNameGap(axisData),
-          nameLocation: 'middle',
-          interval:
-            chartYAxisScale !== undefined && chartYAxisScale !== 0
-              ? chartYAxisScale
-              : undefined,
-          nameTextStyle: {
-            color: axisLabelFontColor,
-            fontSize: axisLabelSize,
-          },
-          axisLine: {
-            lineStyle: {
-              color: axisLineColor,
-              width: 2,
-            },
-            show: !hideYAxis,
-          },
-          axisLabel: {
-            color: axisTicksFontColor,
-            fontSize: axisFontSize,
-            show: !hideYAxis,
-            formatter: (val: number) => {
-              const absVal = Math.abs(val);
-              if (absVal >= 1000000) {
-                return `${(val / 1000000).toFixed(1)} Mio`;
-              }
-              return val.toString();
-            },
-          },
-          axisTick: {
-            show: false,
-          },
-          splitLine: {
-            show: !hideYAxis,
-            lineStyle: {
-              color: gridColor,
-              type: 'dashed',
-            },
-          },
-          min:
-            chartYAxisScale !== undefined
-              ? chartYAxisScaleChartMinValue
-              : chartHasAutomaticZoom
-                ? calculateMinYAxisValue(axisData, decimalPlaces)
-                : undefined,
-          max:
-            chartYAxisScale !== undefined
-              ? chartYAxisScaleChartMaxValue
-              : chartHasAutomaticZoom
-                ? calculateMaxYAxisValue(axisData, decimalPlaces)
-                : undefined,
-        },
-        legend: getLegendOptions(
-          allowImageDownload,
-          legendAlignment,
-          legendFontSize,
-          legendFontColor,
-          singleSelectLegend,
-          showLegend,
-          advancedDateSelection,
-        ),
-        toolbox: {
-          show: allowImageDownload,
-          feature: {
-            saveAsImage: {
-              backgroundColor: exportBackgroundColor,
-              title: 'Als Bild herunterladen...    ',
-              icon: 'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z',
-              iconStyle: {
-                color: axisLabelFontColor,
-                borderColor: 'transparent',
-                borderWidth: 0,
-              },
-              emphasis: {
-                iconStyle: {
-                  color: menuHoverColor,
-                  borderColor: 'transparent',
-                  borderWidth: 0,
-                },
-              },
-            },
-          },
-        },
-        grid: getGridOptions(
-          isShownInMapModal,
-          hasEndLabel.current,
-          parseInt(legendFontSize),
-          horizontalLeftInset,
-          getBaseBottomGrid(),
-          horizontalRightInset,
-        ),
-        dataZoom: allowZoom
-          ? [
-              {
-                type: 'slider',
-                xAxisIndex: 0,
-                filterMode: 'none',
-                start: 0,
-                end: 100,
-                bottom: advancedDateSelection ? 54 : undefined,
-                left: horizontalLeftInset,
-                right: horizontalRightInset,
-              },
-              {
-                type: 'inside',
-                xAxisIndex: 0,
-                filterMode: 'none',
-                start: 0,
-                end: 100,
-                bottom: advancedDateSelection ? 54 : undefined,
-              },
-            ]
-          : [],
-        tooltip: {
-          show: showTooltip,
-          trigger: 'axis',
-          formatter: (params: unknown) => {
-            const tooltipContent = generateTooltipContent(
-              params,
-              decimalPlaces,
-              hideTimeDetails,
-              labelMap,
-            );
-            return tooltipContent;
-          },
-        },
-        series: seriesAll,
-      };
-
-      chartInstance.current.setOption(option);
-      syncChartLayout(chartInstance.current, containerWidth);
-
-      const legendListener = (params: unknown): void => {
-        const p = params as { name: string; selected: Record<string, boolean> };
-        if (singleSelectLegend) {
-          handleLegendSelect(p);
-        }
-        update();
-      };
-
-      chartInstance.current.off('legendselectchanged', legendListener);
-      chartInstance.current.on('legendselectchanged', legendListener);
-
-      chartInstance.current.off('datazoom', update);
-      chartInstance.current.on('datazoom', update);
-      // Clean up previous listeners on dispose
-      chartRef.current.addEventListener('dispose', () => {
-        chartInstance.current?.off('datazoom', update);
-        chartInstance.current?.off('legendselectchanged', legendListener);
-      });
-
-      update();
     }
-  };
 
-  const handleFilterButtonClicked = useCallback(
-    (nextAttribute: string): void => {
-      setClickedAttribute(nextAttribute);
-      setFilteredData(
-        getSelectedChartData(chartData, nextAttribute, hasAdditionalSelection),
-      );
-    },
-    [chartData, hasAdditionalSelection],
-  );
+    const chart = chartInstanceRef.current;
+    const width = chartElement.clientWidth || chart.getWidth();
+    const height = chartElement.clientHeight || chart.getHeight();
 
-  const handleLegendSelect = useCallback(
-    (params: { name: string; selected: LegendSelectedMap }) => {
-      const chart = chartInstance.current;
-      if (!chart) return;
+    setChartWidth((currentWidth) =>
+      currentWidth === width ? currentWidth : width,
+    );
+    chart.setOption(
+      buildLineChartOption(optionConfig, width, effectiveVisibleRange),
+      true,
+    );
+    emitCurrentAreaConfig(
+      chart,
+      effectiveVisibleRange ?? zoomBaseRange,
+      config.singleSelectLegend
+        ? effectiveSingleSelectionLegendNames
+        : undefined,
+    );
+    chart.resize({
+      width,
+      height,
+      silent: true,
+    });
+  }, [
+    config.authDataType,
+    config.singleSelectLegend,
+    config.timeFramePeriod,
+    config.widgetId,
+    effectiveSingleSelectionLegendNames,
+    effectiveVisibleRange,
+    optionConfig,
+    zoomBaseRange,
+  ]);
 
-      const selectedMap = params.selected;
-      const selectedKeys = Object.keys(selectedMap).filter(
-        (key) => selectedMap[key],
-      );
+  useEffect(() => {
+    const chart = chartInstanceRef.current;
+    if (!chart) {
+      return;
+    }
 
-      // 1️⃣ None selected → reset all
-      if (selectedKeys.length === 0) {
-        const allSelected: LegendSelectedMap = {};
-        Object.keys(selectedMap).forEach((key) => {
-          allSelected[key] = true;
-        });
-
-        chart.setOption({ legend: { selected: allSelected } });
+    const handleDataZoom = (): void => {
+      if (!config.allowZoom) {
         return;
       }
 
-      // 2️⃣ Multiple selected → force only clicked one
-      if (selectedKeys.length > 1) {
-        const onlyOne: LegendSelectedMap = {};
-        Object.keys(selectedMap).forEach((key) => {
-          onlyOne[key] = key === params.name;
-        });
-
-        chart.setOption({ legend: { selected: onlyOne } });
+      const nextVisibleRange = getVisibleRangeFromChart(chart);
+      if (!nextVisibleRange) {
+        return;
       }
-    },
-    [],
-  );
 
-  useEffect(() => {
-    const relevantData = filteredData.length > 0 ? filteredData : chartData;
-
-    setXAxisBounds(
-      relevantData,
-      timeFramePeriod ?? 'live',
-      setXByTimeFramePeriod ?? false,
-      setXAxisMin,
-      setXAxisMax,
-    );
-  }, [filteredData, chartData, timeFramePeriod, setXByTimeFramePeriod]);
-
-  useEffect(() => {
-    setXRange(xFullRange);
-  }, [xFullRange]);
-
-  useEffect(() => {
-    setMaxDate(xRange?.max);
-    setMinDate(xRange?.min);
-  }, [xRange]);
-
-  useEffect(() => {
-    if (filteredData && filteredData.length > 0 && xFullRange) {
-      initializeChart();
-    }
-
-    const chart = chartInstance.current;
-    if (!chart) return;
-    syncChartLayout(chart, chartRef.current?.clientWidth);
-  }, [filteredData, props, xAxisMin, xAxisMax]);
-
-  useEffect(() => {
-    if (chartData && chartData.length > 0) {
-      if (hasAdditionalSelection) {
-        if (!clickedAttribute && attributes[0]) {
-          handleFilterButtonClicked(attributes[0]);
-        }
-      } else {
-        setFilteredData(chartData);
-      }
-    }
-  }, [
-    attributes,
-    chartData,
-    clickedAttribute,
-    handleFilterButtonClicked,
-    hasAdditionalSelection,
-  ]);
-
-  // Observe the window size
-  useEffect(() => {
-    const chartElement = chartRef.current;
-    const observer = new ResizeObserver(() => {
-      if (chartInstance.current) {
-        if (resizeFrameRef.current !== null) {
-          cancelAnimationFrame(resizeFrameRef.current);
+      setVisibleRange((currentRange) => {
+        if (
+          currentRange &&
+          currentRange.min.getTime() === nextVisibleRange.min.getTime() &&
+          currentRange.max.getTime() === nextVisibleRange.max.getTime()
+        ) {
+          return currentRange;
         }
 
-        resizeFrameRef.current = requestAnimationFrame(() => {
-          if (chartInstance.current) {
-            syncChartLayout(
-              chartInstance.current,
-              chartRef.current?.clientWidth,
-            );
-          }
-        });
-      }
-    });
+        return nextVisibleRange;
+      });
+    };
+    const handleLegendSelectionChange = (event: unknown): void => {
+      if (config.singleSelectLegend) {
+        setSingleSelectionLegendState((currentState) => {
+          const nextState = getNextSingleSelectionLegendState({
+            allLegendNames: dynamicLegendNames,
+            clickedLegendName: getLegendSelectionChangedName(event),
+            currentSelectionState: currentState,
+          });
 
-    if (chartElement) {
-      observer.observe(chartElement);
+          return areSingleSelectionLegendStatesEqual(currentState, nextState)
+            ? currentState
+            : nextState;
+        });
+        return;
+      }
+
+      emitCurrentAreaConfig(chart);
+    };
+
+    chart.off('datazoom', handleDataZoom);
+    chart.off('legendselectchanged', handleLegendSelectionChange);
+
+    if (config.allowZoom) {
+      chart.on('datazoom', handleDataZoom);
+    }
+
+    if (config.showLegend) {
+      chart.on('legendselectchanged', handleLegendSelectionChange);
     }
 
     return () => {
-      if (resizeFrameRef.current !== null) {
-        cancelAnimationFrame(resizeFrameRef.current);
+      chart.off('datazoom', handleDataZoom);
+      chart.off('legendselectchanged', handleLegendSelectionChange);
+    };
+  }, [
+    config.allowZoom,
+    config.authDataType,
+    config.showLegend,
+    config.singleSelectLegend,
+    config.timeFramePeriod,
+    config.widgetId,
+    dynamicLegendNames,
+    zoomBaseRange,
+  ]);
+
+  useEffect(() => {
+    const chartElement = chartRef.current;
+    if (!chartElement) {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      const chart = chartInstanceRef.current;
+      if (!chart) {
+        return;
       }
-      if (chartElement) {
-        observer.unobserve(chartElement);
-      }
-      if (chartInstance.current && singleSelectLegend) {
-        chartInstance.current.dispose();
-      }
+
+      const width = chartElement.clientWidth || chart.getWidth();
+      const height = chartElement.clientHeight || chart.getHeight();
+
+      setChartWidth((currentWidth) =>
+        currentWidth === width ? currentWidth : width,
+      );
+      chart.setOption(
+        buildLineChartOption(optionConfig, width, effectiveVisibleRange),
+        true,
+      );
+      emitCurrentAreaConfig(
+        chart,
+        effectiveVisibleRange ?? zoomBaseRange,
+        config.singleSelectLegend
+          ? effectiveSingleSelectionLegendNames
+          : undefined,
+      );
+      chart.resize({
+        width,
+        height,
+        silent: true,
+      });
+    });
+
+    observer.observe(chartElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    config.authDataType,
+    config.singleSelectLegend,
+    config.timeFramePeriod,
+    config.widgetId,
+    effectiveSingleSelectionLegendNames,
+    effectiveVisibleRange,
+    optionConfig,
+    zoomBaseRange,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      chartInstanceRef.current?.dispose();
+      chartInstanceRef.current = null;
     };
   }, []);
 
   return (
-    <div className="w-full h-full min-w-0 flex flex-col sm:flex-row">
-      {hasAdditionalSelection && (
-        <>
-          {/* Dropdown for small screens */}
-          <div className="sm:hidden w-full px-3 mb-4">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="w-full flex items-center justify-between p-2 rounded-lg"
-              style={{
-                backgroundColor: 'transparent',
-                borderColor: filterColor,
-                color: filterColor,
-                borderWidth: '2px',
-              }}
-            >
-              <span className="truncate">
-                {clickedAttribute || 'Select filter'}
-              </span>
-              <DashboardIcon iconName="ChevronDown" color={filterColor} />
-            </button>
-
-            {isDropdownOpen && (
-              <div
-                className="absolute z-10 mt-1 w-[calc(100%-24px)] rounded-lg shadow-lg"
-                style={{
-                  backgroundColor: filterColor,
-                  borderColor: filterColor,
-                }}
-              >
-                {attributes.map((attribute) => (
-                  <button
-                    key={`dropdown-${attribute}`}
-                    onClick={() => {
-                      handleFilterButtonClicked(attribute);
-                      setIsDropdownOpen(false);
-                    }}
-                    className="w-full p-2 text-left hover:opacity-75"
-                    style={{
-                      color: filterTextColor,
-                      borderBottom: `1px solid ${filterTextColor}25`,
-                    }}
-                  >
-                    {attribute}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Buttons for larger screens */}
-          <FilterButton
-            attributes={attributes}
-            onClick={handleFilterButtonClicked}
-            filterColor={filterColor}
-            filterTextColor={filterTextColor}
-            clickedAttribute={clickedAttribute}
-          ></FilterButton>
-        </>
+    <div className="flex h-full w-full min-w-0 flex-col sm:flex-row">
+      {config.hasAdditionalSelection && (
+        <LineChartFilterControls
+          attributes={availableAttributes}
+          filterColor={config.filterColor}
+          filterTextColor={config.filterTextColor}
+          onSelect={setSelectedAttribute}
+          selectedAttribute={selectedAttribute}
+        />
       )}
-      <div className="min-w-0 h-full flex flex-1 flex-col">
-        <div className="w-full min-h-0 flex-1" ref={chartRef} />
-        {allowZoom && xRange && advancedDateSelection && (
-          <div className="w-full shrink-0 px-4 -mt-4">
-            <div className="flex flex-wrap items-center gap-1">
-              <div className="flex min-w-[320px] flex-1 items-center gap-2">
-                <WizardLabel label="Beginn" />
-                <DatePicker
-                  selected={minDate}
-                  onChange={(date: Date | null): void => {
-                    const chart = chartInstance.current;
-                    if (!chart) return;
-                    const newDate = new Date(date as Date);
-                    newDate.setHours(0, 0, 0); // Set time to start of date
-                    setMinDate(newDate);
-                    setVisibleDateRange(chart, newDate, maxDate as Date);
-                  }}
-                  wrapperClassName="w-full min-w-0 flex-1"
-                  customInput={
-                    <input
-                      className="block h-14 w-full min-w-0 rounded-lg border-4 p-4 text-base"
-                      style={{
-                        color: 'white',
-                        backgroundColor: filterColor ?? '#F1B434',
-                        border: filterColor ?? '#F1B434',
-                        borderRadius: '6px',
-                      }}
+      <div className="min-w-0 flex h-full flex-1 flex-col">
+        <div className="w-full min-h-0 min-w-0 flex-1" ref={chartRef} />
+        {(showSingleSelectionLegendControls ||
+          (isAdvancedDateSelectionEnabled &&
+            fullDateRange &&
+            effectiveDateRange)) && (
+          <div className="mt-[12px] w-full shrink-0 px-4">
+            <div className="flex w-full flex-wrap items-center gap-y-4">
+              {showSingleSelectionLegendControls && (
+                <div className="flex min-w-[320px] flex-1 justify-center">
+                  <LineChartLegendSelectionControls
+                    filterColor={config.filterColor}
+                    filterTextColor={config.filterTextColor}
+                    isAllSelected={isAllLegendsSelected}
+                    isSelectionEmpty={isLegendSelectionEmpty}
+                    onDeselectAll={handleDeselectAllLegends}
+                    onSelectAll={handleSelectAllLegends}
+                  />
+                </div>
+              )}
+              {isAdvancedDateSelectionEnabled &&
+                fullDateRange &&
+                effectiveDateRange && (
+                  <div className="flex min-w-[320px] flex-1 justify-center">
+                    <LineChartDateRangeControls
+                      filterColor={config.filterColor}
+                      filterTextColor={config.filterTextColor}
+                      fullDateRange={fullDateRange}
+                      maxDate={effectiveDateRange.max}
+                      minDate={effectiveDateRange.min}
+                      onMaxDateChange={handleMaxDateChange}
+                      onMinDateChange={handleMinDateChange}
                     />
-                  }
-                  dateFormat={'yyyy-dd-MM'}
-                  maxDate={xFullRange?.max}
-                  minDate={xFullRange?.min}
-                />
-              </div>
-              <div className="flex min-w-[320px] flex-1 items-center gap-2">
-                <WizardLabel label="Ende" />
-                <DatePicker
-                  selected={maxDate}
-                  onChange={(date: Date | null): void => {
-                    const chart = chartInstance.current;
-                    if (!chart) return;
-                    const newDate = new Date(date as Date);
-                    newDate.setHours(23, 59, 59); // Set time to end of date
-                    setMaxDate(newDate);
-                    setVisibleDateRange(chart, minDate as Date, newDate);
-                  }}
-                  wrapperClassName="w-full min-w-0 flex-1"
-                  customInput={
-                    <input
-                      className="block h-14 w-full min-w-0 rounded-lg border-4 p-4 text-base"
-                      style={{
-                        color: 'white',
-                        backgroundColor: filterColor ?? '#F1B434',
-                        border: filterColor ?? '#F1B434',
-                        borderRadius: '6px',
-                      }}
-                    />
-                  }
-                  dateFormat={'yyyy-dd-MM'}
-                  maxDate={xFullRange?.max}
-                  minDate={xFullRange?.min}
-                />
-              </div>
+                  </div>
+                )}
             </div>
           </div>
         )}
       </div>
     </div>
   );
-
-  function getAllSeries(intervallDays: number): echarts.LineSeriesOption[] {
-    const series: echarts.LineSeriesOption[] = [];
-    const seriesData = filteredData;
-    if (seriesData && seriesData.length > 0) {
-      for (let i = 0; i < seriesData.length; i++) {
-        const dataArray =
-          chartAggregationMode && chartAggregationMode != aggregationEnum.none
-            ? downsampleValues(
-                seriesData[i].values,
-                intervallDays,
-                chartAggregationMode,
-              )
-            : seriesData[i].values;
-        const tempSeries: echarts.LineSeriesOption = {
-          data: dataArray,
-          type: 'line',
-          symbolSize: isShownInMapModal ? 0 : 6,
-          step: isStepline ? 'start' : undefined,
-          name: seriesData[i].name,
-          color: currentValuesColors[i % 10] || 'black',
-          ...(isStackedChart && { stack: 'a' }),
-          ...(isStackedChart && {
-            areaStyle: {
-              opacity: 0.8,
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: echarts.color.lift(
-                    currentValuesColors[i % currentValuesColors.length],
-                    -1,
-                  ),
-                },
-                {
-                  offset: 1,
-                  color: echarts.color.lift(
-                    currentValuesColors[i % currentValuesColors.length],
-                    0.2,
-                  ),
-                },
-              ]),
-            },
-          }),
-        };
-        if (seriesData[i].highlighted != undefined) {
-          tempSeries.color = seriesData[i].highlighted
-            ? highlightedColor
-            : unhighlightedColor;
-          tempSeries.itemStyle = {
-            borderWidth: 2,
-          };
-        }
-        series.push(tempSeries);
-      }
-    }
-    // Static value series
-    const staticValueSeries: echarts.LineSeriesOption[] =
-      staticValues &&
-      staticValues.length > 0 &&
-      seriesData &&
-      seriesData.length > 0
-        ? staticValues.map((value, index) => ({
-            data: seriesData[0].values.map((label) => [label[0], value]),
-            type: 'line',
-            symbol: 'none',
-            lineStyle: {
-              color: staticValuesColors[index],
-              type: 'solid',
-            },
-            tooltip: {
-              show: false,
-            },
-            endLabel: {
-              show: staticValuesTicks.includes(value),
-              // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-              formatter: function () {
-                return staticValuesTexts[
-                  staticValuesTicks.findIndex((tick) => tick == value)
-                ];
-              },
-              fontSize: legendFontSize,
-              color: legendFontColor,
-            },
-          }))
-        : [];
-    const seriesAll = [...series, ...staticValueSeries];
-    return seriesAll;
-  }
-
-  function measureText(text: string, font = '12px sans-serif'): number {
-    if (!textMeasureCanvasRef.current) {
-      textMeasureCanvasRef.current = document.createElement('canvas');
-    }
-
-    const context = textMeasureCanvasRef.current.getContext('2d');
-    if (context) {
-      context.font = font;
-      return context.measureText(text).width;
-    }
-    return 0;
-  }
-
-  function getLegendItemWidth(
-    name: string,
-    iconWidth: number,
-    padding: number,
-  ): number {
-    const textWidth = measureText(name, `${legendFontSize}px sans-serif`);
-    return iconWidth + textWidth + padding;
-  }
-
-  function estimateLegendHeight(
-    names: string[],
-    chartWidth: number,
-    rowHeight = 24,
-    legendWidthRatio = 0.95,
-  ): number {
-    const maxWidth = chartWidth * legendWidthRatio;
-    let rows = 1;
-    let currentRowWidth = 0;
-
-    names.forEach((name) => {
-      const itemWidth = getLegendItemWidth(name, 12, 25);
-      if (currentRowWidth + itemWidth > maxWidth) {
-        rows++;
-        currentRowWidth = itemWidth;
-      } else {
-        currentRowWidth += itemWidth;
-      }
-    });
-
-    return Math.ceil(rows * rowHeight) + 20;
-  }
-
-  function getVisibleLegendNames(chart?: ECharts): string[] {
-    if (filteredData.length > 0) {
-      return filteredData.map((series) => series.name);
-    }
-
-    if (chart) {
-      const option = chart.getOption();
-      const chartSeries = Array.isArray(option.series)
-        ? option.series
-        : option.series
-          ? [option.series]
-          : [];
-
-      return chartSeries
-        .map((series) =>
-          typeof series?.name === 'string' ? series.name : undefined,
-        )
-        .filter((name): name is string => Boolean(name));
-    }
-
-    return [];
-  }
-
-  function syncChartLayout(chart: ECharts, nextWidth?: number): void {
-    const width =
-      nextWidth ?? chartRef.current?.clientWidth ?? chart.getWidth();
-    const height = chartRef.current?.clientHeight ?? chart.getHeight();
-
-    applyResponsiveGridBottom(chart, width);
-    chart.resize({
-      width,
-      height,
-      silent: true,
-    });
-  }
-
-  function applyResponsiveGridBottom(chart: ECharts, nextWidth?: number): void {
-    const baseBottom = getBaseBottomGrid();
-
-    if (!showLegend || !advancedDateSelection) {
-      setGridBottom(chart, baseBottom);
-      return;
-    }
-
-    const legendNames = getVisibleLegendNames(chart);
-    if (legendNames.length === 0) {
-      setGridBottom(chart, baseBottom);
-      return;
-    }
-
-    const chartWidth =
-      nextWidth ?? chartRef.current?.clientWidth ?? chart.getWidth();
-    const legendHeight = estimateLegendHeight(
-      legendNames,
-      chartWidth,
-      24,
-      0.72,
-    );
-    const legendBottomOffset = advancedDateSelection ? 12 : 8;
-    let responsiveWidthReserve = 0;
-
-    if (chartWidth < 1200) responsiveWidthReserve += 10;
-    if (chartWidth < 1024) responsiveWidthReserve += 8;
-    if (chartWidth < 860) responsiveWidthReserve += 8;
-
-    const extraLegendSpace =
-      Math.max(0, legendHeight - 48) +
-      legendBottomOffset +
-      responsiveWidthReserve;
-
-    setGridBottom(chart, baseBottom + extraLegendSpace);
-  }
-
-  function setGridBottom(chart: ECharts, bottom: number): void {
-    chart.setOption(
-      {
-        grid: [
-          {
-            bottom,
-          },
-        ],
-      },
-      {
-        replaceMerge: ['grid'],
-        lazyUpdate: false,
-        silent: true,
-      },
-    );
-  }
 }

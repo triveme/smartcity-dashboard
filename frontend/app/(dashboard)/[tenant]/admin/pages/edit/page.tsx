@@ -16,6 +16,7 @@ import {
   GroupingElement,
   Panel,
   Tab,
+  Widget,
   visibilityEnum,
 } from '@/types';
 import {
@@ -24,12 +25,17 @@ import {
   updateDashboard,
 } from '@/api/dashboard-service';
 import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
+import {
+  patchWidgetToPanelRelation,
+  postWidgetToPanelRelation,
+} from '@/api/widgetPanelRelation-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import { WizardErrors } from '@/types/errors';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import { getTenantOfPage, isUserMatchingTenant } from '@/utils/tenantHelper';
 import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { getMenuGroupingElements } from '@/api/menu-service';
+import { EMPTY_PANEL } from '@/utils/objectHelper';
 
 function collectGroupingElementUrls(elements: GroupingElement[]): string[] {
   const urls: string[] = [];
@@ -45,6 +51,16 @@ function collectGroupingElementUrls(elements: GroupingElement[]): string[] {
   }
 
   return urls;
+}
+
+function isSpecialDashboardType(
+  type: dashboardTypeEnum | null,
+): type is dashboardTypeEnum {
+  return (
+    type === dashboardTypeEnum.map ||
+    type === dashboardTypeEnum.projectMap ||
+    type === dashboardTypeEnum.iframe
+  );
 }
 
 export default function Pages(): ReactElement {
@@ -86,6 +102,9 @@ export default function Pages(): ReactElement {
   const [canFetch, setCanFetch] = useState(false);
   const [panels, setPanels] = useState<Panel[]>([]);
   const [selectedTab, setSelectedTab] = useState<Tab>();
+  const [selectedDashboardWidgetId, setSelectedDashboardWidgetId] = useState<
+    string | undefined
+  >(undefined);
   const [errors, setErrors] = useState<WizardErrors>({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInitDone, setIsInitDone] = useState(!itemId ? true : false);
@@ -179,6 +198,7 @@ export default function Pages(): ReactElement {
       setDashboardType(dashboardData.type || dashboardTypeEnum.general);
       setDashboardAllowShare(dashboardData.allowShare || false);
       setDashboardAllowDataExport(dashboardData.allowDataExport || false);
+      setSelectedDashboardWidgetId(dashboardData.panels?.[0]?.widgets?.[0]?.id);
       if (dashboardData.headlineColor) {
         setDashboardFontColor(dashboardData.headlineColor);
       } else {
@@ -243,6 +263,10 @@ export default function Pages(): ReactElement {
           'Schreibberechtigungen müssen ausgefüllt sein!';
     }
 
+    if (isSpecialDashboardType(dashboard.type) && !selectedDashboardWidgetId) {
+      errorsOccured.dashboardWidgetError = 'Widget muss ausgewaehlt werden!';
+    }
+
     if (Object.keys(errorsOccured).length) {
       for (const key in errorsOccured) {
         const error = errorsOccured[key] as string;
@@ -275,7 +299,12 @@ export default function Pages(): ReactElement {
         openSnackbar('Dashboard wurde erfolgreich erstellt!', 'success');
       }
       if (dashboardResponse.id) {
-        await editPanels(dashboardResponse.id);
+        const savedPanels = await editPanels(dashboardResponse.id);
+        await syncSpecialDashboardWidget(
+          dashboardResponse.id,
+          savedPanels,
+          dashboardData?.panels?.[0]?.widgets?.[0],
+        );
       }
       if (canFetch) {
         refetchDashboards();
@@ -286,7 +315,7 @@ export default function Pages(): ReactElement {
     }
   };
 
-  const editPanels = async (dashboardId: string): Promise<void> => {
+  const editPanels = async (dashboardId: string): Promise<Panel[]> => {
     const editedPanels: Panel[] = [];
     for (let i = 0; i < panels.length; i++) {
       const element: Panel = {
@@ -308,16 +337,85 @@ export default function Pages(): ReactElement {
       };
       editedPanels.push(element);
     }
+
+    const savedPanels: Panel[] = [];
     for (let j = 0; j < editedPanels.length; j++) {
       const tPanel = editedPanels[j];
       if (tPanel.id) {
-        await updatePanel(auth.user?.access_token, tPanel);
+        savedPanels.push(await updatePanel(auth.user?.access_token, tPanel));
       } else {
-        await postPanel(auth.user?.access_token, tPanel);
+        savedPanels.push(await postPanel(auth.user?.access_token, tPanel));
       }
     }
+
+    setPanels(savedPanels);
     if (canFetch) {
       refetchDashboards();
+    }
+    return savedPanels;
+  };
+
+  const ensureSpecialDashboardPanel = async (
+    dashboardId: string,
+    savedPanels: Panel[],
+  ): Promise<Panel> => {
+    const existingPanel = savedPanels[0];
+
+    if (existingPanel) {
+      return existingPanel;
+    }
+
+    const panel = await postPanel(auth.user?.access_token, {
+      ...EMPTY_PANEL,
+      dashboardId,
+      position: 1,
+    });
+    setPanels([panel]);
+    return panel;
+  };
+
+  const syncSpecialDashboardWidget = async (
+    dashboardId: string,
+    savedPanels: Panel[],
+    originalWidget?: Widget,
+  ): Promise<void> => {
+    if (!isSpecialDashboardType(dashboardType) || !selectedDashboardWidgetId) {
+      return;
+    }
+
+    const hadExistingPanel = savedPanels.length > 0;
+    const panel = await ensureSpecialDashboardPanel(dashboardId, savedPanels);
+    if (!panel.id) {
+      throw new Error('No panel available for special dashboard');
+    }
+
+    if (!hadExistingPanel) {
+      await postWidgetToPanelRelation(
+        auth?.user?.access_token,
+        selectedDashboardWidgetId,
+        panel.id,
+        0,
+      );
+      return;
+    }
+
+    if (originalWidget?.id && originalWidget.id !== selectedDashboardWidgetId) {
+      await patchWidgetToPanelRelation(
+        auth?.user?.access_token,
+        originalWidget.id,
+        selectedDashboardWidgetId,
+        panel.id,
+      );
+      return;
+    }
+
+    if (!originalWidget?.id) {
+      await postWidgetToPanelRelation(
+        auth?.user?.access_token,
+        selectedDashboardWidgetId,
+        panel.id,
+        0,
+      );
     }
   };
 
@@ -444,6 +542,8 @@ export default function Pages(): ReactElement {
                 ? dashboardData?.panels[0]?.widgets[0]
                 : undefined
             }
+            selectedDashboardWidgetId={selectedDashboardWidgetId}
+            setSelectedDashboardWidgetId={setSelectedDashboardWidgetId}
             originalDashboardType={
               dashboardData?.type || dashboardTypeEnum.general
             }

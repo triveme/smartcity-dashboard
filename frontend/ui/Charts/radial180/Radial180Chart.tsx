@@ -1,11 +1,11 @@
 'use client';
 
 import { ReactElement, useEffect, useRef } from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import {
   resolveSingleValueChartNumber,
   SingleValueChartTabData,
-} from '@/utils/chartHelper';
+} from '@/utils/Charts/chartHelper';
 import { ECharts, EChartsOption } from 'echarts';
 import { useSearchParams } from 'next/navigation';
 

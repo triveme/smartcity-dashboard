@@ -5,7 +5,7 @@ import { generateAttributeKey, getValueByKeys } from '../helper';
 export interface NGSIv2Entity {
   entityId: string;
   index: string[];
-  values: number[];
+  values: Array<number | string>;
   labels: string[];
   timeLabels: string[];
 }

@@ -31,6 +31,11 @@ export function downsampleValues(
   if (intervalDays == 0) return values;
 
   const msPerDay = 1000 * 60 * 60 * 24;
+  const bucketSizeMs = intervalDays * msPerDay;
+
+  if (bucketSizeMs <= 0) {
+    return values;
+  }
 
   // Sort by date (important if data is not sorted)
   const sorted = [...values].sort(
@@ -40,17 +45,17 @@ export function downsampleValues(
   const startDate = new Date(sorted[0][0]);
   const buckets: Record<number, number[]> = {};
   const bucketDates: Record<number, string> = {};
+  const bucketLabels: Record<number, string | undefined> = {};
 
-  for (const [dateStr, value] of sorted) {
+  for (const [dateStr, value, label] of sorted) {
     const date = new Date(dateStr);
-    const daysDiff = Math.floor(
-      (date.getTime() - startDate.getTime()) / msPerDay,
-    );
-    const bucketIndex = Math.floor(daysDiff / intervalDays);
+    const elapsedMs = date.getTime() - startDate.getTime();
+    const bucketIndex = Math.floor(elapsedMs / bucketSizeMs);
 
     if (!buckets[bucketIndex]) {
       buckets[bucketIndex] = [];
       bucketDates[bucketIndex] = dateStr; // Use first date in the bucket as the representative
+      bucketLabels[bucketIndex] = label;
     }
 
     buckets[bucketIndex].push(value);
@@ -58,9 +63,11 @@ export function downsampleValues(
 
   const aggregated: [string, number, string?][] = Object.entries(buckets).map(
     ([bucketKey, values]) => {
-      const date = bucketDates[parseInt(bucketKey)];
+      const parsedBucketKey = parseInt(bucketKey);
+      const date = bucketDates[parsedBucketKey];
+      const label = bucketLabels[parsedBucketKey];
       const aggValue = aggregate(values, aggregation);
-      return [date, aggValue];
+      return [date, aggValue, label];
     },
   );
 

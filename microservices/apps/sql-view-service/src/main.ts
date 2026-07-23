@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { SqlViewDataModule } from './sql-view-data.module';
 import { ScheduleService } from './schedule.service';
+import { parseCorsOrigins } from '@app/common';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(SqlViewDataModule);
-
   app.enableCors({
-    origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
+    origin: parseCorsOrigins(process.env.NEXT_PUBLIC_FRONTEND_URL),
     methods: ['GET', 'DELETE', 'POST', 'PATCH'],
     credentials: true,
   });

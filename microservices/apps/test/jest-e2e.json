@@ -7,6 +7,8 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
+    "@app/common/(.*)": "<rootDir>/../../libs/common/src/$1",
+    "@app/common": "<rootDir>/../../libs/common/src",
     "@app/postgres-db/(.*)": "<rootDir>/../../libs/postgres-db/src/$1",
     "@app/postgres-db": "<rootDir>/../../libs/postgres-db/src",
     "@app/auth-helper/(.*)": "<rootDir>/../../libs/auth-helper/src/$1",

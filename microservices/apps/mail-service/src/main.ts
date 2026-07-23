@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { MailModule } from './mail.module';
+import { parseCorsOrigins } from '@app/common';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(MailModule);
-
   app.enableCors({
-    origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
+    origin: parseCorsOrigins(process.env.NEXT_PUBLIC_FRONTEND_URL),
     methods: 'GET,POST',
     credentials: true,
   });

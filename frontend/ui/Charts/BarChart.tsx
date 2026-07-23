@@ -1,6 +1,6 @@
 'use client';
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import { echarts, ECHARTS_LOCALE } from '@/utils/echartsClient';
+import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { ChartData, CurrentAreaConfig, timeframeEnum } from '@/types';
 import {
@@ -17,13 +17,13 @@ import {
   getSelectedLegendNames,
   setXAxisBounds,
   getAdaptiveWeekdayFormatter,
-} from '@/utils/chartHelper';
+} from '@/utils/Charts/chartHelper';
 import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
 import { generateTooltipContent } from '@/utils/chartTooltipHelper';
 import { useSearchParams } from 'next/navigation';
 import { debounce } from 'lodash';
-import { getVisibleDateRange } from '@/utils/lineChartUtil';
+import { getVisibleDateRange } from '@/utils/Charts/lineChartUtil';
 import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
 
 type BarChartProps = {

@@ -1,4 +1,4 @@
-import { getGermanLabelForAttribute } from '../dashboard/populate/populate.util';
+import { getGermanLabelForAttribute } from '@app/common';
 
 export type FlattenedNgsiExportRow = {
   entityId: string;

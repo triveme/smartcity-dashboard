@@ -178,6 +178,7 @@ export type MapModalWidget = {
   iconText?: string;
   iconUrl?: string;
   showAxisLabels?: boolean;
+  usePreviousStageColorOnBoundary?: boolean;
   jumpoffIcon?: string;
   jumpoffLabel?: string;
   jumpoffUrl?: string;
@@ -397,6 +398,7 @@ export type Tab = {
   multiAttributeConfigs?: MultiAttributeConfig[];
   useDashboardFontColor?: boolean;
   normalizeXAxisByTimeFramePeriod?: boolean;
+  usePreviousStageColorOnBoundary?: boolean;
 };
 
 export type TabWithQuery = Tab & {

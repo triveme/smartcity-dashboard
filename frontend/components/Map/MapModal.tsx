@@ -307,6 +307,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
                             widget.attributes,
                           )}
                           showAxisLabels={widget.showAxisLabels}
+                          usePreviousStageColorOnBoundary={
+                            widget.usePreviousStageColorOnBoundary ?? false
+                          }
                         />
                       </div>
                     )}

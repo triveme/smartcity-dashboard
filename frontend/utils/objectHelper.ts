@@ -81,6 +81,7 @@ export const EMPTY_MAP_MODAL_WIDGET: MapModalWidget = {
   chartStaticValuesLogos: [],
   decimalPlaces: 0,
   imageUrl: '',
+  usePreviousStageColorOnBoundary: false,
   jumpoffAttribute: '',
   jumpoffIcon: '',
   jumpoffLabel: '',

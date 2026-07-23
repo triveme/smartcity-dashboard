@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ScheduleService } from './schedule.service';
 import { StaticDataModule } from './static-data.module';
+import { parseCorsOrigins } from '@app/common';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(StaticDataModule);
-
   app.enableCors({
-    origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
+    origin: parseCorsOrigins(process.env.NEXT_PUBLIC_FRONTEND_URL),
     methods: 'GET',
     credentials: true,
   });

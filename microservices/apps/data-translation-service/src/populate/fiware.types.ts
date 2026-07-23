@@ -17,7 +17,7 @@ export type FiwareAttributeType = {
 export type FiwareAttributeEntity = {
   entityId: string;
   index: string[];
-  values: number[];
+  values: Array<number | string>;
   labels?: string[];
   timeLabels?: string[];
 };

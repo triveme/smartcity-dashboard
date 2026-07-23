@@ -16,7 +16,8 @@
 }
 
 .table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
 }
 
@@ -55,13 +56,13 @@
 .nameCell,
 .valueCell {
   padding: 8px 12px;
-  border-bottom: 1px solid #e0e0e0;
+  border-top: 1px solid #ccc;
+  /* border-bottom: 1px solid #ccc; */
 }
 
 .nameCell {
   text-align: left; 
   border-right: 1px solid #ccc;
-
 }
 
 .dotWrapper {
