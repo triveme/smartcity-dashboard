@@ -16,6 +16,7 @@ import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
 import SmallDataExportButton from '@/ui/Buttons/SmallDataExportButton';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
+import { isTabWithoutRuntimeData } from '@/utils/tabTypeHelper';
 
 type DashboardWidgetProps = {
   widget: WidgetWithContent;
@@ -184,6 +185,9 @@ export default async function DashboardWidget({
             const resolvedTab: Tab = {
               ...tab,
               timeframe: tab.timeframe ?? widget?.widgetData?.data?.timeframe,
+              extendedDateSelection:
+                tab.extendedDateSelection ??
+                widget?.widgetData?.data?.extendedDateSelection,
             };
 
             // Determine what data to pass to the tab based on available properties
@@ -208,7 +212,7 @@ export default async function DashboardWidget({
                   val !== null && (Array.isArray(val) ? val.length > 0 : true),
               );
 
-              if (!hasData) {
+              if (!hasData && !isTabWithoutRuntimeData(tab)) {
                 tabData = null;
               }
             }

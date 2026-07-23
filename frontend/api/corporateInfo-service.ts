@@ -5,8 +5,12 @@ import { getBackendUrl } from '@/utils/envHelper';
 
 export async function updateCorporateInfo(
   accessToken: string | undefined,
-  updateCorporateInfo: CorporateInfo,
+  updateCorporateInfo: Partial<CorporateInfo> & { id?: string },
 ): Promise<CorporateInfo> {
+  if (!updateCorporateInfo.id) {
+    throw new Error('CorporateInfo id is required for update');
+  }
+
   const backendUrl = getBackendUrl();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

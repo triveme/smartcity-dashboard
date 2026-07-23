@@ -8,6 +8,7 @@ import {
   dashboardTypeEnum,
   aggregationEnum,
   timeframeEnum,
+  extendedTimeframeEnum,
 } from '.';
 
 export type Dashboard = {
@@ -126,6 +127,7 @@ export type WidgetRuntimeData = {
   listviewData?: Record<string, unknown>[];
   queryData?: QueryData[];
   timeframe?: string | null;
+  extendedDateSelection?: boolean;
 };
 
 export type WidgetDataPayload = {
@@ -280,6 +282,7 @@ export type Tab = {
   mapAllowPopups?: boolean;
   mapAllowScroll?: boolean;
   mapAllowZoom?: boolean;
+  mapClusterAtMaxZoom?: boolean;
   mapAttributeForValueBased?: string;
   mapFormSizeFactor?: number;
   mapDisplayMode?: string;
@@ -348,6 +351,7 @@ export type Tab = {
   listviewDescriptionAttribute?: string;
   queryId?: string;
   timeframe?: string | null;
+  extendedDateSelection?: boolean;
   authDataType?: string | null;
   rangeStaticValuesMin?: number[];
   rangeStaticValuesMax?: number[];
@@ -399,6 +403,7 @@ export type Tab = {
   useDashboardFontColor?: boolean;
   normalizeXAxisByTimeFramePeriod?: boolean;
   usePreviousStageColorOnBoundary?: boolean;
+  extendedTimeframe?: extendedTimeframeEnum | string;
 };
 
 export type TabWithQuery = Tab & {
@@ -475,6 +480,7 @@ export type QueryConfig = {
   aggrPeriod: string;
   dataStartDate: string;
   dataUntilDate: string;
+  extendedDateSelection: boolean;
 };
 
 export type ReportConfig = {
@@ -541,6 +547,7 @@ export type CorporateInfo = {
   headerFontColor: string;
   headerLogo?: Logo;
   headerLogoId?: string | null;
+  headerLogoLinkUrl?: string | null;
   headerPrimaryColor: string;
   headerSecondaryColor: string;
   headerTitleAdmin: string;
@@ -819,4 +826,9 @@ export type CurrentAreaConfig = {
   downloadCurrentArea: boolean;
   timeFramePeriod: timeframeEnum | string;
   authDataType: string;
+};
+
+export type WidgetDataRange = {
+  from: string;
+  to: string;
 };

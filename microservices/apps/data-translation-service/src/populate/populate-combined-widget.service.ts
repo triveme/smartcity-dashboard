@@ -1,7 +1,7 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
-import { TabWithContent } from '../data-translation.service';
-import { Tab } from '@app/postgres-db/schemas';
+import { TabWithContent, WidgetWithContent } from '../data-translation.service';
+import { Tab, Widget } from '@app/postgres-db/schemas';
 import { Query } from '@app/postgres-db/schemas/query.schema';
 import { DataModel } from '@app/postgres-db/schemas/data-model.schema';
 import {
@@ -82,44 +82,12 @@ export class PopulateCombinedWidgetService {
         if (Array.isArray(widgetWithContent.tabs)) {
           for (const childTab of widgetWithContent.tabs) {
             if (childTab) {
-              await this.populateTabWithContents(childTab);
+              await this.populateTabWithContents(
+                childTab,
+                widget.usesQueryParameter === true,
+              );
 
-              if (!widgetWithContent.widgetData) {
-                widgetWithContent.widgetData = {
-                  id: widget.id,
-                  data: {},
-                  widgetId: widget.id,
-                };
-              }
-
-              if (childTab.chartData) {
-                if (!widgetWithContent.widgetData.data)
-                  widgetWithContent.widgetData.data = {};
-                widgetWithContent.widgetData.data = {
-                  chartData: childTab.chartData,
-                };
-              }
-              if (childTab.mapObject) {
-                if (!widgetWithContent.widgetData.data)
-                  widgetWithContent.widgetData.data = {};
-                widgetWithContent.widgetData.data = {
-                  mapObject: childTab.mapObject,
-                };
-              }
-              if (childTab.weatherWarnings) {
-                if (!widgetWithContent.widgetData.data)
-                  widgetWithContent.widgetData.data = {};
-                widgetWithContent.widgetData.data = {
-                  weatherWarnings: childTab.weatherWarnings,
-                };
-              }
-              if (childTab.combinedWidgets) {
-                if (!widgetWithContent.widgetData.data)
-                  widgetWithContent.widgetData.data = {};
-                widgetWithContent.widgetData.data = {
-                  combinedWidgets: childTab.combinedWidgets,
-                };
-              }
+              this.mergeWidgetRuntimeData(widgetWithContent, widget, childTab);
             }
           }
         }
@@ -131,18 +99,71 @@ export class PopulateCombinedWidgetService {
     }
   }
 
-  private async populateTabWithContents(tab: TabWithContent): Promise<void> {
+  private mergeWidgetRuntimeData(
+    widgetWithContent: WidgetWithContent,
+    widget: Widget,
+    childTab: TabWithContent,
+  ): void {
+    const runtimeData = {
+      ...(childTab.chartData?.length ? { chartData: childTab.chartData } : {}),
+      ...(childTab.mapObject?.length ? { mapObject: childTab.mapObject } : {}),
+      ...(childTab.weatherWarnings?.length
+        ? { weatherWarnings: childTab.weatherWarnings }
+        : {}),
+      ...(childTab.combinedWidgets?.length
+        ? { combinedWidgets: childTab.combinedWidgets }
+        : {}),
+      ...(childTab.chartValues?.length
+        ? { chartValues: childTab.chartValues }
+        : {}),
+      ...(childTab.listviewData?.length
+        ? { listviewData: childTab.listviewData }
+        : {}),
+      ...(childTab.textValue ? { textValue: childTab.textValue } : {}),
+      ...(childTab.timeframe ? { timeframe: childTab.timeframe } : {}),
+    };
+
+    if (Object.keys(runtimeData).length === 0) {
+      return;
+    }
+
+    if (!widgetWithContent.widgetData) {
+      widgetWithContent.widgetData = {
+        id: widget.id,
+        data: {},
+        widgetId: widget.id,
+      };
+    }
+
+    const currentWidgetData = this.isRecord(widgetWithContent.widgetData.data)
+      ? widgetWithContent.widgetData.data
+      : {};
+
+    widgetWithContent.widgetData.data = {
+      ...currentWidgetData,
+      ...runtimeData,
+    };
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private async populateTabWithContents(
+    tab: TabWithContent,
+    usesQueryParameter: boolean = false,
+  ): Promise<void> {
     if (
       tab.componentType !== 'Informationen' &&
       tab.componentType !== 'Bild' &&
       tab.componentType !== 'iFrame'
     ) {
       if (isSingleValueTab(tab)) {
-        await this.populateValueService.populateTab(tab);
+        await this.populateValueService.populateTab(tab, usesQueryParameter);
       } else if (isCombinedWidgetTab(tab)) {
         await this.populateTab(tab);
       } else {
-        await this.populateChartService.populateTab(tab);
+        await this.populateChartService.populateTab(tab, usesQueryParameter);
       }
     }
   }

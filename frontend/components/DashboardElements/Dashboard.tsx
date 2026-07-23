@@ -591,6 +591,7 @@ export default async function Dashboard(
                       .multiAttributeConfigs
                   }
                   mapSearch={tab?.mapSearch || false}
+                  mapClusterAtMaxZoom={tab?.mapClusterAtMaxZoom ?? false}
                   allowMapPopupWidthChange={tab?.allowMapPopupWidthChange}
                   mapPopupWidth={tab?.mapPopupWidth || 25}
                   values={

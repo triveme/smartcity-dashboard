@@ -289,6 +289,17 @@ describe('DashboardServiceControllers (e2e)', () => {
       expect(response.body.length).toEqual(0);
     });
 
+    it('/groupingElements/tenant/:abbreviation (GET) sets no-store cache headers', async () => {
+      const response = await request(app.getHttpServer())
+        .get('/groupingElements/tenant/not-existing')
+        .set('Authorization', `Bearer ${jwtToken1}`)
+        .expect(200);
+
+      expect(response.headers['cache-control']).toBe('private, no-store');
+      expect(response.headers.vary).toContain('Authorization');
+      expect(response.headers.vary).toContain('Cookie');
+    });
+
     // update
     it('/groupingElements/:id (PATCH)', async () => {
       const groupingElement = await createGroupingElementByObject(

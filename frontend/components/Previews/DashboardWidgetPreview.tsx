@@ -322,6 +322,7 @@ export default function DashboardWidgetPreview(
               filterColor={data?.lineChartFilterColor || '#F1B434'}
               filterTextColor={data?.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
+              chartHoverSingleValue={tab?.chartHoverSingleValue || false}
               chartAggregationMode={tab.chartAggregationMode}
               menuHoverColor={data?.menuHoverColor || '#99a4c3ff'}
               timeFramePeriod={tab?.timeframe}
@@ -635,6 +636,7 @@ export default function DashboardWidgetPreview(
               staticValuesLogos={[]}
               isCustomMap={false}
               mapSearch={tab.mapSearch}
+              mapClusterAtMaxZoom={tab.mapClusterAtMaxZoom ?? false}
               mapType={tab.componentSubType || ''}
               allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
               mapPopupWidth={tab?.mapPopupWidth || 25}
@@ -699,6 +701,7 @@ export default function DashboardWidgetPreview(
               customMapImageId={tab.customMapImageId || ''}
               customMapSensorValues={tab.customMapSensorData || []}
               mapSearch={tab.mapSearch}
+              mapClusterAtMaxZoom={tab.mapClusterAtMaxZoom ?? false}
               allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
               mapPopupWidth={tab?.mapPopupWidth || 25}
             />

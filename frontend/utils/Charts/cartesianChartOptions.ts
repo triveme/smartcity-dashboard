@@ -91,6 +91,35 @@ type BuildHorizontalLegendArgs = {
   width?: number | string;
 };
 
+type BuildTopScrollLegendArgs = Pick<
+  BuildHorizontalLegendArgs,
+  | 'allowImageDownload'
+  | 'legendFontColor'
+  | 'legendFontSize'
+  | 'left'
+  | 'right'
+  | 'selected'
+  | 'showLegend'
+  | 'top'
+  | 'width'
+>;
+
+type BuildBottomPlainLegendArgs = Pick<
+  BuildHorizontalLegendArgs,
+  | 'allowImageDownload'
+  | 'bottom'
+  | 'itemGap'
+  | 'itemHeight'
+  | 'itemWidth'
+  | 'legendFontColor'
+  | 'legendFontSize'
+  | 'left'
+  | 'right'
+  | 'selected'
+  | 'showLegend'
+  | 'width'
+>;
+
 type BuildHorizontalDataZoomArgs = {
   allowZoom?: boolean;
   bottom?: number | string;
@@ -103,6 +132,33 @@ type BuildHorizontalDataZoomArgs = {
 
 const SAVE_AS_IMAGE_ICON =
   'path://M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z';
+
+function getLegendRightOffset(
+  allowImageDownload: boolean,
+  right?: number | string,
+): number | string {
+  return (
+    right ??
+    (allowImageDownload
+      ? CARTESIAN_CHART_LAYOUT.grid.rightWithToolbox
+      : CARTESIAN_CHART_LAYOUT.grid.rightDefault)
+  );
+}
+
+function buildLegendTextStyle(
+  legendFontSize: string,
+  legendFontColor: string,
+): {
+  fontSize: string;
+  color: string;
+  lineHeight: number;
+} {
+  return {
+    fontSize: legendFontSize,
+    color: legendFontColor,
+    lineHeight: CARTESIAN_CHART_LAYOUT.legend.lineHeight,
+  };
+}
 
 export function getCartesianSplitNumber(
   containerWidth: number,
@@ -190,30 +246,55 @@ export function buildHorizontalLegend(
       : { top: args.top ?? CARTESIAN_CHART_LAYOUT.legend.top }),
     width: args.width,
     left: args.left,
-    right:
-      args.right ??
-      (args.allowImageDownload
-        ? CARTESIAN_CHART_LAYOUT.grid.rightWithToolbox
-        : 'auto'),
+    right: getLegendRightOffset(args.allowImageDownload, args.right),
     itemWidth: args.itemWidth,
     itemHeight: args.itemHeight,
     itemGap: args.itemGap,
     selected: args.selected,
-    textStyle: {
-      fontSize: args.legendFontSize,
-      color: args.legendFontColor,
-      lineHeight: CARTESIAN_CHART_LAYOUT.legend.lineHeight,
-    },
+    textStyle: buildLegendTextStyle(args.legendFontSize, args.legendFontColor),
   };
 }
 
-export function buildTopLegend(
-  args: Omit<BuildHorizontalLegendArgs, 'position' | 'bottom'>,
+export function buildTopScrollLegend(
+  args: BuildTopScrollLegendArgs,
 ): EChartsOption['legend'] {
-  return buildHorizontalLegend({
-    ...args,
-    position: 'top',
-  });
+  if (!args.showLegend) {
+    return undefined;
+  }
+
+  return {
+    type: 'scroll',
+    orient: 'horizontal',
+    top: args.top ?? CARTESIAN_CHART_LAYOUT.legend.top,
+    left: args.left ?? 0,
+    right: getLegendRightOffset(args.allowImageDownload, args.right),
+    width: args.width,
+    selected: args.selected,
+    selectedMode: 'multiple',
+    textStyle: buildLegendTextStyle(args.legendFontSize, args.legendFontColor),
+  };
+}
+
+export function buildBottomPlainLegend(
+  args: BuildBottomPlainLegendArgs,
+): EChartsOption['legend'] {
+  if (!args.showLegend) {
+    return undefined;
+  }
+
+  return {
+    type: 'plain',
+    orient: 'horizontal',
+    bottom: args.bottom ?? CARTESIAN_CHART_LAYOUT.legend.bottom,
+    left: args.left,
+    right: getLegendRightOffset(args.allowImageDownload, args.right),
+    width: args.width,
+    itemWidth: args.itemWidth,
+    itemHeight: args.itemHeight,
+    itemGap: args.itemGap,
+    selected: args.selected,
+    textStyle: buildLegendTextStyle(args.legendFontSize, args.legendFontColor),
+  };
 }
 
 export function buildHorizontalDataZoom(

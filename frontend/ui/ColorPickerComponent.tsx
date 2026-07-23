@@ -15,11 +15,31 @@ type CustomStyle = React.CSSProperties & {
   '--nav-item-color': string; // Workaround for coloring issues with dynamic colors in tailwind
 };
 
+// Normalizes picker input to an opaque #RRGGBB value.
+// Example: #2534AFB2 would otherwise be rendered by the preview as a blended color like #6771C7
+// on top of the white wrapper, even though the picker field still shows the base color 2534AF.
+const normalizePickerColor = (value?: string): string => {
+  if (!value) {
+    return '#FFFFFF';
+  }
+
+  const trimmedValue = value.trim();
+  const colorWithHash = trimmedValue.startsWith('#')
+    ? trimmedValue
+    : `#${trimmedValue}`;
+
+  if (/^#[\dA-Fa-f]{8}$/.test(colorWithHash)) {
+    return colorWithHash.slice(0, 7);
+  }
+
+  return colorWithHash;
+};
+
 export default function ColorPickerComponent(
   props: ColorPickerComponentProps,
 ): ReactElement {
-  const { width = 300, currentColor, handleColorChange, label } = props;
-  const [hex, setHex] = useState(currentColor ? currentColor : '#FFFFFF');
+  const { currentColor, width = 300, handleColorChange, label } = props;
+  const [hex, setHex] = useState(normalizePickerColor(currentColor));
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const style: CustomStyle = { '--nav-item-color': hex };
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -38,7 +58,7 @@ export default function ColorPickerComponent(
 
   useEffect(() => {
     if (currentColor) {
-      setHex(currentColor);
+      setHex(normalizePickerColor(currentColor));
     }
   }, [currentColor]);
 
@@ -123,8 +143,9 @@ export default function ColorPickerComponent(
               color={hex}
               presetColors={colorPickerPresets}
               onChange={(color) => {
-                setHex(color.hexa);
-                handleColorChange(color.hexa);
+                const normalizedColor = normalizePickerColor(color.hexa);
+                setHex(normalizedColor);
+                handleColorChange(normalizedColor);
               }}
             />
           </div>

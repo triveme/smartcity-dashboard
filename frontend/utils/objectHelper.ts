@@ -65,6 +65,7 @@ export const EMPTY_QUERY_CONFIG: QueryConfig = {
   timeframe: timeframeEnum.day,
   dataStartDate: '',
   dataUntilDate: '',
+  extendedDateSelection: false,
 };
 
 export const EMPTY_MAP_MODAL_WIDGET: MapModalWidget = {

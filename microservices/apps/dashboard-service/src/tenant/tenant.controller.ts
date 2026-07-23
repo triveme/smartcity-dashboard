@@ -11,7 +11,9 @@ import {
 import { TenantService, TenantWithDashboards } from './tenant.service';
 import { NewTenant, Tenant } from '@app/postgres-db/schemas/tenant.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('tenants')
 export class TenantController {
   constructor(private readonly service: TenantService) {}

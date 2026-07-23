@@ -14,3 +14,19 @@ export const isTabOfTypeCombinedWidget = (
       tab.componentSubType === tabComponentSubTypeEnum.combinedMap)
   );
 };
+
+export const isTabWithoutRuntimeData = (tab: Tab): boolean => {
+  if (tab.componentType === tabComponentTypeEnum.information) {
+    return (
+      tab.componentSubType === undefined ||
+      tab.componentSubType === tabComponentSubTypeEnum.text ||
+      tab.componentSubType === tabComponentSubTypeEnum.iconWithLink
+    );
+  }
+
+  return [
+    tabComponentTypeEnum.image,
+    tabComponentTypeEnum.iframe,
+    tabComponentTypeEnum.pharmacy,
+  ].includes(tab.componentType as tabComponentTypeEnum);
+};

@@ -92,6 +92,7 @@ export const tabs = pgTable('tab', {
   mapAllowPopups: boolean('map_allow_popups'),
   mapAllowScroll: boolean('map_allow_scroll'),
   mapAllowZoom: boolean('map_allow_zoom'),
+  mapClusterAtMaxZoom: boolean('map_cluster_at_max_zoom'),
   mapSearch: boolean('map_search'),
   mapAttributeForValueBased: text('map_attribute_for_value_based'),
   mapFormSizeFactor: smallint('map_form_size_factor'),
@@ -216,6 +217,7 @@ export const tabs = pgTable('tab', {
   usePreviousStageColorOnBoundary: boolean(
     'use_previous_stage_color_on_boundary',
   ),
+  extendedTimeframe: text('extended_timeframe'),
 });
 
 export const tabsRelations = relations(tabs, ({ one, many }) => ({

@@ -12,6 +12,11 @@ import { DataTranslationRepo } from '../data-translation.repo';
 import { FiwareAttribute } from './fiware.types';
 import { RoundingService } from '../transformation/rounding.service';
 
+type ResolvedSingleValue = {
+  chartValues: number[];
+  textValue?: string;
+};
+
 @Injectable()
 export class PopulateValueService {
   constructor(
@@ -120,11 +125,18 @@ export class PopulateValueService {
 
       for (const attribute of queryConfig.attributes) {
         if (query && query.queryData) {
-          // ToDo: Change persisting of queryData to be ALWAYS an array
-          if (Array.isArray(query.queryData) && query.queryData[0]) {
+          if (Array.isArray(query.queryData)) {
+            const target = this.getLatestMatchingQueryDataEntry(
+              query.queryData as Record<string, any>[],
+              attribute,
+              queryConfig.entityIds?.[0],
+            );
+            if (!target) {
+              continue;
+            }
             this.populateSingleValueTabFromQueryData(
               tab,
-              query.queryData[0],
+              target,
               attribute,
               queryConfig.roundingMode,
               queryConfig.roundingTarget,
@@ -192,21 +204,23 @@ export class PopulateValueService {
       if (query && query.queryData) {
         if (Array.isArray(query.queryData)) {
           for (const entityId of queryConfig.entityIds) {
-            const entityAttributes = query.queryData.filter(
-              (x) => x.id === entityId,
-            );
             for (const attribute of queryConfig.attributes) {
-              const target = entityAttributes.find(
-                (x) => x[attribute] !== undefined,
+              const target = this.getLatestMatchingQueryDataEntry(
+                query.queryData as Record<string, any>[],
+                attribute,
+                entityId,
               );
-              if (target) {
-                const newData: ChartData = {
-                  id: entityId,
-                  name: attribute,
-                  values: [target[attribute].value],
-                };
-                tab.chartData.push(newData);
+              if (!target) {
+                continue;
               }
+              this.populateSingleValueTabFromQueryDataUrlParam(
+                tab,
+                target,
+                entityId,
+                attribute,
+                queryConfig.roundingMode,
+                queryConfig.roundingTarget,
+              );
             }
           }
         }
@@ -244,6 +258,84 @@ export class PopulateValueService {
     }
   }
 
+  private getLatestMatchingQueryDataEntry(
+    queryData: Record<string, any>[],
+    attribute: string,
+    entityId?: string,
+  ): Record<string, any> | undefined {
+    const entityCandidates = queryData.filter(
+      (entry) =>
+        this.matchesEntityId(entry, entityId) &&
+        entry?.[attribute] !== undefined,
+    );
+    const candidates =
+      entityCandidates.length > 0
+        ? entityCandidates
+        : queryData.filter((entry) => entry?.[attribute] !== undefined);
+
+    if (candidates.length === 0) {
+      return undefined;
+    }
+
+    let latestEntry = candidates[0];
+    let latestTimestamp = this.getEntryTimestamp(latestEntry, attribute);
+
+    for (let i = 1; i < candidates.length; i++) {
+      const currentEntry = candidates[i];
+      const currentTimestamp = this.getEntryTimestamp(currentEntry, attribute);
+
+      if (currentTimestamp !== null && latestTimestamp !== null) {
+        if (currentTimestamp >= latestTimestamp) {
+          latestEntry = currentEntry;
+          latestTimestamp = currentTimestamp;
+        }
+      } else if (currentTimestamp !== null && latestTimestamp === null) {
+        latestEntry = currentEntry;
+        latestTimestamp = currentTimestamp;
+      } else if (currentTimestamp === null && latestTimestamp === null) {
+        // Prefer the later array entry when no timestamp is available.
+        latestEntry = currentEntry;
+      }
+    }
+
+    return latestEntry;
+  }
+
+  private matchesEntityId(
+    entry: Record<string, any>,
+    entityId?: string,
+  ): boolean {
+    if (!entityId) {
+      return true;
+    }
+
+    return entry.id === entityId || entry.entityId === entityId;
+  }
+
+  private getEntryTimestamp(
+    entry: Record<string, any>,
+    attribute: string,
+  ): number | null {
+    const rawValue = entry?.[attribute];
+    const timestamp =
+      typeof entry.timestamp === 'string'
+        ? entry.timestamp
+        : typeof entry.observedAt === 'string'
+          ? entry.observedAt
+          : typeof rawValue?.observedAt === 'string'
+            ? rawValue.observedAt
+            : typeof rawValue?.metadata?.timestamp?.value === 'string'
+              ? rawValue.metadata.timestamp.value
+              : null;
+
+    if (!timestamp) {
+      return null;
+    }
+
+    const parsedTimestamp = new Date(timestamp).getTime();
+    return Number.isNaN(parsedTimestamp) ? null : parsedTimestamp;
+  }
+
   private populateSingleValueTabFromQueryData(
     tab: Tab & { query?: Query } & { dataModel: DataModel } & {
       chartData: ChartData[];
@@ -260,71 +352,41 @@ export class PopulateValueService {
       'attributes' in queryData &&
       'index' in queryData
     ) {
-      const attributes = queryData['attributes'] as Array<{
-        attrName: string;
-        values: any[];
-      }>;
-
-      const matchingAttribute = attributes.find(
-        (attr) => attr.attrName === attribute,
+      const latestValue = this.getLatestOrchideoAttributeValue(
+        queryData as {
+          attributes: Array<{
+            attrName: string;
+            values: any[];
+          }>;
+        },
+        attribute,
       );
 
-      if (matchingAttribute) {
-        const latestValue =
-          matchingAttribute.values[matchingAttribute.values.length - 1];
-
-        if (typeof latestValue === 'number') {
-          tab.chartValues.push(latestValue);
-        } else if (
-          typeof latestValue === 'string' ||
-          typeof latestValue === 'boolean'
-        ) {
-          tab.textValue = String(latestValue);
-
-          const numValue = parseFloat(latestValue as string);
-          if (!isNaN(numValue)) {
-            tab.chartValues.push(numValue);
-          }
-        } else if (latestValue !== null && typeof latestValue === 'object') {
-          if ('value' in latestValue) {
-            if (typeof latestValue.value === 'number') {
-              tab.chartValues.push(latestValue.value);
-            } else {
-              tab.textValue = String(latestValue.value);
-            }
-          }
-        }
+      if (latestValue !== undefined) {
+        this.applyResolvedSingleValue(
+          tab,
+          this.resolveOrchideoLatestValue(latestValue),
+        );
       } else {
         console.warn('No Data found for attribute:', attribute);
       }
     } else if ('attrs' in queryData) {
-      const queryDataMap: Map<string, FiwareAttribute[]> = new Map(
-        Object.entries(queryData),
-      ) as Map<string, FiwareAttribute[]>;
-      const attributes: FiwareAttribute[] = queryDataMap.get('attrs');
-      if (attributes) {
-        const matchingAttribute = attributes.find(
-          (attributeObject) => attributeObject.attrName === attribute,
-        );
-        if (matchingAttribute) {
-          for (const type of matchingAttribute.types) {
-            const entities = type.entities;
-            for (
-              let entityIndex = 0;
-              entityIndex < entities.length;
-              entityIndex++
-            ) {
-              const entity = entities[entityIndex];
-              if (entity.values && entity.values.length > 0) {
-                tab.textValue = String(entity.values[entity.values.length - 1]);
-              }
-            }
-          }
+      const latestValue = this.getLatestFiwareAttributeValue(
+        queryData as { attrs?: FiwareAttribute[] },
+        attribute,
+      );
+      if (latestValue !== undefined) {
+        tab.textValue = String(latestValue);
+      } else {
+        const queryDataMap: Map<string, FiwareAttribute[]> = new Map(
+          Object.entries(queryData),
+        ) as Map<string, FiwareAttribute[]>;
+        const attributes: FiwareAttribute[] = queryDataMap.get('attrs');
+        if (!attributes) {
+          console.warn('No attributes');
         } else {
           console.warn('No Data found for attribute:', attribute);
         }
-      } else {
-        console.warn('No attributes');
       }
     } else {
       // NGSI Data Structure
@@ -336,30 +398,263 @@ export class PopulateValueService {
         return;
       }
 
-      if (attributeValue.type) {
-        if (
-          attributeValue.type === 'Number' ||
-          attributeValue.type === 'number'
-        ) {
-          tab.chartValues.push(attributeValue.value);
-        } else if (
-          attributeValue.type === 'Text' ||
-          attributeValue.type === 'text' ||
-          attributeValue.type === 'DateTime' ||
-          attributeValue.type === 'datetime'
-        ) {
-          tab.textValue = attributeValue.value;
-        } else if (attributeValue.type === 'Property') {
-          // NGSI-LD
-          tab.textValue = attributeValue.value;
-          tab.chartValues.push(attributeValue.value);
-        }
-      } else {
-        tab.chartValues.push(attributeValue);
-      }
+      this.applyResolvedSingleValue(
+        tab,
+        this.resolveNgsiAttributeValue(attributeValue),
+      );
     }
 
     this.postProcessData(tab.chartValues, roundingMode, roundingTarget);
+  }
+
+  private populateSingleValueTabFromQueryDataUrlParam(
+    tab: Tab & { query?: Query } & { dataModel: DataModel } & {
+      chartData: ChartData[];
+      mapObject: MapObject[];
+    },
+    queryData: object,
+    entityId: string,
+    attribute: string,
+    roundingMode: string,
+    roundingTarget: number,
+  ): void {
+    const resolvedValue = this.resolveSingleValueFromQueryData(
+      queryData,
+      attribute,
+    );
+
+    if (!resolvedValue) {
+      return;
+    }
+
+    const value = this.getUrlParamSingleValue(
+      resolvedValue,
+      roundingMode,
+      roundingTarget,
+    );
+
+    if (value === undefined) {
+      return;
+    }
+
+    const newData: ChartData = {
+      id: entityId,
+      name: attribute,
+      values: [value] as any,
+    };
+    tab.chartData.push(newData);
+  }
+
+  private resolveSingleValueFromQueryData(
+    queryData: object,
+    attribute: string,
+  ): ResolvedSingleValue | undefined {
+    if (
+      'entityId' in queryData &&
+      'attributes' in queryData &&
+      'index' in queryData
+    ) {
+      const latestValue = this.getLatestOrchideoAttributeValue(
+        queryData as {
+          attributes: Array<{
+            attrName: string;
+            values: any[];
+          }>;
+        },
+        attribute,
+      );
+
+      if (latestValue === undefined) {
+        console.warn('No Data found for attribute:', attribute);
+        return undefined;
+      }
+
+      return this.resolveOrchideoLatestValue(latestValue);
+    }
+
+    if ('attrs' in queryData) {
+      const latestValue = this.getLatestFiwareAttributeValue(
+        queryData as { attrs?: FiwareAttribute[] },
+        attribute,
+      );
+
+      if (latestValue === undefined) {
+        const queryDataMap: Map<string, FiwareAttribute[]> = new Map(
+          Object.entries(queryData),
+        ) as Map<string, FiwareAttribute[]>;
+        const attributes: FiwareAttribute[] = queryDataMap.get('attrs');
+
+        if (!attributes) {
+          console.warn('No attributes');
+        } else {
+          console.warn('No Data found for attribute:', attribute);
+        }
+
+        return undefined;
+      }
+
+      return this.resolveFiwareAttributeValue(latestValue);
+    }
+
+    const queryDataMap = new Map(Object.entries(queryData));
+    const attributeValue = queryDataMap.get(attribute);
+
+    if (!attributeValue) {
+      console.warn('No Data found for attribute:', attribute);
+      return undefined;
+    }
+
+    return this.resolveNgsiAttributeValue(attributeValue);
+  }
+
+  private getLatestOrchideoAttributeValue(
+    queryData: {
+      attributes: Array<{
+        attrName: string;
+        values: any[];
+      }>;
+    },
+    attribute: string,
+  ): any {
+    const matchingAttribute = queryData.attributes.find(
+      (attr) => attr.attrName === attribute,
+    );
+
+    if (!matchingAttribute || matchingAttribute.values.length === 0) {
+      return undefined;
+    }
+
+    return matchingAttribute.values[matchingAttribute.values.length - 1];
+  }
+
+  private resolveOrchideoLatestValue(latestValue: any): ResolvedSingleValue {
+    if (typeof latestValue === 'number') {
+      return { chartValues: [latestValue] };
+    }
+
+    if (typeof latestValue === 'string' || typeof latestValue === 'boolean') {
+      const textValue = String(latestValue);
+      const numValue = parseFloat(latestValue as string);
+
+      return {
+        chartValues: !isNaN(numValue) ? [numValue] : [],
+        textValue,
+      };
+    }
+
+    if (latestValue !== null && typeof latestValue === 'object') {
+      if ('value' in latestValue) {
+        if (typeof latestValue.value === 'number') {
+          return { chartValues: [latestValue.value] };
+        }
+
+        return {
+          chartValues: [],
+          textValue: String(latestValue.value),
+        };
+      }
+    }
+
+    return { chartValues: [] };
+  }
+
+  private getLatestFiwareAttributeValue(
+    queryData: { attrs?: FiwareAttribute[] },
+    attribute: string,
+  ): unknown {
+    if (!queryData.attrs) {
+      return undefined;
+    }
+
+    const matchingAttribute = queryData.attrs.find(
+      (attributeObject) => attributeObject.attrName === attribute,
+    );
+
+    if (!matchingAttribute) {
+      return undefined;
+    }
+
+    let latestValue: unknown = undefined;
+
+    for (const type of matchingAttribute.types) {
+      for (const entity of type.entities) {
+        if (entity.values && entity.values.length > 0) {
+          latestValue = entity.values[entity.values.length - 1];
+        }
+      }
+    }
+
+    return latestValue;
+  }
+
+  private resolveFiwareAttributeValue(
+    latestValue: unknown,
+  ): ResolvedSingleValue {
+    return {
+      chartValues: [],
+      textValue: String(latestValue),
+    };
+  }
+
+  private resolveNgsiAttributeValue(attributeValue: any): ResolvedSingleValue {
+    if (attributeValue.type) {
+      if (
+        attributeValue.type === 'Number' ||
+        attributeValue.type === 'number'
+      ) {
+        return { chartValues: [attributeValue.value] };
+      }
+
+      if (
+        attributeValue.type === 'Text' ||
+        attributeValue.type === 'text' ||
+        attributeValue.type === 'DateTime' ||
+        attributeValue.type === 'datetime'
+      ) {
+        return {
+          chartValues: [],
+          textValue: attributeValue.value,
+        };
+      }
+
+      if (attributeValue.type === 'Property') {
+        // NGSI-LD
+        return {
+          chartValues: [attributeValue.value],
+          textValue: attributeValue.value,
+        };
+      }
+    }
+
+    return { chartValues: [attributeValue] };
+  }
+
+  private applyResolvedSingleValue(
+    tab: Tab & { chartValues?: number[]; textValue?: string },
+    resolvedValue: ResolvedSingleValue,
+  ): void {
+    if (resolvedValue.textValue !== undefined) {
+      tab.textValue = resolvedValue.textValue;
+    }
+
+    if (resolvedValue.chartValues.length > 0) {
+      tab.chartValues.push(...resolvedValue.chartValues);
+    }
+  }
+
+  private getUrlParamSingleValue(
+    resolvedValue: ResolvedSingleValue,
+    roundingMode: string,
+    roundingTarget: number,
+  ): number | string | undefined {
+    const chartValues = [...resolvedValue.chartValues];
+    this.postProcessData(chartValues, roundingMode, roundingTarget);
+
+    if (chartValues.length > 0) {
+      return chartValues[0];
+    }
+
+    return resolvedValue.textValue;
   }
 
   private postProcessData(

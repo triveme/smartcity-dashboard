@@ -14,7 +14,9 @@ import {
   QueryConfig,
 } from '@app/postgres-db/schemas/query-config.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('query-configs')
 export class QueryConfigController {
   constructor(private readonly service: QueryConfigService) {}

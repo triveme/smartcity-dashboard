@@ -73,11 +73,13 @@ export class PopulateService {
         await this.tabService.handleSpecialTabs(row.tab);
         let timeframe = null;
         let authDataType = null;
+        let extendedDateSelection: boolean | null = null;
         if (row.query?.queryConfigId) {
           const queryConfig = await this.queryConfigService.getById(
             row.query.queryConfigId,
           );
           timeframe = queryConfig?.timeframe ?? null;
+          extendedDateSelection = queryConfig?.extendedDateSelection ?? null;
           if (queryConfig?.dataSourceId) {
             const dataSource = await this.dataSourceService.getById(
               queryConfig.dataSourceId,
@@ -89,6 +91,7 @@ export class PopulateService {
           ...row.tab,
           timeframe,
           authDataType,
+          extendedDateSelection,
         });
       }
       if (row.data_model) {

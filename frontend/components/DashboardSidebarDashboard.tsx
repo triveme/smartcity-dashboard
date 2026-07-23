@@ -83,40 +83,42 @@ export default function DashboardSidebarDashboard(
     color: determineFontColor(elementUrl),
   };
 
+  const href = tenant ? `/${tenant}/${url}` : `/${url}`;
+
+  const handleLinkClick = (): void => {
+    if (!isMobileView) {
+      return;
+    }
+
+    // Let Next.js handle the client-side navigation before closing the menu.
+    window.setTimeout(() => {
+      onDashboardClick();
+    }, 0);
+  };
+
   return (
     <div className="w-full pb-2">
-      <Link className={`flex`} href={`/${tenant}/${url}`} target={'_self'}>
-        <div
-          style={menuStyle}
-          className="flex flex-row justify-between items-center content-center p-1 rounded-lg"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={(): void => {
-            if (isMobileView) {
-              onDashboardClick();
-            }
-          }}
-        >
-          {icon && icon !== 'empty' && (
-            <div className="w-4 h-4 flex items-center basis-1/5">
-              <DashboardIcons
-                iconName={icon}
-                color={menuStyle.color || 'white'}
-              />
-            </div>
-          )}
-
-          <div className="basis-4/5">
-            <button
-              className="text-start"
-              style={{ color: menuStyle.color || 'white' }}
-            >
-              {name}
-            </button>
+      <Link
+        className="flex flex-row justify-between items-center content-center p-1 rounded-lg"
+        href={href}
+        target="_self"
+        style={menuStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={handleLinkClick}
+      >
+        {icon && icon !== 'empty' && (
+          <div className="w-4 h-4 flex items-center basis-1/5">
+            <DashboardIcons
+              iconName={icon}
+              color={menuStyle.color || 'white'}
+            />
           </div>
+        )}
 
-          {/* <div className="basis-1/5"></div> */}
-        </div>
+        <div className="basis-4/5 text-start">{name}</div>
+
+        {/* <div className="basis-1/5"></div> */}
       </Link>
     </div>
   );

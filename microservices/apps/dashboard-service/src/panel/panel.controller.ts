@@ -14,7 +14,9 @@ import {
   Panel,
 } from '@app/postgres-db/schemas/dashboard.panel.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('panels')
 export class PanelController {
   constructor(private readonly service: PanelService) {}

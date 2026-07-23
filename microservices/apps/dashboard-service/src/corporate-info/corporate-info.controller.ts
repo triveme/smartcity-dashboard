@@ -16,7 +16,9 @@ import {
 } from '@app/postgres-db/schemas/corporate-info.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { CorporateInfoWithLogos } from './corporate-info.repo';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('corporate-infos')
 export class CorporateInfoController {
   constructor(private readonly service: CorporateInfoService) {}

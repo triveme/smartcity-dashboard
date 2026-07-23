@@ -1709,7 +1709,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                     isCombinedMap,
                   )
                 }
-                disableClusteringAtZoom={props.mapMaxZoom ?? 16}
+                {...(props.mapClusterAtMaxZoom
+                  ? { spiderfyOnMaxZoom: true }
+                  : { disableClusteringAtZoom: props.mapMaxZoom ?? 16 })}
               >
                 {((): Array<JSX.Element | null> => {
                   const filteredMarkers =

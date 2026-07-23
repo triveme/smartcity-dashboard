@@ -14,7 +14,9 @@ import {
   NewDataSource,
 } from '@app/postgres-db/schemas/data-source.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('data-sources')
 export class DataSourceController {
   constructor(private readonly service: DataSourceService) {}

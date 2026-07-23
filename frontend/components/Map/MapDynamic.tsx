@@ -392,6 +392,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           customMapImageId={tab?.customMapImageId}
           customMapSensorValues={tab?.customMapSensorData}
           mapSearch={tab?.mapSearch || false}
+          mapClusterAtMaxZoom={tab?.mapClusterAtMaxZoom ?? false}
           handleOnMarkerClick={handleOnMarkerClick}
           allowMapPopupWidthChange={tab?.allowMapPopupWidthChange || false}
           mapPopupWidth={tab?.mapPopupWidth || 25}

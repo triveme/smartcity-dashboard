@@ -15,6 +15,7 @@ import {
   getGeneralSettingsByTenant,
   updateGeneralSettings,
 } from '@/api/general-settings-service';
+import { updateCorporateInfo } from '@/api/corporateInfo-service';
 import {
   GeneralSettings,
   LinkWithIconValues,
@@ -50,7 +51,7 @@ export default function Pages(): ReactElement {
   const { data: corporateInfo } = useQuery({
     queryKey: ['corporate-info'],
     queryFn: () => getCorporateInfosWithLogos(tenant),
-    enabled: false,
+    enabled: true,
   });
 
   //Dynamic Styling
@@ -65,6 +66,7 @@ export default function Pages(): ReactElement {
   const [privacyUrl, setPrivacyUrl] = useState('');
   const [allowThemeSwitching, setAllowThemeSwitching] = useState(false);
   const [disclaimer, setDisclaimer] = useState('');
+  const [headerLogoLinkUrl, setHeaderLogoLinkUrl] = useState('');
   const [cookiebotId, setCookiebotId] = useState<string>('');
   const [matomoSiteId, setMatomoSiteId] = useState<string>('');
   const [matomoUrl, setMatomoUrl] = useState<string>('');
@@ -102,6 +104,10 @@ export default function Pages(): ReactElement {
   useEffect(() => {
     setGeneralSettings(generalSettings);
   }, [generalSettings]);
+
+  useEffect(() => {
+    setHeaderLogoLinkUrl(corporateInfo?.headerLogoLinkUrl || '');
+  }, [corporateInfo]);
 
   const validateFields = (): WizardErrors => {
     const errorsOccurred: WizardErrors = {};
@@ -207,6 +213,13 @@ export default function Pages(): ReactElement {
 
       setGeneralSettings(retrievedGeneralSettings);
     }
+
+    if (corporateInfo?.id) {
+      await updateCorporateInfo(auth?.user?.access_token, {
+        id: corporateInfo.id,
+        headerLogoLinkUrl: headerLogoLinkUrl || null,
+      });
+    }
   };
 
   const handleCancelClick = (): void => {
@@ -265,6 +278,17 @@ export default function Pages(): ReactElement {
 
       <div className="flex flex-col justify-between">
         <div className="flex flex-row gap-4">
+          <div className="flex flex-col w-full pb-2">
+            <WizardLabel label="Header-Logo URL" />
+            <WizardUrlTextfield
+              value={headerLogoLinkUrl || ''}
+              onChange={(value: string | number): void =>
+                setHeaderLogoLinkUrl(value.toString())
+              }
+              iconColor={corporateInfo?.fontColor ?? '#FFFFFF'}
+              borderColor={corporateInfo?.panelBorderColor ?? '#2B3244'}
+            />
+          </div>
           <div className="flex flex-col w-full pb-2">
             <WizardLabel label="Informationen" />
             <WizardUrlTextfield

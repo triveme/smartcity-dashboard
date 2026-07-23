@@ -16,7 +16,9 @@ import {
 } from '@app/postgres-db/schemas/auth-data.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { AuthenticatedRequest } from '@app/auth-helper';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('auth-datas')
 export class AuthDataController {
   constructor(private readonly service: AuthDataService) {}

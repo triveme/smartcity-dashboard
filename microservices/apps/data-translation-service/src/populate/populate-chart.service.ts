@@ -20,7 +20,10 @@ export class PopulateChartService {
     private readonly roundingService: RoundingService,
   ) {}
 
-  async populateTab(tab: TabWithContent): Promise<string | null> {
+  async populateTab(
+    tab: TabWithContent,
+    usesQueryParameter = false,
+  ): Promise<string | null> {
     const query = await this.dataTranslationRepo.getQueryById(tab.queryId);
     if (!query) {
       return null;
@@ -35,6 +38,7 @@ export class PopulateChartService {
     }
 
     tab.timeframe = queryConfig.timeframe ?? null;
+    tab.extendedDateSelection = queryConfig.extendedDateSelection ?? undefined;
 
     const datasource = await this.dataTranslationRepo.getDatasourceById(
       queryConfig.dataSourceId,
@@ -107,6 +111,22 @@ export class PopulateChartService {
         });
       }
 
+      if (
+        query &&
+        query.queryData &&
+        !Array.isArray(query.queryData) &&
+        queryConfig.timeframe !== 'live' &&
+        tab.componentType === 'Diagramm' &&
+        (tab.componentSubType === 'Linien Chart' ||
+          tab.componentSubType === 'Linien Chart (dynamisch)')
+      ) {
+        tab.chartData = this.normalizeHistoricalQueryData(
+          query.queryData,
+          queryConfig,
+          usesQueryParameter,
+        );
+        return queryConfig.timeframe ?? null;
+      }
       // Track amount of attributes for labeling
       const isSingleAttribute =
         queryConfig.attributes.filter((attr) => attr !== 'name').length === 1;
@@ -128,6 +148,7 @@ export class PopulateChartService {
               queryConfig,
               tab,
               isSingleAttribute,
+              usesQueryParameter,
             );
           }
         }
@@ -140,6 +161,44 @@ export class PopulateChartService {
     );
 
     return queryConfig.timeframe ?? null;
+  }
+
+  public normalizeHistoricalQueryData(
+    queryData: unknown,
+    queryConfig: QueryConfig,
+    usesQueryParameter = false,
+  ): ChartData[] {
+    if (
+      !queryData ||
+      Array.isArray(queryData) ||
+      typeof queryData !== 'object'
+    ) {
+      return [];
+    }
+
+    const tab = { chartData: [] as ChartData[] } as TabWithContent;
+    const isSingleAttribute =
+      queryConfig.attributes.filter((attr) => attr !== 'name').length === 1;
+    const queryDataMap = new Map(Object.entries(queryData));
+
+    for (const attribute of queryConfig.attributes) {
+      this.populateHistoricTab(
+        queryConfig,
+        tab,
+        queryDataMap,
+        attribute,
+        isSingleAttribute,
+        usesQueryParameter,
+      );
+    }
+
+    this.postProcessValue(
+      tab.chartData,
+      queryConfig.roundingMode,
+      queryConfig.roundingTarget,
+    );
+
+    return tab.chartData;
   }
 
   private populateSliderOverview(
@@ -441,6 +500,7 @@ export class PopulateChartService {
     queryConfig: QueryConfig,
     tab: TabWithContent,
     isSingleAttribute: boolean,
+    usesQueryParameter = false,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
     const preserveTextValues =
@@ -452,6 +512,7 @@ export class PopulateChartService {
       queryDataMap,
       attribute,
       isSingleAttribute,
+      usesQueryParameter,
       preserveTextValues,
     );
   }
@@ -462,6 +523,7 @@ export class PopulateChartService {
     queryDataMap: Map<string, any>,
     attribute: string,
     isSingleAttribute: boolean,
+    usesQueryParameter = false,
     preserveTextValues = false,
   ): void {
     if (queryConfig.entityIds.length === 1 && queryDataMap.has('attributes')) {
@@ -476,6 +538,7 @@ export class PopulateChartService {
         queryDataMap,
         attribute,
         isSingleAttribute,
+        usesQueryParameter,
         preserveTextValues,
       );
     }
@@ -492,13 +555,34 @@ export class PopulateChartService {
 
     // Check if entityAttributes is defined and not empty
     if (entityAttributes && entityAttributes.length > 0) {
+      const shouldUseDisplayAttributeAsLabel = preserveTextValues === false;
+      const hasSelectedDisplayAttribute =
+        shouldUseDisplayAttributeAsLabel &&
+        entityAttributes.some(
+          (attr) => attr?.attrName === 'name' || attr?.attrName === 'id',
+        );
+      const entityDisplayName = hasSelectedDisplayAttribute
+        ? this.getSingleEntityDisplayName(entityAttributes, entityId)
+        : undefined;
+
       // Loop through each attribute in entityAttributes
       entityAttributes.forEach((attr) => {
         const attrName = attr.attrName;
+        const isDisplayAttribute = attrName === 'name' || attrName === 'id';
+
+        if (shouldUseDisplayAttributeAsLabel && isDisplayAttribute) {
+          return;
+        }
+
+        const chartDataName = this.buildSingleEntityChartDataName(
+          attrName,
+          entityDisplayName,
+          hasSelectedDisplayAttribute,
+        );
 
         // Check if an entry for the attribute for the entityId already exists in tab.chartData
         const existingEntry = tab.chartData.find(
-          (data) => data.name === `${getGermanLabelForAttribute(attrName)}`,
+          (data) => data.name === chartDataName,
         );
 
         if (!existingEntry) {
@@ -512,7 +596,7 @@ export class PopulateChartService {
           // Push values to chart data
           this.pushValuesToChartData(
             attributeObject,
-            `${getGermanLabelForAttribute(attrName)}`,
+            chartDataName,
             tab,
             preserveTextValues,
           );
@@ -521,22 +605,76 @@ export class PopulateChartService {
     }
   }
 
+  private getSingleEntityDisplayName(
+    entityAttributes: Array<{ attrName: string; values: any[] }>,
+    entityId?: string,
+  ): string | undefined {
+    const nameAttribute = entityAttributes.find(
+      (attribute) => attribute?.attrName === 'name',
+    );
+    const idAttribute = entityAttributes.find(
+      (attribute) => attribute?.attrName === 'id',
+    );
+
+    return (
+      this.getLatestAttributeDisplayValue(nameAttribute) ??
+      this.getLatestAttributeDisplayValue(idAttribute) ??
+      entityId
+    );
+  }
+
+  private getLatestAttributeDisplayValue(attribute?: {
+    values?: any[];
+  }): string | undefined {
+    if (!attribute?.values || attribute.values.length === 0) {
+      return undefined;
+    }
+
+    const latestValue = attribute.values[attribute.values.length - 1];
+    const resolvedValue =
+      latestValue !== null &&
+      typeof latestValue === 'object' &&
+      'value' in latestValue
+        ? latestValue.value
+        : latestValue;
+
+    if (resolvedValue === null || resolvedValue === undefined) {
+      return undefined;
+    }
+
+    const stringValue = String(resolvedValue).trim();
+    return stringValue === '' ? undefined : stringValue;
+  }
+
+  private buildSingleEntityChartDataName(
+    attributeName: string,
+    entityDisplayName?: string,
+    useEntityDisplayName = false,
+  ): string {
+    const attributeLabel = getGermanLabelForAttribute(attributeName);
+
+    if (!useEntityDisplayName || !entityDisplayName) {
+      return attributeLabel;
+    }
+
+    return `${getGermanLabelForAttribute(entityDisplayName)} | ${attributeLabel}`;
+  }
+
   private populateHistoricTabWithMultipleEntityIds(
     tab: TabWithContent,
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
     isSingleAttribute: boolean,
+    usesQueryParameter = false,
     preserveTextValues = false,
   ): void {
-    let sensorName: string = null;
     if (attribute === 'name') return; // Skip if the attribute itself is "name"
 
-    let attributes: FiwareAttribute[] = queryDataMap.get('attrs');
+    const attributes: FiwareAttribute[] = queryDataMap.get('attrs');
     if (attributes) {
-      attributes = attributes.filter(
+      const attributeObject = attributes.find(
         (attributeListObject) => attributeListObject.attrName === attribute,
       );
-      const attributeObject = attributes[0];
 
       if (attributeObject) {
         for (const type of attributeObject.types) {
@@ -547,86 +685,71 @@ export class PopulateChartService {
             entityIndex++
           ) {
             const entity = entities[entityIndex];
-
-            // Logik to set sensor name if sensorattribute "name" is available
-            const nameAttribute = queryDataMap
-              .get('attrs')
-              ?.find((attr) => attr.attrName === 'name');
-            if (nameAttribute) {
-              const matchingEntity = nameAttribute.types.find((t) =>
-                t.entities.some((e) => e.entityId === entity.entityId),
-              );
-
-              if (matchingEntity) {
-                const matchingEntityData = matchingEntity.entities.find(
-                  (e) => e.entityId === entity.entityId,
-                );
-                if (
-                  matchingEntityData &&
-                  matchingEntityData.values &&
-                  matchingEntityData.values.length > 0
-                ) {
-                  sensorName =
-                    matchingEntityData.values[
-                      matchingEntityData.values.length - 1
-                    ]?.toString() || null;
-                }
-              }
-            }
-
-            if (!sensorName || sensorName === '') {
-              const idAttribute = queryDataMap
-                .get('attrs')
-                ?.find((attr) => attr.attrName === 'id');
-              if (idAttribute) {
-                const matchingEntity = idAttribute.types.find((t) =>
-                  t.entities.some((e) => e.entityId === entity.entityId),
-                );
-
-                if (matchingEntity) {
-                  const matchingEntityData = matchingEntity.entities.find(
-                    (e) => e.entityId === entity.entityId,
-                  );
-                  if (
-                    matchingEntityData &&
-                    matchingEntityData.values &&
-                    matchingEntityData.values.length > 0
-                  ) {
-                    sensorName =
-                      matchingEntityData.values[
-                        matchingEntityData.values.length - 1
-                      ]?.toString() || null;
-                  }
-                }
-              }
-            }
-
-            // Fallback to "Sensor ${entityIndex}" if sensorName is still null
-            if (!sensorName) {
-              sensorName = `Sensor ${entityIndex + 1}`; // Use 1-based index
-            }
+            const sensorName = this.getMultiEntityDisplayName(
+              attributes,
+              entity.entityId,
+              entityIndex,
+            );
 
             this.pushValuesToChartData(
               entity,
-              this.utilNameFunction(attribute, sensorName, isSingleAttribute),
+              this.utilNameFunction(
+                attribute,
+                sensorName,
+                isSingleAttribute,
+                usesQueryParameter,
+              ),
               tab,
               preserveTextValues,
             );
-
-            // Reset sensorName for the next iteration
-            sensorName = null;
           }
         }
       }
     }
   }
 
+  private getLatestEntityAttributeDisplayValue(
+    attributes: FiwareAttribute[] | undefined,
+    attributeName: 'name' | 'id',
+    entityId: string,
+  ): string | undefined {
+    const matchingAttribute = attributes?.find(
+      (attribute) => attribute.attrName === attributeName,
+    );
+
+    if (!matchingAttribute) {
+      return undefined;
+    }
+
+    const matchingEntity = matchingAttribute.types
+      .flatMap((type) => type.entities)
+      .find((entity) => entity.entityId === entityId);
+
+    return this.getLatestAttributeDisplayValue(matchingEntity);
+  }
+
+  private getMultiEntityDisplayName(
+    attributes: FiwareAttribute[] | undefined,
+    entityId: string,
+    entityIndex: number,
+  ): string {
+    return (
+      this.getLatestEntityAttributeDisplayValue(attributes, 'name', entityId) ??
+      this.getLatestEntityAttributeDisplayValue(attributes, 'id', entityId) ??
+      `Sensor ${entityIndex + 1}`
+    );
+  }
+
   private utilNameFunction(
     labelAttribute: string,
     sensorName: string,
     isSingleAttribute: boolean,
+    usesQueryParameter = false,
   ): string {
     if (isSingleAttribute) {
+      if (usesQueryParameter) {
+        return getGermanLabelForAttribute(labelAttribute);
+      }
       return `${getGermanLabelForAttribute(sensorName)}`;
     } else {
       return `${getGermanLabelForAttribute(sensorName)} | ${getGermanLabelForAttribute(labelAttribute)}`;

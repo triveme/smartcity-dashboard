@@ -1,5 +1,5 @@
 'use client';
-import { ReactElement, useEffect, useRef, useState } from 'react';
+import { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
 import { ECharts, EChartsOption } from 'echarts';
 import { ChartData, CurrentAreaConfig, timeframeEnum } from '@/types';
@@ -122,14 +122,15 @@ export default function BarChart(props: BarChartProps): ReactElement {
     authDataType,
     exportBackgroundColor,
   } = props;
-  let { data } = props;
+  const { data: rawData } = props;
 
   const searchParams = useSearchParams();
   const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
-  if (entityId) {
-    data = data.filter((x) => x.id === entityId);
-  }
+  const data = useMemo<ChartData[]>(
+    () => (entityId ? rawData.filter((x) => x.id === entityId) : rawData),
+    [rawData, entityId],
+  );
 
   const [filteredData, setFilteredData] = useState<ChartData[]>(data);
   const [clickedAttribute, setClickedAttribute] = useState<string>('');

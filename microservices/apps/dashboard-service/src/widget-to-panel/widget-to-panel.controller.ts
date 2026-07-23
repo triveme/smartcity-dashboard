@@ -14,7 +14,9 @@ import {
 } from '@nestjs/common';
 import { WidgetToPanelService } from './widget-to-panel.service';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('widgets-to-panels')
 export class WidgetToPanelController {
   constructor(private readonly service: WidgetToPanelService) {}

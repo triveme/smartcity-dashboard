@@ -14,10 +14,17 @@ import ColumnChart from '@/ui/Charts/ColumnChart';
 import useAutoScaleFont from '@/app/custom-hooks/useAutoScaleFont';
 import { DUMMY_CHART_DATA } from '@/utils/objectHelper';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
+import { useSearchParams } from 'next/navigation';
+
+type MeasurementChartSeries = {
+  id?: string;
+  values?: [string, number][];
+};
 
 type MeasurementComponentProps = {
   preview: boolean;
   dataValues: [string, number][];
+  chartData?: MeasurementChartSeries[];
   timeValues: string[];
   valueWarning: number;
   valueAlarm: number;
@@ -50,6 +57,7 @@ type MeasurementComponentProps = {
   currentValuesColors: string[];
 
   menuHoverColor: string;
+  usesQueryParameter?: boolean;
 };
 
 export default function MeasurementComponent(
@@ -58,6 +66,7 @@ export default function MeasurementComponent(
   const {
     preview,
     dataValues,
+    chartData,
     timeValues,
     valueWarning,
     valueAlarm,
@@ -87,7 +96,17 @@ export default function MeasurementComponent(
     currentValuesColors,
 
     menuHoverColor,
+    usesQueryParameter = false,
   } = props;
+  const searchParams = useSearchParams();
+  const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
+  const selectedSeries = entityId
+    ? chartData?.find((series) => series.id === entityId)
+    : undefined;
+  const resolvedDataValues =
+    selectedSeries?.values && selectedSeries.values.length > 0
+      ? selectedSeries.values
+      : dataValues;
 
   const [dayActive, setDayActive] = useState(true);
   const [weekActive, setWeekActive] = useState(false);
@@ -96,7 +115,8 @@ export default function MeasurementComponent(
   const [averageValue, setAverageValue] = useState<number>(0);
   const [deviationValue, setDeviationValue] = useState<number>(0);
   const [dataWeek, setDataWeek] = useState<[string, number][]>([]);
-  const [dataMonth, setDataMonth] = useState<[string, number][]>(dataValues);
+  const [dataMonth, setDataMonth] =
+    useState<[string, number][]>(resolvedDataValues);
 
   const bigValueFontStyle = bigValueFontColor || '#FFF';
   const labelFontStyle = labelFontColor || '#FFF';
@@ -130,26 +150,36 @@ export default function MeasurementComponent(
   };
 
   useEffect(() => {
-    if (dataValues && dataValues.length > 0) {
-      setCurrentValue(roundToDecimal(dataValues[dataValues.length - 1][1]));
+    if (resolvedDataValues && resolvedDataValues.length > 0) {
+      setCurrentValue(
+        roundToDecimal(resolvedDataValues[resolvedDataValues.length - 1][1]),
+      );
 
-      if (dataValues.length < 7) {
-        setDataWeek([...dataValues]);
+      if (resolvedDataValues.length < 7) {
+        setDataWeek([...resolvedDataValues]);
       } else {
-        setDataWeek(dataValues.slice(-7));
+        setDataWeek(resolvedDataValues.slice(-7));
       }
 
-      setDataMonth(dataValues);
+      setDataMonth(resolvedDataValues);
 
-      setAverageValue(calculateAverage(dataValues.map((entry) => entry[1])));
+      setAverageValue(
+        calculateAverage(resolvedDataValues.map((entry) => entry[1])),
+      );
 
       if (averageValue !== 0) {
         setDeviationValue(
           calculateDeviationPercentage(currentValue, averageValue),
         );
       }
+    } else {
+      setCurrentValue(0);
+      setAverageValue(0);
+      setDeviationValue(0);
+      setDataWeek([]);
+      setDataMonth([]);
     }
-  }, [averageValue, currentValue, dataValues, timeValues]);
+  }, [averageValue, currentValue, resolvedDataValues, timeValues]);
 
   return (
     <div className="measurement-component w-full h-full flex flex-col">

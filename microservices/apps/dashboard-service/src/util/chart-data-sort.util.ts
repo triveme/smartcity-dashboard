@@ -6,7 +6,8 @@ type AuthDataType =
   | 'static-endpoint'
   | 'usi'
   | 'internal'
-  | 'sql';
+  | 'sql'
+  | 'planbar';
 
 export function sortFlattenedTimeSeriesData(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

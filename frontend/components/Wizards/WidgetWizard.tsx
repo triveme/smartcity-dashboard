@@ -43,7 +43,11 @@ import {
 import { WizardErrors } from '@/types/errors';
 import { validateWidgetWithChildren } from '@/validators/widgetValidator';
 import CollapseButton from '@/ui/Buttons/CollapseButton';
-import { visibilityOptions, widthTypes } from '@/utils/enumMapper';
+import {
+  supportsTabComponentQueryParameter,
+  visibilityOptions,
+  widthTypes,
+} from '@/utils/enumMapper';
 import {
   getReportConfigByQueryId,
   postReportConfig,
@@ -66,6 +70,21 @@ type WidgetWizardProps = {
   tableOddRowColor: string;
   tableEvenRowColor: string;
 };
+
+function createQueryConfig(
+  initialQueryConfig?: Partial<QueryConfig> | null,
+): QueryConfig {
+  return {
+    ...EMPTY_QUERY_CONFIG,
+    ...initialQueryConfig,
+    attributes: [
+      ...(initialQueryConfig?.attributes ?? EMPTY_QUERY_CONFIG.attributes),
+    ],
+    entityIds: [
+      ...(initialQueryConfig?.entityIds ?? EMPTY_QUERY_CONFIG.entityIds),
+    ],
+  };
+}
 
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const {
@@ -102,8 +121,9 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   );
 
   // QUERY CONFIG
-  const [queryConfig, setQueryConfig] =
-    useState<QueryConfig>(EMPTY_QUERY_CONFIG);
+  const [queryConfig, setQueryConfig] = useState<QueryConfig>(() =>
+    createQueryConfig(),
+  );
   const [widgetHasQueryConfig, setWidgetHasQueryConfig] =
     useState<boolean>(false);
 
@@ -170,7 +190,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   useEffect(() => {
     if (widgetWithChildrenData) {
       setWidget(widgetWithChildrenData.widget);
-      setQueryConfig(widgetWithChildrenData.queryConfig!);
+      setQueryConfig(createQueryConfig(widgetWithChildrenData.queryConfig));
       setTab(widgetWithChildrenData.tab);
     }
   }, [widgetWithChildrenData]);
@@ -203,7 +223,22 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   }, [tab?.componentType, tab?.componentSubType]);
 
   const handleCreateWidgetClick = async (): Promise<void> => {
+    const nextQueryConfig = createQueryConfig(queryConfig);
     if (tab) {
+      if (tab.componentSubType === tabComponentSubTypeEnum.stageableChart) {
+        if (!tab.chartStaticValues || tab.chartStaticValues.length === 0) {
+          tab.chartStaticValuesTexts = [];
+        }
+
+        if (
+          !tab.chartStaticValuesTicks ||
+          tab.chartStaticValuesTicks.length === 0
+        ) {
+          tab.chartStaticValuesTicks = [];
+          tab.chartStaticValuesLogos = [];
+          tab.chartStaticValuesTexts = [];
+        }
+      }
       if (
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart180 ||
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 ||
@@ -223,17 +258,17 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
         tab.componentType === tabComponentTypeEnum.weatherWarning ||
         tab.componentType === tabComponentTypeEnum.listview
       ) {
-        queryConfig.aggrMode = aggregationEnum.none;
-        queryConfig.timeframe = timeframeEnum.live;
+        nextQueryConfig.aggrMode = aggregationEnum.none;
+        nextQueryConfig.timeframe = timeframeEnum.live;
       }
       // Default settings for measurement component
       if (
         tab.componentType === tabComponentTypeEnum.diagram &&
         tab.componentSubType === tabComponentSubTypeEnum.measurement
       ) {
-        queryConfig.aggrMode = aggregationEnum.average;
-        queryConfig.timeframe = timeframeEnum.month;
-        queryConfig.aggrPeriod = timeframeEnum.day;
+        nextQueryConfig.aggrMode = aggregationEnum.average;
+        nextQueryConfig.timeframe = timeframeEnum.month;
+        nextQueryConfig.aggrPeriod = timeframeEnum.day;
       }
       // Default settings for value and single value charts
       if (
@@ -246,8 +281,8 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
         tab.componentSubType === tabComponentSubTypeEnum.degreeChart360 ||
         tab.componentSubType === tabComponentSubTypeEnum.stageableChart
       ) {
-        queryConfig.aggrMode = aggregationEnum.none;
-        queryConfig.timeframe = timeframeEnum.live;
+        nextQueryConfig.aggrMode = aggregationEnum.none;
+        nextQueryConfig.timeframe = timeframeEnum.live;
       }
       // Default layout settings for combined components
       if (tab.componentType === tabComponentTypeEnum.combinedComponent) {
@@ -288,7 +323,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     const tWidgetWithChildren: WidgetWithChildren = {
       widget: widget,
       tab: tab || ({} as Tab),
-      queryConfig: widgetHasQueryConfig ? queryConfig : undefined,
+      queryConfig: widgetHasQueryConfig ? nextQueryConfig : undefined,
     };
 
     const textfieldErrorMessages: string[] = [];
@@ -337,7 +372,7 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       const queryId = savedWidgetWithChildren.tab.queryId;
 
       // Update the reportConfig with the queryId
-      if (queryConfig?.isReporting && queryId) {
+      if (nextQueryConfig.isReporting && queryId) {
         if (!reportConfig.id) {
           reportConfig.queryId = queryId;
           await postReportConfig(auth?.user?.access_token, reportConfig);
@@ -369,10 +404,13 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const handleSetQueryConfig = (
     update: (prevQueryConfig: QueryConfig | undefined) => Partial<QueryConfig>,
   ): void => {
-    setQueryConfig((prevQueryConfig) => ({
-      ...prevQueryConfig!,
-      ...update(prevQueryConfig),
-    }));
+    setQueryConfig((prevQueryConfig) => {
+      const currentQueryConfig = createQueryConfig(prevQueryConfig);
+      return createQueryConfig({
+        ...currentQueryConfig,
+        ...update(currentQueryConfig),
+      });
+    });
   };
 
   const handleWidgetChange = (update: Partial<Widget>): void => {
@@ -385,6 +423,24 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   ): void => {
     handleWidgetChange({ [attributeName]: isSelected });
   };
+
+  const supportsQueryParameter = supportsTabComponentQueryParameter(
+    tab?.componentType,
+    tab?.componentSubType,
+  );
+
+  useEffect(() => {
+    if (
+      widget?.usesQueryParameter &&
+      tab?.componentType &&
+      !supportsQueryParameter
+    ) {
+      setWidget((prevWidget) => ({
+        ...prevWidget,
+        usesQueryParameter: false,
+      }));
+    }
+  }, [widget?.usesQueryParameter, tab?.componentType, supportsQueryParameter]);
 
   function getWidgetType(tab: Tab): string {
     if (tab.componentSubType) {
@@ -435,13 +491,15 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                         handleCheckboxChange('showName', isSelected)
                       }
                     />
-                    <CheckBox
-                      label="Entität URL Param aktivieren"
-                      value={widget?.usesQueryParameter ?? false}
-                      handleSelectChange={(isSelected): void =>
-                        handleCheckboxChange('usesQueryParameter', isSelected)
-                      }
-                    />
+                    {supportsQueryParameter && (
+                      <CheckBox
+                        label="Entität URL Param aktivieren"
+                        value={widget?.usesQueryParameter ?? false}
+                        handleSelectChange={(isSelected): void =>
+                          handleCheckboxChange('usesQueryParameter', isSelected)
+                        }
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col w-full pb-2">

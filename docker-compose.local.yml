@@ -12,7 +12,7 @@ services:
     # only for development: Import realm on startup
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import/
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"]
   postgres-dev:
     container_name: postgres-dev
     image: postgres:16

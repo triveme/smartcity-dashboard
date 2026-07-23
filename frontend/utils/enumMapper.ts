@@ -4,6 +4,7 @@ import {
   authDataTypeEnum,
   chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
+  extendedTimeframeEnum,
   menuArrowDirectionEnum,
   projectStatusEnum,
   roundingModeEnum,
@@ -65,6 +66,17 @@ export const timeFrameWithoutLiveWithExakt = [
   { label: 'Jahr', value: timeframeEnum.year },
   { label: '2 Jahre', value: timeframeEnum.year2 },
   { label: '3 Jahre', value: timeframeEnum.year3 },
+];
+
+export const extendedTimeFrameValues = [
+  { label: '', value: '' },
+  { label: '1 Tag', value: extendedTimeframeEnum.day },
+  { label: '2 Tage', value: extendedTimeframeEnum.day2 },
+  { label: '3 Tage', value: extendedTimeframeEnum.day3 },
+  { label: '1 Woche', value: extendedTimeframeEnum.week },
+  { label: '2 Wochen', value: extendedTimeframeEnum.week2 },
+  { label: '3 Wochen', value: extendedTimeframeEnum.week3 },
+  { label: 'Monat', value: timeframeEnum.month },
 ];
 
 export const mapComponentSubTypes = [
@@ -235,10 +247,18 @@ export const dataPlatformTypes = [
   { label: 'Cosma21', value: authDataTypeEnum.usi },
   { label: 'Intern', value: authDataTypeEnum.internal },
   { label: 'SQL', value: authDataTypeEnum.sql },
+  { label: 'PlanBar', value: authDataTypeEnum.planbar },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const tabComponentQueryParamWhitelist: any = {
+const tabComponentTypesWithSubTypeSelection = new Set([
+  tabComponentTypeEnum.diagram,
+  tabComponentTypeEnum.information,
+  tabComponentTypeEnum.slider,
+]);
+
+export const tabComponentQueryParamWhitelist: Partial<
+  Record<tabComponentTypeEnum, string[]>
+> = {
   [tabComponentTypeEnum.default]: [],
   [tabComponentTypeEnum.information]: [
     tabComponentTypeEnum.default,
@@ -252,6 +272,7 @@ export const tabComponentQueryParamWhitelist: any = {
     tabComponentSubTypeEnum.stageableChart,
     tabComponentSubTypeEnum.barChart,
     tabComponentSubTypeEnum.barChartHorizontal,
+    tabComponentSubTypeEnum.measurement,
     // tabComponentSubTypeEnum.table,
     tabComponentSubTypeEnum.lineChart,
   ],
@@ -260,4 +281,31 @@ export const tabComponentQueryParamWhitelist: any = {
     tabComponentSubTypeEnum.coloredSlider,
   ],
   [tabComponentTypeEnum.value]: [tabComponentSubTypeEnum.default],
+  [tabComponentTypeEnum.combinedComponent]: [tabComponentSubTypeEnum.default],
+};
+
+export const supportsTabComponentQueryParameter = (
+  componentType?: string,
+  componentSubType?: string,
+): boolean => {
+  if (!componentType) {
+    return false;
+  }
+
+  const typedComponentType = componentType as tabComponentTypeEnum;
+  const supportedSubTypes = tabComponentQueryParamWhitelist[typedComponentType];
+
+  if (!supportedSubTypes) {
+    return false;
+  }
+
+  if (!tabComponentTypesWithSubTypeSelection.has(typedComponentType)) {
+    return true;
+  }
+
+  if (!componentSubType) {
+    return true;
+  }
+
+  return supportedSubTypes.includes(componentSubType);
 };

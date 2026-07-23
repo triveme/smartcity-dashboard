@@ -126,6 +126,7 @@ export async function getTab(
     mapAllowPopups: true,
     mapAllowScroll: true,
     mapAllowZoom: true,
+    mapClusterAtMaxZoom: false,
     mapAllowFilter: false,
     mapAttributeForValueBased: 'distance',
     mapFormSizeFactor: 1,
@@ -276,6 +277,7 @@ export async function getTab(
     useDashboardFontColor: false,
     normalizeXAxisByTimeFramePeriod: false,
     usePreviousStageColorOnBoundary: false,
+    extendedTimeframe: 'week',
   };
 }
 

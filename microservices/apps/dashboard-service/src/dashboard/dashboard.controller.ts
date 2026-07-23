@@ -19,7 +19,9 @@ import { AuthenticatedRequest } from '@app/auth-helper';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { DashboardDataService } from './dashboard.data.service';
 import { CurrentAreaConfig, PaginatedResult } from '../widget/widget.model';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('dashboards')
 export class DashboardController {
   constructor(
