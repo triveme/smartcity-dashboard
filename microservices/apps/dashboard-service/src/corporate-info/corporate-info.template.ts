@@ -8,6 +8,7 @@ export const edagTemplate: NewCorporateInfo = {
   fontColor: '#FFF',
   headerFontColor: '#FFF',
   headerLogoId: null,
+  headerLogoLinkUrl: null,
   headerPrimaryColor: '#3d4760',
   headerSecondaryColor: '#3d4760',
   headerTitleAdmin: 'Smart Region Dashboard',

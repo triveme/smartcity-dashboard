@@ -36,6 +36,7 @@ type HeaderProps = {
   useColorTransitionHeader: boolean;
   fontColor: string;
   showLogo: boolean;
+  headerLogoLinkUrl?: string | null;
   dynamicHeadline: string;
   infoModalBackgroundColor: string;
   infoModalFontColor: string;
@@ -56,6 +57,7 @@ export default function Header(props: HeaderProps): ReactElement {
     useColorTransitionHeader,
     fontColor,
     showLogo,
+    headerLogoLinkUrl,
     dynamicHeadline,
     infoModalBackgroundColor,
     infoModalFontColor,
@@ -119,6 +121,8 @@ export default function Header(props: HeaderProps): ReactElement {
   // Determine marginLeft based on isPublic and isCollapsed states
   const marginLeftValue = isPublic ? '0' : isCollapsed ? '80px' : '256px';
   const tenantHomeHref = tenant ? `/${tenant}` : '/';
+  const configuredLogoHref = headerLogoLinkUrl?.trim();
+  const logoHref = configuredLogoHref ? configuredLogoHref : tenantHomeHref;
 
   const getBgColorForHeader = (): BackgroundColorStyle => {
     return useColorTransitionHeader
@@ -203,7 +207,7 @@ export default function Header(props: HeaderProps): ReactElement {
         {showLogo && (
           <div className="p-3">
             <Link
-              href={tenantHomeHref}
+              href={logoHref}
               aria-label="Zur Startseite des Mandanten"
             >
               <HeaderLogo />

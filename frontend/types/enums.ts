@@ -24,6 +24,16 @@ export enum timeframeEnum {
   year3 = 'year3',
 }
 
+export enum extendedTimeframeEnum {
+  day = 'day',
+  day2 = 'day2',
+  day3 = 'day3',
+  week = 'week',
+  week2 = 'week2',
+  week3 = 'week3',
+  month = 'month',
+}
+
 export enum visibilityEnum {
   public = 'public',
   protected = 'protected',
@@ -115,6 +125,7 @@ export enum authDataTypeEnum {
   usi = 'usi',
   internal = 'internal',
   sql = 'sql',
+  planbar = 'planbar',
 }
 
 export enum reportThresholdTriggerTypeEnum {

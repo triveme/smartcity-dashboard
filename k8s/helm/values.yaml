@@ -156,6 +156,20 @@ usi-platform-service:
       name: "trusted-ca-configmap"
   - secretRef:
       name: "postgresql-connection-secrets"
+## plan-bar-service config
+plan-bar-service:
+  enabled: true
+  service:
+    enabled: true
+  envFrom:
+  - configMapRef:
+      name: "plan-bar-service-configmap"
+  - configMapRef:
+      name: "postgresql-connection-configmap"
+  - configMapRef:
+      name: "trusted-ca-configmap"
+  - secretRef:
+      name: "postgresql-connection-secrets"
 ## data-translation-service config
 data-translation-service:
   enabled: true

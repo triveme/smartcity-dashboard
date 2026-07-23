@@ -1,8 +1,10 @@
 import axios from 'axios';
 
 import {
+  ChartData,
   CurrentAreaConfig,
   Widget,
+  WidgetDataRange,
   WidgetWithChildren,
   WidgetWithComponentTypes,
 } from '@/types';
@@ -326,6 +328,42 @@ export async function getWidgetWithChildrenById(
     return response.data;
   } catch (err) {
     console.error(err);
+    throw err;
+  }
+}
+
+export async function getWidgetDataForRange(
+  accessToken: string | undefined,
+  widgetId: string,
+  range: WidgetDataRange,
+): Promise<ChartData[]> {
+  const backendUrl = getBackendUrl();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    const response = await axios.post(
+      `${backendUrl}/widgets/range-data/${widgetId}`,
+      range,
+      { headers: headers },
+    );
+
+    return response.data;
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error(
+        'HTTP Error on getWidgetDataForRange:',
+        err.response?.status,
+      );
+      console.error('Response body:', err.response?.data);
+    }
     throw err;
   }
 }

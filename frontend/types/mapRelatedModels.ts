@@ -17,6 +17,7 @@ export interface BaseMapProps {
   mapAllowPopups?: boolean;
   mapStandardZoom?: number;
   mapAllowZoom?: boolean;
+  mapClusterAtMaxZoom?: boolean;
   mapAllowScroll?: boolean;
   mapAllowFilter?: boolean;
   mapFilterAttribute?: string;

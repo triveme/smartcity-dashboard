@@ -3,8 +3,9 @@ import { echarts } from '@/utils/Charts/echartsClient';
 import {
   buildCartesianGrid,
   buildChartExportToolbox,
-  buildHorizontalLegend,
+  buildBottomPlainLegend,
   buildHorizontalDataZoom,
+  buildTopScrollLegend,
   buildTimeXAxis,
   buildValueYAxis,
   getCartesianSplitNumber,
@@ -42,6 +43,7 @@ export type BuildLineChartOptionProps = {
   chartData: ChartData[];
   chartDateRepresentation?: string;
   chartHasAutomaticZoom?: boolean;
+  chartHoverSingleValue?: boolean;
   chartYAxisScale?: number;
   chartYAxisScaleChartMaxValue?: number;
   chartYAxisScaleChartMinValue?: number;
@@ -271,6 +273,7 @@ export function buildLineChartOption(
     axisTicksFontColor,
     chartData,
     chartDateRepresentation = 'Default',
+    chartHoverSingleValue = false,
     chartYAxisScale,
     decimalPlaces = 0,
     gridColor,
@@ -331,6 +334,14 @@ export function buildLineChartOption(
     ? LINE_CHART_LAYOUT.dataZoom.rightInsetWithToolbox
     : LINE_CHART_LAYOUT.dataZoom.rightInsetDefault;
   const isBottomLegend = showLegend && singleSelectLegend;
+  const topLegendLeftInset = 0;
+  const topLegendRightInset = allowImageDownload
+    ? CARTESIAN_CHART_LAYOUT.grid.rightWithToolbox
+    : CARTESIAN_CHART_LAYOUT.grid.rightDefault;
+  const topLegendWidth = Math.max(
+    containerWidth - topLegendLeftInset - topLegendRightInset,
+    1,
+  );
   const bottomLegendWidth = Math.max(
     containerWidth - dataZoomLeftInset - dataZoomRightInset,
     1,
@@ -392,27 +403,31 @@ export function buildLineChartOption(
       showLegend: showLegend && !isBottomLegend,
       yAxisLabel,
     }),
-    legend: buildHorizontalLegend({
-      allowImageDownload,
-      bottom: isBottomLegend ? LINE_CHART_LAYOUT.legend.bottom : undefined,
-      itemGap: isBottomLegend
-        ? CARTESIAN_CHART_LAYOUT.legend.itemGap
-        : undefined,
-      itemHeight: isBottomLegend
-        ? CARTESIAN_CHART_LAYOUT.legend.itemHeight
-        : undefined,
-      itemWidth: isBottomLegend
-        ? CARTESIAN_CHART_LAYOUT.legend.itemWidth
-        : undefined,
-      legendFontColor,
-      legendFontSize,
-      left: isBottomLegend ? dataZoomLeftInset : undefined,
-      position: isBottomLegend ? 'bottom' : 'top',
-      right: isBottomLegend ? dataZoomRightInset : undefined,
-      selected: props.legendSelectedMap,
-      showLegend,
-      width: isBottomLegend ? bottomLegendWidth : undefined,
-    }),
+    legend: isBottomLegend
+      ? buildBottomPlainLegend({
+          allowImageDownload,
+          bottom: LINE_CHART_LAYOUT.legend.bottom,
+          itemGap: CARTESIAN_CHART_LAYOUT.legend.itemGap,
+          itemHeight: CARTESIAN_CHART_LAYOUT.legend.itemHeight,
+          itemWidth: CARTESIAN_CHART_LAYOUT.legend.itemWidth,
+          legendFontColor,
+          legendFontSize,
+          left: dataZoomLeftInset,
+          right: dataZoomRightInset,
+          selected: props.legendSelectedMap,
+          showLegend,
+          width: bottomLegendWidth,
+        })
+      : buildTopScrollLegend({
+          allowImageDownload,
+          legendFontColor,
+          legendFontSize,
+          left: topLegendLeftInset,
+          right: topLegendRightInset,
+          selected: props.legendSelectedMap,
+          showLegend,
+          width: topLegendWidth,
+        }),
     toolbox: buildChartExportToolbox({
       allowImageDownload,
       exportBackgroundColor: props.exportBackgroundColor,
@@ -421,7 +436,7 @@ export function buildLineChartOption(
     }),
     tooltip: {
       show: showTooltip,
-      trigger: 'axis',
+      trigger: chartHoverSingleValue ? 'item' : 'axis',
       formatter: (params: unknown) =>
         generateTooltipContent(
           params,

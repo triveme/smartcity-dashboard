@@ -296,6 +296,7 @@ export default function DashboardPreview(
           isCustomMap={false}
           mapUnitsTexts={selectedTab?.mapUnitsTexts || []}
           mapSearch={selectedTab?.mapSearch || false}
+          mapClusterAtMaxZoom={selectedTab?.mapClusterAtMaxZoom ?? false}
           allowMapPopupWidthChange={
             selectedTab?.allowMapPopupWidthChange || false
           }

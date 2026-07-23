@@ -11,7 +11,9 @@ import {
 import { QueryService } from './query.service';
 import { NewQuery, Query } from '@app/postgres-db/schemas/query.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('queries')
 export class QueryController {
   constructor(private readonly service: QueryService) {}

@@ -167,6 +167,7 @@ export default function LineChartDynamic(
         filterTextColor={corporateInfo.lineChartFilterTextColor || '#1D2330'}
         decimalPlaces={tab?.decimalPlaces || 0}
         chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
+        chartHoverSingleValue={tab?.chartHoverSingleValue || false}
         playAnimation={hoveredFeature.current == ''}
         highlightedColor={tab?.dynamicHighlightColor || '#0347a6'}
         unhighlightedColor={tab?.dynamicUnhighlightColor || '#647D9E'}
@@ -176,6 +177,8 @@ export default function LineChartDynamic(
         setXByTimeFramePeriod={tab.normalizeXAxisByTimeFramePeriod}
         usesQueryParameter={usesQueryParameter}
         exportBackgroundColor={corporateInfo.widgetPrimaryColor}
+        extendedTimeframe={tab?.extendedTimeframe ?? ''}
+        extendedDateSelection={tab?.extendedDateSelection || false}
       />
     </>
   );

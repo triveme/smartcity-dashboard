@@ -1,4 +1,4 @@
-import { ChartData } from '@/types';
+import { ChartData, extendedTimeframeEnum, timeframeEnum } from '@/types';
 
 export type ChartDataProps = {
   labels: string[] | undefined;
@@ -13,6 +13,7 @@ export type ChartTimeProps = {
   setXByTimeFramePeriod?: boolean;
   timeFramePeriod?: string | null;
   authDataType?: string | null;
+  extendedTimeframe?: extendedTimeframeEnum | string;
 };
 
 export type ChartCartesianAxisProps = {
@@ -58,10 +59,12 @@ export type ChartFilterProps = {
 export type ChartInteractionProps = {
   allowZoom?: boolean;
   advancedDateSelection?: boolean;
+  chartHoverSingleValue?: boolean;
   showTooltip?: boolean;
   hideTimeDetails?: boolean;
   playAnimation?: boolean;
   isShownInMapModal?: boolean;
+  extendedDateSelection?: boolean;
 };
 
 export type ChartHighlightProps = {

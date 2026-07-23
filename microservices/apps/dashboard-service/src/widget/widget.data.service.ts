@@ -1,5 +1,5 @@
 import { Parser } from '@json2csv/plainjs';
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
 import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
 import { QueryBatch } from 'apps/ngsi-service/src/ngsi.service';
@@ -13,8 +13,11 @@ import { InternalDataService } from 'apps/internal-data-service/src/internal-dat
 import { UsiPlaformService } from 'apps/usi-platform-service/src/usi-platform.service';
 import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
 import { CurrentAreaConfig } from './widget.model';
+import type { ChartData } from 'apps/data-translation-service/src/data-translation.service';
+import { PopulateChartService } from 'apps/data-translation-service/src/populate/populate-chart.service';
 import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
+import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
 
 @Injectable()
 export class WidgetDataService {
@@ -28,7 +31,89 @@ export class WidgetDataService {
     private readonly orchideoConnectService: OrchideoConnectService,
     private readonly usiPlatformService: UsiPlaformService,
     private readonly tabService: TabService,
+    private readonly populateChartService: PopulateChartService,
+    private readonly planbarDataService: PlanBarDataService,
   ) {}
+
+  async getRangeData(
+    widgetId: string,
+    range: { from: string; to: string },
+    usesQueryParameter = false,
+  ): Promise<ChartData[]> {
+    try {
+      if (!range?.from || !range?.to) {
+        throw new HttpException(
+          'Range body must contain valid from and to dates where from is before to',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const fromDate = new Date(range.from);
+      const toDate = new Date(range.to);
+
+      if (
+        Number.isNaN(fromDate.getTime()) ||
+        Number.isNaN(toDate.getTime()) ||
+        fromDate > toDate
+      ) {
+        throw new HttpException(
+          'Range body must contain valid from and to dates where from is before to',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const queryWithAllInfos =
+        await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(widgetId);
+
+      if (!queryWithAllInfos) {
+        throw new HttpException(
+          'No query configuration found for widget',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const queryBatch: QueryBatch = {
+        queryIds: [queryWithAllInfos.query.id],
+        query_config: {
+          ...queryWithAllInfos.query_config,
+          timeframe: 'user_defined',
+          dataStartDate: fromDate,
+          dataUntilDate: toDate,
+        },
+        data_source: queryWithAllInfos.data_source,
+        auth_data: queryWithAllInfos.auth_data,
+      };
+
+      if (queryWithAllInfos.auth_data.type === 'ngsi-ld') {
+        const queryData =
+          await this.ngsiDataService.getDataFromDataSource(queryBatch);
+
+        return this.populateChartService.normalizeHistoricalQueryData(
+          queryData,
+          queryBatch.query_config,
+          usesQueryParameter,
+        );
+      } else {
+        throw new HttpException(
+          `Range data is not supported for data source type: ${queryWithAllInfos.auth_data.type}`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      console.error(
+        `Failed to retrieve NGSI-LD range data for widget ${widgetId}`,
+        error,
+      );
+      throw new HttpException(
+        'Failed to retrieve and normalize range data from the NGSI-LD data source',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   async downloadWidgetData(
     widgetId: string,
@@ -159,6 +244,9 @@ export class WidgetDataService {
             rawData = await this.usiPlatformService.getDataFromDataSource({
               ...queryBatch,
             });
+          } else if (queryBatch.auth_data.type === 'planbar') {
+            rawData =
+              await this.planbarDataService.getDataFromDataSource(queryBatch);
           }
 
           // Ensure rawData is an array
@@ -304,6 +392,9 @@ export class WidgetDataService {
       } else if (queryBatch.auth_data.type === 'sql') {
         newData = await this.sqlViewService.getDataFromDataSource(queryBatch);
         await this.sqlViewService.updateFiwareQueries();
+      } else if (queryBatch.auth_data.type === 'planbar') {
+        newData =
+          await this.planbarDataService.getDataFromDataSource(queryBatch);
       }
 
       if (newData) {

@@ -31,7 +31,10 @@ import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
 import DashboardWidget from './DashboardWidget';
-import { isTabOfTypeCombinedWidget } from '@/utils/tabTypeHelper';
+import {
+  isTabOfTypeCombinedWidget,
+  isTabWithoutRuntimeData,
+} from '@/utils/tabTypeHelper';
 import {
   combineQueryData,
   combineWidgetAttributes,
@@ -114,11 +117,7 @@ export default async function DashboardTab(
     tabComponentTypeEnum.combinedComponent,
   ].includes(tab.componentType as tabComponentTypeEnum);
 
-  const isValidWithoutTabData = [
-    tabComponentTypeEnum.image,
-    tabComponentTypeEnum.iframe,
-    tabComponentTypeEnum.pharmacy,
-  ].includes(tab.componentType as tabComponentTypeEnum);
+  const isValidWithoutTabData = isTabWithoutRuntimeData(tab);
 
   const hasCombinedWidgetData =
     !isTabOfTypeCombinedWidget(tab) ||
@@ -362,6 +361,7 @@ export default async function DashboardTab(
               filterTextColor={ciColors.lineChartFilterTextColor || '#1D2330'}
               decimalPlaces={tab?.decimalPlaces || 0}
               chartHasAutomaticZoom={tab?.chartHasAutomaticZoom}
+              chartHoverSingleValue={tab?.chartHoverSingleValue || false}
               chartAggregationMode={tab?.chartAggregationMode}
               timeFramePeriod={tab?.timeframe || undefined}
               authDataType={tab?.authDataType || undefined}
@@ -370,6 +370,8 @@ export default async function DashboardTab(
               }
               usesQueryParameter={usesQueryParameter}
               exportBackgroundColor={ciColors.widgetPrimaryColor}
+              extendedTimeframe={tab?.extendedTimeframe ?? ''}
+              extendedDateSelection={tab?.extendedDateSelection || false}
             />
           )}
           {tab.componentSubType ===
@@ -553,6 +555,7 @@ export default async function DashboardTab(
                   ? tabData.chartData[0].values
                   : []
               }
+              chartData={tabData?.chartData || []}
               timeValues={
                 tab.chartLabels && tab.chartLabels.length > 0
                   ? tab.chartLabels
@@ -630,6 +633,7 @@ export default async function DashboardTab(
                 ]
               }
               menuHoverColor={ciColors.menuHoverColor || '#99a4c3ff'}
+              usesQueryParameter={usesQueryParameter}
             />
           )}
           {tab.componentSubType === tabComponentSubTypeEnum.stageableChart && (
@@ -941,6 +945,7 @@ export default async function DashboardTab(
                   }
                   mapType={tab.componentSubType || ''}
                   mapSearch={tab.mapSearch}
+                  mapClusterAtMaxZoom={tab.mapClusterAtMaxZoom ?? false}
                   combinedQueryData={combinedQueryData?.filteredData}
                   mapAllowLegend={tab.mapAllowLegend || false}
                   mapLegendValues={

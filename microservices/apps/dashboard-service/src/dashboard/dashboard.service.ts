@@ -66,6 +66,7 @@ export type MapObject = {
 export type TabWithTimeframe = Tab & {
   timeframe?: string | null;
   authDataType?: string | null;
+  extendedDateSelection?: boolean | null;
 };
 export type TabWithContent = TabWithTimeframe & { query?: Query } & {
   dataModel: DataModel;

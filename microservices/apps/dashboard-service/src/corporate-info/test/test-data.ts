@@ -25,6 +25,7 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     fontColor: '#FFF',
     headerFontColor: '#FFF',
     headerLogoId: logoId ?? null,
+    headerLogoLinkUrl: null,
     headerPrimaryColor: '#333',
     headerSecondaryColor: '#333',
     headerTitleAdmin: 'header_title_admin',

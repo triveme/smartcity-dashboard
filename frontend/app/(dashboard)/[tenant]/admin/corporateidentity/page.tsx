@@ -449,7 +449,7 @@ export default function CorporateIdentity(): ReactElement {
       // COMPONENT - VALUE
       updateState('wertFontSize', corporateInfo.wertFontSize);
       updateState('wertUnitFontSize', corporateInfo.wertUnitFontSize);
-      updateState('wertFontColor', corporateInfo.wertFontSize);
+      updateState('wertFontColor', corporateInfo.wertFontColor);
 
       // COMPONENT - LISTVIEW
       updateState(

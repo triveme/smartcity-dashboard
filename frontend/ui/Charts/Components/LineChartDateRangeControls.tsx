@@ -1,9 +1,10 @@
 'use client';
 
-import { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import WizardLabel from '@/ui/WizardLabel';
+import UniversalButton from '@/ui/Buttons/UniversalButton';
 
 type DateRange = {
   min: Date;
@@ -18,6 +19,10 @@ type LineChartDateRangeControlsProps = {
   onMaxDateChange: (date: Date | null) => void;
   filterColor?: string;
   filterTextColor?: string;
+  extendedDateSelection: boolean;
+  minDateBeforeCurrentPeriod: Date | null;
+  maxDateBeforeCurrentPeriod: Date | null;
+  onLoadData: () => Promise<void>;
 };
 
 const DATE_PICKER_PORTAL_ID = 'line-chart-date-range-picker-portal';
@@ -33,6 +38,10 @@ export default function LineChartDateRangeControls(
     onMaxDateChange,
     filterColor = '#F1B434',
     filterTextColor = '#FFFFFF',
+    extendedDateSelection,
+    minDateBeforeCurrentPeriod,
+    maxDateBeforeCurrentPeriod,
+    onLoadData,
   } = props;
 
   const inputStyle = {
@@ -48,10 +57,26 @@ export default function LineChartDateRangeControls(
         <WizardLabel label="Startdatum" />
         <div className="flex h-14 items-center">
           <DatePicker
-            startDate={minDate}
-            endDate={maxDate}
+            startDate={
+              extendedDateSelection &&
+              minDateBeforeCurrentPeriod != null &&
+              minDateBeforeCurrentPeriod < minDate
+                ? minDateBeforeCurrentPeriod
+                : minDate
+            }
+            endDate={
+              extendedDateSelection && minDateBeforeCurrentPeriod != null
+                ? maxDateBeforeCurrentPeriod
+                : maxDate
+            }
             selectsStart
-            selected={minDate}
+            selected={
+              extendedDateSelection &&
+              minDateBeforeCurrentPeriod != null &&
+              minDateBeforeCurrentPeriod < minDate
+                ? minDateBeforeCurrentPeriod
+                : minDate
+            }
             onChange={onMinDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
@@ -62,20 +87,36 @@ export default function LineChartDateRangeControls(
                 style={inputStyle}
               />
             }
-            dateFormat="yyyy-dd-MM"
+            dateFormat="yyyy-MM-dd"
             maxDate={fullDateRange.max}
-            minDate={fullDateRange.min}
+            minDate={extendedDateSelection ? undefined : fullDateRange.min}
           />
         </div>
       </div>
-      <div className="flex min-w-[260px] flex-none items-center gap-2">
+      <div className="flex min-w-[260px] flex-none mr-4 items-center gap-2">
         <WizardLabel label="Enddatum" />
         <div className="flex h-14 items-center">
           <DatePicker
-            startDate={minDate}
-            endDate={maxDate}
+            startDate={
+              extendedDateSelection &&
+              minDateBeforeCurrentPeriod != null &&
+              minDateBeforeCurrentPeriod < minDate
+                ? minDateBeforeCurrentPeriod
+                : minDate
+            }
+            endDate={
+              extendedDateSelection && minDateBeforeCurrentPeriod != null
+                ? maxDateBeforeCurrentPeriod
+                : maxDate
+            }
             selectsEnd
-            selected={maxDate}
+            selected={
+              extendedDateSelection &&
+              minDateBeforeCurrentPeriod != null &&
+              minDateBeforeCurrentPeriod < minDate
+                ? maxDateBeforeCurrentPeriod
+                : maxDate
+            }
             onChange={onMaxDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
@@ -86,12 +127,15 @@ export default function LineChartDateRangeControls(
                 style={inputStyle}
               />
             }
-            dateFormat="yyyy-dd-MM"
+            dateFormat="yyyy-MM-dd"
             maxDate={fullDateRange.max}
-            minDate={fullDateRange.min}
+            minDate={extendedDateSelection ? undefined : fullDateRange.min}
           />
         </div>
       </div>
+      {extendedDateSelection && (
+        <UniversalButton handleClick={onLoadData} label="Historische Daten" />
+      )}
     </div>
   );
 }

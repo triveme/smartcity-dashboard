@@ -12,7 +12,9 @@ import {
 import { TabService } from './tab.service';
 import { NewTab, Tab } from '@app/postgres-db/schemas/dashboard.tab.schema';
 import { Public } from '@app/auth-helper/PublicDecorator';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('tabs')
 export class TabController {
   constructor(private readonly service: TabService) {}

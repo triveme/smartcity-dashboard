@@ -31,6 +31,7 @@ import QueryOrchideoWizard from './QueryOrchideoWizard';
 import QueryUsiWizard from './QueryUsiWizard';
 import QueryInternalDataWizard from './QueryInternalDataWizard';
 import QuerySqlWizard from './QuerySqlWizard';
+import QueryPlanBarWizard from './QueryPlanBarWizard';
 
 type QueryConfigWizardProps = {
   widgetType?: string;
@@ -91,6 +92,10 @@ export default function QueryConfigWizard(
 
   const handleCheckboxChange = (isSelected: boolean): void => {
     handleQueryConfigChange({ isReporting: isSelected });
+  };
+
+  const handleExtendedTimeframeChange = (isSelected: boolean) => {
+    handleQueryConfigChange({ extendedDateSelection: isSelected });
   };
 
   const handleRoundingModeChange = (isSelected: boolean): void => {
@@ -287,6 +292,20 @@ export default function QueryConfigWizard(
                   : false
               }
             />
+          ) : datasourceOrigin === 'planbar' ? (
+            <QueryPlanBarWizard
+              queryConfig={queryConfig}
+              setQueryConfig={setQueryConfig}
+              iconColor={iconColor}
+              borderColor={borderColor}
+              backgroundColor={backgroundColor}
+              hoverColor={hoverColor}
+              isSingleWidget={
+                widgetType && singleSelectWidgetTypes.includes(widgetType)
+                  ? true
+                  : false
+              }
+            />
           ) : null}
 
           {/* Aggregation for timeseries data */}
@@ -465,6 +484,19 @@ export default function QueryConfigWizard(
               )}
             </div>
           ) : null}
+          {(widgetType === tabComponentSubTypeEnum.lineChart ||
+            widgetType === tabComponentSubTypeEnum.lineChartDynamic) &&
+            datasourceOrigin === 'ngsi-ld' && (
+              <>
+                <div className="flex flex-col w-full pb-2 mt-4">
+                  <CheckBox
+                    label="Erweiterte Zeitbereichsauswahl"
+                    value={queryConfig?.extendedDateSelection ?? false}
+                    handleSelectChange={handleExtendedTimeframeChange}
+                  />
+                </div>
+              </>
+            )}
           {showRoundingOptions && (
             <div className="flex flex-col w-full pb-2 mt-4">
               <CheckBox

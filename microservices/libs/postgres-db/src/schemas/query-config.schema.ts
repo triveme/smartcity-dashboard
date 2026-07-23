@@ -43,6 +43,7 @@ export const queryConfigs = pgTable('query_config', {
     .default(sql`now()`),
   dataStartDate: timestamp('data_start_date', { mode: 'date', precision: 6 }),
   dataUntilDate: timestamp('data_until_date', { mode: 'date', precision: 6 }),
+  extendedDateSelection: boolean('extended_date_selection'),
 });
 
 export const queryConfigsRelations = relations(queryConfigs, ({ one }) => ({

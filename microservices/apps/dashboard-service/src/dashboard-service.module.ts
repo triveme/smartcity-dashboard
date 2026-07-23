@@ -15,7 +15,7 @@ import { AuthDataService } from './auth-data/auth-data.service';
 import { AuthDataController } from './auth-data/auth-data.controller';
 import { AuthDataModule } from './auth-data/auth-data.module';
 import { JwtModule } from '@nestjs/jwt';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from '@app/auth-helper/AuthGuard';
 import { DashboardToTenantModule } from './dashboard-to-tenant/dashboard-to-tenant.module';
 import { WidgetToTenantModule } from './widget-to-tenant/widget-to-tenant.module';
@@ -24,6 +24,7 @@ import { AuthHelperUtility } from '@app/auth-helper';
 import { LoggerModule } from './logging/logger.module';
 import { GeneralSettingsModule } from './general-settings/general-settings.module';
 import { ConfigModule } from '@nestjs/config';
+import { NoStoreCacheInterceptor } from './http-cache/no-store-cache.interceptor';
 
 @Module({
   imports: [
@@ -58,6 +59,10 @@ import { ConfigModule } from '@nestjs/config';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: NoStoreCacheInterceptor,
     },
     AuthHelperUtility,
   ],

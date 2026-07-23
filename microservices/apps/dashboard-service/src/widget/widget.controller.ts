@@ -12,6 +12,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import type { ChartData } from 'apps/data-translation-service/src/data-translation.service';
 import {
   CurrentAreaConfig,
   PaginatedResult,
@@ -27,7 +28,9 @@ import { Public } from '@app/auth-helper/PublicDecorator';
 import { ValidateWidgetWithChildrenPipe } from '../validators/widgetWithChildren-validator.pipe';
 import { WidgetDataService } from './widget.data.service';
 import { WidgetService } from './widget.service';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('widgets')
 export class WidgetController {
   constructor(
@@ -240,6 +243,22 @@ export class WidgetController {
     return this.widgetDataService.downloadWidgetData(
       widgetId,
       parsedCurrAreaConfig,
+    );
+  }
+  @Public()
+  @Post('/range-data/:widgetId')
+  async getRangeData(
+    @Param('widgetId', new ParseUUIDPipe({ version: '4' })) widgetId: string,
+    @Body() range: { from: string; to: string },
+    @Req() request: AuthenticatedRequest,
+  ): Promise<ChartData[]> {
+    const roles = request.roles ?? [];
+    const widget = await this.service.getById(widgetId, roles);
+
+    return this.widgetDataService.getRangeData(
+      widgetId,
+      range,
+      widget.usesQueryParameter ?? false,
     );
   }
 }

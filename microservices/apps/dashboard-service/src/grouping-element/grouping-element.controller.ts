@@ -18,7 +18,9 @@ import {
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { GroupingElementWithChildren } from './grouping-element.repo';
 import { AuthenticatedRequest } from '@app/auth-helper';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('groupingElements')
 export class GroupingElementController {
   constructor(private readonly service: GroupingElementService) {}

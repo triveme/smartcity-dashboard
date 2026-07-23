@@ -48,6 +48,13 @@ import { QueryConfigService as UsiQueryConfigService } from 'apps/usi-platform-s
 import { AuthService as UsiAuthService } from 'apps/usi-platform-service/src/auth/auth.service';
 import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
 import { TransformationService as SqlTransformationService } from 'apps/sql-view-service/src/transformation/transformation.service';
+import { PopulateChartService } from 'apps/data-translation-service/src/populate/populate-chart.service';
+import { DataTranslationRepo } from 'apps/data-translation-service/src/data-translation.repo';
+import { PopulateMapService } from 'apps/data-translation-service/src/populate/populate-map.service';
+import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
+import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
+import { AuthService as PlanBarAuthService } from 'apps/plan-bar-service/src/auth/auth.service';
+import { PlanBarService } from 'apps/plan-bar-service/src/data/data.service';
 
 @Module({
   imports: [HttpModule],
@@ -94,6 +101,13 @@ import { TransformationService as SqlTransformationService } from 'apps/sql-view
     UsiAuthService,
     SqlViewService,
     SqlTransformationService,
+    PopulateChartService,
+    DataTranslationRepo,
+    PopulateMapService,
+    RoundingService,
+    PlanBarService,
+    PlanBarDataService,
+    PlanBarAuthService,
   ],
   controllers: [WidgetController],
 })

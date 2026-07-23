@@ -124,6 +124,7 @@ export default async function RootLayout(props: {
                   useColorTransitionHeader={ciColors.useColorTransitionHeader}
                   fontColor={ciColors.headerFontColor}
                   showLogo={ciColors.showHeaderLogo}
+                  headerLogoLinkUrl={ciColors.headerLogoLinkUrl}
                   dynamicHeadline="Smart Region Dashboard"
                 />
               </div>

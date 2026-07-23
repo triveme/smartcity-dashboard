@@ -14,6 +14,7 @@ import { DataService as InternlDataService } from '../../../internal-data-servic
 import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { CurrentAreaConfig } from '../widget/widget.model';
+import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
 
 @Injectable()
 export class DashboardDataService {
@@ -27,6 +28,7 @@ export class DashboardDataService {
     private readonly panelRepo: PanelRepo,
     private readonly tabService: TabService,
     private readonly internalDataService: InternlDataService,
+    private readonly planbarDataService: PlanBarDataService,
   ) {}
 
   async downloadDashboardData(
@@ -173,6 +175,10 @@ export class DashboardDataService {
             console.log('DOWNLOAD INTERNAL CONNECT DATA');
             rawData =
               await this.internalDataService.getDataFromDataSource(queryBatch);
+          } else if (queryBatch.auth_data.type === 'planbar') {
+            rawData =
+              await this.planbarDataService.getDataFromDataSource(queryBatch);
+            console.error('Planbar data', rawData);
           }
 
           // Ensure rawData is an array

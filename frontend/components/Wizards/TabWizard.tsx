@@ -14,6 +14,7 @@ import {
   combinedComponentLayoutEnum,
   aggregationEnum,
   componentLayoutEnum,
+  extendedTimeframeEnum,
 } from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
@@ -34,6 +35,7 @@ import {
   interactiveComponentSubTypes,
   aggregationOptions,
   tabComponentQueryParamWhitelist,
+  extendedTimeFrameValues,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -124,7 +126,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     resolveMapZoomSetting(
       tab?.mapMaxZoom,
       tab?.componentSubType,
-      20,
+      18,
       CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
     ),
   );
@@ -132,7 +134,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     resolveMapZoomSetting(
       tab?.mapMinZoom,
       tab?.componentSubType,
-      10,
+      0,
       CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
     ),
   );
@@ -141,7 +143,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     resolveMapZoomSetting(
       tab?.mapStandardZoom,
       tab?.componentSubType,
-      15,
+      13,
       CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
     ),
   );
@@ -192,6 +194,12 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
           item.tab.componentSubType !== tabComponentSubTypeEnum.combinedMap,
       )
       .map((item) => item.widget) || [];
+  const selectableCombinedWidgets = (allWidgets || []).filter(
+    (widget) => usesQueryParameter || widget.usesQueryParameter !== true,
+  );
+  const selectableCombinedMapWidgets = mapWidgetsArray.filter(
+    (widget) => usesQueryParameter || widget.usesQueryParameter !== true,
+  );
 
   const handleAddWidget = (): void => {
     setCombinedMapWidgetsId([...combinedMapWidgetsId, '']);
@@ -315,7 +323,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       resolveMapZoomSetting(
         tab?.mapMaxZoom,
         tab?.componentSubType,
-        20,
+        18,
         CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
       ),
     );
@@ -323,7 +331,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       resolveMapZoomSetting(
         tab?.mapMinZoom,
         tab?.componentSubType,
-        10,
+        0,
         CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
       ),
     );
@@ -331,7 +339,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
       resolveMapZoomSetting(
         tab?.mapStandardZoom,
         tab?.componentSubType,
-        15,
+        13,
         CUSTOM_MAP_STANDARD_ZOOM_OFFSET_DEFAULT,
       ),
     );
@@ -498,9 +506,11 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     usesQueryParameter
                       ? chartComponentSubTypes
                           .filter((x) =>
-                            tabComponentQueryParamWhitelist[
-                              tabComponentTypeEnum.diagram
-                            ].includes(x.value),
+                            (
+                              tabComponentQueryParamWhitelist[
+                                tabComponentTypeEnum.diagram
+                              ] ?? []
+                            ).includes(x.value),
                           )
                           .map((option) => option.label)
                       : chartComponentSubTypes.map((option) => option.label)
@@ -883,6 +893,37 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       />
                     </div>
                   )}
+                  {queryConfig.extendedDateSelection && (
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Erweiterte Zeitbereich" />
+                      <WizardDropdownSelection
+                        currentValue={
+                          extendedTimeFrameValues.find(
+                            (option) => option.value === tab?.extendedTimeframe,
+                          )?.label || ''
+                        }
+                        selectableValues={extendedTimeFrameValues.map(
+                          (option) => option.label,
+                        )}
+                        onSelect={(label: string | number): void => {
+                          const enumValue = extendedTimeFrameValues.find(
+                            (option) => option.label === label,
+                          )?.value;
+
+                          console.log('extendedTimeframe : ', enumValue);
+
+                          handleTabChange({
+                            extendedTimeframe:
+                              enumValue as extendedTimeframeEnum,
+                          });
+                        }}
+                        error={errors && errors.timeValueError}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                  )}
                   <div className="w-full flex flex-col">
                     <div className="flex w-full items-center">
                       <div className="min-w-[220px]">
@@ -938,8 +979,12 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                         label=" Filter"
                       />
                     </div>
-                    {tab.componentSubType ===
-                      tabComponentSubTypeEnum.barChartDynamic && (
+                    {(tab.componentSubType ===
+                      tabComponentSubTypeEnum.barChartDynamic ||
+                      tab.componentSubType ===
+                        tabComponentSubTypeEnum.lineChart ||
+                      tab.componentSubType ===
+                        tabComponentSubTypeEnum.lineChartDynamic) && (
                       <div className="flex w-full items-center">
                         <div className="min-w-[220px]">
                           <WizardLabel label="Nur einzelne Werte beim Hover anzeigen?" />
@@ -1430,9 +1475,11 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     usesQueryParameter
                       ? sliderComponentSubTypes
                           .filter((x) =>
-                            tabComponentQueryParamWhitelist[
-                              tabComponentTypeEnum.slider
-                            ].includes(x.value),
+                            (
+                              tabComponentQueryParamWhitelist[
+                                tabComponentTypeEnum.slider
+                              ] ?? []
+                            ).includes(x.value),
                           )
                           .map((option) => option.label)
                       : sliderComponentSubTypes.map((option) => option.label)
@@ -1596,9 +1643,11 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     usesQueryParameter
                       ? informationComponentSubTypes
                           .filter((x) =>
-                            tabComponentQueryParamWhitelist[
-                              tabComponentTypeEnum.information
-                            ].includes(x.value),
+                            (
+                              tabComponentQueryParamWhitelist[
+                                tabComponentTypeEnum.information
+                              ] ?? []
+                            ).includes(x.value),
                           )
                           .map((option) => option.label)
                       : informationComponentSubTypes.map(
@@ -2872,40 +2921,57 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       )}
                     </div>
                     <HorizontalDivider />
-                    <div className="flex mt-10 w-full pb-2 items-center">
+                    <div className="flex flex-wrap mt-10 w-full pb-2 items-center gap-4">
                       <WizardLabel label="Maximaler Zoom" />
-                      <WizardTextfield
-                        value={maxZoom}
-                        onChange={(value: string | number): void => {
-                          handleTabChange({ mapMaxZoom: value as number });
-                          setMaxZoom(value as number);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
+                      <div className="w-24 shrink-0">
+                        <WizardTextfield
+                          value={maxZoom}
+                          onChange={(value: string | number): void => {
+                            handleTabChange({ mapMaxZoom: value as number });
+                            setMaxZoom(value as number);
+                          }}
+                          isNumeric={true}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
                       <WizardLabel label="Minimaler Zoom" />
-                      <WizardTextfield
-                        value={minZoom}
-                        onChange={(value: string | number): void => {
-                          handleTabChange({ mapMinZoom: value as number });
-                          setMinZoom(value as number);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
+                      <div className="w-24 shrink-0">
+                        <WizardTextfield
+                          value={minZoom}
+                          onChange={(value: string | number): void => {
+                            handleTabChange({ mapMinZoom: value as number });
+                            setMinZoom(value as number);
+                          }}
+                          isNumeric={true}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
                       <WizardLabel label="Standard Zoom" />
-                      <WizardTextfield
-                        value={standardZoom}
-                        onChange={(value: string | number): void => {
-                          handleTabChange({ mapStandardZoom: value as number });
-                          setStandardZoom(value as number);
-                        }}
-                        isNumeric={true}
-                        borderColor={borderColor}
-                        backgroundColor={backgroundColor}
-                      />
+                      <div className="w-24 shrink-0">
+                        <WizardTextfield
+                          value={standardZoom}
+                          onChange={(value: string | number): void => {
+                            handleTabChange({
+                              mapStandardZoom: value as number,
+                            });
+                            setStandardZoom(value as number);
+                          }}
+                          isNumeric={true}
+                          borderColor={borderColor}
+                          backgroundColor={backgroundColor}
+                        />
+                      </div>
+                      <div className="whitespace-nowrap shrink-0">
+                        <WizardSelectBox
+                          checked={tab?.mapClusterAtMaxZoom || false}
+                          onChange={(value: boolean): void =>
+                            handleTabChange({ mapClusterAtMaxZoom: value })
+                          }
+                          label="Pins bei max. Zoom clustern"
+                        />
+                      </div>
                     </div>
                     {tab.componentSubType ===
                       tabComponentSubTypeEnum.custom_map && (
@@ -3036,8 +3102,8 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                               }
                               onClear={(): void => handleWidgetClear(index)}
                               options={
-                                mapWidgetsArray?.length
-                                  ? mapWidgetsArray
+                                selectableCombinedMapWidgets.length
+                                  ? selectableCombinedMapWidgets
                                       .filter(
                                         (widget) =>
                                           !combinedMapWidgetsId.includes(
@@ -3611,19 +3677,23 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     >
                       <SearchableDropdown
                         value={
+                          selectableCombinedWidgets.find(
+                            (widget) => widget.id === widgetId,
+                          )?.name ||
                           allWidgets?.find((widget) => widget.id === widgetId)
-                            ?.name || ''
+                            ?.name ||
+                          ''
                         }
                         onSelect={(selectedName): void => {
-                          const selectedWidget = allWidgets?.find(
+                          const selectedWidget = selectableCombinedWidgets.find(
                             (widget) => widget.name === selectedName,
                           );
                           updateWidget(index, selectedWidget?.id || '');
                         }}
                         onClear={(): void => updateWidget(index, '')}
                         options={
-                          allWidgets?.length
-                            ? allWidgets
+                          selectableCombinedWidgets.length
+                            ? selectableCombinedWidgets
                                 .filter(
                                   (widget) =>
                                     !selectedWidgets.includes(

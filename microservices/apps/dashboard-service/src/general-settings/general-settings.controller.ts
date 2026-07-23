@@ -16,7 +16,9 @@ import {
   NewGeneralSettings,
 } from '@app/postgres-db/schemas/general-settings.schema';
 import { GeneralSettingsService } from './general-settings.service';
+import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
+@NoStoreCache()
 @Controller('general-settings')
 export class GeneralSettingsController {
   constructor(private readonly service: GeneralSettingsService) {}

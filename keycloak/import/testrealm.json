@@ -1021,7 +1021,7 @@
       "consentRequired": false,
       "standardFlowEnabled": false,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
       "publicClient": false,
       "frontchannelLogout": true,
@@ -1105,7 +1105,10 @@
         "acr",
         "roles",
         "profile",
-        "email"
+        "email",
+        "api:read",
+        "api:write",
+        "api:delete"
       ],
       "optionalClientScopes": [
         "address",
@@ -1230,6 +1233,33 @@
     }
   ],
   "clientScopes": [
+    {
+      "name": "api:read",
+      "description": "NGSI service read scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "api:write",
+      "description": "NGSI service write scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
+    {
+      "name": "api:delete",
+      "description": "NGSI service delete scope",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      }
+    },
     {
       "id": "8ff5b849-97bd-497d-897a-0d0bc3680410",
       "name": "acr",

@@ -93,6 +93,7 @@ export const authDataTypeEnum = pgEnum('auth_data_type', [
   'usi',
   'internal',
   'sql',
+  'planbar',
 ]);
 
 export const timeHorizonTypeEnum = pgEnum('time_horizon_type', [

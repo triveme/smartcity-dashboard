@@ -57,6 +57,20 @@ export function validateQueryConfig(
       errorsOccured.attributeError =
         'Diagramm Widgets müssen mindestens ein Attribut haben';
     }
+    if (componentSubType === tabComponentSubTypeEnum.measurement) {
+      if (queryConfig?.attributes && queryConfig.attributes.length !== 1) {
+        errorsOccured.attributeError =
+          'Messung Widgets müssen ein einzelnes Attribut haben';
+      }
+      if (
+        queryConfig?.entityIds &&
+        queryConfig.entityIds.length !== 1 &&
+        !usesQueryParameter
+      ) {
+        errorsOccured.sensorError =
+          'Messung Widgets müssen einen einzelnen Sensor oder Source haben';
+      }
+    }
     if (
       componentSubType === tabComponentSubTypeEnum.pieChart ||
       componentSubType === tabComponentSubTypeEnum.pieChartDynamic

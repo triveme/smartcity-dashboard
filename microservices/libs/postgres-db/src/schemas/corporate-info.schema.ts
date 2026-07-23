@@ -112,6 +112,7 @@ export const corporateInfos = pgTable('corporate_info', {
     .default('Arial'),
   headerFontColor: text('header_font_color').default('#FFF'),
   headerLogoId: uuid('header_logo_id').references(() => logos.id),
+  headerLogoLinkUrl: text('header_logo_link_url'),
   headerPrimaryColor: text('header_primary_color').default('#3d4760'),
   headerSecondaryColor: text('header_secondary_color').default('#3d4760'),
   headerTitleAdmin: text('header_title_admin').default(

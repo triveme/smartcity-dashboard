@@ -142,6 +142,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/data-translation-service/tsconfig.app.json"
       }
+    },
+    "plan-bar-service": {
+      "type": "application",
+      "root": "apps/plan-bar-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/plan-bar-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/plan-bar-service/tsconfig.app.json"
+      }
     }
   },
   "monorepo": true,

@@ -107,6 +107,7 @@ export type TabWithContent = Tab & { query?: Query } & {
   listviewData: InterestingPlace[];
 } & {
   timeframe: string | null;
+  extendedDateSelection?: boolean;
 };
 export type WidgetWithContent = Widget & { tabs: TabWithContent[] };
 export type PanelWithContent = Panel & { widgets: WidgetWithContent[] };
@@ -137,6 +138,7 @@ const wrapTabWithDefaultData = (tab: Tab): TabWithContent => {
     mapObject: [],
     listviewData: [],
     timeframe: null,
+    extendedDateSelection: undefined,
     // Initialize properties that might be null from database
     chartValues: tab.chartValues || [],
     textValue: tab.textValue || '',
@@ -162,6 +164,7 @@ export class DataTranslationService {
       const tabPromises = data.map(async (tab) => {
         try {
           let widgetTimeframe: string | null = null;
+          let widgetExtendedDateSelection: boolean | undefined;
 
           // Skip tabs that don't have a valid widget ID
           // console.log(`Refresh Tab ${tab.id} with widget ${tab.widgetId}`);
@@ -205,6 +208,11 @@ export class DataTranslationService {
           ) {
             widgetTimeframe =
               await this.populateChartService.populateTab(tabWithContent);
+            widgetExtendedDateSelection = tabWithContent.extendedDateSelection;
+            widgetTimeframe = await this.populateChartService.populateTab(
+              tabWithContent,
+              widget.usesQueryParameter === true,
+            );
           }
 
           if (
@@ -253,7 +261,10 @@ export class DataTranslationService {
                 tabWithContent.listviewData.length > 0
                   ? tabWithContent.listviewData
                   : existingData?.listviewData || [],
-              timeframe: widgetTimeframe || existingData?.timeframe || null,
+              timeframe: widgetTimeframe ?? existingData?.timeframe ?? null,
+              extendedDateSelection:
+                widgetExtendedDateSelection ??
+                existingData?.extendedDateSelection,
             });
           }
         } catch (error) {

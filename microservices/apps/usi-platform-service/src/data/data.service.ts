@@ -26,7 +26,7 @@ interface SensorResponse {
 export interface NGSIv2Entity {
   entityId: string;
   index: string[];
-  values: (number | string)[];
+  values: (number | string | { type: 'Point'; coordinates: number[] })[];
 }
 
 export interface NGSIv2Type {
@@ -109,10 +109,25 @@ export class QueryConfigService {
 
       queryConfig.attributes.forEach((attr) => attrMap.set(attr, []));
       for (const id of queryConfig.entityIds) {
-        const url = `${authData.liveUrl}?sid=${id}&${constructedDateParameter}`;
-        const response = await axios.get(url, {
+        const urlWithTimeFrame = `${authData.liveUrl}?sid=${id}&${constructedDateParameter}`;
+        let response = await axios.get(urlWithTimeFrame, {
           auth: { username: authData.appUser, password: decryptedPassword },
         });
+
+        if (
+          !response.data?.sensordata ||
+          response.data.sensordata.length === 0
+        ) {
+          this.logger.log(
+            `No data found in timeframe for sensor ${id}. Fetching last known value fallback.`,
+          );
+
+          const urlForLatestValue = `${authData.liveUrl}?sid=${id}`;
+          response = await axios.get(urlForLatestValue, {
+            auth: { username: authData.appUser, password: decryptedPassword },
+          });
+        }
+
         for (const attr of queryConfig.attributes) {
           const entity = this.transformToOneSensorEntity(
             response.data,
@@ -122,6 +137,55 @@ export class QueryConfigService {
             id,
           );
           attrMap.get(attr)?.push(entity);
+        }
+      }
+
+      if (attrMap.has('lat') && attrMap.has('lon')) {
+        const latEntities = attrMap.get('lat') || [];
+        const lonEntities = attrMap.get('lon') || [];
+        const locationEntities: NGSIv2Entity[] = [];
+
+        for (const latEntity of latEntities) {
+          const lonEntity = lonEntities.find(
+            (e) => e.entityId === latEntity.entityId,
+          );
+          if (lonEntity) {
+            const combinedValues = latEntity.values.map(
+              (
+                latVal,
+                idx,
+              ):
+                | (string | number | { type: 'Point'; coordinates: number[] })
+                | null => {
+                const lonVal = lonEntity.values[idx];
+                if (
+                  latVal !== null &&
+                  lonVal !== null &&
+                  latVal !== undefined &&
+                  lonVal !== undefined
+                ) {
+                  return {
+                    type: 'Point',
+                    coordinates: [Number(latVal), Number(lonVal)],
+                  };
+                }
+                return null;
+              },
+            );
+
+            locationEntities.push({
+              entityId: latEntity.entityId,
+              index: [...latEntity.index],
+              values: combinedValues,
+            });
+          }
+        }
+
+        if (locationEntities.length > 0) {
+          attrMap.set('location', locationEntities);
+          // Clean up individual raw lat/lon values to preserve payload weight
+          attrMap.delete('lat');
+          attrMap.delete('lon');
         }
       }
 
@@ -293,9 +357,9 @@ export class QueryConfigService {
   }
 
   private applyAggregation(
-    values: (number | string)[],
+    values: (number | string | { type: 'Point'; coordinates: number[] })[],
     mode: string,
-  ): number | string {
+  ): number | string | { type: 'Point'; coordinates: number[] } {
     if (values.length === 0) return 0;
 
     if (typeof values[0] === 'number') {
