@@ -135,7 +135,6 @@ function getMinHeightBasedOnComponentType(
     tabComponentTypeEnum.listview,
   ];
   const mediumComponentTypes = [tabComponentTypeEnum.slider];
-
   if (largeComponentTypes.includes(tabComponentType)) {
     if (
       tabComponentSubType === tabComponentSubTypeEnum.degreeChart180 ||
@@ -163,6 +162,7 @@ function allowedWidgetHeightAuto(
   const allowedWidgetType = [
     tabComponentTypeEnum.information,
     tabComponentTypeEnum.value,
+    tabComponentTypeEnum.calendar,
   ];
   if (allowedWidgetType.includes(tabComponentType)) {
     return true;

@@ -42,6 +42,7 @@ import HorizontalDivider from '@/ui/HorizontalDivider';
 import StaticValuesFieldMapWidgets from '@/ui/StaticValuesFieldsMapWidgets';
 import WizardTextfield from '@/ui/WizardTextfield';
 import StaticValuesFieldMapLegend from '@/ui/StaticValuesFieldsMapLegend';
+import MapDateColorRules from '@/ui/MapDateColorRules';
 import WizardIntegerfield from '@/ui/WizardIntegerfield';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -88,6 +89,12 @@ type TabWizardProps = {
   fontColor: string;
   usesQueryParameter?: boolean;
 };
+
+const mapValueColorModeLabels = {
+  numeric: 'Zahl',
+  text: 'Text',
+  relative_date: 'Datum',
+} as const;
 
 export default function TabWizard(props: TabWizardProps): ReactElement {
   const {
@@ -148,6 +155,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
     ),
   );
   const [selectedWidgets, setSelectedWidgets] = useState<string[]>(['', '']);
+  const mapValueColorMode = tab?.mapValueColorMode ?? 'numeric';
   const [combinedMapWidgetsId, setCombinedMapWidgetsId] = useState<string[]>(
     tab?.childWidgets || [''],
   );
@@ -724,7 +732,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                     <div>
                       <WizardSelectBox
                         checked={tab?.usePreviousStageColorOnBoundary || false}
-                        label=" Grenzwerte mit Farbe der vorherigen Stufe"
+                        label=" Grenzwerte mit Farbe der nächsten Stufe"
                         onChange={(value: boolean): void =>
                           handleTabChange({
                             usePreviousStageColorOnBoundary: value,
@@ -909,8 +917,6 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           const enumValue = extendedTimeFrameValues.find(
                             (option) => option.label === label,
                           )?.value;
-
-                          console.log('extendedTimeframe : ', enumValue);
 
                           handleTabChange({
                             extendedTimeframe:
@@ -2614,44 +2620,88 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                                 {tab?.pinMode !== 'multi' && (
                                   <>
                                     <div className="flex flex-col w-full pb-2">
-                                      <WizardSelectBox
-                                        checked={
-                                          tab?.chartStaticValuesText || false
+                                      <WizardLabel label="Attributtyp" />
+                                      <WizardDropdownSelection
+                                        currentValue={
+                                          mapValueColorModeLabels[
+                                            mapValueColorMode
+                                          ]
                                         }
-                                        onChange={(value: boolean): void =>
+                                        selectableValues={Object.values(
+                                          mapValueColorModeLabels,
+                                        )}
+                                        onSelect={(value): void => {
+                                          const mode = Object.entries(
+                                            mapValueColorModeLabels,
+                                          ).find(
+                                            ([, label]) => label === value,
+                                          )?.[0] as
+                                            | 'numeric'
+                                            | 'text'
+                                            | 'relative_date';
                                           handleTabChange({
-                                            chartStaticValuesText: value,
-                                          })
-                                        }
-                                        label="Textwerte"
+                                            mapValueColorMode: mode,
+                                          });
+                                        }}
+                                        iconColor={iconColor}
+                                        borderColor={borderColor}
+                                        backgroundColor={backgroundColor}
                                       />
                                     </div>
-                                    <StaticValuesField
-                                      initialChartStaticValues={
-                                        tab.chartStaticValuesText
-                                          ? tab?.chartStaticValuesTexts || []
-                                          : tab?.chartStaticValues || []
+                                    <ColorPickerComponent
+                                      currentColor={
+                                        tab?.mapValueColorDefaultColor ||
+                                        tab?.mapMarkerColor ||
+                                        '#257dc9'
                                       }
-                                      initialStaticColors={
-                                        tab?.chartStaticValuesColors || []
+                                      handleColorChange={(
+                                        color: string,
+                                      ): void =>
+                                        handleTabChange({
+                                          mapValueColorDefaultColor: color,
+                                        })
                                       }
-                                      initialStaticValuesTicks={
-                                        tab?.chartStaticValuesTicks || []
-                                      }
-                                      initialStaticValuesLogos={
-                                        tab?.chartStaticValuesLogos || []
-                                      }
-                                      initialStaticValuesTexts={
-                                        tab?.chartStaticValuesTexts || []
-                                      }
-                                      handleTabChange={handleTabChange}
-                                      error={errors?.stageableColorValueError}
-                                      borderColor={borderColor}
-                                      backgroundColor={backgroundColor}
-                                      fontColor={fontColor}
-                                      isTextValues={tab.chartStaticValuesText}
-                                      type="map"
+                                      label="Standardfarbe"
                                     />
+                                    {mapValueColorMode === 'relative_date' ? (
+                                      <MapDateColorRules
+                                        rules={tab?.mapDateColorRules || []}
+                                        handleTabChange={handleTabChange}
+                                        iconColor={iconColor}
+                                        borderColor={borderColor}
+                                        backgroundColor={backgroundColor}
+                                        fontColor={fontColor}
+                                      />
+                                    ) : (
+                                      <StaticValuesField
+                                        initialChartStaticValues={
+                                          mapValueColorMode === 'text'
+                                            ? tab?.chartStaticValuesTexts || []
+                                            : tab?.chartStaticValues || []
+                                        }
+                                        initialStaticColors={
+                                          tab?.chartStaticValuesColors || []
+                                        }
+                                        initialStaticValuesTicks={
+                                          tab?.chartStaticValuesTicks || []
+                                        }
+                                        initialStaticValuesLogos={
+                                          tab?.chartStaticValuesLogos || []
+                                        }
+                                        initialStaticValuesTexts={
+                                          tab?.chartStaticValuesTexts || []
+                                        }
+                                        handleTabChange={handleTabChange}
+                                        error={errors?.stageableColorValueError}
+                                        borderColor={borderColor}
+                                        backgroundColor={backgroundColor}
+                                        fontColor={fontColor}
+                                        isTextValues={
+                                          mapValueColorMode === 'text'
+                                        }
+                                        type="map"
+                                      />
+                                    )}
                                   </>
                                 )}
                               </div>
@@ -3915,6 +3965,105 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                   handleTabChange={handleTabChange}
                 />
               </div>
+            </div>
+          )}
+
+          {tab?.componentType === tabComponentTypeEnum.calendar && (
+            <div className="div">
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Anzahl der angezeigten Monate" />
+                <WizardDropdownSelection
+                  currentValue={tab?.calendarDisplayedMonthsCount ?? 3}
+                  selectableValues={[1, 3, 6, 12]}
+                  error={errors?.listviewDescriptionAttributeError}
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  onSelect={(value: string | number): void =>
+                    handleTabChange({
+                      calendarDisplayedMonthsCount: Number(value),
+                    })
+                  }
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Anzahl der sichtbaren Monate bis zum aktuellen Monat" />
+                <WizardDropdownSelection
+                  currentValue={tab?.calendarMonthBeforeCurrent ?? 12}
+                  selectableValues={[0, 1, 3, 6, 12]}
+                  error={errors?.listviewDescriptionAttributeError}
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  onSelect={(value: string | number): void =>
+                    handleTabChange({
+                      calendarMonthBeforeCurrent: Number(value),
+                    })
+                  }
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+
+              <div className="flex flex-col w-full pb-2">
+                <WizardLabel label="Anzahl der sichtbaren Monate nach dem aktuellen Monat" />
+                <WizardDropdownSelection
+                  currentValue={tab?.calendarMonthAfterCurrent ?? 12}
+                  selectableValues={[0, 1, 3, 6, 12]}
+                  error={errors?.listviewDescriptionAttributeError}
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  onSelect={(value: string | number): void =>
+                    handleTabChange({
+                      calendarMonthAfterCurrent: Number(value),
+                    })
+                  }
+                  iconColor={iconColor}
+                  borderColor={borderColor}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+
+              <div className="flex gap-4 h-14">
+                <ColorPickerComponent
+                  currentColor={tab?.calendarBookedColor || '#ff0000'}
+                  handleColorChange={(color: string): void =>
+                    handleTabChange({ calendarBookedColor: color })
+                  }
+                  label="Nutzung: Gebucht"
+                />
+
+                <ColorPickerComponent
+                  currentColor={tab?.calendarPrivatBookedColor || '#a9a9b4'}
+                  handleColorChange={(color: string): void =>
+                    handleTabChange({ calendarPrivatBookedColor: color })
+                  }
+                  label="Nutzung: Privat"
+                />
+
+                <ColorPickerComponent
+                  currentColor={
+                    tab?.calendarOrganisationBookedColor || '#00ff0099'
+                  }
+                  handleColorChange={(color: string): void =>
+                    handleTabChange({
+                      calendarOrganisationBookedColor: color,
+                    })
+                  }
+                  label="Nutzung: Verein"
+                />
+              </div>
+              {/* <div className="flex w-full items-center">
+                <WizardSelectBox
+                  checked={tab?.splitCalendarDay ?? false}
+                  onChange={(value: boolean): void =>
+                    handleTabChange({
+                      splitCalendarDay: value,
+                    })
+                  }
+                  label=" Mehrere Einträge pro Tag anzeigen?"
+                />
+              </div> */}
             </div>
           )}
 

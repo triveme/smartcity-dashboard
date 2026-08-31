@@ -149,6 +149,7 @@ export class QueryConfigService {
       'attributes',
       'aggrMode',
       'timeframe',
+      'isBlacklist',
     ];
 
     return createHash('sha256')

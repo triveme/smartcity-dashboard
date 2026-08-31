@@ -1,4 +1,5 @@
 import { CSSProperties, ReactElement } from 'react';
+import { getFirstGeoJSONSensorData } from '@/utils/geoJsonHelper';
 import nextDynamic from 'next/dynamic';
 import { cookies } from 'next/headers';
 
@@ -7,9 +8,11 @@ import {
   CorporateInfo,
   dashboardTypeEnum,
   DashboardWithContent,
+  MapDateColorRule,
   MapModalLegend,
   MapModalWidget,
   MapObject,
+  MapValueColorMode,
   QueryDataWithAttributes,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
@@ -30,6 +33,10 @@ import {
   combineQueryData,
   combineWidgetAttributes,
 } from '@/utils/combinedMapDataHelper';
+import {
+  getCombinedMapStaticValues,
+  getMapStaticValues,
+} from '@/utils/mapValueColorMode';
 import { isTabOfTypeCombinedWidget } from '@/utils/tabTypeHelper';
 import RedirectPageButton from '@/ui/Buttons/RedirectPageButton';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
@@ -97,6 +104,21 @@ export default async function Dashboard(
   let uiFilterData;
   if (isMapDashboard) {
     tab = dashboard?.panels?.[0]?.widgets?.[0]?.tabs?.[0];
+
+    if (!tab) {
+      console.warn('Map dashboard has no map widget', {
+        dashboardId: dashboard.id,
+      });
+
+      return (
+        <div
+          style={dashboardStyle}
+          className="w-full h-full flex items-center justify-center"
+        >
+          <p>Diese Karte ist nicht mehr verfuegbar.</p>
+        </div>
+      );
+    }
 
     if (tab?.componentType === tabComponentTypeEnum.map) {
       // The issue is here - we need to properly detect combined widgets
@@ -275,6 +297,10 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapGeoJSON ||
                     ''
                   }
+                  mapGeoJSONFeatureIdentifier={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapGeoJSONFeatureIdentifier || ''
+                  }
                   mapGeoJSONSensorBasedColors={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapGeoJSONSensorBasedColors || false
@@ -321,18 +347,33 @@ export default async function Dashboard(
                   mapIsFormColorValueBased={
                     combinedMapData?.mapIsFormColorValueBased as boolean[]
                   }
-                  staticValues={
-                    combinedMapData?.chartStaticValuesText
-                      ? ((combinedMapData?.chartStaticValuesTexts ||
-                          []) as string[][])
-                      : ((combinedMapData?.chartStaticValues ||
-                          []) as number[][])
+                  mapValueColorMode={
+                    combinedMapData?.mapValueColorMode as (
+                      | 'numeric'
+                      | 'text'
+                      | 'relative_date'
+                    )[]
                   }
+                  mapDateColorRules={
+                    combinedMapData?.mapDateColorRules as MapDateColorRule[][]
+                  }
+                  mapValueColorDefaultColor={
+                    combinedMapData?.mapValueColorDefaultColor as string[]
+                  }
+                  staticValues={getCombinedMapStaticValues(
+                    combinedMapData?.mapValueColorMode as MapValueColorMode[],
+                    combinedMapData?.chartStaticValues as (number | string)[][],
+                    combinedMapData?.chartStaticValuesTexts as string[][],
+                  )}
                   staticValuesColors={
                     combinedMapData?.chartStaticValuesColors as string[][]
                   }
                   staticValuesLogos={
                     combinedMapData?.chartStaticValuesLogos as string[][]
+                  }
+                  mapUnitsTexts={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapUnitsTexts || []
                   }
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
@@ -486,6 +527,14 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0].mapGeoJSON ||
                     ''
                   }
+                  mapGeoJSONFeatureIdentifier={
+                    dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
+                      .mapGeoJSONFeatureIdentifier || ''
+                  }
+                  mapGeoJSONSensorData={getFirstGeoJSONSensorData(
+                    dashboard.panels?.[0]?.widgets?.[0].widgetData?.data
+                      ?.chartData,
+                  )}
                   mapGeoJSONSensorBasedColors={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapGeoJSONSensorBasedColors || false
@@ -550,11 +599,14 @@ export default async function Dashboard(
                   mapIsIconColorValueBased={
                     tab?.mapIsIconColorValueBased || false
                   }
-                  staticValues={
-                    tab?.chartStaticValuesText
-                      ? tab?.chartStaticValuesTexts || []
-                      : tab?.chartStaticValues || []
-                  }
+                  mapValueColorMode={tab?.mapValueColorMode}
+                  mapDateColorRules={tab?.mapDateColorRules}
+                  mapValueColorDefaultColor={tab?.mapValueColorDefaultColor}
+                  staticValues={getMapStaticValues(
+                    tab?.mapValueColorMode,
+                    tab?.chartStaticValues,
+                    tab?.chartStaticValuesTexts,
+                  )}
                   staticValuesColors={tab?.chartStaticValuesColors || []}
                   staticValuesLogos={tab?.chartStaticValuesLogos || []}
                   mapFormSizeFactor={tab?.mapFormSizeFactor || 1}

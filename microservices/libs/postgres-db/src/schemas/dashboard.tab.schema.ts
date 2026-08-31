@@ -115,6 +115,9 @@ export const tabs = pgTable('tab', {
   mapGeoJSONFeatureIdentifier: text('map_geojson_feature_identifier'),
   mapIsFormColorValueBased: boolean('map_is_form_color_value_based'),
   mapIsIconColorValueBased: boolean('map_is_icon_color_value_based'),
+  mapValueColorMode: text('map_value_color_mode'),
+  mapDateColorRules: json('map_date_color_rules'),
+  mapValueColorDefaultColor: text('map_value_color_default_color'),
   mapLatitude: real('map_latitude'),
   mapLegendDisclaimer: text('map_legend_disclaimer'),
   mapLegendValues: json('map_legend_values'),
@@ -192,6 +195,13 @@ export const tabs = pgTable('tab', {
     },
   ),
   chartStaticValuesText: boolean('chart_static_values_text'),
+  calendarBookedColor: text('calendar_booked_color'),
+  calendarPrivatBookedColor: text('calendar_privat_booked_color'),
+  calendarOrganisationBookedColor: text('calendar_organisation_booked_color'),
+  calendarMonthAfterCurrent: real('calendar_month_after_current'),
+  calendarMonthBeforeCurrent: real('calendar_month_before_current'),
+  calendarDisplayedMonthsCount: real('calendar_displayd_month_count'),
+  splitCalendarDay: boolean('split_calendar_day'),
   // Sensorstatus properties
   sensorStatusLightCount: smallint('sensor_status_light_count'),
   sensorStatusMinThreshold: text('sensor_status_min_threshold'),
@@ -214,6 +224,8 @@ export const tabs = pgTable('tab', {
   normalizeXAxisByTimeFramePeriod: boolean(
     'normalize_x_axis_by_time_frame_period',
   ),
+  // Name ist historisch; faerbt Grenzwert-Beschriftungen im Stageable Chart
+  // tatsaechlich mit der Farbe der naechsten Stufe (siehe stageableChartHelper.ts).
   usePreviousStageColorOnBoundary: boolean(
     'use_previous_stage_color_on_boundary',
   ),

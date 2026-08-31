@@ -10,6 +10,7 @@ import {
   Polygon,
   WMSTileLayer,
   Marker,
+  CircleMarker,
   GeoJSON,
   Polyline,
   ImageOverlay,
@@ -44,11 +45,13 @@ import {
   createSquareAroundMarker,
   ZoomHandler,
   getColorForValue,
+  getColorForDateValue,
   createCustomIcon,
   createSearchResultIcon,
   createClusterCustomIcon,
   findValidWmsConfig,
   getIconForValue,
+  getIconForDateValue,
 } from './MapUtils';
 import DataExportButton from '@/ui/Buttons/DataExportButton';
 import ShareLinkButton from '@/ui/Buttons/ShareLinkButton';
@@ -147,6 +150,12 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   const [mapZoom, setMapZoom] = useState(6);
   const iconRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapRef>(null);
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const markerRefsById = useRef<Map<string, L.Marker>>(new Map());
+  const mapSettleHandlerRef = useRef<(() => void) | null>(null);
+  const mapSettleTimeoutRef = useRef<number | null>(null);
+  const spiderfyHandlerRef = useRef<(() => void) | null>(null);
+  const spiderfyTimeoutRef = useRef<number | null>(null);
 
   // const popupRefsMap = useRef<Map<string, L.Popup>>(new Map<string, L.Popup>());
 
@@ -172,6 +181,10 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     label: string;
     routePoints?: LatLngExpression[];
   } | null>(null);
+  const [focusPulseLocation, setFocusPulseLocation] = useState<
+    [number, number] | null
+  >(null);
+  const [focusPulseKey, setFocusPulseKey] = useState(0);
   const [localData, setLocalData] = useState<any[]>(props.data || []);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [centerPinVisible, setCenterPinVisible] = useState(false);
@@ -293,6 +306,173 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       : 'streets-v12'
   }/tiles/256/{z}/{x}/{y}?access_token=${env('NEXT_PUBLIC_MAPBOX_TOKEN')}`;
 
+  const normalizeMarkerId = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    return String(value).trim();
+  };
+
+  const getMarkerStableId = (marker: MarkerType): string => {
+    const details = marker?.details as
+      | { id?: string | number; entityId?: string | number }
+      | undefined;
+    return normalizeMarkerId(details?.id ?? details?.entityId);
+  };
+
+  const isSamePosition = (
+    marker: MarkerType,
+    lat: number,
+    lng: number,
+    epsilon = 0.000001,
+  ): boolean => {
+    const markerLat = Number(marker?.position?.[0]);
+    const markerLng = Number(marker?.position?.[1]);
+    return (
+      Number.isFinite(markerLat) &&
+      Number.isFinite(markerLng) &&
+      Math.abs(markerLat - lat) <= epsilon &&
+      Math.abs(markerLng - lng) <= epsilon
+    );
+  };
+
+  const registerMarkerRef = (
+    marker: MarkerType,
+    markerRef: L.Marker | null,
+  ): void => {
+    const markerId = getMarkerStableId(marker);
+    if (!markerId) return;
+    if (markerRef) {
+      markerRefsById.current.set(markerId, markerRef);
+    } else {
+      markerRefsById.current.delete(markerId);
+    }
+  };
+
+  const triggerLocationPulse = (lat: number, lng: number): void => {
+    let pulsePosition: [number, number] = [lat, lng];
+    const mapInstance = mapRef.current;
+    if (mapInstance) {
+      const originalPoint = mapInstance.latLngToContainerPoint([lat, lng]);
+      const raisedPoint = L.point(originalPoint.x, originalPoint.y - 8);
+      const raisedLatLng = mapInstance.containerPointToLatLng(raisedPoint);
+      pulsePosition = [raisedLatLng.lat, raisedLatLng.lng];
+    }
+    setFocusPulseLocation(pulsePosition);
+    setFocusPulseKey((prev) => prev + 1);
+  };
+
+  const clearMapSettleWait = (): void => {
+    const mapInstance = mapRef.current;
+    if (mapInstance && mapSettleHandlerRef.current) {
+      mapInstance.off('moveend', mapSettleHandlerRef.current);
+      mapSettleHandlerRef.current = null;
+    }
+    if (mapSettleTimeoutRef.current !== null) {
+      window.clearTimeout(mapSettleTimeoutRef.current);
+      mapSettleTimeoutRef.current = null;
+    }
+    if (spiderfyTimeoutRef.current !== null) {
+      window.clearTimeout(spiderfyTimeoutRef.current);
+      spiderfyTimeoutRef.current = null;
+    }
+    if (spiderfyHandlerRef.current) {
+      clusterGroupRef.current?.off('spiderfied', spiderfyHandlerRef.current);
+      spiderfyHandlerRef.current = null;
+    }
+  };
+
+  const runAfterMapSettled = (
+    lat: number,
+    lng: number,
+    zoomLevel: number,
+    callback: () => void,
+  ): void => {
+    const mapInstance = mapRef.current;
+    if (!mapInstance) {
+      callback();
+      return;
+    }
+
+    clearMapSettleWait();
+
+    const currentCenter = mapInstance.getCenter();
+    const currentZoom = mapInstance.getZoom();
+    const sameCenter =
+      Math.abs(currentCenter.lat - lat) <= 0.000001 &&
+      Math.abs(currentCenter.lng - lng) <= 0.000001;
+    const sameZoom = currentZoom === zoomLevel;
+
+    if (sameCenter && sameZoom) {
+      callback();
+      return;
+    }
+
+    const finish = (): void => {
+      clearMapSettleWait();
+      callback();
+    };
+
+    mapSettleHandlerRef.current = finish;
+    mapInstance.once('moveend', finish);
+    mapSettleTimeoutRef.current = window.setTimeout(finish, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearMapSettleWait();
+    };
+  }, []);
+
+  const findTargetMarkerIndex = (
+    markers: MarkerType[],
+    location: { lat: number; lng: number; id: string },
+  ): number => {
+    const targetId = normalizeMarkerId(location.id);
+
+    const idAndCoordinateIndex = markers.findIndex(
+      (marker) =>
+        getMarkerStableId(marker) === targetId &&
+        isSamePosition(marker, location.lat, location.lng),
+    );
+    if (idAndCoordinateIndex > -1) return idAndCoordinateIndex;
+
+    const idIndex = markers.findIndex(
+      (marker) => getMarkerStableId(marker) === targetId,
+    );
+    if (idIndex > -1) return idIndex;
+
+    return markers.findIndex((marker) =>
+      isSamePosition(marker, location.lat, location.lng),
+    );
+  };
+
+  const resolveLeafletMarkerRef = (
+    marker: MarkerType,
+    location: { lat: number; lng: number; id: string },
+  ): L.Marker | null => {
+    const targetId = normalizeMarkerId(location.id);
+    if (targetId) {
+      const markerByLocationId = markerRefsById.current.get(targetId);
+      if (markerByLocationId) return markerByLocationId;
+    }
+
+    const stableId = getMarkerStableId(marker);
+    if (stableId) {
+      const markerByStableId = markerRefsById.current.get(stableId);
+      if (markerByStableId) return markerByStableId;
+    }
+
+    const refs = Array.from(markerRefsById.current.values());
+    return (
+      refs.find((markerRef) => {
+        const markerPosition = markerRef.getLatLng();
+        return (
+          Math.abs(markerPosition.lat - location.lat) <= 0.000001 &&
+          Math.abs(markerPosition.lng - location.lng) <= 0.000001
+        );
+      }) || null
+    );
+  };
+
   const handleFilterChange = (
     newValuesForThisAttribute: (string | number)[],
     filterAttribute?: string,
@@ -318,6 +498,43 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     }, 1000);
   };
 
+  const highlightAfterClusterCheck = (
+    leafletMarkerRef: L.Marker,
+    highlightTarget: () => void,
+  ): void => {
+    const clusterGroup = clusterGroupRef.current;
+    if (!clusterGroup) {
+      highlightTarget();
+      return;
+    }
+
+    const visibleParent = clusterGroup.getVisibleParent(leafletMarkerRef);
+    if (!visibleParent || visibleParent === leafletMarkerRef) {
+      highlightTarget();
+      return;
+    }
+
+    const onSpiderfied = (): void => {
+      if (spiderfyTimeoutRef.current !== null) {
+        window.clearTimeout(spiderfyTimeoutRef.current);
+        spiderfyTimeoutRef.current = null;
+      }
+      spiderfyHandlerRef.current = null;
+      highlightTarget();
+    };
+
+    spiderfyHandlerRef.current = onSpiderfied;
+    clusterGroup.once('spiderfied', onSpiderfied);
+    spiderfyTimeoutRef.current = window.setTimeout(() => {
+      clusterGroup.off('spiderfied', onSpiderfied);
+      spiderfyHandlerRef.current = null;
+      spiderfyTimeoutRef.current = null;
+      highlightTarget();
+    }, 1000);
+
+    (visibleParent as unknown as L.MarkerCluster).spiderfy();
+  };
+
   const handleLocateOnMap = (data: { data: unknown }): void => {
     mapRef.current?.closePopup();
     const location = data.data as {
@@ -325,34 +542,34 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       lng: number;
       id: string;
     };
-    // mapRef.current?.setZoomAround(location, mapRef.current?.getMaxZoom() - 2);
-    mapRef.current?.setView(location, mapRef.current?.getMaxZoom() - 2);
+
     const mains = getFilteredMarkers();
-    const i = mains.findIndex((marker) => {
-      if (
-        marker.position[0] === location.lat &&
-        marker.position[1] === location.lng &&
-        marker.details.id === location.id
-      ) {
-        return marker;
+    const targetIndex = findTargetMarkerIndex(mains, location);
+    const fallbackZoom = Math.max((mapRef.current?.getMaxZoom() ?? 18) - 2, 1);
+
+    if (targetIndex === -1) {
+      runAfterMapSettled(location.lat, location.lng, fallbackZoom, () => {
+        triggerLocationPulse(location.lat, location.lng);
+      });
+      mapRef.current?.setView([location.lat, location.lng], fallbackZoom);
+      return;
+    }
+
+    const targetMarker = mains[targetIndex];
+    const leafletMarkerRef = resolveLeafletMarkerRef(targetMarker, location);
+    const highlightTarget = (): void => {
+      highlightLocated(targetIndex, targetMarker);
+    };
+
+    runAfterMapSettled(location.lat, location.lng, fallbackZoom, () => {
+      triggerLocationPulse(location.lat, location.lng);
+      if (leafletMarkerRef) {
+        highlightAfterClusterCheck(leafletMarkerRef, highlightTarget);
+      } else {
+        highlightTarget();
       }
     });
-
-    if (i > -1) {
-      const m = mains[i];
-      highlightLocated(i, m);
-      // const pRef = popupRefsMap.current.get(m.details.id);
-      // // const pRef = popupRefs.current[i];
-      // if (pRef) {
-      //   try {
-      //     mapRef.current?.openPopup(pRef);
-      //   } catch (error) {
-      //     console.log('popup-error', error);
-      //     mapRef.current?.closePopup();
-      //     handleOnCloseModal();
-      //   }
-      // }
-    }
+    mapRef.current?.setView([location.lat, location.lng], fallbackZoom);
   };
 
   const handleDataSourceFilterChange = (
@@ -475,6 +692,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         singleProps.mapIsFormColorValueBased ||
         singleProps.mapIsIconColorValueBased
       ) {
+        if (singleProps.mapValueColorMode === 'relative_date') {
+          return getIconForDateValue(
+            markerValue,
+            singleProps.mapDateColorRules || [],
+            singleProps.mapMarkerIcon,
+          );
+        }
         return getIconForValue(
           markerValue,
           singleProps.staticValues,
@@ -495,6 +719,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
           combinedProps.mapIsIconColorValueBased?.[dataSource]) &&
         markerValue !== undefined
       ) {
+        if (combinedProps.mapValueColorMode?.[dataSource] === 'relative_date') {
+          return getIconForDateValue(
+            markerValue,
+            combinedProps.mapDateColorRules?.[dataSource] || [],
+            fallback,
+          );
+        }
         const staticValues = combinedProps.staticValues?.[dataSource];
         const staticLogos = combinedProps.staticValuesLogos?.[dataSource];
         if (staticValues && staticLogos) {
@@ -516,19 +747,39 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       const singleProps = props as SingleMapProps;
       // Use form-based value coloring if the flag is set
       if (singleProps.mapIsFormColorValueBased) {
+        if (singleProps.mapValueColorMode === 'relative_date') {
+          return getColorForDateValue(
+            markerValue,
+            singleProps.mapDateColorRules || [],
+            singleProps.mapValueColorDefaultColor ||
+              singleProps.mapMarkerColor ||
+              '#000000',
+          );
+        }
         return getColorForValue(
           markerValue,
           singleProps.staticValues,
           singleProps.staticValuesColors,
+          singleProps.mapValueColorDefaultColor,
         );
       }
 
       // Use icon-based value coloring if the flag is set
       if (singleProps.mapIsIconColorValueBased) {
+        if (singleProps.mapValueColorMode === 'relative_date') {
+          return getColorForDateValue(
+            markerValue,
+            singleProps.mapDateColorRules || [],
+            singleProps.mapValueColorDefaultColor ||
+              singleProps.mapMarkerColor ||
+              '#000000',
+          );
+        }
         return getColorForValue(
           markerValue,
           singleProps.staticValues,
           singleProps.staticValuesColors,
+          singleProps.mapValueColorDefaultColor,
         );
       }
 
@@ -543,12 +794,31 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     // Use form-based value coloring if the flag is set for this data source
     if (
       combinedProps.mapIsFormColorValueBased?.[dataSource] &&
+      combinedProps.mapValueColorMode?.[dataSource] === 'relative_date'
+    ) {
+      return getColorForDateValue(
+        markerValue,
+        combinedProps.mapDateColorRules?.[dataSource] || [],
+        combinedProps.mapValueColorDefaultColor?.[dataSource] ||
+          combinedProps.mapMarkerColor?.[dataSource] ||
+          combinedProps.mapShapeColor?.[dataSource] ||
+          '#000000',
+      );
+    }
+
+    if (
+      combinedProps.mapIsFormColorValueBased?.[dataSource] &&
       markerValue !== undefined
     ) {
       const staticValues = combinedProps.staticValues?.[dataSource];
       const staticColors = combinedProps.staticValuesColors?.[dataSource];
       if (staticValues && staticColors) {
-        const color = getColorForValue(markerValue, staticValues, staticColors);
+        const color = getColorForValue(
+          markerValue,
+          staticValues,
+          staticColors,
+          combinedProps.mapValueColorDefaultColor?.[dataSource],
+        );
         return color;
       }
     }
@@ -556,12 +826,31 @@ export default function MapNew(props: MapNewProps): JSX.Element {
     // Use icon-based value coloring if the flag is set for this data source
     if (
       combinedProps.mapIsIconColorValueBased?.[dataSource] &&
+      combinedProps.mapValueColorMode?.[dataSource] === 'relative_date'
+    ) {
+      return getColorForDateValue(
+        markerValue,
+        combinedProps.mapDateColorRules?.[dataSource] || [],
+        combinedProps.mapValueColorDefaultColor?.[dataSource] ||
+          combinedProps.mapMarkerColor?.[dataSource] ||
+          combinedProps.mapShapeColor?.[dataSource] ||
+          '#000000',
+      );
+    }
+
+    if (
+      combinedProps.mapIsIconColorValueBased?.[dataSource] &&
       markerValue !== undefined
     ) {
       const staticValues = combinedProps.staticValues?.[dataSource];
       const staticColors = combinedProps.staticValuesColors?.[dataSource];
       if (staticValues && staticColors) {
-        const color = getColorForValue(markerValue, staticValues, staticColors);
+        const color = getColorForValue(
+          markerValue,
+          staticValues,
+          staticColors,
+          combinedProps.mapValueColorDefaultColor?.[dataSource],
+        );
         return color;
       }
     }
@@ -1675,6 +1964,21 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
             <ZoomHandler onZoomChange={setMapZoom} />
 
+            {focusPulseLocation && (
+              <CircleMarker
+                key={`map-focus-pulse-${focusPulseKey}`}
+                center={focusPulseLocation}
+                radius={20}
+                pathOptions={{
+                  color: '#3b82f6',
+                  weight: 3,
+                  fillOpacity: 0,
+                  className: 'map-focus-location-pulse',
+                }}
+                interactive={false}
+              />
+            )}
+
             {(props.mapType === tabComponentSubTypeEnum.geoJSON ||
               props.mapType === tabComponentSubTypeEnum.geoJSONDynamic) && (
               <>
@@ -1697,6 +2001,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 (props as CombinedMapProps).mapDisplayMode?.[0] !==
                   tabComponentSubTypeEnum.onlyFormArea)) && (
               <MarkerClusterGroup
+                ref={clusterGroupRef as any}
                 iconCreateFunction={(cluster: L.MarkerCluster) =>
                   createClusterCustomIcon(
                     cluster,
@@ -1835,6 +2140,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                             }
                             position={marker.position as LatLngExpression}
                             icon={markerIcon}
+                            ref={(markerRef) => {
+                              registerMarkerRef(marker, markerRef);
+                            }}
                             eventHandlers={{
                               click: (e): void => {
                                 e.originalEvent.stopPropagation();
@@ -2159,6 +2467,21 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                 onZoomChange={setMapZoom}
               />
 
+              {focusPulseLocation && (
+                <CircleMarker
+                  key={`custom-map-focus-pulse-${focusPulseKey}`}
+                  center={focusPulseLocation}
+                  radius={20}
+                  pathOptions={{
+                    color: '#3b82f6',
+                    weight: 3,
+                    fillOpacity: 0,
+                    className: 'map-focus-location-pulse',
+                  }}
+                  interactive={false}
+                />
+              )}
+
               {((): MarkerType[] => {
                 const list =
                   customMarkerPositions.length > 0 ? customMarkerPositions : [];
@@ -2214,6 +2537,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
                     <Marker
                       key={index}
                       position={marker.position as LatLngExpression}
+                      ref={(markerRef) => {
+                        registerMarkerRef(marker, markerRef);
+                      }}
                       icon={(() => {
                         const iconSvgIndex = getIconSvgIndex(
                           dataSource,

@@ -15,7 +15,7 @@ import {
   menuArrowDirectionEnum,
 } from '@/types';
 import { InterestingPlace } from '@/types/dataModels';
-import { PieChartDataItem } from '@/types/dashboardModels';
+import { CalendarData, PieChartDataItem } from '@/types/dashboardModels';
 import { MarkerType } from '@/types/mapRelatedModels';
 
 export const EMPTY_PANEL: Panel = {
@@ -66,6 +66,7 @@ export const EMPTY_QUERY_CONFIG: QueryConfig = {
   dataStartDate: '',
   dataUntilDate: '',
   extendedDateSelection: false,
+  isBlacklist: false,
 };
 
 export const EMPTY_MAP_MODAL_WIDGET: MapModalWidget = {
@@ -768,4 +769,52 @@ export const DUMMY_PHARMACY_DATA = {
       },
     ],
   },
+};
+
+const addDays = (date: Date, days: number): Date => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+
+  return result;
+};
+
+export const GENERATE_DUMMY_CALENDAR_DATA = (count = 28): CalendarData[] => {
+  const currentDate = new Date();
+
+  const names = [
+    'Anna Schmidt',
+    'Max Mustermann',
+    'Sportverein Nord',
+    'Lisa Weber',
+    'Paul Fischer',
+  ];
+
+  const usages = ['Nutzung: Gebucht', 'Nutzung: Privat', 'Nutzung: Verein'];
+
+  const locations = ['Raum A', 'Raum B', 'Raum C'];
+
+  return Array.from({ length: count }, (_, index) => ({
+    id: `dummy-calendar-${index + 1}`,
+    type: 'planbar',
+    name: {
+      type: 'Text',
+      value: names[index % names.length],
+      metadata: {},
+    },
+    usage: {
+      type: 'Text',
+      value: usages[index % usages.length],
+      metadata: {},
+    },
+    location: {
+      type: 'Text',
+      value: locations[index % locations.length],
+      metadata: {},
+    },
+    date: {
+      type: 'Text',
+      value: addDays(currentDate, index),
+      metadata: {},
+    },
+  }));
 };

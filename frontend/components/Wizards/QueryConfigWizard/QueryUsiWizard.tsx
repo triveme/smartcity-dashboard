@@ -123,7 +123,10 @@ export default function QueryUsiWizard(
       handleQueryConfigChange({
         fiwareService: 'usi',
         fiwareType: value,
-        entityIds: [...(matchedSource.sensors || [])],
+        entityIds:
+          isSingleWidget && !usesQueryParameter
+            ? [matchedSource.sensors?.[0] || '']
+            : [...(matchedSource.sensors || [])],
         attributes: [...(matchedSource.attributes || [])],
       });
     } else {

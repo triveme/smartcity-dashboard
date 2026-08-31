@@ -54,6 +54,7 @@ import {
   updateReportConfig,
 } from '@/api/report-service';
 import CheckBox from '@/ui/CheckBox';
+import { isDataExportSupported } from '@/utils/downloadHelper';
 
 type WidgetWizardProps = {
   iconColor: string;
@@ -132,6 +133,10 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     useState<ReportConfig>(EMPTY_REPORT_CONFIG);
   // TAB
   const [tab, setTab] = useState<Tab>({} as Tab);
+  // Testwert für das Stageable-Chart-Preview (nur lokal, wird nicht gespeichert)
+  const [stageableChartTestValue, setStageableChartTestValue] = useState<
+    number | undefined
+  >(undefined);
 
   // ERROR State
   const [errors, setErrors] = useState<WizardErrors>({});
@@ -284,6 +289,18 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
         nextQueryConfig.aggrMode = aggregationEnum.none;
         nextQueryConfig.timeframe = timeframeEnum.live;
       }
+      // Default settings for calendar component
+      if (tab.componentType === tabComponentTypeEnum.calendar) {
+        if (tab.calendarMonthAfterCurrent == null) {
+          tab.calendarMonthAfterCurrent = 12;
+        }
+        if (tab.calendarMonthBeforeCurrent == null) {
+          tab.calendarMonthBeforeCurrent = 12;
+        }
+        if (tab.calendarDisplayedMonthsCount == null) {
+          tab.calendarDisplayedMonthsCount = 3;
+        }
+      }
       // Default layout settings for combined components
       if (tab.componentType === tabComponentTypeEnum.combinedComponent) {
         if (tab.isLayoutVertical === undefined) {
@@ -429,6 +446,11 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     tab?.componentSubType,
   );
 
+  const dataExportSupported = isDataExportSupported(
+    tab?.componentType,
+    tab?.componentSubType,
+  );
+
   useEffect(() => {
     if (
       widget?.usesQueryParameter &&
@@ -441,6 +463,12 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       }));
     }
   }, [widget?.usesQueryParameter, tab?.componentType, supportsQueryParameter]);
+
+  useEffect(() => {
+    if (!dataExportSupported && widget?.allowDataExport) {
+      setWidget((prev) => ({ ...prev, allowDataExport: false }));
+    }
+  }, [dataExportSupported, widget?.allowDataExport]);
 
   function getWidgetType(tab: Tab): string {
     if (tab.componentSubType) {
@@ -647,15 +675,17 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
                         }
                       />
                     </div>
-                    <div className="py-2 ml-2">
-                      <CheckBox
-                        label="Datenexport zulassen"
-                        value={widget?.allowDataExport ?? false}
-                        handleSelectChange={(isSelected): void =>
-                          handleCheckboxChange('allowDataExport', isSelected)
-                        }
-                      />
-                    </div>
+                    {dataExportSupported && (
+                      <div className="py-2 ml-2">
+                        <CheckBox
+                          label="Datenexport zulassen"
+                          value={widget?.allowDataExport ?? false}
+                          handleSelectChange={(isSelected): void =>
+                            handleCheckboxChange('allowDataExport', isSelected)
+                          }
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               </>
@@ -706,7 +736,28 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
           </div>
         </div>
         <div className="fixed top-64 right-4 max-w-[30%] w-2/5">
-          <DashboardWidgetPreview widget={widget} tab={tab || {}} />
+          <DashboardWidgetPreview
+            widget={widget}
+            tab={tab || {}}
+            stageableChartTestValue={stageableChartTestValue}
+          />
+          {tab?.componentSubType === tabComponentSubTypeEnum.stageableChart && (
+            <div className="flex flex-col w-full pb-2 pt-4">
+              <WizardLabel label="Testwert (nur für dieses Preview, wird nicht gespeichert)" />
+              <WizardTextfield
+                value={stageableChartTestValue ?? ''}
+                onChange={(value: string | number): void =>
+                  setStageableChartTestValue(
+                    value === '' ? undefined : Number(value),
+                  )
+                }
+                isNumeric={true}
+                emitEmptyOnClear={true}
+                borderColor={borderColor}
+                backgroundColor={backgroundColor}
+              />
+            </div>
+          )}
         </div>
       </div>
       <div className="flex justify-end space-x-2 py-4">

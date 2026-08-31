@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, FC } from 'react';
+import { useState, useEffect, useMemo, useRef, FC } from 'react';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardNumberfield from '@/ui/WizardNumberfield';
@@ -25,6 +25,103 @@ type InternalDataUploadWizardProps = {
   tenant: string;
 };
 
+type CsvPreview = {
+  errors: string[];
+  timeLabels: string[];
+  attributeLabels: string[];
+  rows: Array<{ id: string; description: string; value: string }>;
+  dataRowCount: number;
+  valueColumnCount: number;
+};
+
+function createCsvPreview(
+  csvText: string,
+  firstDataColIndex: number,
+  firstDataRowIndex: number,
+  timeGroupRowCount: number,
+): CsvPreview | undefined {
+  if (!csvText.trim()) {
+    return undefined;
+  }
+
+  const rows = csvText
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.split(';'));
+  const errors: string[] = [];
+  const columnCount = rows[0]?.length ?? 0;
+
+  if (!Number.isInteger(firstDataColIndex) || firstDataColIndex < 0) {
+    errors.push(
+      'Der Daten-Spaltenindex muss eine nicht-negative ganze Zahl sein.',
+    );
+  }
+  if (!Number.isInteger(firstDataRowIndex) || firstDataRowIndex < 0) {
+    errors.push(
+      'Der Daten-Zeilenindex muss eine nicht-negative ganze Zahl sein.',
+    );
+  }
+  if (!Number.isInteger(timeGroupRowCount) || timeGroupRowCount < 0) {
+    errors.push(
+      'Die Anzahl der Zeit-Reihen muss eine nicht-negative ganze Zahl sein.',
+    );
+  }
+  if (firstDataRowIndex > rows.length) {
+    errors.push('Der Daten-Zeilenindex liegt hinter dem Ende der Datei.');
+  }
+  if (timeGroupRowCount > firstDataRowIndex) {
+    errors.push('Die Zeit-Reihen dürfen nicht hinter dem Datenbereich enden.');
+  }
+  if (firstDataColIndex >= columnCount) {
+    errors.push('Der Daten-Spaltenindex liegt außerhalb der CSV-Spalten.');
+  }
+
+  const dataRows = rows.slice(firstDataRowIndex);
+  if (dataRows.length === 0) {
+    errors.push('Mit dieser Konfiguration wurden keine Datenzeilen gefunden.');
+  }
+
+  dataRows.forEach((row, index) => {
+    if (!row[0]?.trim()) {
+      errors.push(`Datenzeile ${firstDataRowIndex + index + 1} hat keine ID.`);
+    }
+    if (row.length <= firstDataColIndex) {
+      errors.push(
+        `Datenzeile ${firstDataRowIndex + index + 1} hat keine konfigurierte Wertespalte.`,
+      );
+    }
+  });
+
+  const labelsForRows = (sourceRows: string[][]): string[] =>
+    sourceRows
+      .map((row) => {
+        const key = row[0]?.trim();
+        const value = row[firstDataColIndex]?.trim();
+        return key && value ? `${key}: ${value}` : '';
+      })
+      .filter(Boolean);
+
+  return {
+    errors: [...new Set(errors)],
+    timeLabels: labelsForRows(rows.slice(0, timeGroupRowCount)),
+    attributeLabels: labelsForRows(
+      rows.slice(timeGroupRowCount, firstDataRowIndex),
+    ),
+    rows: dataRows.slice(0, 5).map((row) => ({
+      id: row[0]?.trim() || '',
+      description:
+        row
+          .slice(1, firstDataColIndex)
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .join(', ') || '—',
+      value: row[firstDataColIndex]?.trim() || '—',
+    })),
+    dataRowCount: dataRows.length,
+    valueColumnCount: Math.max(columnCount - firstDataColIndex, 0),
+  };
+}
+
 const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
   props: InternalDataUploadWizardProps,
 ) => {
@@ -42,6 +139,16 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
   const [timeGroupRowCount, setTimeGroupRowCount] = useState(1);
   const [errors] = useState<WizardErrors>({});
   const isUploading = useRef(false);
+  const csvPreview = useMemo(
+    () =>
+      createCsvPreview(
+        fileText,
+        firstDataColIndex,
+        firstDataRowIndex,
+        timeGroupRowCount,
+      ),
+    [fileText, firstDataColIndex, firstDataRowIndex, timeGroupRowCount],
+  );
 
   const { data: fetchedData } = useQuery({
     queryKey: ['internal-datas', itemId],
@@ -56,6 +163,7 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
       setTimeGroupRowCount(fetchedData.timeGroupRowCount);
       setCollection(fetchedData.collection);
       setFileName(fetchedData.source);
+      setFileText(fetchedData.data);
     }
   }, [fetchedData]);
 
@@ -76,6 +184,10 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
   const handleCreatefileUpload = async (): Promise<void> => {
     if (!fileName || !collection) {
       openSnackbar('Collection und Datei angeben', 'error');
+      return;
+    }
+    if (csvPreview?.errors.length) {
+      openSnackbar('CSV-Konfiguration überprüfen', 'error');
       return;
     }
     const toSave = {
@@ -220,6 +332,61 @@ const InternalDataUploadWizard: FC<InternalDataUploadWizardProps> = (
           /> */}
         </div>
       </div>
+      {csvPreview && (
+        <div
+          className="mx-2 mt-6 rounded-lg border-4 p-4"
+          style={{ borderColor }}
+        >
+          <h3 className="text-lg font-bold mb-3">CSV-Vorschau</h3>
+          {csvPreview.errors.length > 0 ? (
+            <div className="mb-4 rounded p-3 bg-red-100 text-red-900">
+              <p className="font-semibold">Konfiguration prüfen:</p>
+              <ul className="list-disc pl-5">
+                {csvPreview.errors.map((error) => (
+                  <li key={error}>{error}</li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="mb-4">
+              {csvPreview.dataRowCount} Datenzeilen und{' '}
+              {csvPreview.valueColumnCount} Wertespalte(n) erkannt.
+            </p>
+          )}
+          {csvPreview.timeLabels.length > 0 && (
+            <p className="mb-2">
+              <span className="font-semibold">Zeit:</span>{' '}
+              {csvPreview.timeLabels.join(', ')}
+            </p>
+          )}
+          {csvPreview.attributeLabels.length > 0 && (
+            <p className="mb-4">
+              <span className="font-semibold">Attribute:</span>{' '}
+              {csvPreview.attributeLabels.join(', ')}
+            </p>
+          )}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr>
+                  <th className="border-b p-2">ID</th>
+                  <th className="border-b p-2">Name</th>
+                  <th className="border-b p-2">Erster Wert</th>
+                </tr>
+              </thead>
+              <tbody>
+                {csvPreview.rows.map((row, index) => (
+                  <tr key={`${row.id}-${index}`}>
+                    <td className="border-b p-2">{row.id || '—'}</td>
+                    <td className="border-b p-2">{row.description}</td>
+                    <td className="border-b p-2">{row.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
       <div className="flex justify-end py-4 mb-8">
         <CancelButton />
         <SaveButton handleSaveClick={handleCreatefileUpload} />

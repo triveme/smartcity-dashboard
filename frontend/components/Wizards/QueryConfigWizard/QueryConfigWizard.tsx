@@ -61,6 +61,7 @@ const singleSelectWidgetTypes: string[] = [
   'Measurement',
   'Farbiger Slider',
   'Werte zu Bildern',
+  'Belegungskalender',
 ];
 
 export default function QueryConfigWizard(

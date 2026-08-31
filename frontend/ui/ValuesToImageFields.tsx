@@ -180,8 +180,8 @@ export default function ValuesToImageFields(
 
       <div className="text-xs text-gray-400 mb-3">
         Erlaubte Formate: Text (z. B. free, occupied), Zahl (z. B. 10) oder
-        Bereich (z. B. 10-20). Bereiche sind inklusiv. Dezimaltrennzeichen ','
-        oder '.'; Leerzeichen sind erlaubt.
+        Bereich (z. B. 10-20). Bereiche sind inklusiv. Dezimaltrennzeichen Komma
+        oder Punkt; Leerzeichen sind erlaubt.
       </div>
       {inputValues.map((value, index) => (
         <div key={`main-value-${index}`} className="flex flex-col gap-4 mb-4">

@@ -1,4 +1,5 @@
 import { ReactElement, useState } from 'react';
+import { getFirstGeoJSONSensorData } from '@/utils/geoJsonHelper';
 import { useAuth } from 'react-oidc-context';
 import dynamic from 'next/dynamic';
 
@@ -14,6 +15,7 @@ import PanelWizard from '@/components/Wizards/PanelWizard';
 import { dashboardTypeEnum, Panel, Tab } from '@/types';
 import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
+import { getMapStaticValues } from '@/utils/mapValueColorMode';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
 import IFrameComponent from '@/ui/IFrameComponent';
@@ -263,10 +265,23 @@ export default function DashboardPreview(
           mapIsIconColorValueBased={
             selectedTab?.mapIsIconColorValueBased || false
           }
-          staticValues={selectedTab?.chartStaticValues || []}
+          mapValueColorMode={selectedTab?.mapValueColorMode}
+          mapDateColorRules={selectedTab?.mapDateColorRules}
+          mapValueColorDefaultColor={selectedTab?.mapValueColorDefaultColor}
+          staticValues={getMapStaticValues(
+            selectedTab?.mapValueColorMode,
+            selectedTab?.chartStaticValues,
+            selectedTab?.chartStaticValuesTexts,
+          )}
           staticValuesColors={selectedTab?.chartStaticValuesColors || []}
           mapFormSizeFactor={selectedTab?.mapFormSizeFactor || 1}
           mapGeoJSON={selectedTab?.mapGeoJSON || ''}
+          mapGeoJSONFeatureIdentifier={
+            selectedTab?.mapGeoJSONFeatureIdentifier || ''
+          }
+          mapGeoJSONSensorData={getFirstGeoJSONSensorData(
+            selectedTab?.chartData,
+          )}
           mapGeoJSONSensorBasedColors={
             selectedTab?.mapGeoJSONSensorBasedColors || false
           }

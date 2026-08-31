@@ -27,7 +27,6 @@ export default function WizardMultipleDropdownSelection(
   } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [filterValue, setFilterValue] = useState('');
-
   const dropdownRef = useRef(null);
 
   const alphabeticFilteredSensors = alphabeticSortHelper(selectableValues);
@@ -36,7 +35,6 @@ export default function WizardMultipleDropdownSelection(
     alphabeticFilteredSensors,
     filterValue,
   );
-
   const handleSelect = (value: string): void => {
     const newSelection = currentValue.includes(value)
       ? currentValue.filter((item) => item !== value)

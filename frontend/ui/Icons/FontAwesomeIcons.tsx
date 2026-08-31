@@ -30,6 +30,7 @@ import {
   faLocationDot,
   faCloud,
   faCar,
+  faBus,
   faGlobe,
   faTree,
   faWifi,
@@ -72,6 +73,46 @@ import {
   faCogs,
   faDatabase,
   faCircleInfo,
+  faLink,
+  faPaperPlane,
+  faBusSimple,
+  faPersonSwimming,
+  faWaterLadder,
+  faRecycle,
+  faPersonDigging,
+  faRoadBarrier,
+  faDumpster,
+  faCalendar,
+  faCalendarDays,
+  faCapsules,
+  faStaffSnake,
+  faPrescriptionBottleMedical,
+  faKitMedical,
+  faUserDoctor,
+  faBriefcaseMedical,
+  faHospital,
+  faInfo,
+  faBridgeWater,
+  faTruck,
+  faTrafficLight,
+  faSquareParking,
+  faChargingStation,
+  faTaxi,
+  faBolt,
+  faGasPump,
+  faFire,
+  faSnowflake,
+  faSchool,
+  faChurch,
+  faWarehouse,
+  faLock,
+  faChartLine,
+  faChartColumn,
+  faChartPie,
+  faWheelchair,
+  faStore,
+  faFireExtinguisher,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const AvailableIcons = [
@@ -97,6 +138,7 @@ export const AvailableIcons = [
   'Industry',
   'LocationDot',
   'Car',
+  'Bus',
   'Bicycle',
   'Train',
   'Gauge',
@@ -131,6 +173,46 @@ export const AvailableIcons = [
   'Cogs',
   'Attention',
   'Info',
+  'Link',
+  'PaperPlane',
+  'BusSimple',
+  'PersonSwimming',
+  'WaterLadder',
+  'Recycle',
+  'PersonDigging',
+  'RoadBarrier',
+  'Dumpster',
+  'Calendar',
+  'CalendarDays',
+  'Capsules',
+  'StaffSnake',
+  'PrescriptionBottleMedical',
+  'KitMedical',
+  'UserDoctor',
+  'BriefcaseMedical',
+  'Hospital',
+  'InfoPlain',
+  'BridgeWater',
+  'Truck',
+  'TrafficLight',
+  'SquareParking',
+  'ChargingStation',
+  'Taxi',
+  'Bolt',
+  'GasPump',
+  'Fire',
+  'Snowflake',
+  'School',
+  'Church',
+  'Warehouse',
+  'Lock',
+  'ChartLine',
+  'ChartColumn',
+  'ChartPie',
+  'Wheelchair',
+  'Store',
+  'FireExtinguisher',
+  'XMark',
 ];
 
 type FontAwesomeIconsProps = {
@@ -255,6 +337,8 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faLocationDot} color={color} size={size} />;
     case 'Car':
       return <FontAwesomeIcon icon={faCar} color={color} size={size} />;
+    case 'Bus':
+      return <FontAwesomeIcon icon={faBus} color={color} size={size} />;
     case 'Bicycle':
       return <FontAwesomeIcon icon={faBicycle} color={color} size={size} />;
     case 'Train':
@@ -358,6 +442,108 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faDatabase} color={color} size={size} />;
     case 'Info':
       return <FontAwesomeIcon icon={faCircleInfo} color={color} size={size} />;
+    case 'Link':
+      return <FontAwesomeIcon icon={faLink} color={color} size={size} />;
+    case 'PaperPlane':
+      return <FontAwesomeIcon icon={faPaperPlane} color={color} size={size} />;
+    case 'BusSimple':
+      return <FontAwesomeIcon icon={faBusSimple} color={color} size={size} />;
+    case 'PersonSwimming':
+      return (
+        <FontAwesomeIcon icon={faPersonSwimming} color={color} size={size} />
+      );
+    case 'WaterLadder':
+      return <FontAwesomeIcon icon={faWaterLadder} color={color} size={size} />;
+    case 'Recycle':
+      return <FontAwesomeIcon icon={faRecycle} color={color} size={size} />;
+    case 'PersonDigging':
+      return (
+        <FontAwesomeIcon icon={faPersonDigging} color={color} size={size} />
+      );
+    case 'RoadBarrier':
+      return <FontAwesomeIcon icon={faRoadBarrier} color={color} size={size} />;
+    case 'Dumpster':
+      return <FontAwesomeIcon icon={faDumpster} color={color} size={size} />;
+    case 'Calendar':
+      return <FontAwesomeIcon icon={faCalendar} color={color} size={size} />;
+    case 'CalendarDays':
+      return (
+        <FontAwesomeIcon icon={faCalendarDays} color={color} size={size} />
+      );
+    case 'Capsules':
+      return <FontAwesomeIcon icon={faCapsules} color={color} size={size} />;
+    case 'StaffSnake':
+      return <FontAwesomeIcon icon={faStaffSnake} color={color} size={size} />;
+    case 'PrescriptionBottleMedical':
+      return (
+        <FontAwesomeIcon
+          icon={faPrescriptionBottleMedical}
+          color={color}
+          size={size}
+        />
+      );
+    case 'KitMedical':
+      return <FontAwesomeIcon icon={faKitMedical} color={color} size={size} />;
+    case 'UserDoctor':
+      return <FontAwesomeIcon icon={faUserDoctor} color={color} size={size} />;
+    case 'BriefcaseMedical':
+      return (
+        <FontAwesomeIcon icon={faBriefcaseMedical} color={color} size={size} />
+      );
+    case 'Hospital':
+      return <FontAwesomeIcon icon={faHospital} color={color} size={size} />;
+    case 'InfoPlain':
+      return <FontAwesomeIcon icon={faInfo} color={color} size={size} />;
+    case 'BridgeWater':
+      return <FontAwesomeIcon icon={faBridgeWater} color={color} size={size} />;
+    case 'Truck':
+      return <FontAwesomeIcon icon={faTruck} color={color} size={size} />;
+    case 'TrafficLight':
+      return (
+        <FontAwesomeIcon icon={faTrafficLight} color={color} size={size} />
+      );
+    case 'SquareParking':
+      return (
+        <FontAwesomeIcon icon={faSquareParking} color={color} size={size} />
+      );
+    case 'ChargingStation':
+      return (
+        <FontAwesomeIcon icon={faChargingStation} color={color} size={size} />
+      );
+    case 'Taxi':
+      return <FontAwesomeIcon icon={faTaxi} color={color} size={size} />;
+    case 'Bolt':
+      return <FontAwesomeIcon icon={faBolt} color={color} size={size} />;
+    case 'GasPump':
+      return <FontAwesomeIcon icon={faGasPump} color={color} size={size} />;
+    case 'Fire':
+      return <FontAwesomeIcon icon={faFire} color={color} size={size} />;
+    case 'Snowflake':
+      return <FontAwesomeIcon icon={faSnowflake} color={color} size={size} />;
+    case 'School':
+      return <FontAwesomeIcon icon={faSchool} color={color} size={size} />;
+    case 'Church':
+      return <FontAwesomeIcon icon={faChurch} color={color} size={size} />;
+    case 'Warehouse':
+      return <FontAwesomeIcon icon={faWarehouse} color={color} size={size} />;
+    case 'Lock':
+      return <FontAwesomeIcon icon={faLock} color={color} size={size} />;
+    case 'ChartLine':
+      return <FontAwesomeIcon icon={faChartLine} color={color} size={size} />;
+    case 'ChartColumn':
+      return <FontAwesomeIcon icon={faChartColumn} color={color} size={size} />;
+    case 'ChartPie':
+      return <FontAwesomeIcon icon={faChartPie} color={color} size={size} />;
+    case 'Wheelchair':
+      return <FontAwesomeIcon icon={faWheelchair} color={color} size={size} />;
+    case 'Store':
+      return <FontAwesomeIcon icon={faStore} color={color} size={size} />;
+    case 'FireExtinguisher':
+      return (
+        <FontAwesomeIcon icon={faFireExtinguisher} color={color} size={size} />
+      );
+    case 'XMark':
+      return <FontAwesomeIcon icon={faXmark} color={color} size={size} />;
     default:
       return <div></div>;
   }

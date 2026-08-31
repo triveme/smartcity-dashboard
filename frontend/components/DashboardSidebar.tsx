@@ -40,7 +40,7 @@ export default function DashboardSidebar(
 
   // Query Menu Structure
   const { data: groupingElements } = useQuery({
-    queryKey: ['menu', tenant, accessToken],
+    queryKey: ['menu', tenant],
     queryFn: () => getMenuGroupingElements(tenant, accessToken!),
     enabled: !auth.isLoading,
   });
@@ -97,9 +97,7 @@ export default function DashboardSidebar(
             color: menuCornerFontColor,
           }}
           className="h-16 p-3 flex justify-center items-center content-center w-full z-10 shadow-md"
-        >
-          <p className="mr-auto">Dashboards</p>
-        </div>
+        />
 
         {/* Dynamic Navigation Points */}
         <div className="w-full flex flex-col justify-start items-start flex-1 overflow-y-auto">

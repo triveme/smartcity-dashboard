@@ -10,8 +10,15 @@ import {
   ChartData,
   CurrentAreaConfig,
   DashboardWithContent,
+  tabComponentSubTypeEnum,
+  tabComponentTypeEnum,
   WidgetWithChildren,
 } from '@/types';
+
+type ExportDataWhitelistType = {
+  type: tabComponentTypeEnum;
+  subType: tabComponentSubTypeEnum;
+};
 
 export const getAvailableWidgets = async (
   accessToken: string,
@@ -163,4 +170,39 @@ export function downloadChartDataCsv(data: ChartData[]): void {
   link.click();
 
   URL.revokeObjectURL(url);
+}
+
+const DATA_EXPORT_WHITELIST: ExportDataWhitelistType[] = [
+  {
+    type: tabComponentTypeEnum.diagram,
+    subType: tabComponentSubTypeEnum.lineChart,
+  },
+  {
+    type: tabComponentTypeEnum.diagram,
+    subType: tabComponentSubTypeEnum.lineChartDynamic,
+  },
+  {
+    type: tabComponentTypeEnum.diagram,
+    subType: tabComponentSubTypeEnum.barChart,
+  },
+  {
+    type: tabComponentTypeEnum.diagram,
+    subType: tabComponentSubTypeEnum.barChartDynamic,
+  },
+  {
+    type: tabComponentTypeEnum.diagram,
+    subType: tabComponentSubTypeEnum.barChartHorizontal,
+  },
+];
+
+export function isDataExportSupported(
+  componentType?: string,
+  componentSubType?: string,
+): boolean {
+  if (!componentType || !componentSubType) return false;
+
+  return DATA_EXPORT_WHITELIST.some(
+    (entry) =>
+      entry.type === componentType && entry.subType === componentSubType,
+  );
 }

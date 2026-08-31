@@ -10,13 +10,24 @@ export function combineWidgetAttributes(
 ): Record<string, any[] | null | boolean> {
   const combinedAttributes: Record<string, any[] | null | boolean> = {};
 
+  if (!Array.isArray(combinedWidgets)) {
+    return combinedAttributes;
+  }
+
   combinedWidgets.forEach((widget, widgetIndex) => {
+    if (!widget || !Array.isArray(widget.tabs)) {
+      console.warn(
+        `Skipping combined widget without tabs at index ${widgetIndex}`,
+      );
+      return;
+    }
+
     // add mapNames for filter modal
     if (!combinedAttributes['mapNames']) {
       combinedAttributes['mapNames'] = [];
     }
     if (widget.name) {
-      (combinedAttributes['mapNames'] as any[]).push(widget.name);
+      (combinedAttributes['mapNames'] as any[])[widgetIndex] = widget.name;
     }
 
     widget.tabs.forEach((tab: Record<string, any>) => {
@@ -109,7 +120,8 @@ export function combineWidgetAttributes(
         key === 'chartStaticValuesColors' ||
         key === 'chartStaticValues' ||
         key === 'chartStaticValuesLogos' ||
-        key === 'chartStaticValuesTexts'
+        key === 'chartStaticValuesTexts' ||
+        key === 'mapDateColorRules'
       ) {
         // Group by dataSource and extract the values
         const groupedByDataSource: { [dataSource: number]: any[] } = {};

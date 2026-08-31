@@ -376,7 +376,10 @@ export class PopulateValueService {
         attribute,
       );
       if (latestValue !== undefined) {
-        tab.textValue = String(latestValue);
+        this.applyResolvedSingleValue(
+          tab,
+          this.resolveFiwareAttributeValue(latestValue),
+        );
       } else {
         const queryDataMap: Map<string, FiwareAttribute[]> = new Map(
           Object.entries(queryData),
@@ -590,6 +593,17 @@ export class PopulateValueService {
   private resolveFiwareAttributeValue(
     latestValue: unknown,
   ): ResolvedSingleValue {
+    if (typeof latestValue === 'number') {
+      return { chartValues: [latestValue], textValue: String(latestValue) };
+    }
+
+    if (typeof latestValue === 'string') {
+      const numValue = parseFloat(latestValue);
+      if (!isNaN(numValue)) {
+        return { chartValues: [numValue], textValue: latestValue };
+      }
+      return { chartValues: [], textValue: latestValue };
+    }
     return {
       chartValues: [],
       textValue: String(latestValue),

@@ -5,7 +5,11 @@ import DashboardIcons from '../Icons/DashboardIcon';
 import React from 'react';
 import { useAuth } from 'react-oidc-context';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
-import { downloadCSV, getAvailableWidgets } from '@/utils/downloadHelper';
+import {
+  downloadCSV,
+  getAvailableWidgets,
+  isDataExportSupported,
+} from '@/utils/downloadHelper';
 import PageHeadline from '../PageHeadline';
 import {
   CorporateInfo,
@@ -174,14 +178,19 @@ export default function DataExportButton(
       }
 
       const result = widgets.panels.flatMap((panel) => {
-        return panel.widgets.map((widget) => {
-          return {
+        return panel.widgets
+          .filter((widget) =>
+            isDataExportSupported(
+              widget.tabs[0]?.componentType,
+              widget.tabs[0]?.componentSubType,
+            ),
+          )
+          .map((widget) => ({
             id: widget.id as string,
             name: widget.name,
             panelName: panel.name,
             componentSubType: widget.tabs.map((tab) => tab.componentSubType)[0],
-          };
-        });
+          }));
       });
 
       setAvailableWidgets(result);
@@ -190,14 +199,22 @@ export default function DataExportButton(
       if (!widgets || !('widget' in widgets)) {
         return;
       }
-      const result = [
+
+      if (
+        !isDataExportSupported(
+          widgets.tab.componentType,
+          widgets.tab.componentSubType,
+        )
+      ) {
+        return;
+      }
+
+      setAvailableWidgets([
         {
           id: widgets.widget.id as string,
           name: widgets.widget.name,
         },
-      ];
-
-      setAvailableWidgets(result);
+      ]);
     }
   };
 
@@ -228,9 +245,10 @@ export default function DataExportButton(
   };
 
   useEffect(() => {
+    if (auth.isLoading) return;
     getAllAvalilableWidgets();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, id, type]);
+  }, [auth.isLoading, id, type]);
 
   return (
     <div>
@@ -257,192 +275,219 @@ export default function DataExportButton(
               fontColor={panelFontColor || '#FFFFFF'}
             />
           </div>
-          <div className="flex flex-col justify-center w-full">
-            <CheckBox
-              label={allSelected ? 'Alle abwählen' : 'Alle auswählen'}
-              value={allSelected}
-              handleSelectChange={(isSelected) => handleToggleAll(isSelected)}
-            />
-            <HorizontalDivider />
-          </div>
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <DashboardIcons
-                iconName="Spinner"
-                color={menuStyle ? menuStyle.color : downloadButtonStyle.color}
-              />
-              <p
-                className="mt-4 text-base"
-                style={{ color: widgetFontColor || '#FFFFFF' }}
-              >
-                Daten werden exportiert...
-                <br />
-                Je nach Größe des Dashboards kann es etwas dauern.
-              </p>
+          {availableWidgets.length === 0 ? (
+            <div>
+              <div className="flex flex-col items-center justify-center py-8">
+                <p
+                  className="mt-4 text-base"
+                  style={{ color: widgetFontColor || '#FFFFFF' }}
+                >
+                  Aktuell sind keine Widgets zum Herunterladen verfügbar.
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="max-h-60 overflow-y-auto">
-              {availableWidgets.map((widget, indx) => {
-                const itemCofig = currentAreaConfig.find(
-                  (item) => item.id === widget.id,
-                );
-
-                const currentAreaConfigElement = currentAreaConfig.find(
-                  (e) => e.id === widget.id,
-                );
-
-                return (
-                  <div
-                    key={indx}
-                    className="flex flex-col justify-center w-full"
+            <div>
+              <div className="flex flex-col justify-center w-full">
+                <CheckBox
+                  label={allSelected ? 'Alle abwählen' : 'Alle auswählen'}
+                  value={allSelected}
+                  handleSelectChange={(isSelected) =>
+                    handleToggleAll(isSelected)
+                  }
+                />
+                <HorizontalDivider />
+              </div>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <DashboardIcons
+                    iconName="Spinner"
+                    color={menuStyle ? menuStyle?.color : panelFontColor}
+                  />
+                  <p
+                    className="mt-4 text-base"
+                    style={{ color: widgetFontColor || '#FFFFFF' }}
                   >
-                    <div>
-                      <CheckBox
-                        label={`${widget.panelName ? widget.panelName + ' -' : ''} ${widget.name}`}
-                        value={selectedWidgetIds.includes(widget.id)}
-                        handleSelectChange={(isSelected) =>
-                          handleToggleWidget(widget.id, isSelected)
-                        }
-                      />
-                    </div>
-                    {(widget.componentSubType ===
-                      tabComponentSubTypeEnum.lineChart ||
-                      widget.componentSubType ===
-                        tabComponentSubTypeEnum.barChart ||
-                      widget.componentSubType ===
-                        tabComponentSubTypeEnum.barChartHorizontal) &&
-                      selectedWidgetIds.includes(widget.id) && (
-                        <div className="ml-5">
-                          <div className="mt-4">
-                            <CheckBox
-                              label="Möchten Sie die Daten für den aktuellen Bereich herunterladen?"
-                              value={itemCofig?.downloadCurrentArea ?? false}
-                              handleSelectChange={(value) => {
-                                setCurrentAreaConfing((prev) =>
-                                  prev.map((item) =>
-                                    item.id === widget.id
-                                      ? {
-                                          ...item,
-                                          downloadCurrentArea: value,
-                                          changeTimeFramePeriod: value
-                                            ? false
-                                            : (item?.changeTimeFramePeriod ??
-                                              false),
-                                        }
-                                      : item,
-                                  ),
-                                );
-                              }}
-                            />
-                          </div>
-                          <div className="mt-4">
-                            <CheckBox
-                              label="Zeitspannenauswahl?"
-                              value={itemCofig?.changeTimeFramePeriod ?? false}
-                              handleSelectChange={(value) => {
-                                setCurrentAreaConfing((prev) =>
-                                  prev.map((item) =>
-                                    item.id === widget.id
-                                      ? {
-                                          ...item,
-                                          changeTimeFramePeriod: value,
-                                          downloadCurrentArea: value
-                                            ? false
-                                            : (item?.downloadCurrentArea ??
-                                              false),
-                                        }
-                                      : item,
-                                  ),
-                                );
-                              }}
-                            />
-                          </div>
-                          {itemCofig?.changeTimeFramePeriod &&
-                            (currentAreaConfigElement?.authDataType !==
-                            'usi' ? (
-                              <div className="flex flex-col w-full pb-2">
-                                <WizardLabel label="Zeitbereich" />
-                                <WizardDropdownSelection
-                                  currentValue={
-                                    timeFrameWithoutLive.find(
-                                      (option) =>
-                                        option.value ===
-                                        currentAreaConfigElement?.timeFramePeriod,
-                                    )?.label || ''
+                    Daten werden exportiert...
+                    <br />
+                    Je nach Größe des Dashboards kann es etwas dauern.
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-60 overflow-y-auto">
+                  {availableWidgets.map((widget, indx) => {
+                    const itemCofig = currentAreaConfig.find(
+                      (item) => item.id === widget.id,
+                    );
+
+                    const currentAreaConfigElement = currentAreaConfig.find(
+                      (e) => e.id === widget.id,
+                    );
+
+                    return (
+                      <div
+                        key={indx}
+                        className="flex flex-col justify-center w-full"
+                      >
+                        <div>
+                          <CheckBox
+                            label={`${widget.panelName ? widget.panelName + ' -' : ''} ${widget.name}`}
+                            value={selectedWidgetIds.includes(widget.id)}
+                            handleSelectChange={(isSelected) =>
+                              handleToggleWidget(widget.id, isSelected)
+                            }
+                          />
+                        </div>
+                        {(widget.componentSubType ===
+                          tabComponentSubTypeEnum.lineChart ||
+                          widget.componentSubType ===
+                            tabComponentSubTypeEnum.barChart ||
+                          widget.componentSubType ===
+                            tabComponentSubTypeEnum.barChartHorizontal) &&
+                          selectedWidgetIds.includes(widget.id) && (
+                            <div className="ml-5">
+                              <div className="mt-4">
+                                <CheckBox
+                                  label="Möchten Sie die Daten für den aktuellen Bereich herunterladen?"
+                                  value={
+                                    itemCofig?.downloadCurrentArea ?? false
                                   }
-                                  selectableValues={timeFrameWithoutLive.map(
-                                    (option) => option.label,
-                                  )}
-                                  onSelect={(label: string | number): void => {
-                                    const enumValue = timeFrameWithoutLive.find(
-                                      (option) => option.label === label,
-                                    )?.value;
+                                  handleSelectChange={(value) => {
                                     setCurrentAreaConfing((prev) =>
                                       prev.map((item) =>
                                         item.id === widget.id
-                                          ? ({
+                                          ? {
                                               ...item,
-                                              timeFramePeriod:
-                                                enumValue as timeframeEnum,
-                                            } as CurrentAreaConfig)
+                                              downloadCurrentArea: value,
+                                              changeTimeFramePeriod: value
+                                                ? false
+                                                : (item?.changeTimeFramePeriod ??
+                                                  false),
+                                            }
                                           : item,
                                       ),
                                     );
                                   }}
-                                  iconColor={ciColors.dashboardFontColor}
-                                  borderColor={ciColors.panelBorderColor}
-                                  backgroundColor={ciColors.headerPrimaryColor}
                                 />
                               </div>
-                            ) : (
-                              <>
-                                <div className="flex flex-col w-full pb-2">
-                                  <WizardLabel label="Zeitbereich" />
-                                  <WizardDropdownSelection
-                                    currentValue={
-                                      timeFrameWithoutLiveWithExakt.find(
-                                        (option) =>
-                                          option.value ===
-                                          currentAreaConfigElement?.timeFramePeriod,
-                                      )?.label || ''
-                                    }
-                                    selectableValues={timeFrameWithoutLiveWithExakt.map(
-                                      (option) => option.label,
-                                    )}
-                                    onSelect={(
-                                      label: string | number,
-                                    ): void => {
-                                      const enumValue =
-                                        timeFrameWithoutLiveWithExakt.find(
-                                          (option) => option.label === label,
-                                        )?.value;
-                                      setCurrentAreaConfing((prev) =>
-                                        prev.map((item) =>
-                                          item.id === widget.id
-                                            ? ({
-                                                ...item,
-                                                timeFramePeriod:
-                                                  enumValue as timeframeEnum,
-                                              } as CurrentAreaConfig)
-                                            : item,
-                                        ),
-                                      );
-                                    }}
-                                    iconColor={ciColors.dashboardFontColor}
-                                    borderColor={ciColors.panelBorderColor}
-                                    backgroundColor={
-                                      ciColors.headerPrimaryColor
-                                    }
-                                  />
-                                </div>
-                              </>
-                            ))}
-                        </div>
-                      )}
-                    <HorizontalDivider />
-                  </div>
-                );
-              })}
+                              <div className="mt-4">
+                                <CheckBox
+                                  label="Zeitspannenauswahl?"
+                                  value={
+                                    itemCofig?.changeTimeFramePeriod ?? false
+                                  }
+                                  handleSelectChange={(value) => {
+                                    setCurrentAreaConfing((prev) =>
+                                      prev.map((item) =>
+                                        item.id === widget.id
+                                          ? {
+                                              ...item,
+                                              changeTimeFramePeriod: value,
+                                              downloadCurrentArea: value
+                                                ? false
+                                                : (item?.downloadCurrentArea ??
+                                                  false),
+                                            }
+                                          : item,
+                                      ),
+                                    );
+                                  }}
+                                />
+                              </div>
+                              {itemCofig?.changeTimeFramePeriod &&
+                                (currentAreaConfigElement?.authDataType !==
+                                'usi' ? (
+                                  <div className="flex flex-col w-full pb-2">
+                                    <WizardLabel label="Zeitbereich" />
+                                    <WizardDropdownSelection
+                                      currentValue={
+                                        timeFrameWithoutLive.find(
+                                          (option) =>
+                                            option.value ===
+                                            currentAreaConfigElement?.timeFramePeriod,
+                                        )?.label || ''
+                                      }
+                                      selectableValues={timeFrameWithoutLive.map(
+                                        (option) => option.label,
+                                      )}
+                                      onSelect={(
+                                        label: string | number,
+                                      ): void => {
+                                        const enumValue =
+                                          timeFrameWithoutLive.find(
+                                            (option) => option.label === label,
+                                          )?.value;
+                                        setCurrentAreaConfing((prev) =>
+                                          prev.map((item) =>
+                                            item.id === widget.id
+                                              ? ({
+                                                  ...item,
+                                                  timeFramePeriod:
+                                                    enumValue as timeframeEnum,
+                                                } as CurrentAreaConfig)
+                                              : item,
+                                          ),
+                                        );
+                                      }}
+                                      iconColor={ciColors.headerFontColor}
+                                      borderColor={ciColors.panelBorderColor}
+                                      backgroundColor={
+                                        ciColors.headerPrimaryColor
+                                      }
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="flex flex-col w-full pb-2">
+                                      <WizardLabel label="Zeitbereich" />
+                                      <WizardDropdownSelection
+                                        currentValue={
+                                          timeFrameWithoutLiveWithExakt.find(
+                                            (option) =>
+                                              option.value ===
+                                              currentAreaConfigElement?.timeFramePeriod,
+                                          )?.label || ''
+                                        }
+                                        selectableValues={timeFrameWithoutLiveWithExakt.map(
+                                          (option) => option.label,
+                                        )}
+                                        onSelect={(
+                                          label: string | number,
+                                        ): void => {
+                                          const enumValue =
+                                            timeFrameWithoutLiveWithExakt.find(
+                                              (option) =>
+                                                option.label === label,
+                                            )?.value;
+                                          setCurrentAreaConfing((prev) =>
+                                            prev.map((item) =>
+                                              item.id === widget.id
+                                                ? ({
+                                                    ...item,
+                                                    timeFramePeriod:
+                                                      enumValue as timeframeEnum,
+                                                  } as CurrentAreaConfig)
+                                                : item,
+                                            ),
+                                          );
+                                        }}
+                                        iconColor={ciColors.headerFontColor}
+                                        borderColor={ciColors.panelBorderColor}
+                                        backgroundColor={
+                                          ciColors.headerPrimaryColor
+                                        }
+                                      />
+                                    </div>
+                                  </>
+                                ))}
+                            </div>
+                          )}
+                        <HorizontalDivider />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

@@ -184,12 +184,22 @@ export class DataService {
           axios.get(url, { headers, params: nameParams }),
         ]);
 
-        const combinedAttrs = [
-          ...aggrResponse.data.attrs,
-          ...nameResponse.data.attrs,
-        ];
+        if (aggrResponse.data.attrs && nameResponse.data.attrs) {
+          const combinedAttrs = [
+            ...aggrResponse.data.attrs,
+            ...nameResponse.data.attrs,
+          ];
+          return {
+            attrs: [...combinedAttrs],
+          };
+        }
+
         return {
-          attrs: [...combinedAttrs],
+          ...aggrResponse.data,
+          attributes: [
+            ...aggrResponse.data.attributes,
+            ...nameResponse.data.attributes,
+          ],
         };
       }
       const response = await axios.get(url, { headers, params });
@@ -240,6 +250,15 @@ export class DataService {
           Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
         };
 
+        if (query_config.isBlacklist === true) {
+          return this.getNgsiLdEntitiesExcludingBlacklist(
+            url,
+            headers,
+            query_config,
+            query_config.attributes,
+          );
+        }
+
         // Split entityIds into batches
         for (let i = 0; i < query_config.entityIds.length; i += batchSize) {
           batches.push(query_config.entityIds.slice(i, i + batchSize));
@@ -278,6 +297,21 @@ export class DataService {
           Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
         };
 
+        const entityIds =
+          query_config.isBlacklist === true
+            ? (
+                await this.getNgsiLdEntitiesExcludingBlacklist(
+                  staticBaseUrl,
+                  headers,
+                  query_config,
+                )
+              ).map((entity) => entity.id)
+            : query_config.entityIds;
+
+        if (entityIds.length === 0) {
+          return [];
+        }
+
         params = {
           timerel: 'between',
           timeAt: this.getFromDate(
@@ -304,16 +338,16 @@ export class DataService {
         }
 
         // For multiple entities, create separate requests or use id parameter
-        if (query_config.entityIds.length > 1) {
+        if (entityIds.length > 1) {
           // Use the baseUrl with entity id parameter
           url = baseUrl;
           staticUrl = staticBaseUrl;
-          params.id = query_config.entityIds.join(',');
+          params.id = entityIds.join(',');
           params.type = query_config.fiwareType;
         } else {
           // For a single entity, use the entityId in the URL
-          url = `${baseUrl}/${query_config.entityIds[0]}`;
-          staticUrl = `${staticBaseUrl}/${query_config.entityIds[0]}`;
+          url = `${baseUrl}/${entityIds[0]}`;
+          staticUrl = `${staticBaseUrl}/${entityIds[0]}`;
         }
 
         if (
@@ -361,20 +395,27 @@ export class DataService {
             return {
               attrs: [...combinedAttrs],
             };
-          } else {
-            const combinedData = aggrResponse.data.map((dataElement) => {
-              const newData = { ...dataElement };
-              const nameData = nameResponse.data.find(
-                (nameElement) => nameElement.id == dataElement.id,
-              );
-              if (nameData) {
-                newData.name = nameData.name;
-              }
-              return newData;
-            });
-
-            return combinedData;
           }
+
+          if (!Array.isArray(aggrResponse.data)) {
+            return {
+              ...aggrResponse.data,
+              name: nameResponse.data.name,
+            };
+          }
+
+          const combinedData = aggrResponse.data.map((dataElement) => {
+            const newData = { ...dataElement };
+            const nameData = nameResponse.data.find(
+              (nameElement) => nameElement.id == dataElement.id,
+            );
+            if (nameData) {
+              newData.name = nameData.name;
+            }
+            return newData;
+          });
+
+          return combinedData;
         }
 
         const response = await axios.get(url, { headers, params });
@@ -408,6 +449,43 @@ export class DataService {
         );
       }
     }
+  }
+
+  private async getNgsiLdEntitiesExcludingBlacklist(
+    url: string,
+    headers: Record<string, string>,
+    queryConfig: QueryConfig,
+    attributes?: string[],
+  ): Promise<Array<{ id: string }>> {
+    const blacklistedEntityIds = new Set(queryConfig.entityIds ?? []);
+    const entities: Array<{ id: string }> = [];
+    const limit = 100;
+    let offset = 0;
+    let hasMoreEntities = true;
+
+    while (hasMoreEntities) {
+      const params: Record<string, string> = {
+        type: queryConfig.fiwareType,
+        limit: limit.toString(),
+        offset: offset.toString(),
+      };
+
+      if (attributes?.length) {
+        params.attrs = attributes.join(',');
+      }
+
+      const response = await axios.get(url, { headers, params });
+      const entityPage = response.data as Array<{ id: string }>;
+
+      entities.push(
+        ...entityPage.filter((entity) => !blacklistedEntityIds.has(entity.id)),
+      );
+
+      hasMoreEntities = entityPage.length === limit;
+      offset += limit;
+    }
+
+    return entities;
   }
 
   getAggregationPeriodMappingForNgsiLd(aggrPeriod: string): string {
@@ -454,18 +532,19 @@ export class DataService {
       return;
     }
 
+    const entityCount =
+      queryConfig.isBlacklist === true
+        ? Array.isArray(data)
+          ? data.length
+          : 1
+        : queryConfig.entityIds.length;
+
     // Choose the appropriate mapping function based on entity and attribute counts
-    if (
-      queryConfig.entityIds.length === 1 &&
-      queryConfig.attributes.length === 1
-    ) {
+    if (entityCount === 1 && queryConfig.attributes.length === 1) {
       return this.mapLdToV2ForSingleEntitySingleAttribute(data);
-    } else if (
-      queryConfig.entityIds.length === 1 &&
-      queryConfig.attributes.length > 1
-    ) {
+    } else if (entityCount === 1 && queryConfig.attributes.length > 1) {
       return this.mapNgsiLdToMultiAttributeTimeSeries(data);
-    } else if (queryConfig.entityIds.length > 1) {
+    } else if (entityCount > 1) {
       return this.mapNgsiLdForMultipleEntities(data, queryConfig);
     }
   }

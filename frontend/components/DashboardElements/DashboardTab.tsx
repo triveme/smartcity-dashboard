@@ -1,13 +1,16 @@
 import { CSSProperties, ReactElement } from 'react';
+import { getFirstGeoJSONSensorData } from '@/utils/geoJsonHelper';
 import nextDynamic from 'next/dynamic';
 
 import '@/components/dependencies/quill.snow.css';
 import '../../app/quill.css';
 import {
   CorporateInfo,
+  MapDateColorRule,
   MapModalLegend,
   MapModalWidget,
   MapObject,
+  MapValueColorMode,
   Tab,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
@@ -40,6 +43,10 @@ import {
   combineWidgetAttributes,
 } from '@/utils/combinedMapDataHelper';
 import {
+  getCombinedMapStaticValues,
+  getMapStaticValues,
+} from '@/utils/mapValueColorMode';
+import {
   DUMMY_CHART_DATA,
   DUMMY_PIE_CHART_LABELS,
   DUMMY_PIE_CHART_VALUES,
@@ -61,6 +68,7 @@ import BarChartHorizontal from '@/ui/Charts/BarChartHorizontal';
 import TableDynamic from '@/ui/Charts/TableDynamic';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
+import Calendar from '@/ui/Charts/Calendar/Calendar';
 import SensorStatusComponent from '@/ui/SensorStatus';
 import PharmacyComponent from '@/ui/Pharmacy';
 
@@ -807,6 +815,9 @@ export default async function DashboardTab(
                   mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
                   mapNames={(combinedMapData?.mapNames as string[]) || []}
                   mapGeoJSON={tab.mapGeoJSON || ''}
+                  mapGeoJSONFeatureIdentifier={
+                    tab.mapGeoJSONFeatureIdentifier || ''
+                  }
                   mapGeoJSONSensorBasedColors={
                     tab.mapGeoJSONSensorBasedColors || false
                   }
@@ -836,13 +847,24 @@ export default async function DashboardTab(
                   mapIsIconColorValueBased={
                     combinedMapData?.mapIsIconColorValueBased as boolean[]
                   }
-                  staticValues={
-                    combinedMapData?.chartStaticValuesText
-                      ? ((combinedMapData?.chartStaticValuesTexts ||
-                          []) as string[][])
-                      : ((combinedMapData?.chartStaticValues ||
-                          []) as number[][])
+                  mapValueColorMode={
+                    combinedMapData?.mapValueColorMode as (
+                      | 'numeric'
+                      | 'text'
+                      | 'relative_date'
+                    )[]
                   }
+                  mapDateColorRules={
+                    combinedMapData?.mapDateColorRules as MapDateColorRule[][]
+                  }
+                  mapValueColorDefaultColor={
+                    combinedMapData?.mapValueColorDefaultColor as string[]
+                  }
+                  staticValues={getCombinedMapStaticValues(
+                    combinedMapData?.mapValueColorMode as MapValueColorMode[],
+                    combinedMapData?.chartStaticValues as (number | string)[][],
+                    combinedMapData?.chartStaticValuesTexts as string[][],
+                  )}
                   staticValuesColors={
                     combinedMapData?.chartStaticValuesColors as string[][]
                   }
@@ -850,6 +872,7 @@ export default async function DashboardTab(
                     (combinedMapData?.chartStaticValuesLogos as string[][]) ||
                     []
                   }
+                  mapUnitsTexts={tab.mapUnitsTexts || []}
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
                   ciColors={ciColors}
@@ -923,6 +946,12 @@ export default async function DashboardTab(
                   mapAllowFilter={tab.mapAllowFilter || false}
                   mapFilterAttribute={tab.mapFilterAttribute || ''}
                   mapGeoJSON={tab.mapGeoJSON || ''}
+                  mapGeoJSONFeatureIdentifier={
+                    tab.mapGeoJSONFeatureIdentifier || ''
+                  }
+                  mapGeoJSONSensorData={getFirstGeoJSONSensorData(
+                    tabData?.chartData,
+                  )}
                   mapGeoJSONSensorBasedColors={
                     tab.mapGeoJSONSensorBasedColors || false
                   }
@@ -964,11 +993,14 @@ export default async function DashboardTab(
                   mapIsIconColorValueBased={
                     tab.mapIsIconColorValueBased || false
                   }
-                  staticValues={
-                    tab?.chartStaticValuesText
-                      ? tab?.chartStaticValuesTexts || []
-                      : tab?.chartStaticValues || []
-                  }
+                  mapValueColorMode={tab.mapValueColorMode}
+                  mapDateColorRules={tab.mapDateColorRules}
+                  mapValueColorDefaultColor={tab.mapValueColorDefaultColor}
+                  staticValues={getMapStaticValues(
+                    tab?.mapValueColorMode,
+                    tab?.chartStaticValues,
+                    tab?.chartStaticValuesTexts,
+                  )}
                   staticValuesColors={tab.chartStaticValuesColors || []}
                   staticValuesLogos={tab?.chartStaticValuesLogos || []}
                   mapWmsUrl={tab.mapWmsUrl || ''}
@@ -1165,6 +1197,33 @@ export default async function DashboardTab(
         <div className="h-full p-2 overflow-y-auto">
           <ValuesToImageComponent tab={tab} tabData={tabData} />
         </div>
+      )}
+
+      {tab.componentType === tabComponentTypeEnum.calendar && (
+        <Calendar
+          data={tabData?.calendarData || []}
+          calendarBookedColor={tab?.calendarBookedColor || '#ff0000'}
+          calendarPrivatBookedColor={
+            tab?.calendarPrivatBookedColor || '#a9a9b4'
+          }
+          calendarOrganisationBookedColor={
+            tab?.calendarOrganisationBookedColor || '#00ff0099'
+          }
+          calendarMonthAfterCurrent={
+            tab?.calendarMonthAfterCurrent === undefined
+              ? 12
+              : tab.calendarMonthAfterCurrent
+          }
+          calendarMonthBeforeCurrent={
+            tab?.calendarMonthBeforeCurrent === undefined
+              ? 12
+              : tab.calendarMonthBeforeCurrent
+          }
+          calendarDisplayedMonthsCount={tab?.calendarDisplayedMonthsCount || 3}
+          splitDay={tab?.splitCalendarDay || false}
+          fontColor={ciColors?.widgetFontColor || '#FFFFFF'}
+          height={widget?.height || 0}
+        />
       )}
 
       {tab.componentType === tabComponentTypeEnum.sensorStatus && (

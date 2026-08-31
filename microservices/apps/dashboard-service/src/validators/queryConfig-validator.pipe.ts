@@ -50,7 +50,13 @@ export class SanitizeQueryConfigPipe implements PipeTransform {
       if (!queryConfig?.aggrMode) {
         errorsOccured.push('Aggregationsmodus ist erforderlich');
       }
-      if (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) {
+      const isNgsiLdBlacklist =
+        queryConfig.dataSourceType === 'ngsi-ld' &&
+        queryConfig.isBlacklist === true;
+      if (
+        (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) &&
+        !isNgsiLdBlacklist
+      ) {
         errorsOccured.push('Sensoren sind erforderlich');
       }
     }

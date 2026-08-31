@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PopulateListviewService } from './populate/populate-listview';
 import { RoundingService } from './transformation/rounding.service';
 import { PopulateValueService } from './populate/populate-value.service';
+import { PopulateCalendarService } from './populate/populate-calendar.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PopulateValueService } from './populate/populate-value.service';
     PopulateValueService,
     PopulateMapService,
     PopulateListviewService,
+    PopulateCalendarService,
     RoundingService,
   ],
 })

@@ -15,6 +15,7 @@ import { DataTranslationRepo } from './data-translation.repo';
 import { WidgetToPanel } from '@app/postgres-db/schemas/dashboard.widget-to-panel.schema';
 import { PopulateListviewService } from './populate/populate-listview';
 import { PopulateValueService } from './populate/populate-value.service';
+import { PopulateCalendarService } from './populate/populate-calendar.service';
 
 export type QueryDataWidthWidgetId = {
   widgetId: string;
@@ -43,6 +44,23 @@ export function isSingleValueTab(tab: Tab): boolean {
         tab.componentSubType === 'Stageable Chart'))
   );
 }
+
+export type CalendarTextProperty = {
+  type: 'Text';
+  value: string;
+  metadata: Record<string, unknown>;
+};
+
+export type CalendarEntry = {
+  id: string;
+  type: 'planbar';
+  name: CalendarTextProperty;
+  usage: CalendarTextProperty;
+  location: CalendarTextProperty;
+  date: CalendarTextProperty;
+};
+
+export type CalendarData = CalendarEntry[];
 
 export type ChartData = {
   name: string;
@@ -106,6 +124,8 @@ export type TabWithContent = Tab & { query?: Query } & {
 } & {
   listviewData: InterestingPlace[];
 } & {
+  calendarData?: CalendarData;
+} & {
   timeframe: string | null;
   extendedDateSelection?: boolean;
 };
@@ -155,6 +175,7 @@ export class DataTranslationService {
     private readonly populateCombinedWidgetService: PopulateCombinedWidgetService,
     private readonly dataTranslationRepo: DataTranslationRepo,
     private readonly populateListviewService: PopulateListviewService,
+    private readonly populateCalendarService: PopulateCalendarService,
   ) {}
 
   async refreshTabData(): Promise<void> {
@@ -199,6 +220,9 @@ export class DataTranslationService {
             );
           } else if (tab.componentType === 'Listview') {
             await this.populateListviewService.populateListview(tabWithContent);
+          } else if (tab.componentType === 'Belegungskalender') {
+            widgetTimeframe =
+              await this.populateCalendarService.populateTab(tabWithContent);
           } else if (
             tab.componentType === 'Diagramm' ||
             tab.componentType === 'Karte' ||
@@ -220,6 +244,7 @@ export class DataTranslationService {
             tabWithContent.weatherWarnings.length > 0 ||
             tabWithContent.mapObject.length > 0 ||
             tabWithContent.listviewData.length > 0 ||
+            tabWithContent.calendarData !== undefined ||
             tabWithContent.combinedWidgets.length > 0 ||
             widgetTimeframe !== null ||
             (tabWithContent.chartValues &&
@@ -231,7 +256,7 @@ export class DataTranslationService {
               tab.widgetId,
             );
 
-            this.dataTranslationRepo.setWidgetData(tab.widgetId, {
+            await this.dataTranslationRepo.setWidgetData(tab.widgetId, {
               chartData:
                 tabWithContent.chartData.length > 0
                   ? tabWithContent.chartData
@@ -261,7 +286,11 @@ export class DataTranslationService {
                 tabWithContent.listviewData.length > 0
                   ? tabWithContent.listviewData
                   : existingData?.listviewData || [],
-              timeframe: widgetTimeframe ?? existingData?.timeframe ?? null,
+              calendarData:
+                tabWithContent.calendarData !== undefined
+                  ? tabWithContent.calendarData
+                  : existingData?.calendarData || null,
+              timeframe: widgetTimeframe || existingData?.timeframe || null,
               extendedDateSelection:
                 widgetExtendedDateSelection ??
                 existingData?.extendedDateSelection,

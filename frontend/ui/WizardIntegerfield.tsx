@@ -15,11 +15,11 @@ export default function WizardIntegerfield(
 ): ReactElement {
   const { value, onChange, error, borderColor, backgroundColor } = props;
   const [textFieldContent, setTextFieldContent] = useState(
-    value ? value.toString() : '',
+    value === '' ? '' : value.toString(),
   );
 
   useEffect(() => {
-    setTextFieldContent(value ? value.toString() : '');
+    setTextFieldContent(value === '' ? '' : value.toString());
   }, [value]);
 
   const handleChange = (

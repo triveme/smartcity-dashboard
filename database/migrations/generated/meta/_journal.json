@@ -330,6 +330,20 @@
       "when": 1784805129539,
       "tag": "0046_odd_sebastian_shaw_1.3.9",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "5",
+      "when": 1785141600249,
+      "tag": "0047_nifty_firelord_1.3.10",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "5",
+      "when": 1788186403365,
+      "tag": "0048_perfect_purifiers_1.3.12",
+      "breakpoints": true
     }
   ]
 }

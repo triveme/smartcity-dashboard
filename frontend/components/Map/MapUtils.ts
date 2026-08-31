@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { localSvgIconsList } from '@/ui/Icons/LocalSvgIcons';
+import { MapDateColorRule } from '@/types';
+import { getMapDateThreshold } from '@/utils/mapDateColorRules';
 
 export function createRectangleAroundMarker(
   position: [number, number],
@@ -159,6 +161,7 @@ export function getColorForValue(
   value: number | string | string[],
   staticValues: (string | number)[],
   staticValuesColors: string[],
+  fallback?: string,
 ): string {
   for (let i = 0; i < staticValues.length; i++) {
     const comparableStaticNumber = toComparableNumber(staticValues[i]);
@@ -182,7 +185,63 @@ export function getColorForValue(
       return staticValuesColors[i];
     }
   }
-  return staticValuesColors[staticValuesColors.length - 1];
+  return fallback || staticValuesColors[staticValuesColors.length - 1];
+}
+
+function toComparableDate(input: unknown): Date | null {
+  const unwrapped = unwrapComparableValue(input);
+  if (unwrapped instanceof Date && !Number.isNaN(unwrapped.getTime())) {
+    return unwrapped;
+  }
+
+  if (typeof unwrapped !== 'string' && typeof unwrapped !== 'number') {
+    return null;
+  }
+
+  const date = new Date(unwrapped);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function getColorForDateValue(
+  value: unknown,
+  rules: MapDateColorRule[],
+  fallback: string,
+  now: Date = new Date(),
+): string {
+  const sensorDate = toComparableDate(value);
+  if (!sensorDate) {
+    return fallback;
+  }
+
+  for (const rule of rules) {
+    const threshold = getMapDateThreshold(rule, now);
+    if (sensorDate < threshold) {
+      return rule.color;
+    }
+  }
+
+  return fallback;
+}
+
+export function getIconForDateValue(
+  value: unknown,
+  rules: MapDateColorRule[],
+  fallback: string,
+  now: Date = new Date(),
+): string {
+  const sensorDate = toComparableDate(value);
+  if (!sensorDate) {
+    return fallback;
+  }
+
+  for (const rule of rules) {
+    const threshold = getMapDateThreshold(rule, now);
+    if (sensorDate < threshold) {
+      return rule.icon || fallback;
+    }
+  }
+
+  return fallback;
 }
 
 export function getCustomTranslateForSvg(

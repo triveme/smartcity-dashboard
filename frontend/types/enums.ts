@@ -61,6 +61,7 @@ export enum tabComponentTypeEnum {
   image = 'Bild',
   interactiveComponent = 'Interaktive Komponente',
   valueToImage = 'Werte zu Bildern',
+  calendar = 'Belegungskalender',
   pharmacy = 'Apotheke',
   sensorStatus = 'Ampelstatus',
 }

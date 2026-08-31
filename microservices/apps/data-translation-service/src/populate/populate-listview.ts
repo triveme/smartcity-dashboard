@@ -549,7 +549,7 @@ export class PopulateListviewService {
     // Try to get the first string value from any property
     if (typeof obj === 'object') {
       for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           const value = obj[key];
           if (typeof value === 'string' || typeof value === 'number') {
             return String(value);

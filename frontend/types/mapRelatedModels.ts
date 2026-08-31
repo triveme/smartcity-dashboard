@@ -4,8 +4,10 @@ import { CSSProperties } from 'react';
 import {
   CorporateInfo,
   CustomMapSensor,
+  MapDateColorRule,
   MapModalLegend,
   MapModalWidget,
+  MapValueColorMode,
   MultiAttributeConfig,
 } from './dashboardModels';
 import { QueryDataWithAttributes } from './queryData';
@@ -81,6 +83,9 @@ export interface SingleMapProps extends BaseMapProps {
   mapFormSizeFactor: number;
   mapIsFormColorValueBased: boolean;
   mapIsIconColorValueBased: boolean;
+  mapValueColorMode?: MapValueColorMode;
+  mapDateColorRules?: MapDateColorRule[];
+  mapValueColorDefaultColor?: string;
   staticValues: (number | string)[];
   staticValuesColors: string[];
   staticValuesLogos: string[];
@@ -106,6 +111,9 @@ export interface CombinedMapProps extends BaseMapProps {
   mapFormSizeFactor?: number[];
   mapIsFormColorValueBased?: boolean[];
   mapIsIconColorValueBased?: boolean[];
+  mapValueColorMode?: MapValueColorMode[];
+  mapDateColorRules?: MapDateColorRule[][];
+  mapValueColorDefaultColor?: string[];
   staticValues?: (number | string)[][];
   staticValuesLogos?: string[][];
   staticValuesColors?: string[][];
@@ -141,5 +149,5 @@ export type MapModalChartStyle = {
 
 export type GeoJSONSensorData = {
   id: string;
-  value: number;
+  value: string | number | null | undefined;
 };

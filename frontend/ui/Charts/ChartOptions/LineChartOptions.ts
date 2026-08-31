@@ -63,6 +63,7 @@ export type BuildLineChartOptionProps = {
   legendAlignment: string;
   menuHoverColor: string;
   legendSelectedMap?: Record<string, boolean>;
+  measuredBottomLegendHeight?: number | null;
   playAnimation?: boolean;
   setXByTimeFramePeriod?: boolean;
   showLegend?: boolean;
@@ -234,20 +235,20 @@ function getGridBottom(
     | 'singleSelectLegend'
     | 'xAxisLabel'
   >,
-  bottomLegendHeight: number,
+  bottomLegendReserve: number,
 ): number {
   const hasBottomLegend =
     props.showLegend === true && props.singleSelectLegend === true;
 
   if (props.allowZoom ?? false) {
     return hasBottomLegend
-      ? LINE_CHART_LAYOUT.grid.bottomWithZoomBar + bottomLegendHeight
+      ? LINE_CHART_LAYOUT.grid.bottomWithZoomBar + bottomLegendReserve
       : LINE_CHART_LAYOUT.grid.bottomWithZoomBar;
   }
 
   if (props.hideXAxis ?? false) {
     return hasBottomLegend
-      ? LINE_CHART_LAYOUT.grid.bottomWhenXAxisHidden + bottomLegendHeight
+      ? LINE_CHART_LAYOUT.grid.bottomWhenXAxisHidden + bottomLegendReserve
       : LINE_CHART_LAYOUT.grid.bottomWhenXAxisHidden;
   }
 
@@ -255,7 +256,7 @@ function getGridBottom(
     ? LINE_CHART_LAYOUT.grid.bottomWithXAxisTitle
     : LINE_CHART_LAYOUT.grid.bottomWhenXAxisHidden;
 
-  return hasBottomLegend ? baseBottom + bottomLegendHeight : baseBottom;
+  return hasBottomLegend ? baseBottom + bottomLegendReserve : baseBottom;
 }
 
 export function buildLineChartOption(
@@ -362,12 +363,22 @@ export function buildLineChartOption(
         verticalPadding: CARTESIAN_CHART_LAYOUT.legend.verticalPadding,
       })
     : null;
-  const bottomLegendHeight = bottomLegendLayout
+  const measuredBottomLegendHeight =
+    isBottomLegend &&
+    props.measuredBottomLegendHeight !== undefined &&
+    props.measuredBottomLegendHeight !== null &&
+    Number.isFinite(props.measuredBottomLegendHeight) &&
+    props.measuredBottomLegendHeight > 0
+      ? Math.ceil(props.measuredBottomLegendHeight)
+      : null;
+  const estimatedBottomLegendHeight = bottomLegendLayout
     ? Math.max(
         bottomLegendLayout.height,
         CARTESIAN_CHART_LAYOUT.legend.reservedHeight,
       )
     : 0;
+  const bottomLegendHeight =
+    measuredBottomLegendHeight ?? estimatedBottomLegendHeight;
   const extraLegendZoomGap = bottomLegendLayout
     ? Math.max(
         0,
@@ -376,10 +387,10 @@ export function buildLineChartOption(
           1,
       ) * CARTESIAN_CHART_LAYOUT.legend.zoomGapPerAdditionalRow
     : 0;
+  const bottomLegendReserve =
+    bottomLegendHeight + (allowZoom ? extraLegendZoomGap : 0);
   const dataZoomBottomOffset = isBottomLegend
-    ? bottomLegendHeight +
-      LINE_CHART_LAYOUT.dataZoom.bottomOffset +
-      extraLegendZoomGap
+    ? bottomLegendReserve + LINE_CHART_LAYOUT.dataZoom.bottomOffset
     : LINE_CHART_LAYOUT.dataZoom.bottomOffset;
 
   return {
@@ -391,7 +402,7 @@ export function buildLineChartOption(
     animationEasingUpdate: 'cubicOut',
     grid: buildCartesianGrid({
       allowImageDownload,
-      bottom: getGridBottom(props, bottomLegendHeight),
+      bottom: getGridBottom(props, bottomLegendReserve),
       hideYAxis,
       isShownInMapModal,
       leftWithYAxisLabel: LINE_CHART_LAYOUT.grid.leftWithYAxisTitle,

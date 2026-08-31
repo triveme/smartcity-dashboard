@@ -15,6 +15,16 @@ type DeclarationObject = {
   wert?: string[];
 };
 
+const mapDateColorModes = ['numeric', 'text', 'relative_date'];
+const mapDateDirections = ['before', 'after'];
+const mapDateAnchors = [
+  'now',
+  'start_of_day',
+  'start_of_week',
+  'start_of_month',
+];
+const mapDateOffsetUnits = ['hour', 'day', 'week', 'month'];
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 @Injectable()
 export class SanitizeTabDataPipe implements PipeTransform {
@@ -136,6 +146,9 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'mapGeoJSONFeatureIdentifier',
       'mapIsFormColorValueBased',
       'mapIsIconColorValueBased',
+      'mapValueColorMode',
+      'mapDateColorRules',
+      'mapValueColorDefaultColor',
       'mapLatitude',
       'mapLegendDisclaimer',
       'mapLegendValues',
@@ -186,6 +199,7 @@ export class SanitizeTabDataPipe implements PipeTransform {
         HttpStatus.BAD_REQUEST,
       );
     const componentType = value.componentType.toLowerCase();
+    this.validateMapDateColorConfiguration(value, componentType);
     const possibleComponents = Object.keys(this.declaredFields);
     if (possibleComponents.includes(componentType)) {
       for (const entry of Object.keys(value)) {
@@ -195,5 +209,59 @@ export class SanitizeTabDataPipe implements PipeTransform {
       }
     }
     return value;
+  }
+
+  private validateMapDateColorConfiguration(
+    value: Tab,
+    componentType: string,
+  ): void {
+    if (componentType !== 'karte') {
+      return;
+    }
+
+    if (
+      value.mapValueColorMode != null &&
+      !mapDateColorModes.includes(value.mapValueColorMode)
+    ) {
+      throw new HttpException(
+        'Invalid map value color mode',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (value.mapDateColorRules == null) {
+      return;
+    }
+
+    if (!Array.isArray(value.mapDateColorRules)) {
+      throw new HttpException(
+        'Map date color rules must be an array',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const hasInvalidRule = value.mapDateColorRules.some((rule) => {
+      if (!rule || typeof rule !== 'object') {
+        return true;
+      }
+
+      const config = rule as Record<string, unknown>;
+      return (
+        !mapDateAnchors.includes(config.anchor as string) ||
+        !Number.isInteger(config.offsetValue) ||
+        (config.offsetValue as number) < 0 ||
+        !mapDateOffsetUnits.includes(config.offsetUnit as string) ||
+        !mapDateDirections.includes(config.offsetDirection as string) ||
+        typeof config.color !== 'string' ||
+        (config.icon != null && typeof config.icon !== 'string')
+      );
+    });
+
+    if (hasInvalidRule) {
+      throw new HttpException(
+        'Invalid map date color rule',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
