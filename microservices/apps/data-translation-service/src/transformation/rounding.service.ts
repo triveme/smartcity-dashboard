@@ -21,12 +21,13 @@ export class RoundingService {
       case RoundingMode.CEIL:
         return Math.ceil(value / step) * step;
       case RoundingMode.MATH:
-      default:
+      default: {
         const lower = Math.floor(value / step) * step;
         const upper = Math.ceil(value / step) * step;
         return Math.abs(value - lower) < Math.abs(upper - value)
           ? lower
           : upper;
+      }
     }
   }
 

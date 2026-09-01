@@ -180,6 +180,19 @@ export default function StageableChart(
     return `{${styleName}|${formattedValue}}`;
   }
 
+  const roundedValue = roundToDecimal(value, decimalPlaces);
+
+  // ECharts' eigenes itemStyle.color: 'auto' faerbt den Zeiger exakt auf einer
+  // Grenze mit der Farbe der vorherigen Stufe (siehe getAxisLabelStyleName-
+  // Kommentar). Bei aktivierter Checkbox wird stattdessen dieselbe
+  // Naechste-Stufe-Logik wie bei den Achsbeschriftungen verwendet, damit
+  // Zeiger- und Zahlenfarbe an der Grenze konsistent sind.
+  const pointerColor = usePreviousStageColorOnBoundary
+    ? (axisLabelRich[
+        getAxisLabelStyleName(roundedValue, staticValues, axisLabelRich)
+      ]?.color ?? 'auto')
+    : 'auto';
+
   useEffect(() => {
     if (myChartRef.current) {
       const option: EChartsOption = {
@@ -203,7 +216,7 @@ export default function StageableChart(
               width: 5,
               length: '70%',
               itemStyle: {
-                color: 'auto',
+                color: pointerColor,
               },
             },
             axisTick: {
@@ -234,7 +247,7 @@ export default function StageableChart(
             },
             data: [
               {
-                value: roundToDecimal(value, decimalPlaces),
+                value: roundedValue,
               },
             ],
           },
@@ -258,6 +271,7 @@ export default function StageableChart(
     showAxisLabels,
     autoScaleAxisLabelFont,
     decimalPlaces,
+    useDashboardFontColor,
     usePreviousStageColorOnBoundary,
     axisLabelRich,
   ]);

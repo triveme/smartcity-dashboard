@@ -1,5 +1,15 @@
 {
   "root": true,
   "extends": ["next/core-web-vitals"],
-  "plugins": ["@typescript-eslint"]
+  "plugins": ["@typescript-eslint"],
+  "overrides": [
+    {
+      "files": ["next.config.js"],
+      "parser": "espree",
+      "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "script"
+      }
+    }
+  ]
 }

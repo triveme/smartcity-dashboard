@@ -9,7 +9,7 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type DashboardWidgetWizardPreviewProps = {
   widget: Widget;
-  tab: Tab;
+  tab: Pick<Tab, 'componentType'>;
   widgetCount?: number;
   moveWidget?: (widgetId: string, direction: 'left' | 'right') => void;
   deleteRelation?: (widgetId: string) => void;

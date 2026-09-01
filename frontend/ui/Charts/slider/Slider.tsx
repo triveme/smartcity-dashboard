@@ -58,11 +58,12 @@ export default function Slider(props: SliderProps): ReactElement {
   } = props;
   let { value } = props;
 
+  const searchParams = useSearchParams();
+
   if (!staticValues || staticValues.length <= 0) {
     return <div>ERROR</div>;
   }
 
-  const searchParams = useSearchParams();
   const entityId = usesQueryParameter ? searchParams.get('entityId') : null;
 
   if (entityId && tabData) {

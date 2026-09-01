@@ -74,6 +74,38 @@ type NormalizedLineChartProps = Omit<
   chartData: ChartData[];
 };
 
+type EChartsLegendInternals = {
+  getModel?: () => {
+    getComponent: (mainType: string, index?: number) => unknown;
+  };
+  getViewOfComponentModel?: (componentModel: unknown) => {
+    group?: {
+      getBoundingRect: () => {
+        height: number;
+      };
+    };
+  };
+};
+
+function getRenderedLegendHeight(chart: ECharts): number | null {
+  const chartWithInternals = chart as unknown as EChartsLegendInternals;
+  const ecModel = chartWithInternals.getModel?.();
+  const legendModel = ecModel?.getComponent?.('legend', 0);
+
+  if (!legendModel) {
+    return null;
+  }
+
+  const legendView = chartWithInternals.getViewOfComponentModel?.(legendModel);
+  const legendRect = legendView?.group?.getBoundingRect?.();
+
+  if (!legendRect || !Number.isFinite(legendRect.height)) {
+    return null;
+  }
+
+  return legendRect.height > 0 ? legendRect.height : null;
+}
+
 function normalizeLineChartProps(
   props: LineChartProps,
   entityId: string | null,
@@ -178,6 +210,9 @@ export default function LineChart(props: LineChartProps): ReactElement {
   );
   const [singleSelectionLegendState, setSingleSelectionLegendState] =
     useState<SingleSelectionLegendState>(null);
+  const [measuredBottomLegendHeight, setMeasuredBottomLegendHeight] = useState<
+    number | null
+  >(null);
   const [chartWidth, setChartWidth] = useState(0);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -291,6 +326,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     config.showLegend &&
     config.singleSelectLegend &&
     dynamicLegendNames.length > 0;
+  const hasBottomLegend = config.showLegend && config.singleSelectLegend;
   const isAllLegendsSelected =
     dynamicLegendNames.length > 0 &&
     effectiveSingleSelectionLegendNames.length === dynamicLegendNames.length;
@@ -322,8 +358,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
     () => ({
       ...filteredConfig,
       legendSelectedMap: singleSelectionLegendSelectedMap,
+      measuredBottomLegendHeight,
     }),
-    [filteredConfig, singleSelectionLegendSelectedMap],
+    [
+      filteredConfig,
+      measuredBottomLegendHeight,
+      singleSelectionLegendSelectedMap,
+    ],
   );
 
   const emitCurrentAreaConfig = (
@@ -454,6 +495,16 @@ export default function LineChart(props: LineChartProps): ReactElement {
         : nextState;
     });
   }, [config.showLegend, config.singleSelectLegend, dynamicLegendNames]);
+
+  useEffect(() => {
+    if (hasBottomLegend) {
+      return;
+    }
+
+    setMeasuredBottomLegendHeight((currentHeight) =>
+      currentHeight === null ? currentHeight : null,
+    );
+  }, [hasBottomLegend]);
 
   const handleMinDateChange = (date: Date | null): void => {
     if (!date) {
@@ -648,6 +699,43 @@ export default function LineChart(props: LineChartProps): ReactElement {
     dynamicLegendNames,
     zoomBaseRange,
   ]);
+
+  useEffect(() => {
+    const chart = chartInstanceRef.current;
+    if (!chart) {
+      return;
+    }
+
+    const syncMeasuredLegendHeight = (): void => {
+      if (!hasBottomLegend) {
+        setMeasuredBottomLegendHeight((currentHeight) =>
+          currentHeight === null ? currentHeight : null,
+        );
+        return;
+      }
+
+      const nextHeight = getRenderedLegendHeight(chart);
+      if (nextHeight === null) {
+        return;
+      }
+
+      const roundedNextHeight = Math.ceil(nextHeight);
+      setMeasuredBottomLegendHeight((currentHeight) =>
+        currentHeight !== null &&
+        Math.abs(currentHeight - roundedNextHeight) < 1
+          ? currentHeight
+          : roundedNextHeight,
+      );
+    };
+
+    chart.off('rendered', syncMeasuredLegendHeight);
+    chart.on('rendered', syncMeasuredLegendHeight);
+    syncMeasuredLegendHeight();
+
+    return () => {
+      chart.off('rendered', syncMeasuredLegendHeight);
+    };
+  }, [hasBottomLegend]);
 
   const handleLoadDataForSelectedRange = async () => {
     if (!minDateBeforeCurrentPeriod || !maxDateBeforeCurrentPeriod) {

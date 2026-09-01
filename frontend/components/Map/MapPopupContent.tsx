@@ -46,7 +46,12 @@ export default function MapPopupContent({
           return;
         if (isCombinedMap) {
           // Combined map popup logic
-          if (value && tempValue.value) {
+          if (
+            value !== null &&
+            value !== undefined &&
+            typeof tempValue === 'object' &&
+            'type' in tempValue
+          ) {
             if (key.toUpperCase() === 'TOTALCONSUMPTION') {
               return (
                 <div key={key}>
@@ -103,15 +108,7 @@ export default function MapPopupContent({
                 {getGermanLabelForSensorAttribute(key)}:{' '}
                 <strong>
                   {' '}
-                  {tempValue.value
-                    ? convertToLocaleNumber(
-                        roundToDecimal(Number(tempValue.value)).toString(),
-                        decimalSeparator,
-                      )
-                    : convertToLocaleNumber(
-                        roundToDecimal(Number(tempValue)).toString(),
-                        decimalSeparator,
-                      )}{' '}
+                  {getValueString(tempValue, decimalSeparator)}{' '}
                   {marker.unitsTexts?.[index]}
                 </strong>
               </div>

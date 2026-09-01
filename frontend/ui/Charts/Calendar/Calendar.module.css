@@ -1,0 +1,53 @@
+.calendar {
+  color: var(--calendar-font-color);
+}
+
+.calendar :global(.rdp-month_grid) {
+  border-collapse: separate;
+}
+
+.calendar :global(.rdp-months) {
+  flex-wrap: wrap;
+}
+
+.booked {
+  background-color: var(--calendar-booked-color);
+ }
+.organisation{
+  background-color: var(--calendar-organisation-color);
+}
+.privat {
+  background-color: var(--calendar-privat-color);
+}
+.bookedPrivat {
+  background: linear-gradient(135deg, var(--calendar-booked-color) 0 50%, var(--calendar-privat-color) 50% 100%);
+}
+.bookedOrganisation {
+  background: linear-gradient(135deg, var(--calendar-booked-color) 0 50%, var(--calendar-organisation-color) 50% 100%);
+}
+.privatOrganisation {
+  background: linear-gradient(135deg, var(--calendar-privat-color) 0 50%, var(--calendar-organisation-color) 50% 100%);
+}
+.allBookings {
+  background: conic-gradient(var(--calendar-booked-color) 0deg 120deg, var(--calendar-privat-color) 120deg 240deg, var(--calendar-organisation-color) 240deg 360deg);
+}
+.today {
+  color: var(--calendar-font-color);
+  box-shadow: inset 0 0 0 2px;
+}
+.nextBtn svg {
+    fill: #ffffff;
+}
+.prevBtn svg {
+    fill: #ffffff;
+}
+
+.multipleBooked {
+  background: linear-gradient(135deg, var(--calendar-booked-color) 0 47.5%, transparent 50.75% 51%, var(--calendar-booked-color) 52.5% 100%);
+}
+.multiplePrivat {
+  background: linear-gradient(135deg, var(--calendar-privat-color) 0 47.5%, transparent 50.75% 51%, var(--calendar-privat-color) 52.5% 100%);
+}
+.multipleOrganisation {
+  background: linear-gradient(135deg, var(--calendar-organisation-color) 0 47.5%, transparent 50.75% 51%, var(--calendar-organisation-color) 52.5% 100%);
+}

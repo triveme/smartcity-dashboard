@@ -120,7 +120,7 @@ export default function Pages(): ReactElement {
   }
 
   return (
-    <div style={dashboardStyle} className="h-full p-10">
+    <div style={dashboardStyle} className="h-full p-10 overflow-y-auto">
       <div className="flex justify-between items-center content-center pb-4">
         <PageHeadline
           headline="Dashboardseiten"

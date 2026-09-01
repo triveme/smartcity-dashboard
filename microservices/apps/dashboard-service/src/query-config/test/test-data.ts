@@ -35,6 +35,7 @@ export function getQueryConfig(dataSourceId: string): QueryConfig {
     dataStartDate: undefined,
     dataUntilDate: undefined,
     extendedDateSelection: false,
+    isBlacklist: false,
   };
 
   queryConfig.hash = generateHash(queryConfig);
@@ -53,6 +54,7 @@ function generateHash(object: Partial<QueryConfig> | NewQueryConfig): string {
     'attributes',
     'aggrMode',
     'timeframe',
+    'isBlacklist',
   ];
 
   return createHash('sha256')

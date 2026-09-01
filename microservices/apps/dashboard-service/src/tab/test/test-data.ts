@@ -53,7 +53,8 @@ export async function getTab(
     | 'iFrame'
     | 'Bild'
     | 'Kombinierte Komponente'
-    | 'Interaktive Komponente',
+    | 'Interaktive Komponente'
+    | 'Belegungskalender',
   componentSubType?:
     | 'Text'
     | 'Icon mit Link'
@@ -133,6 +134,9 @@ export async function getTab(
     mapFilterAttribute: 'relativeHumidity',
     mapIsFormColorValueBased: false,
     mapIsIconColorValueBased: false,
+    mapValueColorMode: null,
+    mapDateColorRules: null,
+    mapValueColorDefaultColor: null,
     mapAllowLegend: false,
     mapLegendValues: [
       {
@@ -255,6 +259,13 @@ export async function getTab(
     dynamicUnhighlightColor: '#FF0000',
     customMapImageId: null,
     chartStaticValuesText: false,
+    calendarBookedColor: 'red',
+    calendarPrivatBookedColor: 'grey',
+    calendarOrganisationBookedColor: 'green',
+    calendarMonthAfterCurrent: 12,
+    calendarMonthBeforeCurrent: 12,
+    calendarDisplayedMonthsCount: 3,
+    splitCalendarDay: false,
     chartDynamicOnlyShowHover: false,
     chartDynamicNoSelectionDisplayAll: true,
     sensorStatusLayoutVertical: false,

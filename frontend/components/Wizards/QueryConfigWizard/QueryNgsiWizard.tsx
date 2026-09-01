@@ -1,7 +1,7 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
 
-import { QueryConfig } from '@/types';
+import { QueryConfig, tabComponentTypeEnum } from '@/types';
 import WizardDropdownSelection from '@/ui/WizardDropdownSelection';
 import WizardLabel from '@/ui/WizardLabel';
 import WizardMultipleDropdownSelection from '@/ui/WizardMultipleDropdownSelection';
@@ -14,6 +14,7 @@ import {
   getFiwareTypes,
 } from '@/api/wizard-service-fiware';
 import RefreshButton from '@/ui/Buttons/RefreshButton';
+import CheckBox from '@/ui/CheckBox';
 
 type QueryNgsiWizardProps = {
   queryConfig: QueryConfig | undefined;
@@ -58,6 +59,7 @@ export default function QueryNgsiWizard(
 
   const [selectedSensors, setSelectedSensors] = useState<string[]>([]);
   const [sensors, setSensors] = useState<string[]>([]);
+  const [isSensorBlacklist, setIsSensorBlacklist] = useState(false);
 
   const [attributes, setAttributes] = useState<string[]>([]);
   const handleQueryConfigChange = (update: Partial<QueryConfig>): void => {
@@ -226,6 +228,10 @@ export default function QueryNgsiWizard(
       setAttributes([]);
     }
   }, [selectedSensors, selectedCollection, queryConfig?.dataSourceId]);
+
+  useEffect(() => {
+    setIsSensorBlacklist(queryConfig?.isBlacklist ?? false);
+  }, [queryConfig]);
 
   return (
     <>
@@ -474,31 +480,49 @@ export default function QueryNgsiWizard(
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col w-full pb-2">
-                <WizardLabel label={'Entitäten / Sensoren'} />
-                <div className="flex flex-row items-center">
-                  <div className="flex-1 min-w-0">
-                    <WizardMultipleDropdownSelection
-                      currentValue={queryConfig?.entityIds || []}
-                      selectableValues={sensors}
-                      error={errors && errors.sensorError}
-                      onSelect={(value: string[]): void => {
-                        handleQueryConfigChange({ entityIds: value });
-                        setSelectedSensors(value);
-                      }}
-                      iconColor={iconColor}
-                      borderColor={borderColor}
+              <div>
+                <div className="flex flex-col w-full pb-2">
+                  <WizardLabel label={'Entitäten / Sensoren'} />
+                  <div className="flex flex-row items-center">
+                    <div className="flex-1 min-w-0">
+                      <WizardMultipleDropdownSelection
+                        currentValue={queryConfig?.entityIds || []}
+                        selectableValues={sensors}
+                        error={errors && errors.sensorError}
+                        onSelect={(value: string[]): void => {
+                          handleQueryConfigChange({ entityIds: value });
+                          setSelectedSensors(value);
+                        }}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
+                    <RefreshButton
+                      handleClick={requestSensors}
+                      className={loadingState.sensors ? 'animate-spin' : ''}
+                      fontColor={iconColor}
+                      hoverColor={hoverColor}
                       backgroundColor={backgroundColor}
                     />
                   </div>
-                  <RefreshButton
-                    handleClick={requestSensors}
-                    className={loadingState.sensors ? 'animate-spin' : ''}
-                    fontColor={iconColor}
-                    hoverColor={hoverColor}
-                    backgroundColor={backgroundColor}
-                  />
                 </div>
+                {ngsiType === 'ngsi-ld' && (
+                  <CheckBox
+                    label="Sensorauswahl als Blacklist"
+                    value={isSensorBlacklist}
+                    handleSelectChange={(value: boolean) => {
+                      const entityIds: string[] = [];
+
+                      setIsSensorBlacklist(value);
+                      setSelectedSensors(entityIds);
+                      handleQueryConfigChange({
+                        isBlacklist: value,
+                        entityIds,
+                      });
+                    }}
+                  />
+                )}
               </div>
             )}
             {isSingleWidget ? (

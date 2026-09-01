@@ -274,7 +274,8 @@ export class FiwareWizardService {
 
     try {
       // Continue fetching entities in batches of 1000 until no more are found
-      while (true) {
+      let hasMoreEntities = true;
+      while (hasMoreEntities) {
         url.searchParams.set('limit', limit.toString());
         url.searchParams.set('offset', offset.toString());
         if (type) url.searchParams.set('type', type);
@@ -292,10 +293,12 @@ export class FiwareWizardService {
         allEntityIds = allEntityIds.concat(entityIds);
 
         // If fewer than 1000 entities were returned, we've reached the last page
-        if (entityIds.length < limit) break;
+        hasMoreEntities = entityIds.length === limit;
 
         // Increment the offset to fetch the next batch
-        offset += limit;
+        if (hasMoreEntities) {
+          offset += limit;
+        }
       }
       return allEntityIds;
     } catch (error) {
@@ -325,7 +328,8 @@ export class FiwareWizardService {
 
     try {
       // Continue fetching entities in batches of 100 until no more are found
-      while (true) {
+      let hasMoreEntities = true;
+      while (hasMoreEntities) {
         url.searchParams.set('limit', limit.toString());
         url.searchParams.set('offset', offset.toString());
         if (type) url.searchParams.set('type', type);
@@ -343,10 +347,12 @@ export class FiwareWizardService {
         allEntityIds = allEntityIds.concat(entityIds);
 
         // If fewer than 100 entities were returned, we've reached the last page
-        if (entityIds.length < limit) break;
+        hasMoreEntities = entityIds.length === limit;
 
         // Increment the offset to fetch the next batch
-        offset += limit;
+        if (hasMoreEntities) {
+          offset += limit;
+        }
       }
 
       return allEntityIds;

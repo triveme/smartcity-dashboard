@@ -21,6 +21,7 @@ import ImageComponent from '../../ui/ImageComponent';
 import { getCorporateInfosWithLogos } from '@/app/actions';
 import IconWithLink from '@/ui/IconWithLink';
 import { getTenantOfPage } from '@/utils/tenantHelper';
+import { getMapStaticValues } from '@/utils/mapValueColorMode';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
@@ -32,11 +33,13 @@ import {
   DUMMY_PIE_CHART_VALUES,
   DUMMY_PHARMACY_DATA,
   DUMMY_POI_DATA,
+  GENERATE_DUMMY_CALENDAR_DATA,
 } from '@/utils/objectHelper';
 import Table from '@/ui/Charts/Table';
 import BarChartHorizontal from '@/ui/Charts/BarChartHorizontal';
 import ChartDateSelector from '../InteractiveElements/ChartDateSelector';
 import ValuesToImageComponent from '@/ui/ValuesToImageComponent';
+import Calendar from '@/ui/Charts/Calendar/Calendar';
 import SensorStatusComponent from '@/ui/SensorStatus';
 import {
   CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
@@ -53,12 +56,13 @@ const Map = dynamic(() => import('@/components/Map/Map'), {
 type DashboardWidgetPreviewProps = {
   widget: Widget;
   tab: Tab;
+  stageableChartTestValue?: number;
 };
 
 export default function DashboardWidgetPreview(
   props: DashboardWidgetPreviewProps,
 ): ReactElement {
-  const { widget, tab } = props;
+  const { widget, tab, stageableChartTestValue } = props;
 
   // Multi Tenancy
   const tenant = getTenantOfPage();
@@ -202,7 +206,14 @@ export default function DashboardWidgetPreview(
               staticValues={tab.chartStaticValues || [0]}
               staticValuesColors={tab.chartStaticValuesColors || ['#808080']}
               staticValuesTexts={tab.chartStaticValuesTexts || ['Label']}
-              value={tab.chartValues ? tab.chartValues[0] : 25.45}
+              value={
+                stageableChartTestValue ??
+                (tab.chartValues ? tab.chartValues[0] : 25.45)
+              }
+              fontColor={data?.stageableChartFontColor || '#FFFFF'}
+              fontSize={data?.stageableChartFontSize || '32'}
+              ticksFontColor={data?.stageableChartTicksFontColor || '#FFFFF'}
+              ticksFontSize={data?.stageableChartTicksFontSize || '20'}
               decimalPlaces={tab?.decimalPlaces || 0}
               useDashboardFontColor={tab.useDashboardFontColor ?? false}
               usePreviousStageColorOnBoundary={
@@ -628,7 +639,14 @@ export default function DashboardWidgetPreview(
               mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
               mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
               mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
-              staticValues={tab.chartStaticValues || []}
+              mapValueColorMode={tab.mapValueColorMode}
+              mapDateColorRules={tab.mapDateColorRules}
+              mapValueColorDefaultColor={tab.mapValueColorDefaultColor}
+              staticValues={getMapStaticValues(
+                tab.mapValueColorMode,
+                tab.chartStaticValues,
+                tab.chartStaticValuesTexts,
+              )}
               staticValuesColors={tab.chartStaticValuesColors || []}
               mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
               mapWmsUrl={tab.mapWmsUrl || ''}
@@ -691,7 +709,14 @@ export default function DashboardWidgetPreview(
               mapAttributeForValueBased={tab.mapAttributeForValueBased || ''}
               mapIsFormColorValueBased={tab.mapIsFormColorValueBased || false}
               mapIsIconColorValueBased={tab.mapIsIconColorValueBased || false}
-              staticValues={tab.chartStaticValues || []}
+              mapValueColorMode={tab.mapValueColorMode}
+              mapDateColorRules={tab.mapDateColorRules}
+              mapValueColorDefaultColor={tab.mapValueColorDefaultColor}
+              staticValues={getMapStaticValues(
+                tab.mapValueColorMode,
+                tab.chartStaticValues,
+                tab.chartStaticValuesTexts,
+              )}
               staticValuesColors={tab.chartStaticValuesColors || []}
               mapFormSizeFactor={tab?.mapFormSizeFactor || 1}
               mapWmsUrl={tab.mapWmsUrl || ''}
@@ -806,6 +831,35 @@ export default function DashboardWidgetPreview(
       {tab.componentType === tabComponentTypeEnum.valueToImage && (
         <div className="w-full h-full">
           <ValuesToImageComponent tab={tab} tabData={{ textValue: '1' }} />
+        </div>
+      )}
+      {tab.componentType === tabComponentTypeEnum.calendar && (
+        <div className="h-full p-2 overflow-y-auto">
+          <Calendar
+            data={GENERATE_DUMMY_CALENDAR_DATA()}
+            calendarBookedColor={tab?.calendarBookedColor || '#ff0000'}
+            calendarPrivatBookedColor={
+              tab?.calendarPrivatBookedColor || '#a9a9b4'
+            }
+            calendarOrganisationBookedColor={
+              tab?.calendarOrganisationBookedColor || '#00ff0099'
+            }
+            calendarMonthAfterCurrent={
+              tab?.calendarMonthAfterCurrent === undefined
+                ? 12
+                : tab.calendarMonthAfterCurrent
+            }
+            calendarMonthBeforeCurrent={
+              tab?.calendarMonthBeforeCurrent === undefined
+                ? 12
+                : tab.calendarMonthBeforeCurrent
+            }
+            calendarDisplayedMonthsCount={
+              tab?.calendarDisplayedMonthsCount || 3
+            }
+            splitDay={false}
+            fontColor={data?.widgetFontColor || '#ffffff'}
+          />
         </div>
       )}
       {tab.componentType === tabComponentTypeEnum.sensorStatus && (

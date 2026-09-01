@@ -25,4 +25,5 @@ data:
   NEXT_PUBLIC_IGNORE_TENANT_CHECK: "{{ .Values.frontend.ignoreTenantCheck }}"
   NEXT_PUBLIC_SQL_SERVICE_URL: {{ index .Values "frontend" "sqlViewServiceUrl" }}
   NEXT_PUBLIC_PROJECT_DATA_SERVICE_URL: {{ index .Values "frontend" "projectDataServiceUrl" }}
+  NEXT_PUBLIC_PLANBAR_SERVICE_URL: {{ index .Values "frontend" "planbarServiceUrl" }}
 {{- end }}

@@ -12,6 +12,10 @@ type TextfieldProps = {
   componentType?: string;
   subComponentType?: string;
   isNumeric?: boolean;
+  // Bei isNumeric: onChange('') feuern, wenn das Feld komplett geleert wird.
+  // Default false, um bestehende Verbraucher (die '' nicht abfangen und z.B.
+  // NaN/'' persistieren würden) unverändert zu lassen.
+  emitEmptyOnClear?: boolean;
   error?: string;
   borderColor: string;
   backgroundColor: string;
@@ -28,6 +32,7 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
     placeholderText,
     subComponentType,
     isNumeric = false,
+    emitEmptyOnClear = false,
     error,
     borderColor,
     backgroundColor,
@@ -79,6 +84,9 @@ export default function WizardTextfield(props: TextfieldProps): ReactElement {
         valueAsString.endsWith(decimalSeparator)
       ) {
         setTextFieldContent(valueAsString);
+        if (emitEmptyOnClear && valueAsString === '') {
+          onChange('');
+        }
         return;
       }
 

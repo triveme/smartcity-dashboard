@@ -34,9 +34,11 @@ export default function WizardDropdownSelection(
       style={{
         borderColor: error ? '#FFEB3B' : borderColor,
         background: backgroundColor,
+        color: iconColor,
       }}
     >
       <select
+        style={{ color: iconColor }}
         className="px-3 text-base bg-inherit h-full w-full appearance-none cursor-pointer"
         value={currentValue}
         onChange={handleSelect}
@@ -48,6 +50,7 @@ export default function WizardDropdownSelection(
             value={value}
             style={{
               background: backgroundColor,
+              color: iconColor,
             }}
           >
             {value}

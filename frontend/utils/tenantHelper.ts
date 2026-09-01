@@ -6,11 +6,13 @@ import { env } from 'next-dynenv';
 
 const NEXT_PUBLIC_IGNORE_TENANT_CHECK = env('NEXT_PUBLIC_IGNORE_TENANT_CHECK');
 
-export function getTenantOfPage(): string | undefined {
+export function useTenantOfPage(): string | undefined {
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;
   return tenant;
 }
+
+export const getTenantOfPage = useTenantOfPage;
 
 export function isUserMatchingTenant(
   bearerToken: string,

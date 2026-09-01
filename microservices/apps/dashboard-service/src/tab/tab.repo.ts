@@ -152,7 +152,8 @@ export class TabRepo {
               | 'Wetterwarnungen'
               | 'Wert'
               | 'iFrame'
-              | 'Bild',
+              | 'Bild'
+              | 'Belegungskalender',
           ),
         ),
       );

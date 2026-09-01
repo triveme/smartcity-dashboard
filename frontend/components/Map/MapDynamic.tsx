@@ -10,6 +10,7 @@ import {
 } from './CustomMapZoomDefaults';
 import {
   CorporateInfo,
+  MapDateColorRule,
   MapModalLegend,
   MapModalWidget,
   MapObject,
@@ -21,6 +22,10 @@ import {
   GeoJSONSensorData,
   MapModalChartStyle,
 } from '@/types/mapRelatedModels';
+import {
+  getCombinedMapStaticValues,
+  getMapStaticValues,
+} from '@/utils/mapValueColorMode';
 import eventBus, {
   DETAILS_PAGE_OPEN_EVENT,
   Event,
@@ -101,8 +106,25 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
   }, []);
 
   useEffect(() => {
-    filterData(selectedYearIndex);
-  }, [selectedYearIndex]);
+    const chartData = tabData?.chartData as
+      | {
+          id: string;
+          values: (string | number | null | undefined)[][];
+        }[]
+      | undefined;
+
+    if (!chartData) {
+      setFilteredData([]);
+      return;
+    }
+
+    setFilteredData(
+      chartData.map((element) => ({
+        id: element.id,
+        value: element.values[selectedYearIndex]?.[1],
+      })),
+    );
+  }, [selectedYearIndex, tabData?.chartData]);
 
   const handleLocateOnMap = (data: { data: unknown }): void => {
     const location = data.data as {
@@ -169,7 +191,6 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
 
   function handleYearIndexUpdate(dataFromEvent: Event): void {
     setSelectedYearIndex(dataFromEvent.data);
-    filterData(dataFromEvent.data);
   }
 
   function handleSelectedFeaturesUpdate(dataFromEvent: Event): void {
@@ -178,22 +199,6 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
 
   function handleHoveredFeatureUpdate(dataFromEvent: Event): void {
     setHoveredFeature(dataFromEvent.data);
-  }
-
-  function filterData(sYearIndex: number): void {
-    if (tabData?.chartData) {
-      const data: GeoJSONSensorData[] = [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const chartData: { id: string; values: any[][] }[] = tabData?.chartData;
-      chartData.forEach((element) => {
-        data.push({ id: element.id, value: element.values[sYearIndex]?.[1] });
-      });
-      if (data.some((d) => d === null || d === undefined)) {
-        setFilteredData([]);
-      } else {
-        setFilteredData(data);
-      }
-    }
   }
 
   return (
@@ -225,6 +230,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapCombinedWmsLayer={tab?.mapCombinedWmsLayer || ''}
           mapNames={(combinedMapData?.mapNames as string[]) || []}
           mapGeoJSON={tab?.mapGeoJSON || ''}
+          mapGeoJSONFeatureIdentifier={tab?.mapGeoJSONFeatureIdentifier || ''}
           mapGeoJSONSensorBasedColors={
             tab?.mapGeoJSONSensorBasedColors || false
           }
@@ -257,11 +263,24 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapIsFormColorValueBased={
             combinedMapData?.mapIsFormColorValueBased as boolean[]
           }
-          staticValues={
-            combinedMapData?.chartStaticValuesText
-              ? ((combinedMapData?.chartStaticValuesTexts || []) as string[][])
-              : ((combinedMapData?.chartStaticValues || []) as number[][])
+          mapValueColorMode={
+            combinedMapData?.mapValueColorMode as (
+              | 'numeric'
+              | 'text'
+              | 'relative_date'
+            )[]
           }
+          mapDateColorRules={
+            combinedMapData?.mapDateColorRules as MapDateColorRule[][]
+          }
+          mapValueColorDefaultColor={
+            combinedMapData?.mapValueColorDefaultColor as string[]
+          }
+          staticValues={getCombinedMapStaticValues(
+            combinedMapData?.mapValueColorMode,
+            combinedMapData?.chartStaticValues,
+            combinedMapData?.chartStaticValuesTexts,
+          )}
           staticValuesColors={
             combinedMapData?.chartStaticValuesColors as string[][]
           }
@@ -269,6 +288,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           chartStyle={chartStyle}
           menuStyle={menuStyle}
           ciColors={ciColors}
+          mapUnitsTexts={tab?.mapUnitsTexts || []}
           allowShare={allowShare || false}
           dashboardId={dashboardId || ''}
           allowDataExport={allowDataExport || false}
@@ -330,6 +350,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapAllowFilter={tab?.mapAllowFilter || false}
           mapFilterAttribute={tab?.mapFilterAttribute || ''}
           mapGeoJSON={tab?.mapGeoJSON || ''}
+          mapGeoJSONFeatureIdentifier={tab?.mapGeoJSONFeatureIdentifier || ''}
           mapGeoJSONSensorBasedColors={
             tab?.mapGeoJSONSensorBasedColors || false
           }
@@ -365,11 +386,14 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           mapAttributeForValueBased={tab?.mapAttributeForValueBased || ''}
           mapIsFormColorValueBased={tab?.mapIsFormColorValueBased || false}
           mapIsIconColorValueBased={tab?.mapIsIconColorValueBased || false}
-          staticValues={
-            tab?.chartStaticValuesText
-              ? tab?.chartStaticValuesTexts || []
-              : tab?.chartStaticValues || []
-          }
+          mapValueColorMode={tab?.mapValueColorMode}
+          mapDateColorRules={tab?.mapDateColorRules}
+          mapValueColorDefaultColor={tab?.mapValueColorDefaultColor}
+          staticValues={getMapStaticValues(
+            tab?.mapValueColorMode,
+            tab?.chartStaticValues,
+            tab?.chartStaticValuesTexts,
+          )}
           staticValuesColors={tab?.chartStaticValuesColors || []}
           staticValuesLogos={tab?.chartStaticValuesLogos || []}
           mapFormSizeFactor={tab?.mapFormSizeFactor || 1}

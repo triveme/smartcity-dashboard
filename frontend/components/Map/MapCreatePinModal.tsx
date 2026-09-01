@@ -477,12 +477,9 @@ export default function MapCreatePinModal(
       !descriptionText.trim() ||
       !category.trim() ||
       !status.trim() ||
-      !contactPerson.trim() ||
       !startDate.trim() ||
-      !endDate.trim() ||
       !streetName.trim() ||
-      !district.trim() ||
-      !cost.trim();
+      !district.trim();
 
     if (missingRequired) return;
 
@@ -538,7 +535,7 @@ export default function MapCreatePinModal(
               : Array.isArray(existingLineLocations)
                 ? existingLineLocations
                 : undefined,
-        contact_person: contactPerson,
+        contact_person: contactPerson || '',
         is_public: isPublic,
         start_date: startDate ? new Date(startDate) : null,
         end_date: endDate ? new Date(endDate) : null,
@@ -618,12 +615,9 @@ export default function MapCreatePinModal(
     !descriptionText.trim() ||
     !category.trim() ||
     !status.trim() ||
-    !contactPerson.trim() ||
     !startDate.trim() ||
-    !endDate.trim() ||
     !streetName.trim() ||
-    !district.trim() ||
-    !cost.trim();
+    !district.trim();
 
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
@@ -811,14 +805,14 @@ export default function MapCreatePinModal(
                             <ul
                               className="border rounded mt-2 max-h-40 overflow-auto text-sm"
                               style={{
-                                backgroundColor: fontColor,
+                                backgroundColor: panelPrimaryColor,
                                 color: fontColor,
                               }}
                             >
                               {suggestions.map((s, idx) => (
                                 <li
                                   key={s.id || idx}
-                                  className="p-2 cursor-pointer"
+                                  className="p-2 cursor-pointer hover:bg-black/10 transition-colors"
                                   onClick={(): void => {
                                     const placeName = s.place_name || s.text;
                                     const center = s.center || [];
@@ -1154,9 +1148,12 @@ export default function MapCreatePinModal(
 
           {currentStep === 2 && (
             <div className="pl-11 border-l-2 border-gray-100 ml-4 pb-6 mt-4">
+              <p className="text-xs mb-4" style={{ color: fontColor }}>
+                * Pflichtfeld
+              </p>
               {/* Title */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Titel</label>
+                <label className="block text-sm mb-2">Titel*</label>
                 <input
                   type="text"
                   value={title}
@@ -1194,7 +1191,7 @@ export default function MapCreatePinModal(
 
               {/* Category */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Kategorie</label>
+                <label className="block text-sm mb-2">Kategorie*</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -1215,7 +1212,7 @@ export default function MapCreatePinModal(
 
               {/* Status */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Status</label>
+                <label className="block text-sm mb-2">Status*</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
@@ -1265,7 +1262,7 @@ export default function MapCreatePinModal(
 
               {/* District */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Stadtteil / Bezirk</label>
+                <label className="block text-sm mb-2">Stadtteil / Bezirk*</label>
                 <input
                   type="text"
                   value={district}
@@ -1285,7 +1282,7 @@ export default function MapCreatePinModal(
 
               {/* Streetname */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Straßenname</label>
+                <label className="block text-sm mb-2">Straßenname*</label>
                 <input
                   type="text"
                   value={streetName}
@@ -1336,7 +1333,7 @@ export default function MapCreatePinModal(
               {/* Dates */}
               <div className="flex gap-3 mb-4">
                 <div className="flex-1">
-                  <label className="block text-sm mb-2">Startdatum</label>
+                  <label className="block text-sm mb-2">Startdatum*</label>
                   <input
                     type="date"
                     value={startDate}

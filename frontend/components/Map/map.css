@@ -103,3 +103,16 @@ z-index: 0;
 .leaflet-container .leaflet-interactive:focus {
   outline: none;
 }
+
+@keyframes map-focus-location-pulse {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.leaflet-interactive.map-focus-location-pulse {
+  animation: map-focus-location-pulse 0.2s linear 3;
+}

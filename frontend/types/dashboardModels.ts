@@ -125,11 +125,11 @@ export type WidgetRuntimeData = {
   chartValues?: number[];
   textValue?: string;
   listviewData?: Record<string, unknown>[];
+  calendarData?: CalendarData[];
   queryData?: QueryData[];
   timeframe?: string | null;
   extendedDateSelection?: boolean;
 };
-
 export type WidgetDataPayload = {
   id?: string;
   widgetId?: string;
@@ -220,6 +220,17 @@ export type MultiAttributeConfig = {
   warnColor: string;
 };
 
+export type MapValueColorMode = 'numeric' | 'text' | 'relative_date';
+
+export type MapDateColorRule = {
+  anchor: 'now' | 'start_of_day' | 'start_of_week' | 'start_of_month';
+  offsetValue: number;
+  offsetUnit: 'hour' | 'day' | 'week' | 'month';
+  offsetDirection: 'before' | 'after';
+  color: string;
+  icon?: string;
+};
+
 export type Tab = {
   id?: string;
   chartAllowImageDownload?: boolean;
@@ -301,6 +312,9 @@ export type Tab = {
   mapGeoJSONHoverFillOpacity?: number;
   mapIsFormColorValueBased?: boolean;
   mapIsIconColorValueBased?: boolean;
+  mapValueColorMode?: MapValueColorMode;
+  mapDateColorRules?: MapDateColorRule[];
+  mapValueColorDefaultColor?: string;
   mapGeoJSONFeatureIdentifier?: string;
   mapLatitude?: number;
   mapLegendDisclaimer?: string;
@@ -380,6 +394,13 @@ export type Tab = {
   customMapSensorData?: CustomMapSensor[];
   chartStaticValuesText?: boolean;
   valuesToImages?: ValueToImageData[];
+  calendarBookedColor?: string;
+  calendarPrivatBookedColor?: string;
+  calendarOrganisationBookedColor?: string;
+  calendarMonthAfterCurrent?: number;
+  calendarMonthBeforeCurrent?: number;
+  calendarDisplayedMonthsCount?: number;
+  splitCalendarDay?: boolean;
   sensorStatusValue?: number;
   sensorStatusLightCount?: number;
   sensorStatusMinThreshold?: string;
@@ -481,6 +502,7 @@ export type QueryConfig = {
   dataStartDate: string;
   dataUntilDate: string;
   extendedDateSelection: boolean;
+  isBlacklist?: boolean;
 };
 
 export type ReportConfig = {
@@ -783,6 +805,7 @@ export type InternalData = {
   id: string;
   source: string;
   collection: string;
+  data: string;
   firstDataColIndex: number;
   firstDataRowIndex: number;
   timeGroupRowCount: number;
@@ -828,6 +851,20 @@ export type CurrentAreaConfig = {
   authDataType: string;
 };
 
+export type CalendarTextProperty = {
+  type: 'Text';
+  value: Date | string;
+  metadata: Record<string, unknown>;
+};
+
+export type CalendarData = {
+  id: string;
+  type: 'planbar';
+  name: CalendarTextProperty;
+  usage: CalendarTextProperty;
+  location: CalendarTextProperty;
+  date: CalendarTextProperty;
+};
 export type WidgetDataRange = {
   from: string;
   to: string;

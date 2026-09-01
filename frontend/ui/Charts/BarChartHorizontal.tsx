@@ -19,7 +19,7 @@ import DashboardIcon from '../Icons/DashboardIcon';
 import FilterButton from '../Buttons/FilterButton';
 import { useSearchParams } from 'next/navigation';
 import { debounce } from 'lodash';
-import { getVisibleDateRange } from '@/utils/Charts/lineChartUtil';
+import { getVisibleDateRange, getXMinMax } from '@/utils/Charts/lineChartUtil';
 import eventBus, { VISIBLE_CHART_DATA_DOWNLOAD_EVENT } from '@/app/EventBus';
 
 type BarChartProps = {
@@ -284,7 +284,11 @@ export default function BarChartHorizontal(props: BarChartProps): ReactElement {
     const chart = chartInstance.current;
     if (!chart) return;
 
-    const range = getVisibleDateRange(chart);
+    // getVisibleDateRange assumes the time axis is the xAxis, which does not
+    // hold here (time is on the yAxis), so it only resolves via dataZoom.
+    // Fall back to the full data range so the download event still fires
+    // when zoom is disabled or no zoom has been applied yet.
+    const range = getVisibleDateRange(chart) ?? getXMinMax(axisData);
     if (!range) return;
 
     const selectedLegendNames = getSelectedLegendNames(chart);

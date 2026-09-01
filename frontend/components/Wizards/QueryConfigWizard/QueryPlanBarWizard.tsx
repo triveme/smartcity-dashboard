@@ -251,8 +251,11 @@ export default function QueryPlanBarWizard(
           <div className="flex flex-row items-center">
             <div className="flex-1">
               <WizardDropdownSelection
-                currentValue={queryConfig?.entityIds?.[0] || ''}
-                selectableValues={sensors.map((s) => s.name)}
+                currentValue={
+                  sensors.find((s) => s.id === queryConfig?.entityIds?.[0])
+                    ?.name || ''
+                }
+                selectableValues={['', ...sensors.map((s) => s.name)]}
                 error={errors && errors.sensorError}
                 onSelect={(value: string | number): void => {
                   const sensor = sensors.find(
@@ -310,17 +313,15 @@ export default function QueryPlanBarWizard(
       )}
       {isSingleWidget ? (
         <div className="flex flex-col w-full pb-2">
-          <WizardLabel label={'Attribut'} />
+          <WizardLabel label={'Attribute'} />
           <div className="flex flex-row items-center">
             <div className="flex-1">
-              <WizardDropdownSelection
-                currentValue={queryConfig?.attributes[0] || ''}
+              <WizardMultipleDropdownSelection
+                currentValue={queryConfig?.attributes || []}
                 selectableValues={[...attributes]}
                 error={errors && errors.attributeError}
-                onSelect={(value: string | number): void =>
-                  handleQueryConfigChange({
-                    attributes: [value.toString()],
-                  })
+                onSelect={(value: string[]): void =>
+                  handleQueryConfigChange({ attributes: value })
                 }
                 iconColor={iconColor}
                 borderColor={borderColor}

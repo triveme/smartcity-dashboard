@@ -43,6 +43,7 @@ export const tabComponentTypeEnum = pgEnum('tab_component_type', [
   'Listview',
   'Interaktive Komponente',
   'Werte zu Bildern',
+  'Belegungskalender',
   'Apotheke',
   'Ampelstatus',
 ]);

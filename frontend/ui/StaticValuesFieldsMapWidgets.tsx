@@ -215,7 +215,7 @@ export default function StaticValuesFieldMapWidgets(
                         });
                         setMapWidgetValues(updatedMapWidgetValues);
                       }}
-                      iconColor={'#fff'}
+                      iconColor={iconColor}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
                     />
@@ -271,7 +271,7 @@ export default function StaticValuesFieldMapWidgets(
                           });
                           setMapWidgetValues(updatedMapWidgetValues);
                         }}
-                        iconColor={'#fff'}
+                        iconColor={iconColor}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}
                       />
@@ -306,7 +306,7 @@ export default function StaticValuesFieldMapWidgets(
                               });
                               setMapWidgetValues(updatedMapWidgetValues);
                             }}
-                            iconColor={'#fff'}
+                            iconColor={iconColor}
                             borderColor={borderColor}
                             backgroundColor={backgroundColor}
                           />
@@ -339,7 +339,7 @@ export default function StaticValuesFieldMapWidgets(
                                 });
                                 setMapWidgetValues(updatedMapWidgetValues);
                               }}
-                              iconColor={'#fff'}
+                              iconColor={iconColor}
                               borderColor={borderColor}
                               backgroundColor={backgroundColor}
                             />
@@ -457,7 +457,7 @@ export default function StaticValuesFieldMapWidgets(
                               });
                               setMapWidgetValues(updatedMapWidgetValues);
                             }}
-                            iconColor={'#fff'}
+                            iconColor={iconColor}
                             borderColor={borderColor}
                             backgroundColor={backgroundColor}
                           />
@@ -1187,7 +1187,7 @@ export default function StaticValuesFieldMapWidgets(
                                   });
                                   setMapWidgetValues(updatedMapWidgetValues);
                                 }}
-                                iconColor={'#fff'}
+                                iconColor={iconColor}
                                 borderColor={borderColor}
                                 backgroundColor={backgroundColor}
                               />
@@ -1471,7 +1471,7 @@ export default function StaticValuesFieldMapWidgets(
                           });
                           setMapWidgetValues(updatedMapWidgetValues);
                         }}
-                        label="Grenzwerte mit Farbe der vorherigen Stufe"
+                        label="Grenzwerte mit Farbe der nächsten Stufe"
                       />
                     </div>
                     <div className="flex flex-col w-full">
