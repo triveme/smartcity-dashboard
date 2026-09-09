@@ -1,44 +1,32 @@
 import { Parser } from '@json2csv/plainjs';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
-import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
-import { QueryBatch } from 'apps/ngsi-service/src/ngsi.service';
 import { widgets } from '@app/postgres-db/schemas';
 import { eq } from 'drizzle-orm';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
-import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
-import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
-import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
-import { UsiPlaformService } from 'apps/usi-platform-service/src/usi-platform.service';
-import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
 import { CurrentAreaConfig } from './widget.model';
 import type { ChartData } from 'apps/data-translation-service/src/data-translation.service';
 import { PopulateChartService } from 'apps/data-translation-service/src/populate/populate-chart.service';
 import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
-import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
+import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
+import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
 
 @Injectable()
 export class WidgetDataService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
-    private readonly ngsiDataService: NgsiDataService,
-    private readonly ngsiQueryService: NgsiQueryService,
-    private readonly orchideoDataService: OrchideoDataService,
-    private readonly internalDataService: InternalDataService,
-    private readonly sqlViewService: SqlViewService,
-    private readonly orchideoConnectService: OrchideoConnectService,
-    private readonly usiPlatformService: UsiPlaformService,
     private readonly tabService: TabService,
     private readonly populateChartService: PopulateChartService,
-    private readonly planbarDataService: PlanBarDataService,
+    private readonly platformInternalClient: PlatformInternalClientService,
+    private readonly platformQueryResolver: PlatformQueryResolverService,
   ) {}
 
   async getRangeData(
     widgetId: string,
     range: { from: string; to: string },
     usesQueryParameter = false,
+    authorization?: string | string[],
   ): Promise<ChartData[]> {
     try {
       if (!range?.from || !range?.to) {
@@ -63,7 +51,7 @@ export class WidgetDataService {
       }
 
       const queryWithAllInfos =
-        await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(widgetId);
+        await this.platformQueryResolver.getByWidgetId(widgetId);
 
       if (!queryWithAllInfos) {
         throw new HttpException(
@@ -72,25 +60,27 @@ export class WidgetDataService {
         );
       }
 
-      const queryBatch: QueryBatch = {
-        queryIds: [queryWithAllInfos.query.id],
-        query_config: {
+      if (queryWithAllInfos.auth_data.type === 'ngsi-ld') {
+        const queryConfig: typeof queryWithAllInfos.query_config = {
           ...queryWithAllInfos.query_config,
           timeframe: 'user_defined',
           dataStartDate: fromDate,
           dataUntilDate: toDate,
-        },
-        data_source: queryWithAllInfos.data_source,
-        auth_data: queryWithAllInfos.auth_data,
-      };
-
-      if (queryWithAllInfos.auth_data.type === 'ngsi-ld') {
-        const queryData =
-          await this.ngsiDataService.getDataFromDataSource(queryBatch);
+        };
+        const queryData = await this.platformInternalClient.getQueryData(
+          queryWithAllInfos.auth_data.type,
+          queryWithAllInfos.query.id,
+          authorization,
+          {
+            timeframe: queryConfig.timeframe,
+            dataStartDate: queryConfig.dataStartDate,
+            dataUntilDate: queryConfig.dataUntilDate,
+          },
+        );
 
         return this.populateChartService.normalizeHistoricalQueryData(
           queryData,
-          queryBatch.query_config,
+          queryConfig,
           usesQueryParameter,
         );
       } else {
@@ -118,6 +108,7 @@ export class WidgetDataService {
   async downloadWidgetData(
     widgetId: string,
     currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
+    authorization?: string | string[],
   ): Promise<string> {
     const errorMessages: string[] = [];
     const allCsvData: string[] = [];
@@ -186,9 +177,7 @@ export class WidgetDataService {
       for (const widgetToProcess of expandedWidgets) {
         try {
           const queryWithAllInfos =
-            await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
-              widgetToProcess.id,
-            );
+            await this.platformQueryResolver.getByWidgetId(widgetToProcess.id);
 
           if (!queryWithAllInfos) {
             const warning = `No query information found for widget with id: ${widgetToProcess.id}`;
@@ -201,12 +190,10 @@ export class WidgetDataService {
           }
           const queryBatch = {
             queryIds: [queryWithAllInfos.query.id],
-            query_config: queryWithAllInfos.query_config,
-            data_source: queryWithAllInfos.data_source,
+            query_config: { ...queryWithAllInfos.query_config },
             auth_data: queryWithAllInfos.auth_data,
           };
 
-          let rawData: object | object[] = [];
           if (
             queryBatch.auth_data.type === 'ngsi' ||
             queryBatch.auth_data.type === 'ngsi-ld' ||
@@ -224,30 +211,15 @@ export class WidgetDataService {
                 queryBatch.query_config.timeframe = 'month';
               }
             }
-
-            rawData =
-              await this.ngsiDataService.getDataFromDataSource(queryBatch);
-          } else if (queryBatch.auth_data.type === 'api') {
-            const systemUser =
-              await this.orchideoDataService.getSystemUserForTenant(
-                queryBatch.auth_data.tenantAbbreviation,
-              );
-            rawData = await this.orchideoDataService.getDataFromDataSource({
-              ...queryBatch,
-              system_user: systemUser,
-            });
-            // Ensure rawData is an array before transforming
-            const dataArray = Array.isArray(rawData) ? rawData : [rawData];
-            rawData =
-              this.orchideoConnectService.transformToTargetModel(dataArray);
-          } else if (queryBatch.auth_data.type === 'usi') {
-            rawData = await this.usiPlatformService.getDataFromDataSource({
-              ...queryBatch,
-            });
-          } else if (queryBatch.auth_data.type === 'planbar') {
-            rawData =
-              await this.planbarDataService.getDataFromDataSource(queryBatch);
           }
+
+          const rawData = await this.platformInternalClient.getQueryData<
+            object | object[]
+          >(queryBatch.auth_data.type, queryBatch.queryIds[0], authorization, {
+            timeframe: queryBatch.query_config.timeframe,
+            aggrMode: queryBatch.query_config.aggrMode,
+            aggrPeriod: queryBatch.query_config.aggrPeriod,
+          });
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
@@ -355,53 +327,22 @@ export class WidgetDataService {
     }
   }
 
-  // Helper to run data population asynchronously
-  async runQueryDataPopulation(queryBatch: QueryBatch): Promise<void> {
+  async runQueryDataPopulation(
+    queryId: string,
+    authDataType: string,
+    authorization: string | string[] | undefined,
+  ): Promise<void> {
     try {
-      let newData: object | object[] = [];
-
-      if (
-        queryBatch.auth_data.type === 'ngsi' ||
-        queryBatch.auth_data.type === 'ngsi-ld' ||
-        queryBatch.auth_data.type === 'ngsi-v2'
-      ) {
-        newData = await this.ngsiDataService.getDataFromDataSource(queryBatch);
-      } else if (queryBatch.auth_data.type === 'api') {
-        const systemUser =
-          await this.orchideoDataService.getSystemUserForTenant(
-            queryBatch.auth_data.tenantAbbreviation,
-          );
-        const orchideoData =
-          await this.orchideoDataService.getDataFromDataSource({
-            ...queryBatch,
-            system_user: systemUser,
-          });
-        // Ensure data is an array before transforming
-        const dataArray = Array.isArray(orchideoData)
-          ? orchideoData
-          : [orchideoData];
-        newData = this.orchideoConnectService.transformToTargetModel(dataArray);
-      } else if (queryBatch.auth_data.type === 'internal') {
-        newData =
-          await this.internalDataService.getDataFromDataSource(queryBatch);
-        await this.internalDataService.updateFiwareQueries();
-      } else if (queryBatch.auth_data.type === 'usi') {
-        newData =
-          await this.usiPlatformService.getDataFromDataSource(queryBatch);
-        await this.usiPlatformService.updateFiwareQueries();
-      } else if (queryBatch.auth_data.type === 'sql') {
-        newData = await this.sqlViewService.getDataFromDataSource(queryBatch);
-        await this.sqlViewService.updateFiwareQueries();
-      } else if (queryBatch.auth_data.type === 'planbar') {
-        newData =
-          await this.planbarDataService.getDataFromDataSource(queryBatch);
-      }
-
-      if (newData) {
-        await this.ngsiQueryService.setQueryDataOfBatch(queryBatch, newData);
-      }
+      await this.platformInternalClient.enqueueQueryPopulation(
+        authDataType,
+        queryId,
+        authorization,
+      );
     } catch (error) {
-      console.error('Error in query data population', error);
+      console.error(
+        `Error queuing initial query population for ${queryId}`,
+        error,
+      );
     }
   }
 }

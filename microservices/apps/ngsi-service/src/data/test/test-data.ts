@@ -32,6 +32,10 @@ export async function getQueryBatch(): Promise<QueryBatch> {
       createdAt: new Date(),
       hash: null,
     },
+    queryConfigSnapshot: {
+      id: queryConfig.id,
+      hash: null,
+    },
     data_source: {
       ...dataSource,
       authDataId: authData.id,

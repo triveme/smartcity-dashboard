@@ -15,10 +15,18 @@ import sanitizeCSSInjection from '@/utils/sanitizeHtml';
 
 config.autoAddCss = false;
 
-export const metadata: Metadata = {
-  title: 'EDAG Wizard',
-  description: 'Create Customizable Dashboards',
-};
+export async function generateMetadata(props: {
+  params: Promise<{ tenant: string }>;
+}): Promise<Metadata> {
+  const { tenant } = await props.params;
+  return {
+    title: 'EDAG Wizard',
+    description: 'Create Customizable Dashboards',
+    icons: {
+      icon: `/${tenant}/favicon`,
+    },
+  };
+}
 
 export default async function RootLayout(props: {
   children: React.ReactNode;

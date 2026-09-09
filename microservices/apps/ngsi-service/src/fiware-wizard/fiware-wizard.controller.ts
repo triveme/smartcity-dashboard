@@ -24,7 +24,14 @@ export class FiwareWizardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getTypesNgsiV2(fiwareService, dataSourceId, roles);
+    return this.service.executeWizardFetch(
+      'wizard-types-v2',
+      dataSourceId,
+      roles,
+      { fiwareService },
+      (signal) =>
+        this.service.getTypesNgsiV2(fiwareService, dataSourceId, roles, signal),
+    );
   }
   // Endpoint to get all fiware types for ngsi-ld
   @Public()
@@ -36,7 +43,14 @@ export class FiwareWizardController {
     @Req() request: AuthenticatedRequest,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getTypesNgsiLd(fiwareService, dataSourceId, roles);
+    return this.service.executeWizardFetch(
+      'wizard-types-ld',
+      dataSourceId,
+      roles,
+      { fiwareService },
+      (signal) =>
+        this.service.getTypesNgsiLd(fiwareService, dataSourceId, roles, signal),
+    );
   }
 
   // Endpoint to get all fiware entity ids with optional fiwareType
@@ -50,11 +64,19 @@ export class FiwareWizardController {
     @Query('type') type?: string,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getEntityIdsNgsiV2(
-      fiwareService,
+    return this.service.executeWizardFetch(
+      'wizard-entity-ids-v2',
       dataSourceId,
       roles,
-      type,
+      { fiwareService, type },
+      (signal) =>
+        this.service.getEntityIdsNgsiV2(
+          fiwareService,
+          dataSourceId,
+          roles,
+          type,
+          signal,
+        ),
     );
   }
 
@@ -69,11 +91,19 @@ export class FiwareWizardController {
     @Query('type') type?: string,
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getEntityIdsNgsiLd(
-      fiwareService,
+    return this.service.executeWizardFetch(
+      'wizard-entity-ids-ld',
       dataSourceId,
       roles,
-      type,
+      { fiwareService, type },
+      (signal) =>
+        this.service.getEntityIdsNgsiLd(
+          fiwareService,
+          dataSourceId,
+          roles,
+          type,
+          signal,
+        ),
     );
   }
 
@@ -88,11 +118,19 @@ export class FiwareWizardController {
     @Query('entityType') entityType: string[],
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getEntityAttributesNgsiV2(
-      fiwareService,
+    return this.service.executeWizardFetch(
+      'wizard-entity-attributes-v2',
       dataSourceId,
       roles,
-      entityType,
+      { fiwareService, entityType },
+      (signal) =>
+        this.service.getEntityAttributesNgsiV2(
+          fiwareService,
+          dataSourceId,
+          roles,
+          entityType,
+          signal,
+        ),
     );
   }
 
@@ -107,11 +145,19 @@ export class FiwareWizardController {
     @Query('entityType') entityType: string[],
   ): Promise<string[]> {
     const roles = request.roles ?? [];
-    return this.service.getEntityAttributesNgsiLd(
-      fiwareService,
+    return this.service.executeWizardFetch(
+      'wizard-entity-attributes-ld',
       dataSourceId,
       roles,
-      entityType,
+      { fiwareService, entityType },
+      (signal) =>
+        this.service.getEntityAttributesNgsiLd(
+          fiwareService,
+          dataSourceId,
+          roles,
+          entityType,
+          signal,
+        ),
     );
   }
 }

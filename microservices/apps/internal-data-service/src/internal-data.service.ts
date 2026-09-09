@@ -24,17 +24,55 @@ export class InternalDataService {
   ) {}
 
   async getCollections(appid: string): Promise<string[]> {
-    return this.dataService.getCollections(appid);
+    return this.executeWizardFetch('wizard-collections', { apiId: appid }, () =>
+      this.dataService.getCollections(appid),
+    );
   }
   async getSources(collection: string, tenant: string): Promise<string[]> {
-    return this.dataService.getSources(collection, tenant);
+    return this.executeWizardFetch(
+      'wizard-sources',
+      { collection, tenant },
+      () => this.dataService.getSources(collection, tenant),
+    );
   }
 
   async getEntities(collection: string, source: string): Promise<string[]> {
-    return this.dataService.getEntities(collection, source);
+    return this.executeWizardFetch(
+      'wizard-entities',
+      { collection, source },
+      () => this.dataService.getEntities(collection, source),
+    );
   }
   async getAttributes(collection: string, source: string): Promise<string[]> {
-    return this.dataService.getAttributes(collection, source);
+    return this.executeWizardFetch(
+      'wizard-attributes',
+      { collection, source },
+      () => this.dataService.getAttributes(collection, source),
+    );
+  }
+
+  private async executeWizardFetch<T>(
+    operation: string,
+    runtimeParameters: object,
+    execute: () => Promise<T>,
+  ): Promise<T> {
+    return this.dataService.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'internal-data',
+        operation,
+        target: { origin: 'internal-data' },
+        queryConfig: {},
+        runtimeParameters,
+      },
+      execute: async (signal) => {
+        signal.throwIfAborted();
+        const result = await execute();
+        signal.throwIfAborted();
+        return result;
+      },
+    });
   }
 
   async create(
@@ -104,27 +142,6 @@ export class InternalDataService {
       );
       return { attrs: transformedData };
     }
-  }
-
-  async updateFiwareQueries(): Promise<void> {
-    const queryHashMap = await this.queryService.getQueriesToUpdate();
-
-    // Create an array of promises from the dictionary. Each promise will fetch the data
-    // from the data source and update all of it's queries (with the same hash) with the new data.
-    const updates = Array.from(queryHashMap.values()).map(
-      async (queryBatch) => {
-        const newData =
-          await this.dataService.getDataFromDataSource(queryBatch);
-
-        if (newData) {
-          await this.queryService.setQueryDataOfBatch(queryBatch, newData);
-        }
-      },
-    );
-
-    // Wait for all promises to resolve (this will send all the requests
-    // to the data sources and update all the queries in parallel)
-    await Promise.all(updates);
   }
 
   async delete(id: string, roles: Array<string>): Promise<InternalData> {

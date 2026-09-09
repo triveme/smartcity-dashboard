@@ -11,6 +11,11 @@ import {
 } from '@app/postgres-db/schemas/data-source.schema';
 import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
 import axios from 'axios';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueFingerprintInput,
+  createCredentialFingerprint,
+} from '@app/data-platform-queue';
 
 type PreparedNgsiV2EntityRequest = {
   entitiesUrl: string;
@@ -34,7 +39,49 @@ export class FiwareWizardService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly httpService: HttpService,
+    private readonly queue: DataPlatformQueue,
   ) {}
+
+  async executeWizardFetch<T>(
+    operation: string,
+    dataSourceId: string,
+    rolesFromRequest: string[],
+    runtimeParameters: object,
+    execute: (signal: AbortSignal) => Promise<T>,
+  ): Promise<T> {
+    const dataSource = await this.getDataSourceById(dataSourceId);
+    const relatedAuthData = await this.getAuthDataById(
+      dataSource.authDataId,
+      rolesFromRequest,
+    );
+    const fingerprintInput: DataPlatformQueueFingerprintInput = {
+      platform: 'ngsi',
+      operation,
+      target: {
+        dataSourceId,
+        authDataId: relatedAuthData.id,
+        liveUrl: relatedAuthData.liveUrl,
+        credentialFingerprint: createCredentialFingerprint(
+          JSON.stringify({
+            authDataId: relatedAuthData.id,
+            clientId: relatedAuthData.clientId,
+            clientSecret: relatedAuthData.clientSecret,
+            appUser: relatedAuthData.appUser,
+            appUserPassword: relatedAuthData.appUserPassword,
+          }),
+        ),
+        roles: [...rolesFromRequest].sort(),
+      },
+      queryConfig: {},
+      runtimeParameters,
+    };
+    return this.queue.enqueue({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+      execute,
+    });
+  }
 
   async getDataSourceById(dataSourceId: string): Promise<DataSource> {
     const result = await this.db
@@ -60,6 +107,7 @@ export class FiwareWizardService {
   private async getToken(
     dataSourceId: string,
     rolesFromRequest: string[],
+    signal?: AbortSignal,
   ): Promise<string> {
     try {
       const selectedDataSource = await this.getDataSourceById(dataSourceId);
@@ -95,6 +143,7 @@ export class FiwareWizardService {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
             },
+            signal,
           },
         ),
       );
@@ -113,6 +162,7 @@ export class FiwareWizardService {
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
+    signal?: AbortSignal,
   ): Promise<PreparedNgsiV2EntityRequest> {
     const selectedDataSource = await this.getDataSourceById(dataSourceId);
 
@@ -135,7 +185,7 @@ export class FiwareWizardService {
       );
     }
 
-    const token = await this.getToken(dataSourceId, rolesFromRequest);
+    const token = await this.getToken(dataSourceId, rolesFromRequest, signal);
     const headers = {
       Authorization: `Bearer ${token}`,
       'fiware-service': fiwareService,
@@ -150,6 +200,7 @@ export class FiwareWizardService {
   private async prepareRequestNgsiLd(
     dataSourceId: string,
     rolesFromRequest: string[],
+    signal?: AbortSignal,
   ): Promise<PreparedNgsiLdEntityRequest> {
     const selectedDataSource = await this.getDataSourceById(dataSourceId);
 
@@ -172,7 +223,7 @@ export class FiwareWizardService {
       );
     }
 
-    const token = await this.getToken(dataSourceId, rolesFromRequest);
+    const token = await this.getToken(dataSourceId, rolesFromRequest, signal);
     const headers = {
       Authorization: `Bearer ${token}`,
       'NGSILD-Tenant': relatedAuthData.ngsildTenant,
@@ -189,11 +240,13 @@ export class FiwareWizardService {
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -207,7 +260,7 @@ export class FiwareWizardService {
     try {
       url.searchParams.set('limit', '1000');
       const entitiesResponse = await lastValueFrom(
-        this.httpService.get(typesUrl, { headers }),
+        this.httpService.get(typesUrl, { headers, signal }),
       );
       const types = entitiesResponse.data.map((entity) => entity.type);
       return Array.from(new Set(types));
@@ -224,10 +277,12 @@ export class FiwareWizardService {
     fiwareService: string,
     dataSourceId: string,
     rolesFromRequest: string[],
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -241,7 +296,7 @@ export class FiwareWizardService {
     try {
       url.searchParams.set('limit', '1000');
       const entitiesResponse = await lastValueFrom(
-        this.httpService.get(typesUrl, { headers }),
+        this.httpService.get(typesUrl, { headers, signal }),
       );
 
       const types = entitiesResponse.data.typeList.map((entity) => entity);
@@ -260,11 +315,13 @@ export class FiwareWizardService {
     dataSourceId: string,
     rolesFromRequest: string[],
     type?: string,
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -281,7 +338,7 @@ export class FiwareWizardService {
         if (type) url.searchParams.set('type', type);
 
         const entitiesResponse = await lastValueFrom(
-          this.httpService.get(url.toString(), { headers }),
+          this.httpService.get(url.toString(), { headers, signal }),
         );
 
         const entities = type
@@ -315,10 +372,12 @@ export class FiwareWizardService {
     dataSourceId: string,
     rolesFromRequest: string[],
     type?: string,
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -335,7 +394,7 @@ export class FiwareWizardService {
         if (type) url.searchParams.set('type', type);
 
         const entitiesResponse = await lastValueFrom(
-          this.httpService.get(url.toString(), { headers }),
+          this.httpService.get(url.toString(), { headers, signal }),
         );
 
         const entities = type
@@ -370,11 +429,13 @@ export class FiwareWizardService {
     dataSourceId: string,
     rolesFromRequest: string[],
     entityType: string[],
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiV2(
       fiwareService,
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -388,6 +449,7 @@ export class FiwareWizardService {
 
       const entitiesResponse = await axios.get(`${typesUrl}/${entityType}`, {
         headers: headers,
+        signal,
       });
 
       const attributesSet: Set<string> = new Set();
@@ -415,10 +477,12 @@ export class FiwareWizardService {
     dataSourceId: string,
     rolesFromRequest: string[],
     entityType: string[],
+    signal?: AbortSignal,
   ): Promise<string[]> {
     const { entitiesUrl, headers } = await this.prepareRequestNgsiLd(
       dataSourceId,
       rolesFromRequest,
+      signal,
     );
     const url = new URL(entitiesUrl);
 
@@ -432,6 +496,7 @@ export class FiwareWizardService {
 
       const entitiesResponse = await axios.get(`${typesUrl}/${entityType}`, {
         headers: headers,
+        signal,
       });
 
       const attributesSet: Set<string> = new Set();

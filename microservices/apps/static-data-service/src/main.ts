@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { ScheduleService } from './schedule.service';
 import { StaticDataModule } from './static-data.module';
 import { parseCorsOrigins } from '@app/common';
 
@@ -10,10 +9,6 @@ async function bootstrap(): Promise<void> {
     methods: 'GET',
     credentials: true,
   });
-
-  const schedulerService = app.get(ScheduleService);
-
-  await schedulerService.runSchedule();
 
   await app.listen(8087);
 }

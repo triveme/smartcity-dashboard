@@ -106,6 +106,7 @@ export const corporateInfos = pgTable('corporate_info', {
   degreeChart360UnitFontSize: text('degree_chart_360_unit_font_size').default(
     '15',
   ),
+  faviconLogoId: uuid('favicon_logo_id').references(() => logos.id),
   fontColor: text('font_color').notNull().default('#FFF'),
   fontFamily: corporateInfoFontFamiliesTypeEnum('font_family')
     .notNull()

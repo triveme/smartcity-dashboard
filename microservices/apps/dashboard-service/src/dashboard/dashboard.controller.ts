@@ -190,13 +190,13 @@ export class DashboardController {
     return this.service.delete(id, roles, tenant);
   }
 
-  @Public()
   @Get('/download-data/:dashboardId')
   async downloadData(
     @Param('dashboardId') dashboardId: string,
     @Query('ids') ids: string[],
     @Query('currAreaConfig')
     currAreaConfig: string,
+    @Req() request: AuthenticatedRequest,
   ): Promise<string> {
     const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
       | CurrentAreaConfig
@@ -206,6 +206,7 @@ export class DashboardController {
       dashboardId,
       ids,
       parsedCurrAreaConfig,
+      request.headers.authorization,
     );
   }
 }

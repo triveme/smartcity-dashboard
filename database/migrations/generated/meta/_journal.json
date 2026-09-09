@@ -344,6 +344,13 @@
       "when": 1788186403365,
       "tag": "0048_perfect_purifiers_1.3.12",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "5",
+      "when": 1788850132460,
+      "tag": "0049_gifted_alice_1.4.0",
+      "breakpoints": true
     }
   ]
 }

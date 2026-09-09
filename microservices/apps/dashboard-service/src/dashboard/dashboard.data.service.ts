@@ -3,38 +3,31 @@ import { widgets } from '@app/postgres-db/schemas';
 import { Parser } from '@json2csv/plainjs';
 import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
-import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { PanelRepo } from '../panel/panel.repo';
-import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
-import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
 import { TabService } from '../tab/tab.service';
-import { DataService as InternlDataService } from '../../../internal-data-service/src/data/data.service';
 import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { CurrentAreaConfig } from '../widget/widget.model';
-import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
+import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
+import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
 
 @Injectable()
 export class DashboardDataService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly widgetsToPanelRepo: WidgetToPanelRepo,
-    private readonly ngsiDataService: NgsiDataService,
-    private readonly orchideoDataService: OrchideoDataService,
-    private readonly orchideoConnectService: OrchideoConnectService,
-    private readonly ngsiQueryService: NgsiQueryService,
     private readonly panelRepo: PanelRepo,
     private readonly tabService: TabService,
-    private readonly internalDataService: InternlDataService,
-    private readonly planbarDataService: PlanBarDataService,
+    private readonly platformInternalClient: PlatformInternalClientService,
+    private readonly platformQueryResolver: PlatformQueryResolverService,
   ) {}
 
   async downloadDashboardData(
     dashboardId: string,
     ids: string[],
     currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
+    authorization?: string | string[],
   ): Promise<string> {
     const allCsvData: string[] = [];
     const errorMessages: string[] = [];
@@ -106,9 +99,7 @@ export class DashboardDataService {
           )[0];
 
           const queryWithAllInfos =
-            await this.ngsiQueryService.getQueryWithAllInfosByWidgetId(
-              panelWidget.id,
-            );
+            await this.platformQueryResolver.getByWidgetId(panelWidget.id);
 
           if (!queryWithAllInfos) {
             const warning = `No query information found for widget with id: ${panelWidget.id}`;
@@ -124,10 +115,8 @@ export class DashboardDataService {
           const queryBatch = {
             queryIds: [queryWithAllInfos.query.id],
             query_config: queryWithAllInfos.query_config,
-            data_source: queryWithAllInfos.data_source,
             auth_data: queryWithAllInfos.auth_data,
           };
-          let rawData: object | object[] = [];
           if (
             queryBatch.auth_data.type === 'ngsi' ||
             queryBatch.auth_data.type === 'ngsi-ld' ||
@@ -144,42 +133,15 @@ export class DashboardDataService {
                 queryBatch.query_config.timeframe = 'month';
               }
             }
-            //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-            //
-            //DOWNLOAD-TODO: Investigate use-case for download function. Use get for now.
-            //
-            // rawData =
-            //   await this.ngsiDataService.downloadDataFromDataSource(queryBatch);
-            //
-            rawData =
-              await this.ngsiDataService.getDataFromDataSource(queryBatch);
-            //
-            //* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-          } else if (queryBatch.auth_data.type === 'api') {
-            console.log('DOWNLOAD ORCHIDEO CONNECT DATA');
-            console.log(queryBatch.queryIds);
-            const systemUser =
-              await this.orchideoDataService.getSystemUserForTenant(
-                queryBatch.auth_data.tenantAbbreviation,
-              );
-            rawData = await this.orchideoDataService.getDataFromDataSource({
-              ...queryBatch,
-              system_user: systemUser,
-            });
-            // Ensure rawData is an array before transforming
-            const dataArray = Array.isArray(rawData) ? rawData : [rawData];
-            rawData =
-              this.orchideoConnectService.transformToTargetModel(dataArray);
-            console.log('Transformed rawData:', rawData);
-          } else if (queryBatch.auth_data.type === 'internal') {
-            console.log('DOWNLOAD INTERNAL CONNECT DATA');
-            rawData =
-              await this.internalDataService.getDataFromDataSource(queryBatch);
-          } else if (queryBatch.auth_data.type === 'planbar') {
-            rawData =
-              await this.planbarDataService.getDataFromDataSource(queryBatch);
-            console.error('Planbar data', rawData);
           }
+
+          const rawData = await this.platformInternalClient.getQueryData<
+            object | object[]
+          >(queryBatch.auth_data.type, queryBatch.queryIds[0], authorization, {
+            timeframe: queryBatch.query_config.timeframe,
+            aggrMode: queryBatch.query_config.aggrMode,
+            aggrPeriod: queryBatch.query_config.aggrPeriod,
+          });
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];

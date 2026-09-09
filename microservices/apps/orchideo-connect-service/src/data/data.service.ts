@@ -14,6 +14,12 @@ import {
 } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
 import { ConfigService } from '@nestjs/config';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+  createCredentialFingerprint,
+} from '@app/data-platform-queue';
 
 @Injectable()
 export class DataService {
@@ -23,11 +29,44 @@ export class DataService {
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
+    private readonly queue: DataPlatformQueue,
   ) {}
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
 
   async getCollections(
     authorizationToken: string,
     apiId: string,
+  ): Promise<string[]> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-collections',
+        apiId,
+        authorizationToken,
+        {},
+      ),
+      execute: (signal) =>
+        this.fetchCollections(authorizationToken, apiId, signal),
+    });
+  }
+
+  private async fetchCollections(
+    authorizationToken: string,
+    apiId: string,
+    signal: AbortSignal,
   ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
@@ -35,11 +74,11 @@ export class DataService {
       const url = `${apiUrl}`;
 
       this.logger.debug('getCollections: ', url);
-      this.logger.debug('getCollections: ', authorizationToken);
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${authorizationToken}`,
         },
+        signal,
       });
 
       return response.data;
@@ -54,6 +93,26 @@ export class DataService {
     authorizationToken: string,
     apiId?: string,
   ): Promise<string[]> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-sources',
+        apiId,
+        authorizationToken,
+        { collection },
+      ),
+      execute: (signal) =>
+        this.fetchSources(collection, authorizationToken, apiId, signal),
+    });
+  }
+
+  private async fetchSources(
+    collection: string,
+    authorizationToken: string,
+    apiId: string,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
       this.logger.debug('getSources: ', `${apiUrl}/collections/${collection}`);
@@ -63,6 +122,7 @@ export class DataService {
         headers: {
           Authorization: `Bearer ${authorizationToken}`,
         },
+        signal,
       });
 
       return response.data;
@@ -79,6 +139,35 @@ export class DataService {
     apiId?: string,
     limit?: number,
   ): Promise<string[]> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-entities',
+        apiId,
+        authorizationToken,
+        { collection, source, limit: limit ?? 2147483647 },
+      ),
+      execute: (signal) =>
+        this.fetchEntities(
+          collection,
+          source,
+          authorizationToken,
+          apiId,
+          limit,
+          signal,
+        ),
+    });
+  }
+
+  private async fetchEntities(
+    collection: string,
+    source: string,
+    authorizationToken: string,
+    apiId: string,
+    limit: number | undefined,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
       const effectiveLimit = limit ?? 2147483647;
@@ -90,6 +179,7 @@ export class DataService {
         headers: {
           Authorization: `Bearer ${authorizationToken}`,
         },
+        signal,
       });
 
       return response.data;
@@ -105,6 +195,33 @@ export class DataService {
     authorizationToken: string,
     apiId?: string,
   ): Promise<string[]> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-attributes',
+        apiId,
+        authorizationToken,
+        { collection, source },
+      ),
+      execute: (signal) =>
+        this.fetchAttributes(
+          collection,
+          source,
+          authorizationToken,
+          apiId,
+          signal,
+        ),
+    });
+  }
+
+  private async fetchAttributes(
+    collection: string,
+    source: string,
+    authorizationToken: string,
+    apiId: string,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
       const apiUrl = await this.getUrl(apiId);
       this.logger.debug(
@@ -117,6 +234,7 @@ export class DataService {
         headers: {
           Authorization: `Bearer ${authorizationToken}`,
         },
+        signal,
       });
 
       return Object.keys(response.data);
@@ -124,6 +242,24 @@ export class DataService {
       this.logger.error('Failed to fetch data: ', error);
       throw new Error('Failed to fetch data');
     }
+  }
+
+  private wizardFingerprint(
+    operation: string,
+    apiId: string,
+    authorizationToken: string,
+    runtimeParameters: object,
+  ): DataPlatformQueueFingerprintInput {
+    return {
+      platform: 'orchideo',
+      operation,
+      target: {
+        apiId,
+        credentialFingerprint: createCredentialFingerprint(authorizationToken),
+      },
+      queryConfig: {},
+      runtimeParameters,
+    };
   }
 
   async getSystemUserForTenant(tenant: string): Promise<SystemUser | null> {
@@ -139,20 +275,25 @@ export class DataService {
     auth_data: any,
     password: any,
     queryBatch: any,
+    signal?: AbortSignal,
   ): Promise<KeycloakResponse> {
-    const tokenData = await this.authService.getTokenData({
-      username: queryBatch.system_user.username,
-      password: EncryptionUtil.decryptPassword(password as object),
-      client_id: auth_data.clientId,
-      grant_type: auth_data.grantType,
-      authUrl: auth_data.authUrl,
-    });
+    const tokenData = await this.authService.getTokenData(
+      {
+        username: queryBatch.system_user.username,
+        password: EncryptionUtil.decryptPassword(password as object),
+        client_id: auth_data.clientId,
+        grant_type: auth_data.grantType,
+        authUrl: auth_data.authUrl,
+      },
+      signal,
+    );
 
     return tokenData;
   }
 
   async getDataFromDataSource(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<AxiosResponse[]> {
     const { queryIds, query_config, data_source, auth_data } = queryBatch;
 
@@ -162,7 +303,9 @@ export class DataService {
         auth_data,
         password,
         queryBatch,
+        signal,
       );
+      signal?.throwIfAborted();
 
       let url = `${auth_data.apiUrl}/collections/${queryBatch.query_config.fiwareService}/${queryBatch.query_config.fiwareType}/data`;
 
@@ -286,9 +429,10 @@ export class DataService {
         // Loop to fetch all data in chunks of 1000 max 500000
         console.log(`Start fetch data from orchideo in (max ${max})`);
         do {
+          signal?.throwIfAborted();
           params.offset = offset;
           try {
-            const response = await axios.get(url, { headers, params });
+            const response = await axios.get(url, { headers, params, signal });
             fetchedData = response.data;
             allData = allData.concat(fetchedData);
             offset += fetchedData.length;
@@ -298,9 +442,14 @@ export class DataService {
                 auth_data,
                 password,
                 queryBatch,
+                signal,
               );
               headers.Authorization = `Bearer ${tokenData.access_token}`;
-              const response2 = await axios.get(url, { headers, params });
+              const response2 = await axios.get(url, {
+                headers,
+                params,
+                signal,
+              });
               fetchedData = response2.data;
               allData = allData.concat(fetchedData);
               offset += fetchedData.length;
@@ -315,7 +464,7 @@ export class DataService {
           `Fetched data from orchideo ${allData.length} in ${timeDif / 1000} sec`,
         );
       } else {
-        const response = await axios.get(url, { headers, params });
+        const response = await axios.get(url, { headers, params, signal });
         fetchedData = response.data;
         allData = allData.concat(fetchedData);
       }
@@ -370,7 +519,7 @@ export class DataService {
       reducedItem['timestamp'] = item['timestamp'];
 
       for (const attribute of attributes) {
-        if (item.hasOwnProperty(attribute)) {
+        if (Object.prototype.hasOwnProperty.call(item, attribute)) {
           reducedItem[attribute] = item[attribute];
         }
       }

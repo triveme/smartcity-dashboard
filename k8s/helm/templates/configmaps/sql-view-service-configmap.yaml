@@ -8,4 +8,6 @@ data:
   NODE_ENV: "development"
   NEST_JWKS_URI: {{ index .Values "sql-view-service" "jwks" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "sql-view-service" "frontendUrl" }}
+  DATA_PLATFORM_QUEUE_CONCURRENCY: {{ index .Values "sql-view-service" "queue" "concurrency" | quote }}
+  DATA_PLATFORM_QUEUE_TIMEOUT_MS: {{ index .Values "sql-view-service" "queue" "timeoutMs" | quote }}
 {{- end }}

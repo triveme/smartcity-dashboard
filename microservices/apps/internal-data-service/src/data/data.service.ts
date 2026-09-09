@@ -14,6 +14,11 @@ import {
 import { and, eq } from 'drizzle-orm';
 import { OutputEntry, parseCsvToJson } from './csv-parser';
 import { generateAttributeKey } from '../helper';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+} from '@app/data-platform-queue';
 
 export type QueryBatch = {
   queryIds: string[];
@@ -25,7 +30,23 @@ export type QueryBatch = {
 export class DataService {
   private readonly logger = new Logger(DataService.name);
 
-  constructor(@Inject(POSTGRES_DB) private readonly db: DbType) {}
+  constructor(
+    @Inject(POSTGRES_DB) private readonly db: DbType,
+    private readonly queue: DataPlatformQueue,
+  ) {}
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
 
   async getCollections(apiid: string): Promise<string[]> {
     try {
@@ -170,7 +191,11 @@ export class DataService {
     }
   }
 
-  async getDataFromDataSource(queryBatch: QueryBatch): Promise<OutputEntry[]> {
+  async getDataFromDataSource(
+    queryBatch: QueryBatch,
+    signal?: AbortSignal,
+  ): Promise<OutputEntry[]> {
+    signal?.throwIfAborted();
     const whereClause = and(
       eq(internalData.collection, queryBatch.query_config.fiwareService),
       eq(internalData.source, queryBatch.query_config.fiwareType),
@@ -180,6 +205,7 @@ export class DataService {
       .select()
       .from(internalData)
       .where(whereClause);
+    signal?.throwIfAborted();
 
     if (dataSource && dataSource.data) {
       let jsonData = parseCsvToJson(

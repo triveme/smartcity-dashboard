@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { PostgresDbModule } from '@app/postgres-db';
 import { AuthService } from './auth/auth.service';
 import { HttpModule } from '@nestjs/axios';
@@ -8,12 +13,21 @@ import { QueryConfigService } from './data/data.service';
 import { ConfigModule } from '@nestjs/config';
 import { QueryService } from './query/query.service';
 import { ScheduleService } from './schedule.service';
+import { DataPlatformQueueModule } from '@app/data-platform-queue';
+import { AuthHelperMiddleware } from '@app/auth-helper';
+import { InternalQueryPopulationController } from './internal-query-population.controller';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
+    }),
+    DataPlatformQueueModule.register({
+      name: 'usi',
+      platform: 'usi',
+      concurrency: Number(process.env.DATA_PLATFORM_QUEUE_CONCURRENCY ?? 2),
+      timeoutMs: Number(process.env.DATA_PLATFORM_QUEUE_TIMEOUT_MS ?? 60_000),
     }),
     HttpModule,
     PostgresDbModule,
@@ -25,6 +39,15 @@ import { ScheduleService } from './schedule.service';
     QueryConfigService,
     ScheduleService,
   ],
-  controllers: [UsiPlatformController],
+  controllers: [UsiPlatformController, InternalQueryPopulationController],
 })
-export class UsiPlatformModule {}
+export class UsiPlatformModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(AuthHelperMiddleware)
+      .forRoutes(
+        { path: 'internal/query-populations', method: RequestMethod.POST },
+        { path: 'internal/query-data', method: RequestMethod.POST },
+      );
+  }
+}

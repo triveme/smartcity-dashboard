@@ -4,8 +4,14 @@ import { eq } from 'drizzle-orm';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { dataSources } from '@app/postgres-db/schemas/data-source.schema';
 import { AuthData, authData } from '@app/postgres-db/schemas/auth-data.schema';
-import { EncryptionUtil } from 'apps/dashboard-service/src/util/encryption.util';
+import { EncryptionUtil } from '../../../dashboard-service/src/util/encryption.util';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+  createCredentialFingerprint,
+} from '@app/data-platform-queue';
 
 export type UsiEventType = {
   name: string;
@@ -42,11 +48,45 @@ export type NGSIv2AttributeData = {
 export class QueryConfigService {
   private readonly logger = new Logger(QueryConfigService.name);
 
-  constructor(@Inject(POSTGRES_DB) private readonly db: DbType) {}
+  constructor(
+    @Inject(POSTGRES_DB) private readonly db: DbType,
+    private readonly queue: DataPlatformQueue,
+  ) {}
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
 
   async getEventTypes(apiId?: string): Promise<UsiEventType[]> {
+    const authData = await this.getUsiAuthData(apiId);
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-event-types',
+        apiId,
+        authData,
+        {},
+      ),
+      execute: (signal) => this.fetchEventTypes(authData, signal),
+    });
+  }
+
+  private async fetchEventTypes(
+    authData: AuthData,
+    signal: AbortSignal,
+  ): Promise<UsiEventType[]> {
     try {
-      const authData = await this.getUsiAuthData(apiId);
+      signal.throwIfAborted();
       const url = `${authData.apiUrl}/eventtypes`;
       const response = await axios.get(url, {
         auth: {
@@ -55,6 +95,7 @@ export class QueryConfigService {
             authData.appUserPassword as object,
           ),
         },
+        signal,
       });
 
       const transformedData = response.data.eventtypes.map((eventType) => ({
@@ -71,8 +112,27 @@ export class QueryConfigService {
   }
 
   async getSensors(eventType: string, apiId?: string): Promise<string[]> {
+    const authData = await this.getUsiAuthData(apiId);
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-sensors',
+        apiId,
+        authData,
+        { eventType },
+      ),
+      execute: (signal) => this.fetchSensors(eventType, authData, signal),
+    });
+  }
+
+  private async fetchSensors(
+    eventType: string,
+    authData: AuthData,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
-      const authData = await this.getUsiAuthData(apiId);
+      signal.throwIfAborted();
       const url = `${authData.apiUrl}/${eventType}/sensors`;
       const response = await axios.get(url, {
         auth: {
@@ -81,6 +141,7 @@ export class QueryConfigService {
             authData.appUserPassword as object,
           ),
         },
+        signal,
       });
       return response.data;
     } catch (error) {
@@ -92,8 +153,35 @@ export class QueryConfigService {
     }
   }
 
+  private wizardFingerprint(
+    operation: string,
+    apiId: string | undefined,
+    authData: AuthData,
+    runtimeParameters: object,
+  ): DataPlatformQueueFingerprintInput {
+    return {
+      platform: 'usi',
+      operation,
+      target: {
+        apiId,
+        authDataId: authData.id,
+        apiUrl: authData.apiUrl,
+        credentialFingerprint: createCredentialFingerprint(
+          JSON.stringify({
+            authDataId: authData.id,
+            appUser: authData.appUser,
+            appUserPassword: authData.appUserPassword,
+          }),
+        ),
+      },
+      queryConfig: {},
+      runtimeParameters,
+    };
+  }
+
   async getSensorData(
     queryConfig: QueryConfig,
+    signal?: AbortSignal,
   ): Promise<{ attrs: NGSIv2AttributeData[] }> {
     try {
       const authData = await this.getUsiAuthData(queryConfig.dataSourceId);
@@ -109,9 +197,11 @@ export class QueryConfigService {
 
       queryConfig.attributes.forEach((attr) => attrMap.set(attr, []));
       for (const id of queryConfig.entityIds) {
+        signal?.throwIfAborted();
         const urlWithTimeFrame = `${authData.liveUrl}?sid=${id}&${constructedDateParameter}`;
         let response = await axios.get(urlWithTimeFrame, {
           auth: { username: authData.appUser, password: decryptedPassword },
+          signal,
         });
 
         if (
@@ -125,6 +215,7 @@ export class QueryConfigService {
           const urlForLatestValue = `${authData.liveUrl}?sid=${id}`;
           response = await axios.get(urlForLatestValue, {
             auth: { username: authData.appUser, password: decryptedPassword },
+            signal,
           });
         }
 

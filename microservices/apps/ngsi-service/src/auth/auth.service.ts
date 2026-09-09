@@ -18,6 +18,7 @@ export class AuthService {
   async getUpdatedTokenData(
     queryBatch: QueryBatch,
     refreshToken: string,
+    signal?: AbortSignal,
   ): Promise<TokenData> {
     try {
       const tokenData =
@@ -30,7 +31,7 @@ export class AuthService {
 
       if (!refreshToken) {
         // Directly fetch the initial token if refresh token is unavailable
-        return await this.getInitialTokenData(queryBatch);
+        return await this.getInitialTokenData(queryBatch, signal);
       }
 
       const { data } = await lastValueFrom(
@@ -45,6 +46,7 @@ export class AuthService {
             },
             {
               headers: { 'content-type': 'application/x-www-form-urlencoded' },
+              signal,
             },
           )
           .pipe(
@@ -71,13 +73,14 @@ export class AuthService {
       this.logger.warn(
         'Token refresh failed. Falling back to fetching a new token.',
       );
-      return await this.getInitialTokenData(queryBatch);
+      return await this.getInitialTokenData(queryBatch, signal);
     }
   }
 
   // Post request for token using appUser specific parameters
   async getAuthTokenRequestWithUserName(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<TokenData> {
     let authCredentials = {};
     if (queryBatch.auth_data.type === 'ngsi-ld') {
@@ -105,6 +108,7 @@ export class AuthService {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
+          signal,
         })
         .pipe(
           catchError((error: AxiosError) => {
@@ -131,6 +135,7 @@ export class AuthService {
   // Post request for token using api specific parameters
   async getAuthTokenRequestWithApiToken(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<TokenData> {
     const { data } = await lastValueFrom(
       this.httpService
@@ -147,6 +152,7 @@ export class AuthService {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
             },
+            signal,
           },
         )
         .pipe(
@@ -170,7 +176,10 @@ export class AuthService {
   }
 
   // Initialize the access token by making a grant request using app-username/password or apiToken.
-  async getInitialTokenData(queryBatch: QueryBatch): Promise<TokenData> {
+  async getInitialTokenData(
+    queryBatch: QueryBatch,
+    signal?: AbortSignal,
+  ): Promise<TokenData> {
     try {
       let tokenData: TokenData | PromiseLike<TokenData>;
 
@@ -187,9 +196,15 @@ export class AuthService {
       }
 
       if (queryBatch.auth_data.apiToken) {
-        tokenData = await this.getAuthTokenRequestWithApiToken(queryBatch);
+        tokenData = await this.getAuthTokenRequestWithApiToken(
+          queryBatch,
+          signal,
+        );
       } else {
-        tokenData = await this.getAuthTokenRequestWithUserName(queryBatch);
+        tokenData = await this.getAuthTokenRequestWithUserName(
+          queryBatch,
+          signal,
+        );
       }
       // Add tokenData instance to dictionary
       this.tokenDataDictionary[queryBatch.query_config.dataSourceId] =
@@ -243,19 +258,23 @@ export class AuthService {
    * Get the access token by dataSourceId, updating it if necessary.
    * @returns Current access token.
    */
-  async getAccessTokenByQuery(queryBatch: QueryBatch): Promise<string> {
+  async getAccessTokenByQuery(
+    queryBatch: QueryBatch,
+    signal?: AbortSignal,
+  ): Promise<string> {
     try {
       let tokenData =
         this.tokenDataDictionary[queryBatch.query_config.dataSourceId];
 
       if (tokenData == undefined || !tokenData.accessToken) {
-        tokenData = await this.getInitialTokenData(queryBatch);
+        tokenData = await this.getInitialTokenData(queryBatch, signal);
       }
 
       if (this.doesTokenNeedToUpdate(tokenData)) {
         tokenData = await this.getUpdatedTokenData(
           queryBatch,
           tokenData.refreshToken,
+          signal,
         );
       }
       return tokenData.accessToken;

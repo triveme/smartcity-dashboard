@@ -17,6 +17,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "data-platform-queue": {
+      "type": "library",
+      "root": "libs/data-platform-queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/data-platform-queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/data-platform-queue/tsconfig.lib.json"
+      }
+    },
     "postgres-db": {
       "type": "library",
       "root": "libs/postgres-db",

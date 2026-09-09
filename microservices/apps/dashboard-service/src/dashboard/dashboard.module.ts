@@ -29,11 +29,9 @@ import { TenantRepo } from '../tenant/tenant.repo';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { WidgetToTenantRepo } from '../widget-to-tenant/widget-to-tenant.repo';
 import { CorporateInfoRepo } from '../corporate-info/corporate-info.repo';
-import { DataService as NgsiDataService } from '../../../ngsi-service/src/data/data.service';
-import { QueryService as NgsiQueryService } from '../../../ngsi-service/src/query/query.service';
-import { AuthService as NgsiAuthService } from '../../../ngsi-service/src/auth/auth.service';
-import { HttpModule } from '@nestjs/axios';
 import { DashboardDataService } from './dashboard.data.service';
+import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
+import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
 import { WidgetRepo } from '../widget/widget.repo';
 import { CorporateInfoSidebarLogosRepo } from '../corporate-info/corporate-info-sidebar-logos.repo';
 import { LogoRepo } from '../logo/logo.repo';
@@ -43,34 +41,17 @@ import { WidgetService } from '../widget/widget.service';
 import { TabService } from '../tab/tab.service';
 import { TabRepo } from '../tab/tab.repo';
 import { WidgetDataService } from '../widget/widget.data.service';
-import { DataService as OrchideoDataService } from '../../../orchideo-connect-service/src/data/data.service';
-import { AuthService } from '../../../orchideo-connect-service/src/auth/auth.service';
-import { OrchideoConnectService } from '../../../orchideo-connect-service/src/api.service';
-import { QueryService as OrchideoQueryService } from '../../../orchideo-connect-service/src/query/query.service';
-import { DataService as InternlDataService } from '../../../internal-data-service/src/data/data.service';
-import { InternalDataService } from 'apps/internal-data-service/src/internal-data.service';
-import { DataService } from 'apps/internal-data-service/src/data/data.service';
-import { QueryService as InternalDataQueryService } from '../../../internal-data-service/src/query/query.service';
-import { TransformationService } from 'apps/internal-data-service/src/transformation/transformation.service';
-import { UsiPlaformService } from 'apps/usi-platform-service/src/usi-platform.service';
-import { QueryService as UsiQueryService } from 'apps/usi-platform-service/src//query/query.service';
-import { QueryConfigService as UsiQueryConfigService } from 'apps/usi-platform-service/src/data/data.service';
-import { AuthService as UsiAuthService } from 'apps/usi-platform-service/src/auth/auth.service';
-import { SqlViewService } from 'apps/sql-view-service/src/data/data.service';
-import { TransformationService as SqlTransformationService } from 'apps/sql-view-service/src/transformation/transformation.service';
 import { PopulateChartService } from 'apps/data-translation-service/src/populate/populate-chart.service';
 import { DataTranslationRepo } from 'apps/data-translation-service/src/data-translation.repo';
 import { PopulateMapService } from 'apps/data-translation-service/src/populate/populate-map.service';
 import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
-import { PlanBarDataService } from 'apps/plan-bar-service/src/plan-bar.service';
-import { AuthService as PlanBarAuthService } from 'apps/plan-bar-service/src/auth/auth.service';
-import { PlanBarService } from 'apps/plan-bar-service/src/data/data.service';
 
 @Module({
-  imports: [HttpModule],
   providers: [
     DashboardService,
     DashboardDataService,
+    PlatformInternalClientService,
+    PlatformQueryResolverService,
     CorporateInfoService,
     CorporateInfoRepo,
     AuthHelperUtility,
@@ -94,9 +75,6 @@ import { PlanBarService } from 'apps/plan-bar-service/src/data/data.service';
     TenantRepo,
     WidgetToPanelRepo,
     WidgetToTenantRepo,
-    NgsiAuthService,
-    NgsiDataService,
-    NgsiQueryService,
     WidgetRepo,
     WidgetService,
     TabService,
@@ -105,32 +83,11 @@ import { PlanBarService } from 'apps/plan-bar-service/src/data/data.service';
     LogoRepo,
     LogoService,
     GeneralSettingsRepo,
-    WidgetService,
     WidgetDataService,
-    TabService,
-    TabRepo,
-    OrchideoDataService,
-    OrchideoConnectService,
-    OrchideoQueryService,
-    InternlDataService,
-    AuthService,
-    InternalDataService,
-    DataService,
-    InternalDataQueryService,
-    TransformationService,
-    UsiPlaformService,
-    UsiQueryService,
-    UsiQueryConfigService,
-    UsiAuthService,
-    SqlViewService,
-    SqlTransformationService,
     PopulateChartService,
     DataTranslationRepo,
     PopulateMapService,
     RoundingService,
-    PlanBarService,
-    PlanBarDataService,
-    PlanBarAuthService,
   ],
   controllers: [DashboardController],
 })

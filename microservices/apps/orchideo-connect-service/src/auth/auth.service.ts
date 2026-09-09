@@ -23,7 +23,10 @@ export class AuthService {
   constructor(private readonly httpService: HttpService) {}
   private readonly logger = new Logger(AuthService.name);
 
-  async getTokenData(toSend?: sendableData): Promise<KeycloakResponse> {
+  async getTokenData(
+    toSend?: sendableData,
+    signal?: AbortSignal,
+  ): Promise<KeycloakResponse> {
     let dataToSend: sendableData;
     if (toSend) {
       dataToSend = {
@@ -41,6 +44,7 @@ export class AuthService {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
+          signal,
         })
         .pipe(
           catchError((error: AxiosError) => {

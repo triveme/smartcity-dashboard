@@ -7,6 +7,11 @@ import {
   dataSources,
 } from '@app/postgres-db/schemas/data-source.schema';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+} from '@app/data-platform-queue';
 
 export type QueryBatch = {
   queryIds: string[];
@@ -31,9 +36,31 @@ export interface NGSIv2AttributeData {
 export class SqlViewService {
   private readonly logger = new Logger(SqlViewService.name);
 
-  constructor(@Inject(POSTGRES_DB) private readonly db: DbType) {}
+  constructor(
+    @Inject(POSTGRES_DB) private readonly db: DbType,
+    private readonly queue: DataPlatformQueue,
+  ) {}
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
 
   async getCollections(apiid: string): Promise<string[]> {
+    return this.executeWizardFetch('wizard-collections', { apiId: apiid }, () =>
+      this.fetchCollections(apiid),
+    );
+  }
+
+  private async fetchCollections(apiid: string): Promise<string[]> {
     try {
       const datas = await this.db
         .select()
@@ -48,14 +75,22 @@ export class SqlViewService {
   }
 
   async getSources(): Promise<string[]> {
-    return ['tables'];
+    return this.executeWizardFetch('wizard-sources', {}, async () => [
+      'tables',
+    ]);
   }
 
   async getEntities(): Promise<string[]> {
-    return ['all'];
+    return this.executeWizardFetch('wizard-entities', {}, async () => ['all']);
   }
 
   async getAttributes(collection: string): Promise<string[]> {
+    return this.executeWizardFetch('wizard-attributes', { collection }, () =>
+      this.fetchAttributes(collection),
+    );
+  }
+
+  private async fetchAttributes(collection: string): Promise<string[]> {
     try {
       const result = await this.db.execute(sql`
       SELECT c.column_name
@@ -75,9 +110,35 @@ export class SqlViewService {
     }
   }
 
+  private async executeWizardFetch<T>(
+    operation: string,
+    runtimeParameters: object,
+    execute: () => Promise<T>,
+  ): Promise<T> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'sql-view',
+        operation,
+        target: { origin: 'sql-view' },
+        queryConfig: {},
+        runtimeParameters,
+      },
+      execute: async (signal) => {
+        signal.throwIfAborted();
+        const result = await execute();
+        signal.throwIfAborted();
+        return result;
+      },
+    });
+  }
+
   async getDataFromDataSource(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<{ attributes: { attrName: string; values: unknown[] }[] }> {
+    signal?.throwIfAborted();
     const columns = queryBatch.query_config.attributes;
     const selected =
       columns && columns.length > 0
@@ -90,6 +151,7 @@ export class SqlViewService {
       WHERE table_schema = 'public'
         AND table_name = ${queryBatch.query_config.fiwareService};
     `);
+    signal?.throwIfAborted();
 
     if (check.rows.length === 0) {
       throw new Error(
@@ -101,6 +163,7 @@ export class SqlViewService {
       SELECT ${selected}
       FROM ${sql.raw('public.' + queryBatch.query_config.fiwareService)};
   `);
+    signal?.throwIfAborted();
 
     return this.combineAttributesFromRows(result.rows);
   }

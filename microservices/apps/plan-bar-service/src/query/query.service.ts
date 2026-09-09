@@ -1,6 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { queries, Query } from '@app/postgres-db/schemas/query.schema';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, exists, inArray, isNull } from 'drizzle-orm';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { queryConfigs } from '@app/postgres-db/schemas/query-config.schema';
 import { systemUsers } from '@app/postgres-db/schemas/tenant.system-user.schema';
@@ -11,9 +17,12 @@ import {
   QueryWithAllInfos,
 } from '../../../orchideo-connect-service/src/api.service';
 import { PlanBarService } from '../data/data.service';
+import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
 
 @Injectable()
 export class QueryService {
+  private readonly logger = new Logger(QueryService.name);
+
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly planBarService: PlanBarService,
@@ -22,10 +31,118 @@ export class QueryService {
   async updateQueries(): Promise<void> {
     const queriesToUpdate = await this.getQueriesToUpdate();
     for (const queryBatch of Array.from(queriesToUpdate.values())) {
-      const newData =
-        await this.planBarService.getDataFromDataSource(queryBatch);
-      await this.setQueryDataOfBatch(queryBatch, newData);
+      await this.enqueueQueryData(queryBatch, 'scheduler');
     }
+  }
+
+  async enqueueQueryPopulation(
+    queryId: string,
+    roles: string[],
+    tenant?: string,
+  ): Promise<void> {
+    const queryBatches = Array.from(
+      (await this.getQueryHashMap(queryId)).values(),
+    );
+    if (queryBatches.length === 0) {
+      throw new NotFoundException(`No PlanBar query found with id: ${queryId}`);
+    }
+
+    for (const queryBatch of queryBatches) {
+      this.assertPopulationAccess(queryBatch, roles, tenant);
+      void this.enqueueQueryData(queryBatch, 'population').catch((error) =>
+        this.logger.error(
+          `Failed to populate query ${queryId}`,
+          error instanceof Error ? error.stack : undefined,
+        ),
+      );
+    }
+  }
+
+  async getQueuedQueryData(
+    queryId: string,
+    overrides: object,
+    roles: string[],
+    tenant?: string,
+  ): Promise<object[]> {
+    const queryBatch = Array.from(
+      (await this.getQueryHashMap(queryId)).values(),
+    )[0];
+    if (!queryBatch) {
+      throw new NotFoundException(`No PlanBar query found with id: ${queryId}`);
+    }
+    this.assertPopulationAccess(queryBatch, roles, tenant);
+    const effectiveBatch: QueryBatch = {
+      ...queryBatch,
+      query_config: { ...queryBatch.query_config, ...overrides },
+    };
+    return this.planBarService.executeQueuedFetch({
+      category: 'dashboard-data',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'plan-bar',
+        operation: 'dashboard-query-data',
+        target: { dataSourceId: effectiveBatch.data_source.id },
+        queryConfig: this.getEffectiveQueryConfig(effectiveBatch),
+        runtimeParameters: { queryId, overrides },
+        unorderedCollectionPaths: ['queryConfig.entityIds'],
+      },
+      execute: (signal) =>
+        this.planBarService.getDataFromDataSource(effectiveBatch, signal),
+    });
+  }
+
+  private assertPopulationAccess(
+    queryBatch: QueryBatch,
+    roles: string[],
+    tenant?: string,
+  ): void {
+    if (
+      tenant &&
+      queryBatch.auth_data.tenantAbbreviation &&
+      queryBatch.auth_data.tenantAbbreviation !== tenant
+    ) {
+      throw new ForbiddenException(
+        'Query does not belong to the authenticated tenant',
+      );
+    }
+    checkAuthorizationToRead(queryBatch.auth_data, roles);
+  }
+
+  private async enqueueQueryData(
+    queryBatch: QueryBatch,
+    category: 'scheduler' | 'population',
+  ): Promise<void> {
+    await this.planBarService.executeQueuedFetch({
+      category,
+      priority: 'background',
+      fingerprintInput: {
+        platform: 'plan-bar',
+        operation: 'query-data',
+        target: {
+          dataSourceId: queryBatch.data_source.id,
+          authDataId: queryBatch.auth_data.id,
+          liveUrl: queryBatch.auth_data.liveUrl,
+        },
+        queryConfig: this.getEffectiveQueryConfig(queryBatch),
+        runtimeParameters: {},
+        unorderedCollectionPaths: ['queryConfig.entityIds'],
+      },
+      execute: async (signal) => {
+        const newData = await this.planBarService.getDataFromDataSource(
+          queryBatch,
+          signal,
+        );
+        signal.throwIfAborted();
+        await this.setQueryDataOfBatch(queryBatch, newData);
+      },
+    });
+  }
+
+  private getEffectiveQueryConfig(queryBatch: QueryBatch): object {
+    return {
+      dataSourceId: queryBatch.query_config.dataSourceId,
+      entityIds: queryBatch.query_config.entityIds,
+    };
   }
 
   async getQueriesToUpdate(): Promise<Map<string, QueryBatch>> {
@@ -35,6 +152,10 @@ export class QueryService {
     // Create a dictionary with the query_config hashes as keys so that we can
     // only fetch the data once for all queries with the same query_config hash
     return this.buildQueryHashMap(queriesToUpdate);
+  }
+
+  async getQueryHashMap(queryId: string): Promise<Map<string, QueryBatch>> {
+    return this.buildQueryHashMap(await this.getQueryWithAllInfos(queryId));
   }
 
   private buildQueryHashMap(
@@ -49,6 +170,10 @@ export class QueryService {
         queryHashMap.set(hash, {
           queryIds: [queryWithAllInfos.query.id],
           query_config: queryWithAllInfos.query_config,
+          queryConfigSnapshot: {
+            id: queryWithAllInfos.query_config.id,
+            hash: queryWithAllInfos.query_config.hash,
+          },
           data_source: queryWithAllInfos.data_source,
           auth_data: queryWithAllInfos.auth_data,
           system_user: undefined,
@@ -83,10 +208,36 @@ export class QueryService {
     newData: object | Array<object>,
   ): Promise<void> {
     try {
-      await this.db
+      const hashMatches =
+        queryBatch.queryConfigSnapshot.hash === null
+          ? isNull(queryConfigs.hash)
+          : eq(queryConfigs.hash, queryBatch.queryConfigSnapshot.hash);
+      const updatedQueries = await this.db
         .update(queries)
         .set({ queryData: newData, updatedAt: new Date(Date.now()) })
-        .where(inArray(queries.id, queryBatch.queryIds));
+        .where(
+          and(
+            inArray(queries.id, queryBatch.queryIds),
+            eq(queries.queryConfigId, queryBatch.queryConfigSnapshot.id),
+            exists(
+              this.db
+                .select({ id: queryConfigs.id })
+                .from(queryConfigs)
+                .where(
+                  and(
+                    eq(queryConfigs.id, queryBatch.queryConfigSnapshot.id),
+                    hashMatches,
+                  ),
+                ),
+            ),
+          ),
+        )
+        .returning({ id: queries.id });
+      if (updatedQueries.length === 0) {
+        this.logger.warn(
+          `Discarded stale query result for configuration ${queryBatch.queryConfigSnapshot.id}`,
+        );
+      }
     } catch (error) {
       console.error(
         'Error updating queries with ids:',
@@ -109,6 +260,22 @@ export class QueryService {
         eq(authData.tenantAbbreviation, systemUsers.tenantAbbreviation),
       )
       .where(eq(dataSources.origin, 'planbar'));
+  }
+
+  private async getQueryWithAllInfos(
+    queryId: string,
+  ): Promise<QueryWithAllInfos[]> {
+    return this.db
+      .select()
+      .from(queries)
+      .leftJoin(queryConfigs, eq(queries.queryConfigId, queryConfigs.id))
+      .leftJoin(dataSources, eq(queryConfigs.dataSourceId, dataSources.id))
+      .leftJoin(authData, eq(dataSources.authDataId, authData.id))
+      .leftJoin(
+        systemUsers,
+        eq(authData.tenantAbbreviation, systemUsers.tenantAbbreviation),
+      )
+      .where(and(eq(dataSources.origin, 'planbar'), eq(queries.id, queryId)));
   }
 
   queryNeedsUpdate(query: Query, interval: number): boolean {
