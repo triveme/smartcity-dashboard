@@ -11,4 +11,6 @@ data:
   EDIT_ROLES: {{ index .Values "internal-data-service" "editRoles" | toJson }}
   NEST_JWKS_URI: {{ index .Values "internal-data-service" "jwks" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "internal-data-service" "frontendUrl" }}
+  DATA_PLATFORM_QUEUE_CONCURRENCY: {{ index .Values "internal-data-service" "queue" "concurrency" | quote }}
+  DATA_PLATFORM_QUEUE_TIMEOUT_MS: {{ index .Values "internal-data-service" "queue" "timeoutMs" | quote }}
 {{- end }}

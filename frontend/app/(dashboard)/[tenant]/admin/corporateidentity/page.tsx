@@ -87,6 +87,9 @@ export default function CorporateIdentity(): ReactElement {
 
   useEffect(() => {
     if (corporateInfo) {
+      // FAVICON
+      updateState('faviconLogoId', corporateInfo.faviconLogoId ?? null);
+
       // LAYOUT - HEADER
       updateState('headerPrimaryColor', corporateInfo.headerPrimaryColor);
       updateState(

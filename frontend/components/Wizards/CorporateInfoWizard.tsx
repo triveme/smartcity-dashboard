@@ -833,6 +833,9 @@ export default function CorporateInfoWizard({
             }
             sidebarLogos={sidebarLogos}
             setSidebarLogos={setSidebarLogos}
+            setFavicon={(value: string | null): void => {
+              updateState('faviconLogoId', value);
+            }}
           />
         )}
         {activeTab === 'Schriftarten' && (

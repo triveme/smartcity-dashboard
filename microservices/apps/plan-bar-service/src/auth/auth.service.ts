@@ -117,8 +117,9 @@ export class AuthService {
     }
   }
 
-  async getToken(authdata: AuthData): Promise<string> {
+  async getToken(authdata: AuthData, signal?: AbortSignal): Promise<string> {
     try {
+      signal?.throwIfAborted();
       if (!authdata) {
         throw new HttpException('AuthData not found', HttpStatus.NOT_FOUND);
       }
@@ -140,6 +141,7 @@ export class AuthService {
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
             },
+            signal,
           },
         ),
       );

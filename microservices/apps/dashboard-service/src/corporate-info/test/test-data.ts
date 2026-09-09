@@ -21,6 +21,7 @@ export function getCorporateInfo(logoId?: string): CorporateInfo {
     dashboardPrimaryColor: '#333',
     dashboardSecondaryColor: '#333',
     dashboardHeadlineFontSize: '24px',
+    faviconLogoId: null,
     fontFamily: 'Helvetica',
     fontColor: '#FFF',
     headerFontColor: '#FFF',

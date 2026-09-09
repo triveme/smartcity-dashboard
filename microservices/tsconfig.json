@@ -24,6 +24,12 @@
       "@app/common/*": [
         "libs/common/src/*"
       ],
+      "@app/data-platform-queue": [
+        "libs/data-platform-queue/src"
+      ],
+      "@app/data-platform-queue/*": [
+        "libs/data-platform-queue/src/*"
+      ],
       "@app/postgres-db": [
         "libs/postgres-db/src"
       ],

@@ -564,6 +564,7 @@ export type CorporateInfo = {
   degreeChart360FontColor: string;
   degreeChart360FontSize: string;
   degreeChart360UnitFontSize: string;
+  faviconLogoId?: string | null;
   fontColor: string;
   fontFamily: string;
   headerFontColor: string;

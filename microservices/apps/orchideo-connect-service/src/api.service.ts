@@ -1,6 +1,12 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { authData, AuthData } from '@app/postgres-db/schemas/auth-data.schema';
 import {
   DataSource,
@@ -13,6 +19,7 @@ import { SystemUser } from '@app/postgres-db/schemas/tenant.system-user.schema';
 import { AuthService } from './auth/auth.service';
 import { eq } from 'drizzle-orm';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
+import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
 
 export type QueryWithAllInfos = {
   query: Query;
@@ -27,6 +34,7 @@ export type TenantToQueryBatch = Map<string, Map<string, QueryBatch>>;
 export type QueryBatch = {
   queryIds: string[];
   query_config: QueryConfig;
+  queryConfigSnapshot: Pick<QueryConfig, 'id' | 'hash'>;
   data_source: DataSource;
   auth_data: AuthData;
   system_user: SystemUser;
@@ -90,49 +98,178 @@ export class OrchideoConnectService {
     const queryHashMap = await this.queryService.getQueriesToUpdate();
 
     for (const tenant of queryHashMap.keys()) {
-      // Create an array of promises from the dictionary. Each promise will fetch the data
-      // from the data source and update all of it's queries (with the same hash) with the new data.
       const updates: Promise<void>[] = Array.from(
         queryHashMap.get(tenant).values(),
-      ).map(async (queryBatch) => {
-        const newData =
-          await this.dataService.getDataFromDataSource(queryBatch);
+      ).map((queryBatch) => this.enqueueQueryData(queryBatch, 'scheduler'));
 
-        if (newData) {
-          const queryConfig = queryBatch.query_config;
-
-          const filteredData = this.filterByAttribute(
-            queryConfig.attributes,
-            newData,
-          );
-
-          const aggregatedData = this.aggregateData(
-            filteredData,
-            queryConfig.timeframe,
-            queryConfig.aggrMode,
-            queryConfig.attributes,
-            queryConfig.aggrPeriod,
-          );
-
-          const transformedData = this.transformToTargetModel(aggregatedData);
-
-          await this.queryService.setQueryDataOfBatch(
-            queryBatch,
-            transformedData,
-          );
-        } else {
-          console.warn(
-            `No data received for query batch with ID: ${queryBatch.queryIds.join(
-              ', ',
-            )} in tenant: ${tenant}`,
-          );
-        }
-      });
-
-      // Wait for all promises to resolve (this will send all the requests
-      // to the data sources and update all the queries in parallel)
       await Promise.all(updates);
     }
+  }
+
+  async enqueueQueryPopulation(
+    queryId: string,
+    roles: string[],
+    tenant?: string,
+  ): Promise<void> {
+    const tenantBatches = await this.queryService.getQueryHashMap(queryId);
+    const queryBatches = Array.from(tenantBatches.values()).flatMap((batches) =>
+      Array.from(batches.values()),
+    );
+    if (queryBatches.length === 0) {
+      throw new NotFoundException(
+        `No Orchideo query found with id: ${queryId}`,
+      );
+    }
+
+    for (const queryBatch of queryBatches) {
+      this.assertPopulationAccess(queryBatch, roles, tenant);
+      void this.enqueueQueryData(queryBatch, 'population').catch((error) =>
+        this.logger.error(
+          `Failed to populate query ${queryId}`,
+          error instanceof Error ? error.stack : undefined,
+        ),
+      );
+    }
+  }
+
+  async getQueuedQueryData(
+    queryId: string,
+    overrides: object,
+    roles: string[],
+    tenant?: string,
+  ): Promise<object> {
+    const tenantBatches = await this.queryService.getQueryHashMap(queryId);
+    const queryBatch = Array.from(tenantBatches.values()).flatMap((batches) =>
+      Array.from(batches.values()),
+    )[0];
+    if (!queryBatch) {
+      throw new NotFoundException(
+        `No Orchideo query found with id: ${queryId}`,
+      );
+    }
+    this.assertPopulationAccess(queryBatch, roles, tenant);
+    const effectiveBatch: QueryBatch = {
+      ...queryBatch,
+      query_config: { ...queryBatch.query_config, ...overrides },
+    };
+
+    return this.dataService.executeQueuedFetch({
+      category: 'dashboard-data',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'orchideo',
+        operation: 'dashboard-query-data',
+        target: {
+          dataSourceId: effectiveBatch.data_source.id,
+          authDataId: effectiveBatch.auth_data.id,
+          apiUrl: effectiveBatch.auth_data.apiUrl,
+        },
+        queryConfig: this.getEffectiveQueryConfig(effectiveBatch.query_config),
+        runtimeParameters: { queryId, overrides },
+        unorderedCollectionPaths: [
+          'queryConfig.entityIds',
+          'queryConfig.attributes',
+        ],
+      },
+      execute: async (signal) => {
+        const data = await this.dataService.getDataFromDataSource(
+          effectiveBatch,
+          signal,
+        );
+        return this.transformToTargetModel(Array.isArray(data) ? data : [data]);
+      },
+    });
+  }
+
+  private assertPopulationAccess(
+    queryBatch: QueryBatch,
+    roles: string[],
+    tenant?: string,
+  ): void {
+    if (
+      tenant &&
+      queryBatch.auth_data.tenantAbbreviation &&
+      queryBatch.auth_data.tenantAbbreviation !== tenant
+    ) {
+      throw new ForbiddenException(
+        'Query does not belong to the authenticated tenant',
+      );
+    }
+    checkAuthorizationToRead(queryBatch.auth_data, roles);
+  }
+
+  private async enqueueQueryData(
+    queryBatch: QueryBatch,
+    category: 'scheduler' | 'population',
+  ): Promise<void> {
+    await this.dataService.executeQueuedFetch({
+      category,
+      priority: 'background',
+      fingerprintInput: {
+        platform: 'orchideo',
+        operation: 'query-data',
+        target: {
+          dataSourceId: queryBatch.data_source.id,
+          authDataId: queryBatch.auth_data.id,
+          apiUrl: queryBatch.auth_data.apiUrl,
+          tenant: queryBatch.auth_data.tenantAbbreviation,
+        },
+        queryConfig: this.getEffectiveQueryConfig(queryBatch.query_config),
+        runtimeParameters: {},
+        unorderedCollectionPaths: [
+          'queryConfig.entityIds',
+          'queryConfig.attributes',
+        ],
+      },
+      execute: async (signal) => {
+        const newData = await this.dataService.getDataFromDataSource(
+          queryBatch,
+          signal,
+        );
+        signal.throwIfAborted();
+        if (!newData) {
+          this.logger.warn(
+            `No data received for query batch with ID: ${queryBatch.queryIds.join(', ')}`,
+          );
+          return;
+        }
+
+        const queryConfig = queryBatch.query_config;
+        const filteredData = this.filterByAttribute(
+          queryConfig.attributes,
+          newData,
+        );
+        const aggregatedData = this.aggregateData(
+          filteredData,
+          queryConfig.timeframe,
+          queryConfig.aggrMode,
+          queryConfig.attributes,
+          queryConfig.aggrPeriod,
+        );
+        const transformedData = this.transformToTargetModel(aggregatedData);
+        signal.throwIfAborted();
+        await this.queryService.setQueryDataOfBatch(
+          queryBatch,
+          transformedData,
+        );
+      },
+    });
+  }
+
+  private getEffectiveQueryConfig(queryConfig: QueryConfig): object {
+    return {
+      dataSourceId: queryConfig.dataSourceId,
+      collection: queryConfig.fiwareService,
+      source: queryConfig.fiwareType,
+      entityIds: queryConfig.entityIds,
+      attributes: queryConfig.attributes,
+      timeframe: queryConfig.timeframe,
+      dataStartDate: queryConfig.dataStartDate,
+      dataUntilDate: queryConfig.dataUntilDate,
+      extendedDateSelection: queryConfig.extendedDateSelection,
+      aggrMode: queryConfig.aggrMode,
+      aggrPeriod: queryConfig.aggrPeriod,
+    };
   }
 
   private filterByAttribute(attributes: string[], data: object[]): object[] {

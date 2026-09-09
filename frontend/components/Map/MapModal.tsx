@@ -362,9 +362,9 @@ export default function MapModal(props: MapModalProps): ReactElement {
                           <ProjectInfoComponent
                             projectId={markerId}
                             className="w-full"
-                            lightboxTextColor={
-                              ciColors?.menuPrimaryColor ||
-                              ciColors?.headerPrimaryColor
+                            lightboxTextColor={ciColors?.menuFontColor}
+                            lightboxBackgroundColor={
+                              ciColors?.menuPrimaryColor
                             }
                           />
                         </div>

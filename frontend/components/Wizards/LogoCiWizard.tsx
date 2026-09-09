@@ -14,6 +14,7 @@ type Props = {
   setShowMenuLogo: (value: boolean) => void;
   sidebarLogos: SidebarLogo[];
   setSidebarLogos: Dispatch<SetStateAction<SidebarLogo[]>>;
+  setFavicon: (value: string | null) => void;
 };
 
 export default function LogoCiWizard({
@@ -26,6 +27,7 @@ export default function LogoCiWizard({
   setShowMenuLogo,
   sidebarLogos,
   setSidebarLogos,
+  setFavicon,
 }: Props): JSX.Element {
   return (
     <div className="flex flex-row w-full px-2 transition-opacity duration-500 opacity-100">
@@ -55,6 +57,7 @@ export default function LogoCiWizard({
           setSidebarLogos={setSidebarLogos}
           headerLogoId={headerLogoId}
           setHeaderLogoId={setHeaderLogoId}
+          setFavicon={setFavicon}
         />
       </div>
     </div>

@@ -78,6 +78,7 @@ type ProjectInfoProps = {
   projectId?: string | number | null;
   className?: string;
   lightboxTextColor?: string;
+  lightboxBackgroundColor?: string;
 };
 
 type ProjectInfo = {
@@ -98,7 +99,8 @@ type ProjectInfo = {
 export default function ProjectInfoComponent(
   props: ProjectInfoProps,
 ): ReactElement {
-  const { projectId, className, lightboxTextColor } = props;
+  const { projectId, className, lightboxTextColor, lightboxBackgroundColor } =
+    props;
   const auth = useAuth();
   const [project, setProject] = useState<ProjectInfo | null>(null);
   const [pictures, setPictures] = useState<{ id: string; data: string }[]>([]);
@@ -172,7 +174,7 @@ export default function ProjectInfoComponent(
 
         {getValue(project.district) && (
           <div className="text-sm">
-            <span className="block font-semibold">Stadtteil</span>
+            <span className="block font-semibold">Ortsteil</span>
             <span className="text-[1.2em]">{getValue(project.district)}</span>
           </div>
         )}
@@ -250,6 +252,8 @@ export default function ProjectInfoComponent(
         src={lightboxSrc}
         alt={lightboxAlt}
         buttonTextColor={lightboxTextColor}
+        panelBackgroundColor={lightboxBackgroundColor}
+        overlayBackgroundColor="rgba(0, 0, 0, 0.7)"
         onClose={(): void => setLightboxSrc(null)}
       />
     </div>

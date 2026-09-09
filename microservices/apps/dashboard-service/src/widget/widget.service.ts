@@ -41,7 +41,6 @@ import {
   dataSources,
 } from '@app/postgres-db/schemas/data-source.schema';
 import { DataSourceService } from '../data-source/data-source.service';
-import { QueryBatch } from '../../../ngsi-service/src/ngsi.service';
 import { authData } from '@app/postgres-db/schemas/auth-data.schema';
 import { WidgetDataService } from './widget.data.service';
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
@@ -656,7 +655,8 @@ export class WidgetService {
       rolesFromRequest,
     );
     try {
-      const flatWidgetData = await this.widgetRepo.getWidgetWithContent(id);
+      const flatWidgetData =
+        await this.widgetRepo.getWidgetWithContentAndData(id);
 
       if (!flatWidgetData || flatWidgetData.length === 0) {
         this.logger.warn(`No content found for widget ${id}`);
@@ -742,7 +742,12 @@ export class WidgetService {
     payload: WidgetWithChildren,
     rolesFromRequest: string[],
     tenant: string,
+    authorization: string | string[] | undefined,
   ): Promise<WidgetWithChildren> {
+    let initialPopulation:
+      | { queryId: string; authDataType: string }
+      | undefined;
+
     await this.db.transaction(async (tx) => {
       const widget = payload.widget;
 
@@ -804,18 +809,20 @@ export class WidgetService {
           .from(authData)
           .where(eq(authData.id, payload.datasource.authDataId));
 
-        // Prepare the QueryBatch but defer its execution
-        const queryBatch: QueryBatch = {
-          queryIds: [payloadTab.queryId],
-          query_config: payload.queryConfig,
-          data_source: payload.datasource,
-          auth_data: payloadAuthData[0],
+        initialPopulation = {
+          queryId: payloadTab.queryId,
+          authDataType: payloadAuthData[0].type,
         };
-
-        // Run initial query data retrieval asynchronously
-        this.widgetDataService.runQueryDataPopulation(queryBatch);
       }
     });
+
+    if (initialPopulation) {
+      void this.widgetDataService.runQueryDataPopulation(
+        initialPopulation.queryId,
+        initialPopulation.authDataType,
+        authorization,
+      );
+    }
 
     return payload;
   }
@@ -825,8 +832,13 @@ export class WidgetService {
     payload: Partial<WidgetWithChildren>,
     rolesFromRequest: string[],
     tenant: string,
+    authorization: string | string[] | undefined,
   ): Promise<WidgetWithChildren> {
-    return await this.db.transaction(async (tx) => {
+    let initialPopulation:
+      | { queryId: string; authDataType: string }
+      | undefined;
+
+    const response = await this.db.transaction(async (tx) => {
       const payloadTab = payload.tab;
       if (payloadTab && payloadTab.id === undefined)
         throw new HttpException(
@@ -908,20 +920,24 @@ export class WidgetService {
           .from(authData)
           .where(eq(authData.id, payload.datasource.authDataId));
 
-        // Prepare the QueryBatch but defer its execution
-        const queryBatch: QueryBatch = {
-          queryIds: [payloadTab.queryId],
-          query_config: payload.queryConfig,
-          data_source: payload.datasource,
-          auth_data: payloadAuthData[0],
+        initialPopulation = {
+          queryId: payloadTab.queryId,
+          authDataType: payloadAuthData[0].type,
         };
-
-        // Run initial query data retrieval asynchronously
-        this.widgetDataService.runQueryDataPopulation(queryBatch);
       }
 
       return response;
     });
+
+    if (initialPopulation) {
+      void this.widgetDataService.runQueryDataPopulation(
+        initialPopulation.queryId,
+        initialPopulation.authDataType,
+        authorization,
+      );
+    }
+
+    return response;
   }
 
   private async checkIfWidgetCanBeDeleted(

@@ -10,6 +10,12 @@ import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
 import { authData, AuthData } from '@app/postgres-db/schemas/auth-data.schema';
 import axios from 'axios';
 import { AuthService } from '../auth/auth.service';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+  createCredentialFingerprint,
+} from '@app/data-platform-queue';
 
 export type QueryBatch = {
   queryIds: string[];
@@ -70,9 +76,41 @@ export class PlanBarService {
   constructor(
     @Inject(POSTGRES_DB) private readonly db: DbType,
     private readonly authService: AuthService,
+    private readonly queue: DataPlatformQueue,
   ) {}
 
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
+
   async getCollections(apiid: string): Promise<string[]> {
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'plan-bar',
+        operation: 'wizard-collections',
+        target: { apiId: apiid },
+        queryConfig: {},
+        runtimeParameters: {},
+      },
+      execute: async (signal) => {
+        signal.throwIfAborted();
+        return this.fetchCollections(apiid);
+      },
+    });
+  }
+
+  private async fetchCollections(apiid: string): Promise<string[]> {
     try {
       const datas = await this.db
         .select()
@@ -87,17 +125,48 @@ export class PlanBarService {
   }
 
   async getSources(): Promise<string[]> {
-    return ['all'];
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: {
+        platform: 'plan-bar',
+        operation: 'wizard-sources',
+        target: {},
+        queryConfig: {},
+        runtimeParameters: {},
+      },
+      execute: async (signal) => {
+        signal.throwIfAborted();
+        return ['all'];
+      },
+    });
   }
 
   async getEntities(apiId?: string): Promise<string[]> {
+    const authData = await this.getAuthDataForDataSource(apiId);
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-entities',
+        apiId,
+        authData,
+        {},
+      ),
+      execute: (signal) => this.fetchEntities(authData, signal),
+    });
+  }
+
+  private async fetchEntities(
+    authData: AuthData,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
-      const authId = await this.getAuthIdFromDataSource(apiId);
-      const authData = await this.getAuthDataById(authId);
-      const accessToken = await this.authService.getToken(authData);
+      const accessToken = await this.authService.getToken(authData, signal);
+      signal.throwIfAborted();
       const response = await axios.get<Person[]>(
         `${authData.liveUrl}/persons`,
-        { headers: { Authorization: `Bearer ${accessToken}` } },
+        { headers: { Authorization: `Bearer ${accessToken}` }, signal },
       );
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -111,15 +180,34 @@ export class PlanBarService {
   }
 
   async getAttributes(collection: string, apiId?: string): Promise<string[]> {
+    const authData = await this.getAuthDataForDataSource(apiId);
+    return this.executeQueuedFetch({
+      category: 'wizard',
+      priority: 'interactive',
+      fingerprintInput: this.wizardFingerprint(
+        'wizard-attributes',
+        apiId,
+        authData,
+        { collection },
+      ),
+      execute: (signal) => this.fetchAttributes(collection, authData, signal),
+    });
+  }
+
+  private async fetchAttributes(
+    collection: string,
+    authData: AuthData,
+    signal: AbortSignal,
+  ): Promise<string[]> {
     try {
-      const authId = await this.getAuthIdFromDataSource(apiId);
-      const authData = await this.getAuthDataById(authId);
-      const accessToken = await this.authService.getToken(authData);
+      const accessToken = await this.authService.getToken(authData, signal);
+      signal.throwIfAborted();
       const url = `${authData.liveUrl}/${collection}`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        signal,
       });
       return Object.keys(response.data[0]);
     } catch (error) {
@@ -137,6 +225,37 @@ export class PlanBarService {
     return result.length > 0 ? result[0] : null;
   }
 
+  private async getAuthDataForDataSource(apiId?: string): Promise<AuthData> {
+    const authId = await this.getAuthIdFromDataSource(apiId);
+    return this.getAuthDataById(authId);
+  }
+
+  private wizardFingerprint(
+    operation: string,
+    apiId: string | undefined,
+    authData: AuthData,
+    runtimeParameters: object,
+  ): DataPlatformQueueFingerprintInput {
+    return {
+      platform: 'plan-bar',
+      operation,
+      target: {
+        apiId,
+        authDataId: authData.id,
+        liveUrl: authData.liveUrl,
+        credentialFingerprint: createCredentialFingerprint(
+          JSON.stringify({
+            authDataId: authData.id,
+            clientId: authData.clientId,
+            clientSecret: authData.clientSecret,
+          }),
+        ),
+      },
+      queryConfig: {},
+      runtimeParameters,
+    };
+  }
+
   private async getAuthIdFromDataSource(apiId: string): Promise<string> {
     const authId = await this.db
       .select()
@@ -149,20 +268,36 @@ export class PlanBarService {
 
   async getDataFromDataSource(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<NGSIv2EntityFirstEntry[]> {
     try {
-      const accessToken = await this.authService.getToken(queryBatch.auth_data);
+      const accessToken = await this.authService.getToken(
+        queryBatch.auth_data,
+        signal,
+      );
+      signal?.throwIfAborted();
       const baseUrl = queryBatch.auth_data.liveUrl;
       const headers = { Authorization: `Bearer ${accessToken}` };
 
-      const [shiftsRes, personsRes, locationsRes, ridesRes] = await Promise.all(
-        [
-          axios.get<Shift[]>(`${baseUrl}/shifts`, { headers }),
-          axios.get<Person[]>(`${baseUrl}/persons`, { headers }),
-          axios.get<Location[]>(`${baseUrl}/locations`, { headers }),
-          axios.get<Ride[]>(`${baseUrl}/rides`, { headers }),
-        ],
-      );
+      const shiftsRes = await axios.get<Shift[]>(`${baseUrl}/shifts`, {
+        headers,
+        signal,
+      });
+      signal?.throwIfAborted();
+      const personsRes = await axios.get<Person[]>(`${baseUrl}/persons`, {
+        headers,
+        signal,
+      });
+      signal?.throwIfAborted();
+      const locationsRes = await axios.get<Location[]>(`${baseUrl}/locations`, {
+        headers,
+        signal,
+      });
+      signal?.throwIfAborted();
+      const ridesRes = await axios.get<Ride[]>(`${baseUrl}/rides`, {
+        headers,
+        signal,
+      });
 
       const result = this.buildShiftEntries(
         shiftsRes.data,

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -19,6 +20,11 @@ import { Project, ProjectWithCategory } from '@app/postgres-db/schemas';
 import { Picture } from '@app/postgres-db/schemas/picture.schema';
 import { PictureDataService } from './picture-data.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import sharp = require('sharp');
+
+const MAX_PICTURE_DIMENSION = 2048;
+const PICTURE_JPEG_QUALITY = 80;
+const ALLOWED_PICTURE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 @Controller('project')
 export class ProjectDataController {
@@ -82,8 +88,29 @@ export class ProjectDataController {
     @UploadedFile() file: Express.Multer.File,
     @Req() request: AuthenticatedRequest,
   ): Promise<Picture> {
+    if (!file || !ALLOWED_PICTURE_MIME_TYPES.includes(file.mimetype)) {
+      throw new BadRequestException(
+        `Nicht unterstütztes Bildformat. Erlaubt sind: ${ALLOWED_PICTURE_MIME_TYPES.join(', ')}`,
+      );
+    }
     const roles = request.roles ?? [];
-    const base64 = file.buffer.toString('base64');
+    let jpegBuffer: Buffer;
+    try {
+      jpegBuffer = await sharp(file.buffer)
+        .rotate()
+        .resize({
+          width: MAX_PICTURE_DIMENSION,
+          height: MAX_PICTURE_DIMENSION,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .flatten({ background: '#ffffff' })
+        .jpeg({ quality: PICTURE_JPEG_QUALITY })
+        .toBuffer();
+    } catch {
+      throw new BadRequestException('Bilddatei konnte nicht gelesen werden.');
+    }
+    const base64 = jpegBuffer.toString('base64');
     return this.pictureService.create(id, base64, roles);
   }
 
@@ -97,7 +124,7 @@ export class ProjectDataController {
     @Param('id') id: string,
     @Param('pId') pId: string,
   ): Promise<Picture> {
-    return this.pictureService.getById(pId, id);
+    return this.pictureService.getById(id, pId);
   }
 
   @Public()
@@ -108,6 +135,6 @@ export class ProjectDataController {
     @Req() request: AuthenticatedRequest,
   ): Promise<Picture> {
     const roles = request.roles ?? [];
-    return this.pictureService.delete(pId, id, roles);
+    return this.pictureService.delete(id, pId, roles);
   }
 }

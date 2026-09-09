@@ -10,4 +10,6 @@ data:
   PASSWORD_ENCRYPT_KEY: {{ index .Values "ngsi-service" "passwordEncryptKey" }}
   NEST_JWKS_URI: {{ index .Values "ngsi-service" "jwks" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "ngsi-service" "frontendUrl" }}
+  DATA_PLATFORM_QUEUE_CONCURRENCY: {{ index .Values "ngsi-service" "queue" "concurrency" | quote }}
+  DATA_PLATFORM_QUEUE_TIMEOUT_MS: {{ index .Values "ngsi-service" "queue" "timeoutMs" | quote }}
 {{- end }}

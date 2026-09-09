@@ -303,6 +303,7 @@ export const DEFAULT_CI: CorporateInfo = {
   dateSelectorFontColorUnselected: '#3D4760',
 
   cssStyleInjectionValue: '',
+  faviconLogoId: null,
 };
 
 export const EMPTY_REPORT_CONFIG: ReportConfig = {

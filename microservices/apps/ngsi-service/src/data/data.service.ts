@@ -3,8 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
 import axios from 'axios';
 import { QueryBatch, TabQueryWithAllInfos } from '../ngsi.service';
-import sharp from 'sharp';
+import sharp = require('sharp');
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
+import {
+  DataPlatformQueue,
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+} from '@app/data-platform-queue';
 
 // interface NgsiLdProperty {
 //   type: string;
@@ -35,7 +40,23 @@ const debugQueryConfigId: string = '';
 
 @Injectable()
 export class DataService {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly queue: DataPlatformQueue,
+  ) {}
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    const { fingerprintInput, ...queueOptions } = options;
+
+    return this.queue.enqueue({
+      ...queueOptions,
+      fingerprint: this.queue.createFingerprint(fingerprintInput),
+    });
+  }
 
   private getErrorLogData(error: unknown): unknown {
     if (axios.isAxiosError(error)) {
@@ -47,44 +68,40 @@ export class DataService {
 
   async getDataFromDataSource(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<object | Array<object>> {
     const { data_source, auth_data, query_config } = queryBatch;
 
-    try {
-      const access_token =
-        await this.authService.getAccessTokenByQuery(queryBatch);
+    const access_token = await this.authService.getAccessTokenByQuery(
+      queryBatch,
+      signal,
+    );
+    signal?.throwIfAborted();
 
-      if (!access_token) {
-        console.error(
-          `Could not get access token for data source with id: ${data_source.id}`,
-        );
-        return;
-      }
-
-      if (auth_data.type === 'ngsi-v2') {
-        return this.getDataFromDataSourceNgsiV2(queryBatch, access_token);
-      } else if (auth_data.type === 'ngsi-ld') {
-        const ngsiLdData = await this.getDataFromDataSourceNgsiLd(
-          queryBatch,
-          access_token,
-        );
-        return this.getProcessedDataFromNgsiLd(ngsiLdData, query_config);
-      } else {
-        console.warn('Unknown auth-data type');
-        return;
-      }
-    } catch (error) {
-      console.error(
-        `Error getting data for data source with id: ${data_source.id}`,
-        error,
+    if (!access_token) {
+      throw new Error(
+        `Could not get access token for data source with id: ${data_source.id}`,
       );
-      return;
     }
+
+    if (auth_data.type === 'ngsi-v2') {
+      return this.getDataFromDataSourceNgsiV2(queryBatch, access_token, signal);
+    } else if (auth_data.type === 'ngsi-ld') {
+      const ngsiLdData = await this.getDataFromDataSourceNgsiLd(
+        queryBatch,
+        access_token,
+        signal,
+      );
+      return this.getProcessedDataFromNgsiLd(ngsiLdData, query_config);
+    }
+
+    throw new Error(`Unknown auth-data type: ${auth_data.type}`);
   }
 
   async getDataFromDataSourceNgsiV2(
     queryBatch: QueryBatch,
     accessToken: string,
+    signal?: AbortSignal,
   ): Promise<object | Array<object>> {
     const { queryIds, query_config, data_source, auth_data } = queryBatch;
     let url: string;
@@ -108,7 +125,9 @@ export class DataService {
           batches.push(query_config.entityIds.slice(i, i + batchSize));
         }
 
-        const requests = batches.map(async (entityBatch) => {
+        const results = [];
+        for (const entityBatch of batches) {
+          signal?.throwIfAborted();
           params = {
             id: entityBatch.join(','),
             attrs: query_config.attributes.join(','),
@@ -116,11 +135,9 @@ export class DataService {
             limit: '1000',
           };
 
-          const response = await axios.get(url, { headers, params });
-          return response.data;
-        });
-
-        const results = await Promise.all(requests);
+          const response = await axios.get(url, { headers, params, signal });
+          results.push(response.data);
+        }
         return results.flat();
       }
 
@@ -179,10 +196,17 @@ export class DataService {
           attrs: 'name',
         };
 
-        const [aggrResponse, nameResponse] = await Promise.all([
-          axios.get(url, { headers, params: aggrParams }),
-          axios.get(url, { headers, params: nameParams }),
-        ]);
+        const aggrResponse = await axios.get(url, {
+          headers,
+          params: aggrParams,
+          signal,
+        });
+        signal?.throwIfAborted();
+        const nameResponse = await axios.get(url, {
+          headers,
+          params: nameParams,
+          signal,
+        });
 
         if (aggrResponse.data.attrs && nameResponse.data.attrs) {
           const combinedAttrs = [
@@ -202,7 +226,7 @@ export class DataService {
           ],
         };
       }
-      const response = await axios.get(url, { headers, params });
+      const response = await axios.get(url, { headers, params, signal });
 
       return response.data;
     } catch (error) {
@@ -224,12 +248,14 @@ export class DataService {
           this.getErrorLogData(error),
         );
       }
+      throw error;
     }
   }
 
   async getDataFromDataSourceNgsiLd(
     queryBatch: QueryBatch,
     accessToken: string,
+    signal?: AbortSignal,
   ): Promise<object | Array<object>> {
     const { queryIds, query_config, data_source, auth_data } = queryBatch;
 
@@ -256,6 +282,7 @@ export class DataService {
             headers,
             query_config,
             query_config.attributes,
+            signal,
           );
         }
 
@@ -264,18 +291,18 @@ export class DataService {
           batches.push(query_config.entityIds.slice(i, i + batchSize));
         }
 
-        const requests = batches.map(async (entityBatch) => {
+        const results = [];
+        for (const entityBatch of batches) {
+          signal?.throwIfAborted();
           params = {
             id: entityBatch.join(','),
             attrs: query_config.attributes.join(','),
             limit: '100',
           };
 
-          const response = await axios.get(url, { headers, params });
-          return response.data;
-        });
-
-        const results = await Promise.all(requests);
+          const response = await axios.get(url, { headers, params, signal });
+          results.push(response.data);
+        }
         return results.flat();
       }
 
@@ -304,6 +331,8 @@ export class DataService {
                   staticBaseUrl,
                   headers,
                   query_config,
+                  undefined,
+                  signal,
                 )
               ).map((entity) => entity.id)
             : query_config.entityIds;
@@ -374,10 +403,17 @@ export class DataService {
             attrs: 'name',
           };
 
-          const [aggrResponse, nameResponse] = await Promise.all([
-            axios.get(url, { headers, params: aggrParams }),
-            axios.get(staticUrl, { headers, params: nameParams }),
-          ]);
+          const aggrResponse = await axios.get(url, {
+            headers,
+            params: aggrParams,
+            signal,
+          });
+          signal?.throwIfAborted();
+          const nameResponse = await axios.get(staticUrl, {
+            headers,
+            params: nameParams,
+            signal,
+          });
 
           if (
             query_config.entityIds.includes(debugEntityId) ||
@@ -418,7 +454,7 @@ export class DataService {
           return combinedData;
         }
 
-        const response = await axios.get(url, { headers, params });
+        const response = await axios.get(url, { headers, params, signal });
 
         if (
           query_config.entityIds.includes(debugEntityId) ||
@@ -448,6 +484,7 @@ export class DataService {
           this.getErrorLogData(error),
         );
       }
+      throw error;
     }
   }
 
@@ -456,6 +493,7 @@ export class DataService {
     headers: Record<string, string>,
     queryConfig: QueryConfig,
     attributes?: string[],
+    signal?: AbortSignal,
   ): Promise<Array<{ id: string }>> {
     const blacklistedEntityIds = new Set(queryConfig.entityIds ?? []);
     const entities: Array<{ id: string }> = [];
@@ -464,6 +502,7 @@ export class DataService {
     let hasMoreEntities = true;
 
     while (hasMoreEntities) {
+      signal?.throwIfAborted();
       const params: Record<string, string> = {
         type: queryConfig.fiwareType,
         limit: limit.toString(),
@@ -474,7 +513,7 @@ export class DataService {
         params.attrs = attributes.join(',');
       }
 
-      const response = await axios.get(url, { headers, params });
+      const response = await axios.get(url, { headers, params, signal });
       const entityPage = response.data as Array<{ id: string }>;
 
       entities.push(
@@ -712,96 +751,6 @@ export class DataService {
       }
     }
     return result;
-  }
-
-  async downloadDataFromDataSource(
-    queryBatch: QueryBatch,
-  ): Promise<object | Array<object>> {
-    const { queryIds, query_config, data_source, auth_data } = queryBatch;
-
-    try {
-      let headers;
-      const access_token =
-        await this.authService.getAccessTokenByQuery(queryBatch);
-
-      if (!access_token) {
-        console.error(
-          `Could not get access token for data source with id: ${data_source.id}`,
-        );
-        return;
-      }
-
-      let url =
-        query_config.entityIds.length === 1
-          ? `${auth_data.timeSeriesUrl}${query_config.entityIds}`
-          : auth_data.timeSeriesUrl;
-
-      if (auth_data.type === 'ngsi-v2') {
-        headers = {
-          'Fiware-Service': query_config.fiwareService,
-          'Fiware-ServicePath': query_config.fiwareServicePath,
-          Authorization: `Bearer ${access_token}`,
-        };
-      } else if (auth_data.type === 'ngsi-ld') {
-        headers = {
-          'NGSILD-Tenant': query_config.fiwareService, // empty string in query_config.fiwareService
-          Authorization: `Bearer ${access_token}`,
-          Link: `<https://context.kopenhagen.beispiel-stadt.de/main-context>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
-        };
-      } else {
-        console.warn('Unknown auth-data type');
-      }
-      const params = {
-        type: query_config.fiwareType,
-        fromDate: this.getFromDate('year'),
-        toDate: new Date(Date.now()),
-        attrs: query_config.attributes.join(','),
-        id: query_config.entityIds.join(','),
-      };
-
-      if (query_config.entityIds.length > 1) {
-        // Remove "entities" from url since the request fetches the values
-        // via the attributes endpoint
-        url = url.replace('entities/', 'attrs');
-        params.id = query_config.entityIds.join(',');
-      }
-
-      // Workaround for aggregation attributes with a name attribute included
-      if (params.attrs.includes('name')) {
-        params.attrs = params.attrs.replace('name,', '');
-        params.attrs = params.attrs.replace('name,', '');
-        params.attrs = params.attrs.replace('name', '');
-        const aggrParams = { ...params };
-
-        const [aggrResponse] = await Promise.all([
-          axios.get(url, { headers, params: aggrParams }),
-        ]);
-
-        if (aggrResponse.data.attrs) {
-          const combinedAttrs = [...aggrResponse.data.attrs];
-          return {
-            attrs: [...combinedAttrs],
-          };
-        }
-        return aggrResponse.data;
-      }
-      const response = await axios.get(url, { headers, params });
-
-      return response.data;
-    } catch (error) {
-      console.error(
-        'Could not get data for queries with ids:',
-        queryIds,
-        '\nfrom query_config:',
-        query_config.id,
-        '\nfrom data_source:',
-        data_source.id,
-        '\nfrom auth_data:',
-        auth_data.id,
-        '\ndue to error:',
-        this.getErrorLogData(error),
-      );
-    }
   }
 
   async getImageFromSource(

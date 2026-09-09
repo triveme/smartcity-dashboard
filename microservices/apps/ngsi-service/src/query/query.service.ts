@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { tabs, widgets } from '@app/postgres-db/schemas';
 import { queries, Query } from '@app/postgres-db/schemas/query.schema';
 import { queryConfigs } from '@app/postgres-db/schemas/query-config.schema';
-import { and, eq, inArray, isNotNull, or } from 'drizzle-orm';
+import { and, eq, exists, inArray, isNotNull, isNull, or } from 'drizzle-orm';
 import { dataSources } from '@app/postgres-db/schemas/data-source.schema';
 import { authData } from '@app/postgres-db/schemas/auth-data.schema';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
@@ -14,6 +14,8 @@ import {
 
 @Injectable()
 export class QueryService {
+  private readonly logger = new Logger(QueryService.name);
+
   constructor(@Inject(POSTGRES_DB) private readonly db: DbType) {}
 
   async getQueriesToUpdate(): Promise<Map<string, QueryBatch>> {
@@ -43,6 +45,10 @@ export class QueryService {
         queryHashMap.set(hash, {
           queryIds: [queryWithAllInfos.query.id],
           query_config: queryWithAllInfos.query_config,
+          queryConfigSnapshot: {
+            id: queryWithAllInfos.query_config.id,
+            hash: queryWithAllInfos.query_config.hash,
+          },
           data_source: queryWithAllInfos.data_source,
           auth_data: queryWithAllInfos.auth_data,
         });
@@ -76,10 +82,36 @@ export class QueryService {
     newData: object | Array<object>,
   ): Promise<void> {
     try {
-      await this.db
+      const hashMatches =
+        queryBatch.queryConfigSnapshot.hash === null
+          ? isNull(queryConfigs.hash)
+          : eq(queryConfigs.hash, queryBatch.queryConfigSnapshot.hash);
+      const updatedQueries = await this.db
         .update(queries)
         .set({ queryData: newData, updatedAt: new Date(Date.now()) })
-        .where(inArray(queries.id, queryBatch.queryIds));
+        .where(
+          and(
+            inArray(queries.id, queryBatch.queryIds),
+            eq(queries.queryConfigId, queryBatch.queryConfigSnapshot.id),
+            exists(
+              this.db
+                .select({ id: queryConfigs.id })
+                .from(queryConfigs)
+                .where(
+                  and(
+                    eq(queryConfigs.id, queryBatch.queryConfigSnapshot.id),
+                    hashMatches,
+                  ),
+                ),
+            ),
+          ),
+        )
+        .returning({ id: queries.id });
+      if (updatedQueries.length === 0) {
+        this.logger.warn(
+          `Discarded stale query result for configuration ${queryBatch.queryConfigSnapshot.id}`,
+        );
+      }
     } catch (error) {
       console.error(
         'Error updating queries with ids:',

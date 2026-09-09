@@ -74,6 +74,10 @@ export class QueryService {
         queryHashMap.set(hash, {
           queryIds: [queryWithAllInfos.query.id],
           query_config: queryWithAllInfos.query_config,
+          queryConfigSnapshot: {
+            id: queryWithAllInfos.query_config.id,
+            hash: queryWithAllInfos.query_config.hash,
+          },
           data_source: queryWithAllInfos.data_source,
           auth_data: queryWithAllInfos.auth_data,
           system_user: queryWithAllInfos.system_user,

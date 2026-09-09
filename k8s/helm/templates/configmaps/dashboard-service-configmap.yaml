@@ -14,4 +14,10 @@ data:
   PASSWORD_ENCRYPT_KEY: {{ index .Values "dashboard-service" "passwordEncryptKey" }}
   LOG_ROTATION_CRON: {{ index .Values "dashboard-service" "logRotationCron" }}
   LOG_PATH: {{ index .Values "dashboard-service" "logPath" }}
+  NGSI_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "ngsiServiceBaseUrl" | quote }}
+  ORCHIDEO_CONNECT_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "orchideoConnectServiceBaseUrl" | quote }}
+  INTERNAL_DATA_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "internalDataServiceBaseUrl" | quote }}
+  USI_PLATFORM_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "usiPlatformServiceBaseUrl" | quote }}
+  SQL_VIEW_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "sqlViewServiceBaseUrl" | quote }}
+  PLAN_BAR_SERVICE_BASE_URL: {{ index .Values "dashboard-service" "planBarServiceBaseUrl" | quote }}
 {{- end }}

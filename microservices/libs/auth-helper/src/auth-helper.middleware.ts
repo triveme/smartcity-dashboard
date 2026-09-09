@@ -11,8 +11,10 @@ const rootDir = path.resolve(__dirname, '../../../');
 const envPath = path.join(rootDir, '.env');
 config({ path: envPath }); // Load environment variables from .env file in root directory
 
-export type AuthenticatedRequest = Request & { roles?: string[] } & {
+export type AuthenticatedRequest = Request & {
+  roles?: string[];
   tenant?: string;
+  authenticated?: boolean;
 };
 
 @Injectable()
@@ -94,6 +96,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
       if (!token) {
         this.logger.log(`Unauthenticated request - [${req.method}] ${req.url}`);
         req.roles = undefined;
+        req.authenticated = false;
         next();
         return;
       }
@@ -109,6 +112,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
         // We use a normal log here because failing verifications are expected.
         this.logger.log(`Verfiy token error - ${error}`);
         req.roles = undefined;
+        req.authenticated = false;
         next();
         return;
       }
@@ -118,6 +122,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
 
       req.roles = roles || undefined;
       req.tenant = tenant || undefined;
+      req.authenticated = true;
 
       this.logger.log(
         `Authenticated request ${req.url} with roles: ${roles.join(
@@ -128,6 +133,7 @@ export class AuthHelperMiddleware implements NestMiddleware {
     } catch (err) {
       this.logger.error(`Caught on use - ${err}`);
       req.roles = undefined;
+      req.authenticated = false;
       next();
       return;
     }

@@ -57,6 +57,12 @@ keycloak:
 ## dashboard-service config
 dashboard-service:
   enabled: true
+  ngsiServiceBaseUrl: "http://smart-city-ngsi-service"
+  orchideoConnectServiceBaseUrl: "http://smart-city-orchideo-connect-service"
+  internalDataServiceBaseUrl: "http://smart-city-internal-data-service"
+  usiPlatformServiceBaseUrl: "http://smart-city-usi-platform-service"
+  sqlViewServiceBaseUrl: "http://smart-city-sql-view-service"
+  planBarServiceBaseUrl: "http://smart-city-plan-bar-service"
   service:
     enabled: true
   envFrom:
@@ -71,6 +77,9 @@ dashboard-service:
 ## ngsi-service config
 ngsi-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:
@@ -83,6 +92,9 @@ ngsi-service:
 ## orchideo-connect-service config
 orchideo-connect-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:
@@ -145,6 +157,9 @@ static-data-service:
 ## usi-platform-service config
 usi-platform-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:
@@ -159,6 +174,9 @@ usi-platform-service:
 ## plan-bar-service config
 plan-bar-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:
@@ -185,6 +203,9 @@ data-translation-service:
 ## internal-data-service config
 internal-data-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:
@@ -199,6 +220,9 @@ internal-data-service:
 ## sql-view-service config
 sql-view-service:
   enabled: true
+  queue:
+    concurrency: 2
+    timeoutMs: 60000
   service:
     enabled: true
   envFrom:

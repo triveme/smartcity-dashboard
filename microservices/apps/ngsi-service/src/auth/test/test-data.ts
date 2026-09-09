@@ -28,6 +28,10 @@ export async function getQueryBatch(): Promise<QueryBatch> {
       timeframe: timeframeEnum('timeframe')[0],
       hash: null,
     },
+    queryConfigSnapshot: {
+      id: queryConfig.id,
+      hash: null,
+    },
     data_source: {
       ...dataSource,
       authDataId: authData.id,

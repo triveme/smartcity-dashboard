@@ -21,6 +21,17 @@ export async function getLogos(
   return fetched;
 }
 
+export async function getLogoById(id: string): Promise<Logo | undefined> {
+  const backendUrl = getBackendUrl();
+  const fetched = await fetch(`${backendUrl}/logos/${id}`)
+    .then((res) => (res.ok ? res.json() : undefined))
+    .catch((err) => {
+      console.error(err);
+      return undefined;
+    });
+  return fetched;
+}
+
 export async function postLogo(
   accessToken: string | undefined,
   newLogo: Logo,

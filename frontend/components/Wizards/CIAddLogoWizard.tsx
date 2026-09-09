@@ -20,6 +20,7 @@ type Props = {
   setHeaderLogoId: Dispatch<SetStateAction<string | null>>;
   sidebarLogos: SidebarLogo[];
   setSidebarLogos: Dispatch<SetStateAction<SidebarLogo[]>>;
+  setFavicon: (value: string | null) => void;
 };
 
 const CIAddLogoWizard: FC<Props> = ({
@@ -28,6 +29,7 @@ const CIAddLogoWizard: FC<Props> = ({
   setHeaderLogoId,
   sidebarLogos,
   setSidebarLogos,
+  setFavicon,
 }) => {
   const auth = useAuth();
   const { openSnackbar } = useSnackbar();
@@ -35,6 +37,8 @@ const CIAddLogoWizard: FC<Props> = ({
   const [selectedLogoName, setSelectedLogoName] = useState<string>('');
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>('');
   const [selectedHeaderLogoName, setSelectedHeaderLogoName] =
+    useState<string>('');
+  const [selectedFaviconName, setSelectedFaviconName] =
     useState<string>('');
 
   const params = useParams();
@@ -65,6 +69,33 @@ const CIAddLogoWizard: FC<Props> = ({
       setHeaderLogoId(corporateInfo.headerLogoId || null);
     }
   }, [corporateInfo, setSidebarLogos, setHeaderLogoId]);
+
+  useEffect(() => {
+    if (
+      corporateInfo &&
+      corporateInfo.faviconLogoId &&
+      allLogos &&
+      allLogos.length > 0
+    ) {
+      const savedFaviconLogo = allLogos.find(
+        (logo) => logo.id === corporateInfo.faviconLogoId,
+      );
+      if (savedFaviconLogo) setSelectedFaviconName(savedFaviconLogo.logoName);
+    }
+  }, [corporateInfo, allLogos]);
+
+  const handleFaviconSelection = (value: string): void => {
+    const selectedLogo = allLogos?.find(
+      (logo) => logo.logoName === value.toString(),
+    );
+    if (selectedLogo) {
+      setSelectedFaviconName(value.toString());
+      setFavicon(selectedLogo.id || null);
+    } else {
+      setSelectedFaviconName('');
+      setFavicon(null);
+    }
+  };
 
   const handleAddSidebarLogo = (): void => {
     if (!selectedLogoId || !selectedLogoName) {
@@ -151,6 +182,39 @@ const CIAddLogoWizard: FC<Props> = ({
                 allLogos?.find((logo) => logo.id === headerLogoId)?.logo || ''
               }
               alt={selectedHeaderLogoName}
+              height={0}
+              width={0}
+              style={{ width: 'auto', height: '48px' }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Favicon Selection */}
+      <div className="flex flex-col w-full pb-2">
+        <WizardLabel label="Favicon" />
+        <WizardDropdownSelection
+          currentValue={selectedFaviconName}
+          selectableValues={
+            allLogos && allLogos.length > 0
+              ? ['Kein Favicon', ...allLogos.map((logo) => logo.logoName!)]
+              : ['Kein Favicon']
+          }
+          onSelect={(value: string | number): void =>
+            handleFaviconSelection(value.toString())
+          }
+          iconColor={corporateInfo?.dashboardFontColor || '#fff'}
+          backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+        />
+        {selectedFaviconName && (
+          <div className="flex items-center justify-center mt-2 pt-4">
+            <Image
+              src={
+                allLogos?.find((logo) => logo.logoName === selectedFaviconName)
+                  ?.logo || ''
+              }
+              alt={selectedFaviconName}
               height={0}
               width={0}
               style={{ width: 'auto', height: '48px' }}

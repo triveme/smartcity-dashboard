@@ -198,6 +198,7 @@ const initialWizardState: CorporateInfo = {
   dateSelectorFontColorSelected: '#2D3244',
   dateSelectorFontColorUnselected: '#3D4760',
   cssStyleInjectionValue: '',
+  faviconLogoId: null,
 };
 
 type UseWizardStateReturn = {

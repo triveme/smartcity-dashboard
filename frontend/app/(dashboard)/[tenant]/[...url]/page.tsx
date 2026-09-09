@@ -67,6 +67,9 @@ export async function generateMetadata(props: {
   }
   return {
     title: title.join(' - '),
+    icons: {
+      icon: `/${tenant}/favicon`,
+    },
   };
 }
 

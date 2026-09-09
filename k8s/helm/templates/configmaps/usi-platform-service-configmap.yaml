@@ -9,4 +9,6 @@ data:
   NEST_JWKS_URI: {{ index .Values "usi-platform-service" "jwks" }}
   PASSWORD_ENCRYPT_KEY: {{ index .Values "usi-platform-service" "passwordEncryptKey" }}
   NEXT_PUBLIC_FRONTEND_URL: {{ index .Values "usi-platform-service" "frontendUrl" }}
+  DATA_PLATFORM_QUEUE_CONCURRENCY: {{ index .Values "usi-platform-service" "queue" "concurrency" | quote }}
+  DATA_PLATFORM_QUEUE_TIMEOUT_MS: {{ index .Values "usi-platform-service" "queue" "timeoutMs" | quote }}
 {{- end }}

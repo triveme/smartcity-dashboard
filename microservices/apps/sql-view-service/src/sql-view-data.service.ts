@@ -1,6 +1,10 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 import { Injectable } from '@nestjs/common';
 import { QueryBatch, SqlViewService } from './data/data.service';
+import {
+  DataPlatformQueueEnqueueOptions,
+  DataPlatformQueueFingerprintInput,
+} from '@app/data-platform-queue';
 
 @Injectable()
 export class SqlViewDataService {
@@ -23,7 +27,16 @@ export class SqlViewDataService {
 
   async getDataFromDataSource(
     queryBatch: QueryBatch,
+    signal?: AbortSignal,
   ): Promise<{ attributes: { attrName: string; values: unknown[] }[] }> {
-    return this.dataService.getDataFromDataSource(queryBatch);
+    return this.dataService.getDataFromDataSource(queryBatch, signal);
+  }
+
+  async executeQueuedFetch<T>(
+    options: Omit<DataPlatformQueueEnqueueOptions<T>, 'fingerprint'> & {
+      fingerprintInput: DataPlatformQueueFingerprintInput;
+    },
+  ): Promise<T> {
+    return this.dataService.executeQueuedFetch(options);
   }
 }

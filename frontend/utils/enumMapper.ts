@@ -192,7 +192,7 @@ export const projectStatusOptions = [
   { label: '', value: '' },
   { label: 'Aktiv', value: projectStatusEnum.ACTIVE },
   { label: 'Geplant', value: projectStatusEnum.PLANNED },
-  { label: 'Archiviert', value: projectStatusEnum.ARCHIVED },
+  { label: 'Abgeschlossen', value: projectStatusEnum.ARCHIVED },
 ];
 
 export const visibilityOptions = [

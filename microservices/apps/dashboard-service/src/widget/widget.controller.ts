@@ -209,7 +209,12 @@ export class WidgetController {
       this.authHelperUtility.isAdmin(roles) ||
       this.authHelperUtility.isEditor(roles)
     ) {
-      return this.service.createWithChildren(payload, roles, tenant);
+      return this.service.createWithChildren(
+        payload,
+        roles,
+        tenant,
+        request.headers.authorization,
+      );
     } else {
       throw new HttpException(
         'Unauthorized to create widget',
@@ -227,14 +232,20 @@ export class WidgetController {
     @Req() request: AuthenticatedRequest,
   ): Promise<WidgetWithChildren> {
     const roles = request.roles ?? [];
-    return this.service.updateWithChildren(id, values, roles, tenant);
+    return this.service.updateWithChildren(
+      id,
+      values,
+      roles,
+      tenant,
+      request.headers.authorization,
+    );
   }
 
-  @Public()
   @Get('/download-data/:widgetId')
   async downloadData(
     @Param('widgetId') widgetId: string,
     @Query('currAreaConfig') currAreaConfig: string,
+    @Req() request: AuthenticatedRequest,
   ): Promise<string> {
     const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
       | CurrentAreaConfig
@@ -243,9 +254,9 @@ export class WidgetController {
     return this.widgetDataService.downloadWidgetData(
       widgetId,
       parsedCurrAreaConfig,
+      request.headers.authorization,
     );
   }
-  @Public()
   @Post('/range-data/:widgetId')
   async getRangeData(
     @Param('widgetId', new ParseUUIDPipe({ version: '4' })) widgetId: string,
@@ -259,6 +270,7 @@ export class WidgetController {
       widgetId,
       range,
       widget.usesQueryParameter ?? false,
+      request.headers.authorization,
     );
   }
 }

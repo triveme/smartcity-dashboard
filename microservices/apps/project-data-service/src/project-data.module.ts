@@ -10,12 +10,19 @@ import { ProjectDataController } from './project-data.controller';
 import { DataService } from './data/data.service';
 import { PictureDataService } from './picture-data.service';
 import { InternalPictureDataService } from './data/picture.service';
+import { DataPlatformQueueModule } from '@app/data-platform-queue';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
+    }),
+    DataPlatformQueueModule.register({
+      name: 'project-data',
+      platform: 'project-data',
+      concurrency: Number(process.env.DATA_PLATFORM_QUEUE_CONCURRENCY ?? 2),
+      timeoutMs: Number(process.env.DATA_PLATFORM_QUEUE_TIMEOUT_MS ?? 60_000),
     }),
     PostgresDbModule,
     DataModule,

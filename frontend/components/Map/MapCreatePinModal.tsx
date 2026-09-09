@@ -36,6 +36,7 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 import ImageLightbox from '@/ui/ImageLightbox';
 
 const MAX_DESCRIPTION_LENGTH = 2000;
+const ALLOWED_PICTURE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 type MapboxSuggestion = {
   id?: string;
@@ -209,6 +210,7 @@ export default function MapCreatePinModal(
   const headerSecondaryColor =
     effectiveCiColors?.headerSecondaryColor || secondaryColor;
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [rejectedFileNames, setRejectedFileNames] = useState<string[]>([]);
   const [existingPictures, setExistingPictures] = useState<
     { id: string; data: string }[]
   >([]);
@@ -264,14 +266,19 @@ export default function MapCreatePinModal(
       const context: MapboxContextItem[] = Array.isArray(feature?.context)
         ? feature.context
         : [];
-      const districtEntry = context.find(
+      const localityEntry = context.find(
         (item) =>
-          typeof item?.id === 'string' && item.id.startsWith('district'),
+          typeof item?.id === 'string' && item.id.startsWith('locality'),
       );
       const placeEntry = context.find(
         (item) => typeof item?.id === 'string' && item.id.startsWith('place'),
       );
-      const district = districtEntry?.text || placeEntry?.text;
+      const districtEntry = context.find(
+        (item) =>
+          typeof item?.id === 'string' && item.id.startsWith('district'),
+      );
+      const district =
+        localityEntry?.text || placeEntry?.text || districtEntry?.text;
       return {
         street: street || undefined,
         district: district || undefined,
@@ -622,9 +629,16 @@ export default function MapCreatePinModal(
   const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const files = e.target.files;
     if (!files) return;
-    const newFiles = Array.from(files);
+    const selected = Array.from(files);
+    const accepted = selected.filter((f) =>
+      ALLOWED_PICTURE_MIME_TYPES.includes(f.type),
+    );
+    const rejected = selected.filter(
+      (f) => !ALLOWED_PICTURE_MIME_TYPES.includes(f.type),
+    );
+    setRejectedFileNames(rejected.map((f) => f.name));
     setUploadedFiles((prev) => {
-      const combined = [...prev, ...newFiles];
+      const combined = [...prev, ...accepted];
       // remove duplicates by name+size
       const unique: File[] = combined.filter((f, idx, arr) => {
         return (
@@ -1262,7 +1276,7 @@ export default function MapCreatePinModal(
 
               {/* District */}
               <div className="mb-4">
-                <label className="block text-sm mb-2">Stadtteil / Bezirk*</label>
+                <label className="block text-sm mb-2">Ortsteil*</label>
                 <input
                   type="text"
                   value={district}
@@ -1271,7 +1285,7 @@ export default function MapCreatePinModal(
                     setDistrict(next);
                     districtTouchedRef.current = next.trim().length > 0;
                   }}
-                  placeholder="Stadtteil"
+                  placeholder="Ortsteil"
                   className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                   style={{
                     color: fontColor,
@@ -1417,12 +1431,18 @@ export default function MapCreatePinModal(
                   Bilder auswählen
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp"
                     multiple
                     className="hidden"
                     onChange={handleFilesChange}
                   />
                 </label>
+                {rejectedFileNames.length > 0 && (
+                  <div className="mt-1 text-xs text-red-600">
+                    Nicht unterstütztes Format (erlaubt: JPEG, PNG, WebP):{' '}
+                    {rejectedFileNames.join(', ')}
+                  </div>
+                )}
                 <div className="mt-2">
                   {uploadedFiles.length === 0 ? (
                     <div className="text-xs">Keine Datei ausgewählt</div>
