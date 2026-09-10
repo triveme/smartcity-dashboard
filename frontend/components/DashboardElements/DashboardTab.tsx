@@ -380,6 +380,8 @@ export default async function DashboardTab(
               exportBackgroundColor={ciColors.widgetPrimaryColor}
               extendedTimeframe={tab?.extendedTimeframe ?? ''}
               extendedDateSelection={tab?.extendedDateSelection || false}
+              chartInitialZoomPosition={tab?.chartInitialZoomPosition}
+              chartInitialZoomTimeframe={tab?.chartInitialZoomTimeframe}
             />
           )}
           {tab.componentSubType ===

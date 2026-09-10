@@ -35,6 +35,8 @@ export const tabs = pgTable('tab', {
   ),
   chartHasAutomaticZoom: boolean('chart_has_automatic_zoom'),
   chartHasAdditionalSelection: boolean('chart_has_additional_selection'),
+  chartInitialZoomPosition: text('chart_initial_zoom_position'),
+  chartInitialZoomTimeframe: text('chart_initial_zoom_timeframe'),
   chartLabels: text('chart_labels').array(),
   chartLegendAlign: chartLegendPlacement('chart_legend_align'),
   chartMaximum: real('chart_maximum'),

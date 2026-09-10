@@ -54,6 +54,8 @@ export class SanitizeTabDataPipe implements PipeTransform {
       'chartAllowImageDownload',
       'chartHasAutomaticZoom',
       'chartHasAdditionalSelection',
+      'chartInitialZoomPosition',
+      'chartInitialZoomTimeframe',
       'chartLabels',
       'chartLegendAlign',
       'chartMaximum',

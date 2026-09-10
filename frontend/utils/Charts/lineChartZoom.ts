@@ -1,4 +1,4 @@
-import { aggregationEnum, ChartData } from '@/types';
+import { aggregationEnum, ChartData, timeframeEnumSmall } from '@/types';
 import { ECharts } from 'echarts';
 import {
   downsampleValues,
@@ -19,7 +19,7 @@ export type LineChartResolution = {
 type GetDisplayedLineChartDataArgs = {
   sourceData: ChartData[];
   attribute?: string | null;
-  aggregationMode?: aggregationEnum;
+  aggregationMode?: aggregationEnum | null;
   dateRange?: LineChartDateRange | null;
   desiredPoints?: number;
   visibleRange?: LineChartDateRange | null;
@@ -100,6 +100,55 @@ export function getEffectiveLineChartDateRange(
   };
 }
 
+export function getInitialLineChartZoomRange(
+  fullDateRange: LineChartDateRange,
+  position?: 'first' | 'last',
+  timeframe?: timeframeEnumSmall | null,
+): LineChartDateRange {
+  if (!timeframe || !position) {
+    return fullDateRange;
+  }
+
+  const offsetDate = (date: Date, amount: number): Date => {
+    const nextDate = new Date(date);
+
+    switch (timeframe) {
+      case timeframeEnumSmall.hour:
+        nextDate.setHours(nextDate.getHours() + amount);
+        break;
+      case timeframeEnumSmall.day:
+        nextDate.setDate(nextDate.getDate() + amount);
+        break;
+      case timeframeEnumSmall.week:
+        nextDate.setDate(nextDate.getDate() + amount * 7);
+        break;
+      case timeframeEnumSmall.month:
+        nextDate.setMonth(nextDate.getMonth() + amount);
+        break;
+      case timeframeEnumSmall.quarter:
+        nextDate.setMonth(nextDate.getMonth() + amount * 3);
+        break;
+      case timeframeEnumSmall.year:
+        nextDate.setFullYear(nextDate.getFullYear() + amount);
+        break;
+    }
+
+    return nextDate;
+  };
+
+  return position === 'first'
+    ? getEffectiveLineChartDateRange(
+        fullDateRange,
+        fullDateRange.min,
+        offsetDate(fullDateRange.min, 1),
+      )
+    : getEffectiveLineChartDateRange(
+        fullDateRange,
+        offsetDate(fullDateRange.max, -1),
+        fullDateRange.max,
+      );
+}
+
 export function getLineChartResolution(args: {
   aggregationMode?: aggregationEnum;
   desiredPoints: number;
@@ -156,6 +205,11 @@ export function getDisplayedLineChartData(
   const dateFilteredData = args.dateRange
     ? filterLineChartDataByDateRange(attributeFilteredData, args.dateRange)
     : attributeFilteredData;
+
+  if (args.aggregationMode === null) {
+    return dateFilteredData;
+  }
+
   const aggregationMode = args.aggregationMode ?? aggregationEnum.none;
   const resolution = getLineChartResolution({
     aggregationMode,

@@ -14,7 +14,7 @@ import {
   combinedComponentLayoutEnum,
   aggregationEnum,
   componentLayoutEnum,
-  extendedTimeframeEnum,
+  timeframeEnum,
 } from '@/types';
 import WizardSelectBox from '@/ui/WizardSelectBox';
 import ColorPickerComponent from '@/ui/ColorPickerComponent';
@@ -34,6 +34,10 @@ import {
   sliderComponentSubTypes,
   interactiveComponentSubTypes,
   aggregationOptions,
+  chartInitialZoomPositionOptions,
+  chartInitialZoomTimeframeOptions,
+  getChartInitialZoomTimeframeOptions,
+  lineChartSimplificationOptions,
   tabComponentQueryParamWhitelist,
   extendedTimeFrameValues,
 } from '@/utils/enumMapper';
@@ -161,6 +165,12 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   );
 
   const [pharmacyPassword, setPharmacyPassword] = useState<string>('');
+  const initialZoomTimeframeOptions = getChartInitialZoomTimeframeOptions(
+    queryConfig.dataSourceId ? queryConfig.timeframe : undefined,
+  );
+  const hasSelectedInitialZoomTimeframe = initialZoomTimeframeOptions.some(
+    (option) => option.value === tab?.chartInitialZoomTimeframe,
+  );
 
   const handleTabChange = (update: Partial<Tab>): void => {
     setTab((prevTab) => {
@@ -878,20 +888,21 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       <WizardLabel label="Graph vereinfachen" />
                       <WizardDropdownSelection
                         currentValue={
-                          aggregationOptions.find(
+                          lineChartSimplificationOptions.find(
                             (option) =>
                               option.value === tab?.chartAggregationMode,
                           )?.label || ''
                         }
-                        selectableValues={aggregationOptions
-                          .map((option) => option.label)
-                          .slice(1)}
+                        selectableValues={lineChartSimplificationOptions.map(
+                          (option) => option.label,
+                        )}
                         onSelect={(label: string | number): void => {
-                          const enumValue = aggregationOptions.find(
-                            (option) => option.label === label,
-                          )?.value;
+                          const selectedOption =
+                            lineChartSimplificationOptions.find(
+                              (option) => option.label === label,
+                            );
                           handleTabChange({
-                            chartAggregationMode: enumValue as aggregationEnum,
+                            chartAggregationMode: selectedOption?.value ?? null,
                           });
                         }}
                         iconColor={iconColor}
@@ -919,8 +930,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                           )?.value;
 
                           handleTabChange({
-                            extendedTimeframe:
-                              enumValue as extendedTimeframeEnum,
+                            extendedTimeframe: enumValue as timeframeEnum,
                           });
                         }}
                         error={errors && errors.timeValueError}
@@ -1063,6 +1073,71 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       tab?.componentSubType ===
                         tabComponentSubTypeEnum.lineChartDynamic) && (
                       <>
+                        {tab?.mapAllowZoom && (
+                          <div className="flex w-full items-center gap-4">
+                            <div className="min-w-[220px]">
+                              <WizardLabel label="Initialer Zoom" />
+                            </div>
+                            <div className="flex flex-1 gap-4">
+                              <WizardDropdownSelection
+                                currentValue={
+                                  chartInitialZoomPositionOptions.find(
+                                    (option) =>
+                                      option.value ===
+                                      tab?.chartInitialZoomPosition,
+                                  )?.label || 'Letzte'
+                                }
+                                selectableValues={chartInitialZoomPositionOptions.map(
+                                  (option) => option.label,
+                                )}
+                                onSelect={(label: string | number): void => {
+                                  const selectedOption =
+                                    chartInitialZoomPositionOptions.find(
+                                      (option) => option.label === label,
+                                    );
+                                  handleTabChange({
+                                    chartInitialZoomPosition:
+                                      selectedOption?.value,
+                                  });
+                                }}
+                                disabled={!hasSelectedInitialZoomTimeframe}
+                                iconColor={iconColor}
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                              <WizardDropdownSelection
+                                currentValue={
+                                  hasSelectedInitialZoomTimeframe
+                                    ? chartInitialZoomTimeframeOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          tab?.chartInitialZoomTimeframe,
+                                      )?.label || 'Kein Zeitraum'
+                                    : 'Kein Zeitraum'
+                                }
+                                selectableValues={[
+                                  'Kein Zeitraum',
+                                  ...initialZoomTimeframeOptions.map(
+                                    (option) => option.label,
+                                  ),
+                                ]}
+                                onSelect={(label: string | number): void => {
+                                  const selectedOption =
+                                    chartInitialZoomTimeframeOptions.find(
+                                      (option) => option.label === label,
+                                    );
+                                  handleTabChange({
+                                    chartInitialZoomTimeframe:
+                                      selectedOption?.value ?? null,
+                                  });
+                                }}
+                                iconColor={iconColor}
+                                borderColor={borderColor}
+                                backgroundColor={backgroundColor}
+                              />
+                            </div>
+                          </div>
+                        )}
                         <div className="flex w-full items-center">
                           <div className="min-w-[220px]">
                             <WizardLabel label="Stufenlinie anzeigen?" />

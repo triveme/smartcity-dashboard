@@ -97,6 +97,8 @@ export async function getTab(
     chartDateRepresentation: 'Default',
     chartHasAutomaticZoom: false,
     chartHasAdditionalSelection: false,
+    chartInitialZoomPosition: null,
+    chartInitialZoomTimeframe: null,
     chartMinimum: 0,
     chartMaximum: 100,
     chartUnit: '%',

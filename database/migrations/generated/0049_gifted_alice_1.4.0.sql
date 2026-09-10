@@ -1,4 +1,6 @@
 ALTER TABLE "corporate_info" ADD COLUMN IF NOT EXISTS "favicon_logo_id" uuid;--> statement-breakpoint
+ALTER TABLE "tab" ADD COLUMN IF NOT EXISTS "chart_initial_zoom_position" text;--> statement-breakpoint
+ALTER TABLE "tab" ADD COLUMN IF NOT EXISTS "chart_initial_zoom_timeframe" text;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "corporate_info" ADD CONSTRAINT "corporate_info_favicon_logo_id_logo_id_fk" FOREIGN KEY ("favicon_logo_id") REFERENCES "logo"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION

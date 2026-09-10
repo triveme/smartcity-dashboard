@@ -179,6 +179,8 @@ export default function LineChartDynamic(
         exportBackgroundColor={corporateInfo.widgetPrimaryColor}
         extendedTimeframe={tab?.extendedTimeframe ?? ''}
         extendedDateSelection={tab?.extendedDateSelection || false}
+        chartInitialZoomPosition={tab?.chartInitialZoomPosition}
+        chartInitialZoomTimeframe={tab?.chartInitialZoomTimeframe}
       />
     </>
   );

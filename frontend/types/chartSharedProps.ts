@@ -1,4 +1,4 @@
-import { ChartData, extendedTimeframeEnum, timeframeEnum } from '@/types';
+import { ChartData, timeframeEnum, timeframeEnumSmall } from '@/types';
 
 export type ChartDataProps = {
   labels: string[] | undefined;
@@ -13,7 +13,9 @@ export type ChartTimeProps = {
   setXByTimeFramePeriod?: boolean;
   timeFramePeriod?: string | null;
   authDataType?: string | null;
-  extendedTimeframe?: extendedTimeframeEnum | string;
+  extendedTimeframe?: timeframeEnum | string;
+  chartInitialZoomPosition?: 'first' | 'last';
+  chartInitialZoomTimeframe?: timeframeEnumSmall | null;
 };
 
 export type ChartCartesianAxisProps = {

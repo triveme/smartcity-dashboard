@@ -5,6 +5,7 @@ type WizardDropdownSelectionProps = {
   currentValue: string | number;
   selectableValues: string[] | number[];
   onSelect: (value: string | number) => void;
+  disabled?: boolean;
   error?: string;
   iconColor: string;
   borderColor: string;
@@ -18,6 +19,7 @@ export default function WizardDropdownSelection(
     currentValue,
     selectableValues,
     onSelect,
+    disabled = false,
     error,
     iconColor,
     borderColor,
@@ -30,7 +32,9 @@ export default function WizardDropdownSelection(
 
   return (
     <div
-      className={`relative h-14 border-4 rounded-lg w-full`}
+      className={`relative h-14 border-4 rounded-lg w-full ${
+        disabled ? 'opacity-50' : ''
+      }`}
       style={{
         borderColor: error ? '#FFEB3B' : borderColor,
         background: backgroundColor,
@@ -42,6 +46,7 @@ export default function WizardDropdownSelection(
         className="px-3 text-base bg-inherit h-full w-full appearance-none cursor-pointer"
         value={currentValue}
         onChange={handleSelect}
+        disabled={disabled}
       >
         {selectableValues.map((value, index) => (
           <option

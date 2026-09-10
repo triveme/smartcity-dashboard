@@ -192,6 +192,9 @@ const LEGACY_BACKEND_ATTRIBUTE_LABELS: Record<string, string> = {
   PM25: 'Feinstaub PM2,5',
   RELATIV_FREI: 'Frei (%)',
   ARIQUALITYINDEX: 'Luftqualit\u00e4tsindex',
+  SOILMOISTURE: 'Bodenfeuchtigkeit',
+  TARGETTEMPERATURE: 'Zieltemperatur',
+  UTCI: 'Gefühlte Temperatur',
 };
 
 const BACKEND_ATTRIBUTE_LABELS: Record<string, string> = {
