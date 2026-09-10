@@ -1,4 +1,4 @@
-import { extendedTimeframeEnum } from '@/types';
+import { timeframeEnum } from '@/types';
 
 const normalizeStartOfDay = (date: Date): Date => {
   const normalizedDate = new Date(date);
@@ -12,7 +12,7 @@ const normalizeEndOfDay = (date: Date): Date => {
   return normalizedDate;
 };
 export const calculateEndDate = (
-  value: extendedTimeframeEnum | string,
+  value: timeframeEnum | string,
   minDate: Date,
   fullDateRangeMax: Date,
 ): Date | null => {
@@ -54,7 +54,7 @@ export const calculateEndDate = (
 };
 
 export const calculateStartDate = (
-  value: extendedTimeframeEnum | string,
+  value: timeframeEnum | string,
   maxDate: Date,
 ) => {
   const nextDate = new Date(maxDate);

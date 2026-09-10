@@ -4,7 +4,6 @@ import {
   authDataTypeEnum,
   chartDateRepresentaionEnum,
   chartLegendAlignmentEnum,
-  extendedTimeframeEnum,
   menuArrowDirectionEnum,
   projectStatusEnum,
   roundingModeEnum,
@@ -12,6 +11,7 @@ import {
   tabComponentTypeEnum,
   themeEnum,
   timeframeEnum,
+  timeframeEnumSmall,
   visibilityEnum,
   widgetImageSourceEnum,
   widthTypeEnum,
@@ -24,6 +24,15 @@ export const aggregationOptions = [
   { label: 'Maximum', value: aggregationEnum.maximum },
   { label: 'Durchschnitt', value: aggregationEnum.average },
   { label: 'Keine', value: aggregationEnum.none },
+];
+
+export const lineChartSimplificationOptions = [
+  { label: 'Keine Vereinfachung', value: null },
+  { label: 'Summe', value: aggregationEnum.sum },
+  { label: 'Minimum', value: aggregationEnum.minimum },
+  { label: 'Maximum', value: aggregationEnum.maximum },
+  { label: 'Durchschnitt', value: aggregationEnum.average },
+  { label: 'Erstes Element', value: aggregationEnum.none },
 ];
 
 export const roundingModes = [
@@ -70,14 +79,60 @@ export const timeFrameWithoutLiveWithExakt = [
 
 export const extendedTimeFrameValues = [
   { label: '', value: '' },
-  { label: '1 Tag', value: extendedTimeframeEnum.day },
-  { label: '2 Tage', value: extendedTimeframeEnum.day2 },
-  { label: '3 Tage', value: extendedTimeframeEnum.day3 },
-  { label: '1 Woche', value: extendedTimeframeEnum.week },
-  { label: '2 Wochen', value: extendedTimeframeEnum.week2 },
-  { label: '3 Wochen', value: extendedTimeframeEnum.week3 },
+  { label: '1 Tag', value: timeframeEnum.day },
+  { label: '1 Woche', value: timeframeEnum.week },
   { label: 'Monat', value: timeframeEnum.month },
 ];
+
+export const chartInitialZoomPositionOptions = [
+  { label: 'Erste', value: 'first' },
+  { label: 'Letzte', value: 'last' },
+] as const;
+
+export const chartInitialZoomTimeframeOptions = [
+  { label: 'Stunde', value: timeframeEnumSmall.hour },
+  { label: 'Tag', value: timeframeEnumSmall.day },
+  { label: 'Woche', value: timeframeEnumSmall.week },
+  { label: 'Monat', value: timeframeEnumSmall.month },
+  { label: 'Quartal', value: timeframeEnumSmall.quarter },
+  { label: 'Jahr', value: timeframeEnumSmall.year },
+] as const;
+
+const timeframeRank: Record<string, number> = {
+  [timeframeEnum.live]: 0,
+  [timeframeEnum.day]: 1,
+  [timeframeEnum.week]: 2,
+  [timeframeEnum.month]: 3,
+  [timeframeEnum.quarter]: 4,
+  [timeframeEnum.year]: 5,
+  [timeframeEnum.year2]: 6,
+  [timeframeEnum.year3]: 7,
+};
+
+const initialZoomTimeframeRank: Record<timeframeEnumSmall, number> = {
+  [timeframeEnumSmall.hour]: 0,
+  [timeframeEnumSmall.day]: 1,
+  [timeframeEnumSmall.week]: 2,
+  [timeframeEnumSmall.month]: 3,
+  [timeframeEnumSmall.quarter]: 4,
+  [timeframeEnumSmall.year]: 5,
+};
+
+export function getChartInitialZoomTimeframeOptions(
+  queryTimeframe?: string | null,
+): readonly (typeof chartInitialZoomTimeframeOptions)[number][] {
+  const queryTimeframeRank = queryTimeframe
+    ? timeframeRank[queryTimeframe]
+    : undefined;
+
+  if (queryTimeframeRank === undefined) {
+    return chartInitialZoomTimeframeOptions;
+  }
+
+  return chartInitialZoomTimeframeOptions.filter(
+    (option) => initialZoomTimeframeRank[option.value] < queryTimeframeRank,
+  );
+}
 
 export const mapComponentSubTypes = [
   { label: '', value: '' },

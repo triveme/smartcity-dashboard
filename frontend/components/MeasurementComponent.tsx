@@ -260,7 +260,7 @@ export default function MeasurementComponent(
               staticValuesColors={[
                 cardsIconColors[2],
                 cardsIconColors[3],
-                '#FFFFFF',
+                axisLineColor,
               ]}
               xAxisLabel={'Zeit'}
               yAxisLabel={`Pegelstand in ${unit}` || ''}
@@ -296,7 +296,7 @@ export default function MeasurementComponent(
               staticValuesColors={[
                 cardsIconColors[2],
                 cardsIconColors[3],
-                '#FFFFFF',
+                axisLineColor,
               ]}
               xAxisLabel={'Zeit'}
               yAxisLabel={`Pegelstand in ${unit}` || ''}

@@ -340,6 +340,8 @@ export default function DashboardWidgetPreview(
               setXByTimeFramePeriod={
                 tab?.normalizeXAxisByTimeFramePeriod || false
               }
+              chartInitialZoomPosition={tab?.chartInitialZoomPosition}
+              chartInitialZoomTimeframe={tab?.chartInitialZoomTimeframe}
             />
           )}
           {(tab.componentSubType === tabComponentSubTypeEnum.barChart ||

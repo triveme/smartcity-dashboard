@@ -24,14 +24,13 @@ export enum timeframeEnum {
   year3 = 'year3',
 }
 
-export enum extendedTimeframeEnum {
+export enum timeframeEnumSmall {
+  hour = 'hour',
   day = 'day',
-  day2 = 'day2',
-  day3 = 'day3',
   week = 'week',
-  week2 = 'week2',
-  week3 = 'week3',
   month = 'month',
+  quarter = 'quarter',
+  year = 'year',
 }
 
 export enum visibilityEnum {

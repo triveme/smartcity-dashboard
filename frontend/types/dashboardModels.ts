@@ -8,7 +8,7 @@ import {
   dashboardTypeEnum,
   aggregationEnum,
   timeframeEnum,
-  extendedTimeframeEnum,
+  timeframeEnumSmall,
 } from '.';
 
 export type Dashboard = {
@@ -237,6 +237,8 @@ export type Tab = {
   chartDateRepresentation?: string;
   chartHasAutomaticZoom?: boolean;
   chartHasAdditionalSelection?: boolean;
+  chartInitialZoomPosition?: 'first' | 'last';
+  chartInitialZoomTimeframe?: timeframeEnumSmall | null;
   chartData?: ChartData[];
   chartLabels?: string[];
   chartLegendAlign?: string;
@@ -258,7 +260,7 @@ export type Tab = {
   chartYAxisScale?: number | null;
   chartYAxisScaleChartMinValue?: number | null;
   chartYAxisScaleChartMaxValue?: number | null;
-  chartAggregationMode?: aggregationEnum;
+  chartAggregationMode?: aggregationEnum | null;
   chartHoverSingleValue: boolean;
   chartDynamicOnlyShowHover?: boolean;
   chartDynamicNoSelectionDisplayAll?: boolean;
@@ -424,7 +426,7 @@ export type Tab = {
   useDashboardFontColor?: boolean;
   normalizeXAxisByTimeFramePeriod?: boolean;
   usePreviousStageColorOnBoundary?: boolean;
-  extendedTimeframe?: extendedTimeframeEnum | string;
+  extendedTimeframe?: timeframeEnum | string;
 };
 
 export type TabWithQuery = Tab & {

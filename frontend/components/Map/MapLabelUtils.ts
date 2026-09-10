@@ -193,6 +193,9 @@ const LEGACY_SENSOR_ATTRIBUTE_LABELS: Record<string, string> = {
   ARIQUALITYINDEX: 'Luftqualitätsindex',
   TOTALACTIVEPOWER: 'Gesamte Wirkleistung',
   TOTALACTIVEENERGYIMPORT: 'Gesamter Energie-Import',
+  SOILMOISTURE: 'Bodenfeuchtigkeit',
+  TARGETTEMPERATURE: 'Zieltemperatur',
+  UTCI: 'Gefühlte Temperatur',
 };
 
 const SENSOR_ATTRIBUTE_LABELS: Record<string, string> = {

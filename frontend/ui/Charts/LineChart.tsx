@@ -14,6 +14,7 @@ import {
   getDesiredLineChartPointCount,
   getDisplayedLineChartData,
   getEffectiveLineChartDateRange,
+  getInitialLineChartZoomRange,
   getVisibleRangeFromChart,
   filterLineChartDataByAttribute,
   LineChartDateRange,
@@ -51,7 +52,7 @@ import { getWidgetDataForRange } from '@/api/widget-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 type LineChartSpecificProps = {
   isStepline?: boolean;
-  chartAggregationMode?: aggregationEnum;
+  chartAggregationMode?: aggregationEnum | null;
 };
 
 type LineChartProps = ChartTimeProps &
@@ -139,7 +140,9 @@ function normalizeLineChartProps(
     playAnimation: props.playAnimation ?? true,
     isShownInMapModal: props.isShownInMapModal ?? false,
     isStepline: props.isStepline ?? false,
-    chartAggregationMode: props.chartAggregationMode ?? aggregationEnum.none,
+    chartAggregationMode: props.chartAggregationMode ?? null,
+    chartInitialZoomPosition: props.chartInitialZoomPosition ?? 'last',
+    chartInitialZoomTimeframe: props.chartInitialZoomTimeframe ?? null,
     staticValuesTicks: props.staticValuesTicks ?? [],
     staticValuesTexts: props.staticValuesTexts ?? [],
     showLegend: props.showLegend ?? false,
@@ -293,7 +296,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
 
   const displayedChartData = useMemo(
     () =>
-      config.allowZoom
+      config.chartAggregationMode !== null
         ? getDisplayedLineChartData({
             sourceData: activeChartData,
             aggregationMode: config.chartAggregationMode,
@@ -302,7 +305,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
           })
         : activeChartData,
     [
-      config.allowZoom,
       config.chartAggregationMode,
       activeChartData,
       desiredPointCount,
@@ -462,7 +464,11 @@ export default function LineChart(props: LineChartProps): ReactElement {
             currentRange.min,
             currentRange.max,
           )
-        : zoomBaseRange;
+        : getInitialLineChartZoomRange(
+            zoomBaseRange,
+            config.chartInitialZoomPosition,
+            config.chartInitialZoomTimeframe,
+          );
 
       if (
         currentRange &&
@@ -474,7 +480,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
 
       return nextRange;
     });
-  }, [config.allowZoom, zoomBaseRange]);
+  }, [
+    config.allowZoom,
+    config.chartInitialZoomPosition,
+    config.chartInitialZoomTimeframe,
+    zoomBaseRange,
+  ]);
 
   useEffect(() => {
     if (!config.showLegend || !config.singleSelectLegend) {
