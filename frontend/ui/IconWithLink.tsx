@@ -5,6 +5,7 @@ import DashboardIcons from '@/ui/Icons/DashboardIcon';
 import { SizeProp } from '@fortawesome/fontawesome-svg-core';
 import Link from 'next/link';
 import { generateResponsiveFontSize } from '@/utils/fontUtil';
+import { validateLinkUrl } from '@/utils/validationHelper';
 
 type IconWithLinkProps = {
   icon?: string;
@@ -56,39 +57,47 @@ export default function IconWithLink(props: IconWithLinkProps): ReactElement {
     };
   }, []);
 
+  const linkContent = (
+    <>
+      {icon && (
+        <div className="flex-shrink-0">
+          <DashboardIcons
+            iconName={icon}
+            color={iconColor || 'white'}
+            size={mappedIconSize}
+          />
+        </div>
+      )}
+      <div
+        style={{
+          color: fontColor,
+          fontSize: generateResponsiveFontSize(parseInt(fontSize || '16', 10)),
+        }}
+        className="flex-1 min-w-0 ql-editor no-border-ql-editor"
+      >
+        <div
+          className="whitespace-normal overflow-hidden overflow-ellipsis"
+          dangerouslySetInnerHTML={{
+            __html: iconText || '',
+          }}
+        />
+      </div>
+    </>
+  );
+
+  const linkClassName =
+    'flex flex-row flex-wrap items-center w-full max-w-full gap-2 pl-2 sm:pl-4 cursor-pointer overflow-hidden';
+
   return (
     <div className="w-full">
       <div className="flex items-center">
-        <Link
-          href={iconUrl}
-          className="flex flex-row flex-wrap items-center w-full max-w-full gap-2 pl-2 sm:pl-4 cursor-pointer overflow-hidden"
-        >
-          {icon && (
-            <div className="flex-shrink-0">
-              <DashboardIcons
-                iconName={icon}
-                color={iconColor || 'white'}
-                size={mappedIconSize}
-              />
-            </div>
-          )}
-          <div
-            style={{
-              color: fontColor,
-              fontSize: generateResponsiveFontSize(
-                parseInt(fontSize || '16', 10),
-              ),
-            }}
-            className="flex-1 min-w-0 ql-editor no-border-ql-editor"
-          >
-            <div
-              className="whitespace-normal overflow-hidden overflow-ellipsis"
-              dangerouslySetInnerHTML={{
-                __html: iconText || '',
-              }}
-            />
-          </div>
-        </Link>
+        {validateLinkUrl(iconUrl) ? (
+          <Link href={iconUrl} className={linkClassName}>
+            {linkContent}
+          </Link>
+        ) : (
+          <div className={linkClassName}>{linkContent}</div>
+        )}
       </div>
     </div>
   );

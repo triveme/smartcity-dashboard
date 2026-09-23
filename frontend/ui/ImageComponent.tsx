@@ -2,6 +2,7 @@
 import { ReactElement } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { validateLinkUrl } from '@/utils/validationHelper';
 
 interface ImageProps {
   imageBase64?: string;
@@ -64,7 +65,9 @@ export default function ImageComponent(props: ImageProps): ReactElement {
 
   return (
     <div className="flex h-full items-center">
-      {imageAllowJumpoff && imageJumpoffUrl ? (
+      {imageAllowJumpoff &&
+      imageJumpoffUrl &&
+      validateLinkUrl(imageJumpoffUrl) ? (
         <Link
           href={imageJumpoffUrl}
           {...externalLinkAttributes}

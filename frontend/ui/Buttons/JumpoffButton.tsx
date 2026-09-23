@@ -4,6 +4,7 @@ import { ReactElement } from 'react';
 import DashboardIcons from '../Icons/DashboardIcon';
 import { MapModalWidget, PanelWithContent } from '@/types';
 import Link from 'next/link';
+import { validateLinkUrl } from '@/utils/validationHelper';
 
 type DashboardGeneralInfoMessageProps = {
   panel: PanelWithContent | MapModalWidget;
@@ -36,6 +37,10 @@ export default function JumpoffButton(
 
   if (url_formatted !== '' && entityId && entityId.length > 0) {
     url_formatted += '?entityId=' + entityId;
+  }
+
+  if (!validateLinkUrl(url_formatted)) {
+    return <></>;
   }
 
   return (

@@ -8,6 +8,7 @@ import {
 import { WizardErrors } from '@/types/errors';
 import {
   validateLat,
+  validateLinkUrl,
   validateLong,
   validateUrl,
 } from '@/utils/validationHelper';
@@ -101,6 +102,8 @@ export function validateTab(tab: Tab): WizardErrors {
     tab?.componentSubType === tabComponentSubTypeEnum.iconWithLink
   ) {
     if (!tab?.iconUrl) errorsOccured.urlError = 'URL ist erforderlich!';
+    else if (!validateLinkUrl(tab.iconUrl))
+      errorsOccured.urlError = 'Ungültige URL für Icon-Link';
   } else if (tab?.componentType === tabComponentTypeEnum.combinedComponent) {
     // we allow more than 2 combined widgets, but only validate the minimum required (2)
     if (!tab.childWidgets?.[0])
@@ -114,7 +117,7 @@ export function validateTab(tab: Tab): WizardErrors {
     } else if (
       tab?.imageAllowJumpoff &&
       tab?.imageJumpoffUrl &&
-      !validateUrl(tab?.imageJumpoffUrl)
+      !validateLinkUrl(tab?.imageJumpoffUrl)
     ) {
       errorsOccured.imageJumpoffUrlError = 'Ungültige URL für Bild Jumpoff-URL';
     }
@@ -241,7 +244,17 @@ const findInvalidMapWidgetIndices = (
       if (widget.componentSubType === 'jumpoff-url') {
         if (!widget.jumpoffUrl && !widget.jumpoffAttribute) {
           invalidIndices.push(index);
+        } else if (
+          widget.jumpoffUrl &&
+          !validateLinkUrl(widget.jumpoffUrl)
+        ) {
+          invalidIndices.push(index);
         }
+      } else if (
+        widget.componentSubType === 'jumpoff-entity-url-param' &&
+        (!widget.jumpoffUrl || !validateLinkUrl(widget.jumpoffUrl))
+      ) {
+        invalidIndices.push(index);
       }
       return invalidIndices;
     }

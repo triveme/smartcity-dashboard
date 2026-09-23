@@ -17,7 +17,7 @@ import { widthTypes } from '@/utils/enumMapper';
 import IconSelection from '@/ui/Icons/IconSelection';
 import { WizardErrors } from '@/types/errors';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
-import { validateUrl } from '@/utils/validationHelper';
+import { validateLinkUrl } from '@/utils/validationHelper';
 
 type PanelWizardProps = {
   isCreate: boolean;
@@ -91,7 +91,7 @@ export default function PanelWizard(props: PanelWizardProps): ReactElement {
           'Button-Beschriftung muss ausgefüllt werden!!';
       if (!panelJumpoffUrl)
         errorsOccured.panelJumpoffUrl = 'Jumpoff-URL muss ausgefüllt werden!';
-      if (!validateUrl(panelJumpoffUrl))
+      if (!validateLinkUrl(panelJumpoffUrl))
         errorsOccured.panelJumpoffUrl = 'Jumpoff-URL ist ungültig!';
     }
 

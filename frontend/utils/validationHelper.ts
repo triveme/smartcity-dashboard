@@ -4,6 +4,30 @@ export function validateUrl(val: string): boolean {
   return urlRegex.test(val);
 }
 
+const ALLOWED_LINK_PROTOCOLS = [
+  'https:',
+  'http:',
+  'mailto:',
+  'tel:',
+  'geo:',
+  'whatsapp:',
+  'sms:',
+  'maps:',
+];
+
+export function validateLinkUrl(val: string): boolean {
+  if (val.startsWith('/') && !val.startsWith('//')) {
+    return true;
+  }
+
+  try {
+    const url = new URL(val);
+    return ALLOWED_LINK_PROTOCOLS.includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function validateLat(mapLatitude: number | undefined): boolean {
   if (mapLatitude) {
     if (isNaN(mapLatitude)) {

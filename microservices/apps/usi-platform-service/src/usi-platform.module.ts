@@ -11,6 +11,7 @@ import { UsiPlaformService } from './usi-platform.service';
 import { UsiPlatformController } from './usi-platform.controller';
 import { QueryConfigService } from './data/data.service';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { QueryService } from './query/query.service';
 import { ScheduleService } from './schedule.service';
 import { DataPlatformQueueModule } from '@app/data-platform-queue';
@@ -23,6 +24,7 @@ import { InternalQueryPopulationController } from './internal-query-population.c
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     DataPlatformQueueModule.register({
       name: 'usi',
       platform: 'usi',
