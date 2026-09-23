@@ -24,6 +24,7 @@ import { AuthHelperUtility } from '@app/auth-helper';
 import { LoggerModule } from './logging/logger.module';
 import { GeneralSettingsModule } from './general-settings/general-settings.module';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { NoStoreCacheInterceptor } from './http-cache/no-store-cache.interceptor';
 
 @Module({
@@ -32,6 +33,7 @@ import { NoStoreCacheInterceptor } from './http-cache/no-store-cache.interceptor
       envFilePath: ['.env.local', '.env'],
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     DataSourceModule,
     QueryModule,
     QueryConfigModule,

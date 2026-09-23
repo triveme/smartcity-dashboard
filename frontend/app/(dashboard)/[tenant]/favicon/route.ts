@@ -34,5 +34,7 @@ export async function GET(
     }
   }
 
-  return NextResponse.redirect(new URL('/favicon.png', request.url));
+  return NextResponse.redirect(
+    new URL('/favicon.png', process.env.NEXT_PUBLIC_FRONTEND_URL),
+  );
 }

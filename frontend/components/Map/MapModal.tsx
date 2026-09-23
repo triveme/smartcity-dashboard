@@ -72,7 +72,10 @@ export default function MapModal(props: MapModalProps): ReactElement {
   };
 
   const getAttributeValue = (attributeName: string): any => {
-    if (!selectedMarker?.details?.[attributeName]) {
+    if (
+      selectedMarker?.details?.[attributeName] === undefined ||
+      selectedMarker?.details?.[attributeName] === null
+    ) {
       return null;
     }
 
