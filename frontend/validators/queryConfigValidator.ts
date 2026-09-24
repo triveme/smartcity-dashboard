@@ -6,6 +6,8 @@ import {
 } from '@/types';
 import { WizardErrors } from '@/types/errors';
 
+const MAX_QUERY_INTERVAL_SECONDS = 2_147_483_647;
+
 export function validateQueryConfig(
   queryConfig: QueryConfig,
   componentType: string,
@@ -25,6 +27,9 @@ export function validateQueryConfig(
   ) {
     errorsOccured.updateIntervalError =
       'Aktualisierungsintervall von mindestens 60 Sekunden ist erforderlich';
+  } else if (queryConfig.interval > MAX_QUERY_INTERVAL_SECONDS) {
+    errorsOccured.updateIntervalError =
+      'Aktualisierungsintervall darf h\u00f6chstens 2.147.483.647 Sekunden betragen';
   }
 
   if (origin !== 'ngsi-ld' && !queryConfig?.fiwareService) {
@@ -48,7 +53,12 @@ export function validateQueryConfig(
   ) {
     errorsOccured.timeValueError = 'Startdatum ist erforderlich';
   }
-  if (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) {
+  const isNgsiLdBlacklist =
+    origin === 'ngsi-ld' && queryConfig?.isBlacklist === true;
+  if (
+    (!queryConfig?.entityIds || queryConfig?.entityIds.length === 0) &&
+    !isNgsiLdBlacklist
+  ) {
     errorsOccured.sensorError = 'Sensoren sind erforderlich';
   }
 

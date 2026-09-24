@@ -1,6 +1,7 @@
 import { relations, sql } from 'drizzle-orm';
 import {
   boolean,
+  integer,
   pgTable,
   smallint,
   text,
@@ -20,7 +21,7 @@ export const queryConfigs = pgTable('query_config', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   dataSourceId: uuid('data_source_id').references(() => dataSources.id),
-  interval: smallint('interval').notNull(),
+  interval: integer('interval').notNull(),
   fiwareService: text('fiware_service').notNull(),
   fiwareServicePath: text('fiware_service_path').notNull(),
   fiwareType: text('fiware_type').notNull(),
