@@ -300,6 +300,7 @@ export default async function DashboardTab(
           {tab.componentSubType === tabComponentSubTypeEnum.lineChart && (
             <LineChart
               widgetId={tab?.widgetId || ''}
+              tabId={tab?.id || ''}
               chartYAxisScaleChartMinValue={
                 tab?.chartYAxisScaleChartMinValue !== undefined &&
                 tab?.chartYAxisScaleChartMinValue !== null
@@ -875,6 +876,9 @@ export default async function DashboardTab(
                     []
                   }
                   mapUnitsTexts={tab.mapUnitsTexts || []}
+                  mapUnitsTextsByDataSource={
+                    combinedMapData?.mapUnitsTexts as string[][]
+                  }
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
                   ciColors={ciColors}

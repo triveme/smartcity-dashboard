@@ -5,6 +5,7 @@ export type ChartDataProps = {
   data: ChartData[];
   decimalPlaces?: number;
   widgetId?: string;
+  tabId?: string;
   usesQueryParameter?: boolean;
 };
 

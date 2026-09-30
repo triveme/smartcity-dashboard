@@ -289,6 +289,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           menuStyle={menuStyle}
           ciColors={ciColors}
           mapUnitsTexts={tab?.mapUnitsTexts || []}
+          mapUnitsTextsByDataSource={
+            combinedMapData?.mapUnitsTexts as string[][]
+          }
           allowShare={allowShare || false}
           dashboardId={dashboardId || ''}
           allowDataExport={allowDataExport || false}

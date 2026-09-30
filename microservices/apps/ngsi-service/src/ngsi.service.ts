@@ -182,10 +182,17 @@ export class NgsiService {
     roles: string[],
     tenant?: string,
   ): void {
+    const tenants = tenant
+      ? tenant
+          .split(',')
+          .map((abbreviation) => abbreviation.trim())
+          .filter(Boolean)
+      : [];
+
     if (
       tenant &&
       queryBatch.auth_data.tenantAbbreviation &&
-      queryBatch.auth_data.tenantAbbreviation !== tenant
+      !tenants.includes(queryBatch.auth_data.tenantAbbreviation)
     ) {
       throw new ForbiddenException(
         'Query does not belong to the authenticated tenant',

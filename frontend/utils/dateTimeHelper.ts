@@ -44,6 +44,18 @@ export const calculateEndDate = (
     case 'month':
       nextDate.setMonth(nextDate.getMonth() + 1);
       break;
+    case 'quarter':
+      nextDate.setMonth(nextDate.getMonth() + 3);
+      break;
+    case 'year':
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
+      break;
+    case 'year2':
+      nextDate.setFullYear(nextDate.getFullYear() + 2);
+      break;
+    case 'year3':
+      nextDate.setFullYear(nextDate.getFullYear() + 3);
+      break;
     case '':
     default:
       return null;
@@ -82,6 +94,18 @@ export const calculateStartDate = (
 
     case 'month':
       nextDate.setMonth(nextDate.getMonth() - 1);
+      break;
+    case 'quarter':
+      nextDate.setMonth(nextDate.getMonth() - 3);
+      break;
+    case 'year':
+      nextDate.setFullYear(nextDate.getFullYear() - 1);
+      break;
+    case 'year2':
+      nextDate.setFullYear(nextDate.getFullYear() - 2);
+      break;
+    case 'year3':
+      nextDate.setFullYear(nextDate.getFullYear() - 3);
       break;
 
     case '':

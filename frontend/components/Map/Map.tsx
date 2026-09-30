@@ -946,6 +946,7 @@ export default function MapNew(props: MapNewProps): JSX.Element {
 
   const markerPositions: MarkerType[] = (localData || []).map(
     (mapObject, index) => {
+      const dataSource = mapObject?.dataSource ?? 0;
       let markerValue;
       let title;
       let color = '#000000';
@@ -955,8 +956,6 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         title = mapObject.name ? mapObject.name.value : `Sensor ${index + 1}`;
 
         // Extract marker value for combined maps if value-based coloring is enabled
-        const dataSource = mapObject.dataSource ?? 0; // Default to 0 if undefined
-
         if (
           combinedProps.mapIsIconColorValueBased?.[dataSource] ||
           combinedProps.mapIsFormColorValueBased?.[dataSource]
@@ -997,19 +996,22 @@ export default function MapNew(props: MapNewProps): JSX.Element {
         color = getColorForMarker(mapObject, markerValue);
       }
       const icon = getIconForMarker(mapObject, markerValue);
-      const iconIndex = getIconIndex(
-        mapObject ? (mapObject.dataSource ?? 0) : 0,
-        icon,
-      );
+      const iconIndex = getIconIndex(dataSource, icon);
+
+      const unitsTexts = isCombinedMap
+        ? ((props as CombinedMapProps).mapUnitsTextsByDataSource?.[
+            dataSource
+          ] ?? props.mapUnitsTexts)
+        : props.mapUnitsTexts;
 
       return {
         position: mapObject.position.coordinates ?? [52.520008, 13.404954],
         title: title,
         details: mapObject,
-        dataSource: mapObject ? (mapObject.dataSource ?? 0) : 0,
+        dataSource,
         color: color,
         iconIndex,
-        unitsTexts: props.mapUnitsTexts,
+        unitsTexts,
       };
     },
   );

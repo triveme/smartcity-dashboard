@@ -26,7 +26,7 @@ import {
 import { AuthenticatedRequest, AuthHelperUtility } from '@app/auth-helper';
 import { Public } from '@app/auth-helper/PublicDecorator';
 import { ValidateWidgetWithChildrenPipe } from '../validators/widgetWithChildren-validator.pipe';
-import { WidgetDataService } from './widget.data.service';
+import { HistoricRange, WidgetDataService } from './widget.data.service';
 import { WidgetService } from './widget.service';
 import { NoStoreCache } from '../http-cache/no-store-cache.decorator';
 
@@ -257,10 +257,11 @@ export class WidgetController {
       request.headers.authorization,
     );
   }
+  @Public()
   @Post('/range-data/:widgetId')
   async getRangeData(
     @Param('widgetId', new ParseUUIDPipe({ version: '4' })) widgetId: string,
-    @Body() range: { from: string; to: string },
+    @Body() range: HistoricRange,
     @Req() request: AuthenticatedRequest,
   ): Promise<ChartData[]> {
     const roles = request.roles ?? [];

@@ -12,6 +12,84 @@ import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
 
+export type HistoricRange = {
+  from: string;
+  to: string;
+  timeZone: string;
+  tabId?: string;
+};
+
+function getTimeZoneFormatter(timeZone: string): Intl.DateTimeFormat | null {
+  try {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch {
+    return null;
+  }
+}
+
+function getCalendarDate(date: Date, formatter: Intl.DateTimeFormat): Date {
+  const values = Object.fromEntries(
+    formatter
+      .formatToParts(date)
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value }) => [type, Number(value)]),
+  ) as Record<'year' | 'month' | 'day', number>;
+
+  return new Date(Date.UTC(values.year, values.month - 1, values.day));
+}
+
+function getMaximumRangeEnd(
+  fromDate: Date,
+  extendedTimeframe: string | null,
+): Date | null {
+  const maximumEndDate = new Date(fromDate);
+
+  switch (extendedTimeframe) {
+    case 'day':
+      break;
+    case 'day2':
+      maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 1);
+      break;
+    case 'day3':
+      maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 2);
+      break;
+    case 'week':
+      maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 6);
+      break;
+    case 'week2':
+      maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 13);
+      break;
+    case 'week3':
+      maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 20);
+      break;
+    case 'month':
+      maximumEndDate.setUTCMonth(maximumEndDate.getUTCMonth() + 1);
+      break;
+    case 'quarter':
+      maximumEndDate.setUTCMonth(maximumEndDate.getUTCMonth() + 3);
+      break;
+    case 'year':
+      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 1);
+      break;
+    case 'year2':
+      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 2);
+      break;
+    case 'year3':
+      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 3);
+      break;
+    default:
+      return null;
+  }
+
+  maximumEndDate.setUTCHours(23, 59, 59, 999);
+  return maximumEndDate;
+}
+
 @Injectable()
 export class WidgetDataService {
   constructor(
@@ -24,39 +102,62 @@ export class WidgetDataService {
 
   async getRangeData(
     widgetId: string,
-    range: { from: string; to: string },
+    range: HistoricRange,
     usesQueryParameter = false,
     authorization?: string | string[],
   ): Promise<ChartData[]> {
     try {
-      if (!range?.from || !range?.to) {
+      if (!range?.from || !range?.to || !range?.timeZone) {
         throw new HttpException(
-          'Range body must contain valid from and to dates where from is before to',
+          'Range body must contain valid from, to, and timeZone values',
           HttpStatus.BAD_REQUEST,
         );
       }
 
       const fromDate = new Date(range.from);
       const toDate = new Date(range.to);
+      const timeZoneFormatter = getTimeZoneFormatter(range.timeZone);
 
       if (
         Number.isNaN(fromDate.getTime()) ||
         Number.isNaN(toDate.getTime()) ||
+        !timeZoneFormatter ||
         fromDate > toDate
       ) {
         throw new HttpException(
-          'Range body must contain valid from and to dates where from is before to',
+          'Range body must contain valid from, to, and timeZone values',
           HttpStatus.BAD_REQUEST,
         );
       }
 
-      const queryWithAllInfos =
-        await this.platformQueryResolver.getByWidgetId(widgetId);
+      const fromCalendarDate = getCalendarDate(fromDate, timeZoneFormatter);
+      const toCalendarDate = getCalendarDate(toDate, timeZoneFormatter);
+
+      const queryWithAllInfos = await this.platformQueryResolver.getByWidgetId(
+        widgetId,
+        range.tabId,
+      );
 
       if (!queryWithAllInfos) {
         throw new HttpException(
           'No query configuration found for widget',
           HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const maximumRangeEnd = getMaximumRangeEnd(
+        fromCalendarDate,
+        queryWithAllInfos.tab.extendedTimeframe,
+      );
+
+      if (
+        !queryWithAllInfos.query_config.extendedDateSelection ||
+        !maximumRangeEnd ||
+        toCalendarDate > maximumRangeEnd
+      ) {
+        throw new HttpException(
+          'Range data must not exceed the configured historic timeframe',
+          HttpStatus.BAD_REQUEST,
         );
       }
 

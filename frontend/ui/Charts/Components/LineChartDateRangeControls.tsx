@@ -5,27 +5,81 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import WizardLabel from '@/ui/WizardLabel';
 import UniversalButton from '@/ui/Buttons/UniversalButton';
-
-type DateRange = {
-  min: Date;
-  max: Date;
-};
+import { calculateEndDate, calculateStartDate } from '@/utils/dateTimeHelper';
+import { LineChartDateRange } from '@/utils/Charts/lineChartZoom';
 
 type LineChartDateRangeControlsProps = {
-  fullDateRange: DateRange;
+  fullDateRange: LineChartDateRange;
   minDate: Date;
   maxDate: Date;
-  onMinDateChange: (date: Date | null) => void;
-  onMaxDateChange: (date: Date | null) => void;
+  onDateRangeChange: (dateRange: LineChartDateRange | null) => void;
   filterColor?: string;
   filterTextColor?: string;
   extendedDateSelection: boolean;
-  minDateBeforeCurrentPeriod: Date | null;
-  maxDateBeforeCurrentPeriod: Date | null;
+  extendedTimeframe: string;
   onLoadData: () => Promise<void>;
 };
 
 const DATE_PICKER_PORTAL_ID = 'line-chart-date-range-picker-portal';
+
+function normalizeStartOfDay(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(0, 0, 0, 0);
+  return normalizedDate;
+}
+
+function normalizeEndOfDay(date: Date): Date {
+  const normalizedDate = new Date(date);
+  normalizedDate.setHours(23, 59, 59, 999);
+  return normalizedDate;
+}
+
+function constrainDateRange({
+  dateRange,
+  changedBoundary,
+  extendedDateSelection,
+  extendedTimeframe,
+  fullDateRange,
+}: {
+  dateRange: LineChartDateRange;
+  changedBoundary: 'min' | 'max';
+  extendedDateSelection: boolean;
+  extendedTimeframe: string;
+  fullDateRange: LineChartDateRange;
+}): LineChartDateRange {
+  let nextRange = dateRange;
+
+  if (nextRange.min > nextRange.max) {
+    nextRange =
+      changedBoundary === 'min'
+        ? { min: nextRange.min, max: normalizeEndOfDay(nextRange.min) }
+        : { min: normalizeStartOfDay(nextRange.max), max: nextRange.max };
+  }
+
+  if (!extendedDateSelection || nextRange.min >= fullDateRange.min) {
+    return nextRange;
+  }
+
+  const maximumEndDate = calculateEndDate(
+    extendedTimeframe,
+    nextRange.min,
+    fullDateRange.max,
+  );
+
+  if (!maximumEndDate || nextRange.max <= maximumEndDate) {
+    return nextRange;
+  }
+
+  if (changedBoundary === 'min') {
+    return { min: nextRange.min, max: maximumEndDate };
+  }
+
+  const minimumStartDate = calculateStartDate(extendedTimeframe, nextRange.max);
+
+  return minimumStartDate
+    ? { min: minimumStartDate, max: nextRange.max }
+    : nextRange;
+}
 
 export default function LineChartDateRangeControls(
   props: LineChartDateRangeControlsProps,
@@ -34,15 +88,47 @@ export default function LineChartDateRangeControls(
     fullDateRange,
     minDate,
     maxDate,
-    onMinDateChange,
-    onMaxDateChange,
+    onDateRangeChange,
     filterColor = '#F1B434',
     filterTextColor = '#FFFFFF',
     extendedDateSelection,
-    minDateBeforeCurrentPeriod,
-    maxDateBeforeCurrentPeriod,
+    extendedTimeframe,
     onLoadData,
   } = props;
+
+  const handleMinDateChange = (date: Date | null): void => {
+    if (!date) {
+      onDateRangeChange(null);
+      return;
+    }
+
+    onDateRangeChange(
+      constrainDateRange({
+        dateRange: { min: normalizeStartOfDay(date), max: maxDate },
+        changedBoundary: 'min',
+        extendedDateSelection,
+        extendedTimeframe,
+        fullDateRange,
+      }),
+    );
+  };
+
+  const handleMaxDateChange = (date: Date | null): void => {
+    if (!date) {
+      onDateRangeChange(null);
+      return;
+    }
+
+    onDateRangeChange(
+      constrainDateRange({
+        dateRange: { min: minDate, max: normalizeEndOfDay(date) },
+        changedBoundary: 'max',
+        extendedDateSelection,
+        extendedTimeframe,
+        fullDateRange,
+      }),
+    );
+  };
 
   const inputStyle = {
     color: filterTextColor,
@@ -57,27 +143,11 @@ export default function LineChartDateRangeControls(
         <WizardLabel label="Startdatum" />
         <div className="flex h-14 items-center">
           <DatePicker
-            startDate={
-              extendedDateSelection &&
-              minDateBeforeCurrentPeriod != null &&
-              minDateBeforeCurrentPeriod < minDate
-                ? minDateBeforeCurrentPeriod
-                : minDate
-            }
-            endDate={
-              extendedDateSelection && minDateBeforeCurrentPeriod != null
-                ? maxDateBeforeCurrentPeriod
-                : maxDate
-            }
+            startDate={minDate}
+            endDate={maxDate}
             selectsStart
-            selected={
-              extendedDateSelection &&
-              minDateBeforeCurrentPeriod != null &&
-              minDateBeforeCurrentPeriod < minDate
-                ? minDateBeforeCurrentPeriod
-                : minDate
-            }
-            onChange={onMinDateChange}
+            selected={minDate}
+            onChange={handleMinDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
             customInput={
@@ -97,27 +167,11 @@ export default function LineChartDateRangeControls(
         <WizardLabel label="Enddatum" />
         <div className="flex h-14 items-center">
           <DatePicker
-            startDate={
-              extendedDateSelection &&
-              minDateBeforeCurrentPeriod != null &&
-              minDateBeforeCurrentPeriod < minDate
-                ? minDateBeforeCurrentPeriod
-                : minDate
-            }
-            endDate={
-              extendedDateSelection && minDateBeforeCurrentPeriod != null
-                ? maxDateBeforeCurrentPeriod
-                : maxDate
-            }
+            startDate={minDate}
+            endDate={maxDate}
             selectsEnd
-            selected={
-              extendedDateSelection &&
-              minDateBeforeCurrentPeriod != null &&
-              minDateBeforeCurrentPeriod < minDate
-                ? maxDateBeforeCurrentPeriod
-                : maxDate
-            }
-            onChange={onMaxDateChange}
+            selected={maxDate}
+            onChange={handleMaxDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
             customInput={

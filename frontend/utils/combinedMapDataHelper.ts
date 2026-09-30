@@ -121,7 +121,8 @@ export function combineWidgetAttributes(
         key === 'chartStaticValues' ||
         key === 'chartStaticValuesLogos' ||
         key === 'chartStaticValuesTexts' ||
-        key === 'mapDateColorRules'
+        key === 'mapDateColorRules' ||
+        key === 'mapUnitsTexts'
       ) {
         // Group by dataSource and extract the values
         const groupedByDataSource: { [dataSource: number]: any[] } = {};
@@ -132,7 +133,9 @@ export function combineWidgetAttributes(
             if (!groupedByDataSource[dataSource]) {
               groupedByDataSource[dataSource] = [];
             }
-            // Extract the actual value (handle both wrapped and unwrapped values)
+            // Extract the actual value (handle both wrapped and unwrapped values).
+            // mapUnitsTexts must remain grouped so each combined-map source
+            // keeps its own popup-unit sequence.
             const actualValue = item.value !== undefined ? item.value : item;
             groupedByDataSource[dataSource].push(actualValue);
           }

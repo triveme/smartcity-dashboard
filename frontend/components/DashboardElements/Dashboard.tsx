@@ -375,6 +375,9 @@ export default async function Dashboard(
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapUnitsTexts || []
                   }
+                  mapUnitsTextsByDataSource={
+                    combinedMapData?.mapUnitsTexts as string[][]
+                  }
                   chartStyle={chartStyle}
                   menuStyle={menuStyle}
                   ciColors={ciColors}

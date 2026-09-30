@@ -46,7 +46,7 @@ import {
   ChartStaticValueProps,
   ChartTimeProps,
 } from '../../types/chartSharedProps';
-import { calculateEndDate, calculateStartDate } from '@/utils/dateTimeHelper';
+import { calculateEndDate } from '@/utils/dateTimeHelper';
 import { useAuth } from 'react-oidc-context';
 import { getWidgetDataForRange } from '@/api/widget-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
@@ -152,18 +152,6 @@ function normalizeLineChartProps(
   };
 }
 
-function normalizeStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
-}
-
-function normalizeEndOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(23, 59, 59, 999);
-  return normalizedDate;
-}
-
 function getCurrentAreaConfigKey(config: CurrentAreaConfig): string {
   const minRange =
     config.minRange instanceof Date
@@ -219,10 +207,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const [chartWidth, setChartWidth] = useState(0);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const [minDateBeforeCurrentPeriod, setMinDateBeforeCurrentPeriod] =
-    useState<Date | null>(null);
-  const [maxDateBeforeCurrentPeriod, setMaxDateBeforeCurrentPeriod] =
-    useState<Date | null>(null);
   const [rangeData, setRangeData] = useState<ChartData[] | null>(null);
 
   const chartInstanceRef = useRef<ECharts | null>(null);
@@ -261,15 +245,39 @@ export default function LineChart(props: LineChartProps): ReactElement {
       selectedMinDate,
     ],
   );
+  const selectedDateRange = useMemo(
+    () =>
+      fullDateRange
+        ? {
+            min: selectedMinDate ?? fullDateRange.min,
+            max: selectedMaxDate ?? fullDateRange.max,
+          }
+        : null,
+    [fullDateRange, selectedMaxDate, selectedMinDate],
+  );
+  const doesSelectedRangeOverlapDefaultData =
+    fullDateRange !== null &&
+    selectedDateRange !== null &&
+    selectedDateRange.min <= fullDateRange.max &&
+    selectedDateRange.max >= fullDateRange.min;
+  const isHistoricDateRange =
+    config.extendedDateSelection &&
+    fullDateRange !== null &&
+    selectedDateRange !== null &&
+    selectedDateRange.min < fullDateRange.min;
   const dateFilteredSourceChartData = useMemo(
     () =>
-      effectiveDateRange
+      effectiveDateRange && doesSelectedRangeOverlapDefaultData
         ? getDisplayedLineChartData({
             sourceData: attributeFilteredChartData,
             dateRange: effectiveDateRange,
           })
         : attributeFilteredChartData,
-    [attributeFilteredChartData, effectiveDateRange],
+    [
+      attributeFilteredChartData,
+      doesSelectedRangeOverlapDefaultData,
+      effectiveDateRange,
+    ],
   );
   const activeChartData =
     rangeData && rangeData.length > 0 ? rangeData : dateFilteredSourceChartData;
@@ -405,10 +413,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
   };
 
   useEffect(() => {
-    if (!minDateBeforeCurrentPeriod || !maxDateBeforeCurrentPeriod) {
+    if (!isHistoricDateRange) {
       setRangeData(null);
     }
-  }, [minDateBeforeCurrentPeriod, maxDateBeforeCurrentPeriod]);
+  }, [isHistoricDateRange]);
 
   useEffect(() => {
     setVisibleRange(null);
@@ -433,22 +441,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [availableAttributes, config.hasAdditionalSelection]);
 
   useEffect(() => {
-    if (!isAdvancedDateSelectionEnabled || !fullDateRange) {
-      setSelectedMinDate(null);
-      setSelectedMaxDate(null);
+    if (isAdvancedDateSelectionEnabled && fullDateRange) {
       return;
     }
 
-    setSelectedMinDate((currentDate) =>
-      currentDate
-        ? new Date(Math.max(currentDate.getTime(), fullDateRange.min.getTime()))
-        : null,
-    );
-    setSelectedMaxDate((currentDate) =>
-      currentDate
-        ? new Date(Math.min(currentDate.getTime(), fullDateRange.max.getTime()))
-        : null,
-    );
+    setSelectedMinDate(null);
+    setSelectedMaxDate(null);
   }, [fullDateRange, isAdvancedDateSelectionEnabled]);
 
   useEffect(() => {
@@ -517,71 +515,17 @@ export default function LineChart(props: LineChartProps): ReactElement {
     );
   }, [hasBottomLegend]);
 
-  const handleMinDateChange = (date: Date | null): void => {
-    if (!date) {
+  const handleDateRangeChange = (
+    dateRange: LineChartDateRange | null,
+  ): void => {
+    if (!dateRange) {
       setSelectedMinDate(null);
-      return;
-    }
-
-    const nextMinDate = normalizeStartOfDay(date);
-
-    if (
-      config.extendedDateSelection &&
-      fullDateRange &&
-      nextMinDate < fullDateRange?.min
-    ) {
-      setMinDateBeforeCurrentPeriod(nextMinDate);
-      const maxDate = calculateEndDate(
-        config.extendedTimeframe ?? '',
-        nextMinDate,
-        fullDateRange.max,
-      );
-      setMaxDateBeforeCurrentPeriod(maxDate);
-      return;
-    }
-
-    setMinDateBeforeCurrentPeriod(null);
-    setMaxDateBeforeCurrentPeriod(null);
-
-    setSelectedMinDate(nextMinDate);
-    setSelectedMaxDate((currentDate) =>
-      currentDate && currentDate.getTime() < nextMinDate.getTime()
-        ? normalizeEndOfDay(date)
-        : currentDate,
-    );
-  };
-
-  const handleMaxDateChange = (date: Date | null): void => {
-    if (!date) {
       setSelectedMaxDate(null);
       return;
     }
 
-    const nextMaxDate = normalizeEndOfDay(date);
-
-    if (
-      config.extendedDateSelection &&
-      fullDateRange &&
-      nextMaxDate < fullDateRange?.min
-    ) {
-      setMaxDateBeforeCurrentPeriod(nextMaxDate);
-      const minDate = calculateStartDate(
-        config.extendedTimeframe ?? '',
-        nextMaxDate,
-      );
-      setMinDateBeforeCurrentPeriod(minDate);
-      return;
-    }
-
-    setMaxDateBeforeCurrentPeriod(null);
-    setMinDateBeforeCurrentPeriod(null);
-
-    setSelectedMaxDate(nextMaxDate);
-    setSelectedMinDate((currentDate) =>
-      currentDate && currentDate.getTime() > nextMaxDate.getTime()
-        ? normalizeStartOfDay(date)
-        : currentDate,
-    );
+    setSelectedMinDate(dateRange.min);
+    setSelectedMaxDate(dateRange.max);
   };
 
   const handleSelectAllLegends = (): void => {
@@ -749,12 +693,28 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [hasBottomLegend]);
 
   const handleLoadDataForSelectedRange = async () => {
-    if (!minDateBeforeCurrentPeriod || !maxDateBeforeCurrentPeriod) {
-      openSnackbar('Es muss ein gültiges Datum ausgewählt werden!', 'warning');
+    if (!selectedDateRange || !fullDateRange || !isHistoricDateRange) {
+      setRangeData(null);
       return;
     }
 
-    if (minDateBeforeCurrentPeriod > maxDateBeforeCurrentPeriod) {
+    if (selectedDateRange.min > selectedDateRange.max) {
+      openSnackbar(
+        'Es muss ein gültiger Zeitraum ausgewählt werden!',
+        'warning',
+      );
+      return;
+    }
+
+    const maxAllowedDate = fullDateRange
+      ? calculateEndDate(
+          config.extendedTimeframe ?? '',
+          selectedDateRange.min,
+          fullDateRange.max,
+        )
+      : null;
+
+    if (!maxAllowedDate || selectedDateRange.max > maxAllowedDate) {
       openSnackbar(
         'Es muss ein gültiger Zeitraum ausgewählt werden!',
         'warning',
@@ -768,8 +728,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
     }
 
     const range = {
-      from: minDateBeforeCurrentPeriod.toISOString(),
-      to: maxDateBeforeCurrentPeriod.toISOString(),
+      from: selectedDateRange.min.toISOString(),
+      to: selectedDateRange.max.toISOString(),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      tabId: config.tabId,
     };
 
     try {
@@ -892,15 +854,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
                       filterColor={config.filterColor}
                       filterTextColor={config.filterTextColor}
                       fullDateRange={fullDateRange}
-                      maxDate={effectiveDateRange.max}
-                      minDate={effectiveDateRange.min}
-                      onMaxDateChange={handleMaxDateChange}
-                      onMinDateChange={handleMinDateChange}
+                      maxDate={selectedDateRange?.max ?? effectiveDateRange.max}
+                      minDate={selectedDateRange?.min ?? effectiveDateRange.min}
+                      onDateRangeChange={handleDateRangeChange}
                       extendedDateSelection={
                         config.extendedDateSelection ?? false
                       }
-                      minDateBeforeCurrentPeriod={minDateBeforeCurrentPeriod}
-                      maxDateBeforeCurrentPeriod={maxDateBeforeCurrentPeriod}
+                      extendedTimeframe={config.extendedTimeframe ?? ''}
                       onLoadData={handleLoadDataForSelectedRange}
                     />
                   </div>
