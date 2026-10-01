@@ -220,13 +220,14 @@ export function getGermanLabelForSensorAttribute(
 export function getValueString(
   tempValue: { value?: unknown; type?: string },
   decimalSeparator: string = '.',
+  decimalPlaces: number = 1,
 ): string {
   if (tempValue.value === null || tempValue.value === undefined) {
     return 'Keine Daten';
   }
   if (tempValue.type === 'Number') {
     return convertToLocaleNumber(
-      roundToDecimal(Number(tempValue.value)).toString(),
+      roundToDecimal(Number(tempValue.value), decimalPlaces).toString(),
       decimalSeparator,
     );
   }

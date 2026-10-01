@@ -32,6 +32,7 @@ import DataExportButton from '@/ui/Buttons/DataExportButton';
 import {
   combineQueryData,
   combineWidgetAttributes,
+  getMapPopupDecimalPlace,
 } from '@/utils/combinedMapDataHelper';
 import {
   getCombinedMapStaticValues,
@@ -257,6 +258,9 @@ export default async function Dashboard(
                 <Map
                   data={combinedMapData?.mapObject as MapObject[]}
                   combinedMapData={combinedMapData}
+                  popupDecimalPlace={
+                    combinedMapData?.popupDecimalPlace as number[]
+                  }
                   mapAllowFilter={true}
                   combinedQueryData={combinedQueryDataArray}
                   uiFilterData={uiFilterData}
@@ -518,6 +522,9 @@ export default async function Dashboard(
                           .mapWidgetValues
                       : []
                   }
+                  popupDecimalPlace={getMapPopupDecimalPlace(
+                    tab?.mapWidgetValues,
+                  )}
                   mapAllowFilter={
                     dashboard.panels?.[0]?.widgets?.[0].tabs?.[0]
                       .mapAllowFilter || false

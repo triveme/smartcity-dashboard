@@ -6,13 +6,15 @@ import { getTenantOfPage } from '@/utils/tenantHelper';
 
 type UniversalButtonProps = {
   label?: string;
+  iconName?: string;
+  fontColor?: string;
   handleClick: () => void;
 };
 
 export default function UniversalButton(
   props: UniversalButtonProps,
 ): ReactElement {
-  const { label, handleClick } = props;
+  const { label, iconName = 'Download', fontColor, handleClick } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const tenant = getTenantOfPage();
@@ -45,10 +47,8 @@ export default function UniversalButton(
     ...(isHovered && {
       backgroundColor: data?.saveHoverButtonColor || '#82C3E5',
     }),
-    color: data?.dashboardFontColor || '#2B3244',
+    color: fontColor ?? data?.dashboardFontColor ?? '#2B3244',
   };
-
-  const logoColor = data?.dashboardFontColor || '#2B3244';
 
   return (
     <div>
@@ -65,11 +65,11 @@ export default function UniversalButton(
         <div className="flex items-center justify-center">
           {!isLoading ? (
             <div className="flex items-center justify-center gap-2">
-              <DashboardIcons iconName="Download" />
+              <DashboardIcons iconName={iconName} color={buttonStyle.color} />
               <p className="hidden sm:block">{label}</p>
             </div>
           ) : (
-            <DashboardIcons iconName="Spinner" />
+            <DashboardIcons iconName="Spinner" color={buttonStyle.color} />
           )}
         </div>
       </button>

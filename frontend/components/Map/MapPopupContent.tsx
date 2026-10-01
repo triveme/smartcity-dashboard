@@ -20,12 +20,14 @@ interface MapPopupContentProps {
   marker: Marker;
   isCombinedMap: boolean;
   decimalSeparator: string;
+  popupDecimalPlace?: number;
 }
 
 export default function MapPopupContent({
   marker,
   isCombinedMap,
   decimalSeparator,
+  popupDecimalPlace = 2,
 }: MapPopupContentProps): JSX.Element {
   let index = -1;
   return (
@@ -58,9 +60,10 @@ export default function MapPopupContent({
                   Gesamtverbrauch:
                   <strong>
                     {' '}
-                    {convertToLocaleNumber(
-                      String(tempValue.value),
+                    {getValueString(
+                      { ...tempValue, type: 'Number' },
                       decimalSeparator,
+                      popupDecimalPlace,
                     )}{' '}
                     {'m³'}
                   </strong>
@@ -108,7 +111,11 @@ export default function MapPopupContent({
                 {getGermanLabelForSensorAttribute(key)}:{' '}
                 <strong>
                   {' '}
-                  {getValueString(tempValue, decimalSeparator)}{' '}
+                  {getValueString(
+                    tempValue,
+                    decimalSeparator,
+                    popupDecimalPlace,
+                  )}{' '}
                   {marker.unitsTexts?.[index]}
                 </strong>
               </div>
@@ -123,9 +130,10 @@ export default function MapPopupContent({
                   Gesamtverbrauch:
                   <strong>
                     {' '}
-                    {convertToLocaleNumber(
-                      String(tempValue.value),
+                    {getValueString(
+                      { ...tempValue, type: 'Number' },
                       decimalSeparator,
+                      popupDecimalPlace,
                     )}{' '}
                     {'m³'}
                   </strong>
@@ -173,7 +181,11 @@ export default function MapPopupContent({
                 {getGermanLabelForSensorAttribute(key)}:{' '}
                 <strong>
                   {' '}
-                  {getValueString(tempValue, decimalSeparator)}{' '}
+                  {getValueString(
+                    tempValue,
+                    decimalSeparator,
+                    popupDecimalPlace,
+                  )}{' '}
                   {marker.unitsTexts?.[index]}
                 </strong>
               </div>
@@ -186,7 +198,7 @@ export default function MapPopupContent({
                 <strong>
                   {typeof value === 'number'
                     ? convertToLocaleNumber(
-                        roundToDecimal(value).toString(),
+                        roundToDecimal(value, popupDecimalPlace).toString(),
                         decimalSeparator,
                       )
                     : String(value)}{' '}

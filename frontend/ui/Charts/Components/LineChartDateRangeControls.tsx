@@ -188,7 +188,12 @@ export default function LineChartDateRangeControls(
         </div>
       </div>
       {extendedDateSelection && (
-        <UniversalButton handleClick={onLoadData} label="Historische Daten" />
+        <UniversalButton
+          handleClick={onLoadData}
+          label="Aktualisieren"
+          iconName="Update"
+          fontColor={filterTextColor}
+        />
       )}
     </div>
   );

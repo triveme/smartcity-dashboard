@@ -1661,6 +1661,13 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       marker={marker}
       isCombinedMap={isCombinedMap}
       decimalSeparator={decimalSeparator}
+      popupDecimalPlace={
+        isCombinedMap
+          ? ((props as CombinedMapProps).popupDecimalPlace?.[
+              marker.dataSource ?? 0
+            ] ?? 2)
+          : ((props as SingleMapProps).popupDecimalPlace ?? 2)
+      }
     />
   );
 

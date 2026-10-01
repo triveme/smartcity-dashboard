@@ -41,6 +41,7 @@ import {
 import {
   combineQueryData,
   combineWidgetAttributes,
+  getMapPopupDecimalPlace,
 } from '@/utils/combinedMapDataHelper';
 import {
   getCombinedMapStaticValues,
@@ -814,6 +815,9 @@ export default async function DashboardTab(
                   mapWidgetValues={
                     combinedMapData?.mapWidgetValues as MapModalWidget[]
                   }
+                  popupDecimalPlace={
+                    combinedMapData?.popupDecimalPlace as number[]
+                  }
                   mapCombinedWmsUrl={tab.mapCombinedWmsUrl || ''}
                   mapCombinedWmsLayer={tab.mapCombinedWmsLayer || ''}
                   mapNames={(combinedMapData?.mapNames as string[]) || []}
@@ -948,6 +952,9 @@ export default async function DashboardTab(
                     tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'
                   }
                   mapUnitsTexts={tab.mapUnitsTexts || []}
+                  popupDecimalPlace={getMapPopupDecimalPlace(
+                    tab.mapWidgetValues,
+                  )}
                   isFullscreenMap={false}
                   mapAllowFilter={tab.mapAllowFilter || false}
                   mapFilterAttribute={tab.mapFilterAttribute || ''}
