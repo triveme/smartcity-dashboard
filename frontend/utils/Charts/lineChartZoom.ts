@@ -1,5 +1,6 @@
 import { aggregationEnum, ChartData, timeframeEnumSmall } from '@/types';
 import { ECharts } from 'echarts';
+import { shiftDateByMonths } from '@/utils/dateTimeHelper';
 import {
   downsampleValues,
   getVisibleDateRange,
@@ -83,21 +84,43 @@ export function getEffectiveLineChartDateRange(
   selectedMinDate: Date | null,
   selectedMaxDate: Date | null,
 ): LineChartDateRange {
-  let minTime = selectedMinDate
-    ? Math.max(selectedMinDate.getTime(), fullDateRange.min.getTime())
-    : fullDateRange.min.getTime();
-  let maxTime = selectedMaxDate
-    ? Math.min(selectedMaxDate.getTime(), fullDateRange.max.getTime())
-    : fullDateRange.max.getTime();
-
-  if (minTime > maxTime) {
-    maxTime = minTime;
-  }
+  const fullMinTime = fullDateRange.min.getTime();
+  const fullMaxTime = fullDateRange.max.getTime();
+  const minTime = Math.min(
+    Math.max(selectedMinDate?.getTime() ?? fullMinTime, fullMinTime),
+    fullMaxTime,
+  );
+  const maxTime = Math.max(
+    Math.min(selectedMaxDate?.getTime() ?? fullMaxTime, fullMaxTime),
+    fullMinTime,
+  );
 
   return {
     min: new Date(minTime),
-    max: new Date(maxTime),
+    max: new Date(Math.max(minTime, maxTime)),
   };
+}
+
+export function getReconciledLineChartZoomRange(
+  fullDateRange: LineChartDateRange,
+  currentRange: LineChartDateRange | null,
+): LineChartDateRange {
+  if (
+    !currentRange ||
+    !Number.isFinite(currentRange.min.getTime()) ||
+    !Number.isFinite(currentRange.max.getTime()) ||
+    currentRange.min >= currentRange.max ||
+    currentRange.max <= fullDateRange.min ||
+    currentRange.min >= fullDateRange.max
+  ) {
+    return fullDateRange;
+  }
+
+  return getEffectiveLineChartDateRange(
+    fullDateRange,
+    currentRange.min,
+    currentRange.max,
+  );
 }
 
 export function getInitialLineChartZoomRange(
@@ -123,14 +146,11 @@ export function getInitialLineChartZoomRange(
         nextDate.setDate(nextDate.getDate() + amount * 7);
         break;
       case timeframeEnumSmall.month:
-        nextDate.setMonth(nextDate.getMonth() + amount);
-        break;
+        return shiftDateByMonths(nextDate, amount);
       case timeframeEnumSmall.quarter:
-        nextDate.setMonth(nextDate.getMonth() + amount * 3);
-        break;
+        return shiftDateByMonths(nextDate, amount * 3);
       case timeframeEnumSmall.year:
-        nextDate.setFullYear(nextDate.getFullYear() + amount);
-        break;
+        return shiftDateByMonths(nextDate, amount * 12);
     }
 
     return nextDate;

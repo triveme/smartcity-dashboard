@@ -1,11 +1,13 @@
 import {
   MapModalWidget,
+  QueryConfig,
   Tab,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
   widgetImageSourceEnum,
 } from '@/types';
 import { WizardErrors } from '@/types/errors';
+import { extendedTimeFrameValues } from '@/utils/enumMapper';
 import {
   validateLat,
   validateLinkUrl,
@@ -13,8 +15,20 @@ import {
   validateUrl,
 } from '@/utils/validationHelper';
 
-export function validateTab(tab: Tab): WizardErrors {
+export function validateTab(tab: Tab, queryConfig?: QueryConfig): WizardErrors {
   const errorsOccured: WizardErrors = {};
+
+  if (
+    (queryConfig?.extendedDateSelection ?? tab?.extendedDateSelection) &&
+    (tab?.componentSubType === tabComponentSubTypeEnum.lineChart ||
+      tab?.componentSubType === tabComponentSubTypeEnum.lineChartDynamic) &&
+    !extendedTimeFrameValues.some(
+      (option) => option.value !== '' && option.value === tab.extendedTimeframe,
+    )
+  ) {
+    errorsOccured.extendedTimeframeError =
+      'Für die erweiterte Zeitbereichsauswahl muss ein gültiger Zeitbereich konfiguriert werden!';
+  }
 
   // validate component type and subtype (if needed)
   if (!tab?.componentType) {
@@ -244,10 +258,7 @@ const findInvalidMapWidgetIndices = (
       if (widget.componentSubType === 'jumpoff-url') {
         if (!widget.jumpoffUrl && !widget.jumpoffAttribute) {
           invalidIndices.push(index);
-        } else if (
-          widget.jumpoffUrl &&
-          !validateLinkUrl(widget.jumpoffUrl)
-        ) {
+        } else if (widget.jumpoffUrl && !validateLinkUrl(widget.jumpoffUrl)) {
           invalidIndices.push(index);
         }
       } else if (

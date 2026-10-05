@@ -43,11 +43,24 @@ function getCalendarDate(date: Date, formatter: Intl.DateTimeFormat): Date {
   return new Date(Date.UTC(values.year, values.month - 1, values.day));
 }
 
+function shiftCalendarDateByMonths(date: Date, months: number): Date {
+  const shiftedDate = new Date(date);
+  const originalDay = shiftedDate.getUTCDate();
+  shiftedDate.setUTCDate(1);
+  shiftedDate.setUTCMonth(shiftedDate.getUTCMonth() + months);
+
+  const lastDayOfMonth = new Date(shiftedDate);
+  lastDayOfMonth.setUTCMonth(lastDayOfMonth.getUTCMonth() + 1, 0);
+  shiftedDate.setUTCDate(Math.min(originalDay, lastDayOfMonth.getUTCDate()));
+
+  return shiftedDate;
+}
+
 function getMaximumRangeEnd(
   fromDate: Date,
   extendedTimeframe: string | null,
 ): Date | null {
-  const maximumEndDate = new Date(fromDate);
+  let maximumEndDate = new Date(fromDate);
 
   switch (extendedTimeframe) {
     case 'day':
@@ -68,19 +81,19 @@ function getMaximumRangeEnd(
       maximumEndDate.setUTCDate(maximumEndDate.getUTCDate() + 20);
       break;
     case 'month':
-      maximumEndDate.setUTCMonth(maximumEndDate.getUTCMonth() + 1);
+      maximumEndDate = shiftCalendarDateByMonths(maximumEndDate, 1);
       break;
     case 'quarter':
-      maximumEndDate.setUTCMonth(maximumEndDate.getUTCMonth() + 3);
+      maximumEndDate = shiftCalendarDateByMonths(maximumEndDate, 3);
       break;
     case 'year':
-      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 1);
+      maximumEndDate = shiftCalendarDateByMonths(maximumEndDate, 12);
       break;
     case 'year2':
-      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 2);
+      maximumEndDate = shiftCalendarDateByMonths(maximumEndDate, 24);
       break;
     case 'year3':
-      maximumEndDate.setUTCFullYear(maximumEndDate.getUTCFullYear() + 3);
+      maximumEndDate = shiftCalendarDateByMonths(maximumEndDate, 36);
       break;
     default:
       return null;
@@ -133,6 +146,13 @@ export class WidgetDataService {
       const fromCalendarDate = getCalendarDate(fromDate, timeZoneFormatter);
       const toCalendarDate = getCalendarDate(toDate, timeZoneFormatter);
 
+      if (toDate.getTime() > Date.now()) {
+        throw new HttpException(
+          'Historic range must not include future dates',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const queryWithAllInfos = await this.platformQueryResolver.getByWidgetId(
         widgetId,
         range.tabId,
@@ -142,6 +162,13 @@ export class WidgetDataService {
         throw new HttpException(
           'No query configuration found for widget',
           HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (!queryWithAllInfos.tab.extendedTimeframe?.trim()) {
+        throw new HttpException(
+          'Historic timeframe is not configured for this chart',
+          HttpStatus.BAD_REQUEST,
         );
       }
 

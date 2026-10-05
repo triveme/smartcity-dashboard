@@ -75,3 +75,4 @@ hcloud/*
 # Except these custom files - everything else is terraform generated
 !hcloud/kube.tf
 !hcloud/README.adoc
+tools/

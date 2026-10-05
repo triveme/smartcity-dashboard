@@ -1,6 +1,17 @@
 import { aggregationEnum, ChartData } from '@/types';
 import { ECharts } from 'echarts';
 
+export function filterLineChartDataByValidDates(
+  data: ChartData[],
+): ChartData[] {
+  return data.map((series) => ({
+    ...series,
+    values: series.values.filter(([timestamp]) =>
+      Number.isFinite(new Date(timestamp).getTime()),
+    ),
+  }));
+}
+
 export function getXMinMax(data: ChartData[]): { min: Date; max: Date } | null {
   if (!data || data.length === 0) return null;
 
@@ -10,10 +21,13 @@ export function getXMinMax(data: ChartData[]): { min: Date; max: Date } | null {
   data.forEach((series) => {
     series.values.forEach(([timestamp]) => {
       const time = new Date(timestamp).getTime();
+      if (!Number.isFinite(time)) return;
       if (time < minTime) minTime = time;
       if (time > maxTime) maxTime = time;
     });
   });
+
+  if (!Number.isFinite(minTime) || !Number.isFinite(maxTime)) return null;
 
   return {
     min: new Date(minTime),

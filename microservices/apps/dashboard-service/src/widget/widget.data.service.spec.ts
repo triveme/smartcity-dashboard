@@ -7,8 +7,14 @@ jest.mock(
 import { WidgetDataService } from './widget.data.service';
 
 describe('WidgetDataService platform requests', () => {
-  beforeEach(() => jest.spyOn(console, 'warn').mockImplementation());
-  afterEach(() => jest.restoreAllMocks());
+  beforeEach(() => {
+    jest.spyOn(console, 'warn').mockImplementation();
+    jest.useFakeTimers({ now: new Date('2026-10-05T10:15:00.000Z') });
+  });
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
 
   const createService = (options?: {
     extendedDateSelection?: boolean;
@@ -124,14 +130,136 @@ describe('WidgetDataService platform requests', () => {
 
     await expect(
       service.getRangeData('widget-1', {
-        from: '2026-09-01T00:00:00.000Z',
-        to: '2027-09-01T00:00:00.000Z',
+        from: '2025-09-01T00:00:00.000Z',
+        to: '2026-09-01T00:00:00.000Z',
         timeZone: 'UTC',
       }),
     ).resolves.toEqual([]);
 
     expect(platformInternalClient.getQueryData).toHaveBeenCalled();
   });
+
+  it.each(['', '   '])(
+    'reports a missing historic timeframe (%j) separately from invalid dates',
+    async (extendedTimeframe) => {
+      const { service, platformInternalClient } = createService({
+        extendedTimeframe,
+      });
+
+      await expect(
+        service.getRangeData('widget-1', {
+          from: '2026-09-01T00:00:00.000Z',
+          to: '2026-09-01T23:59:59.999Z',
+          timeZone: 'UTC',
+        }),
+      ).rejects.toMatchObject({
+        status: 400,
+        message: 'Historic timeframe is not configured for this chart',
+      });
+
+      expect(platformInternalClient.getQueryData).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['2026-10-05T23:59:59.999Z', '2026-10-06T00:00:00.000Z'])(
+    'rejects future range ends (%s), including later today',
+    async (to) => {
+      const { service, platformInternalClient } = createService();
+
+      await expect(
+        service.getRangeData('widget-1', {
+          from: '2026-10-05T00:00:00.000Z',
+          to,
+          timeZone: 'UTC',
+        }),
+      ).rejects.toMatchObject({
+        status: 400,
+        message: 'Historic range must not include future dates',
+      });
+
+      expect(platformInternalClient.getQueryData).not.toHaveBeenCalled();
+    },
+  );
+
+  it('accepts a historic range ending exactly now', async () => {
+    const { service, platformInternalClient } = createService();
+
+    await expect(
+      service.getRangeData('widget-1', {
+        from: '2026-10-05T00:00:00.000Z',
+        to: new Date().toISOString(),
+        timeZone: 'UTC',
+      }),
+    ).resolves.toEqual([]);
+
+    expect(platformInternalClient.getQueryData).toHaveBeenCalled();
+  });
+
+  it.each([
+    { extendedTimeframe: 'month', from: '2026-01-31', end: '2026-02-28' },
+    { extendedTimeframe: 'month', from: '2024-01-31', end: '2024-02-29' },
+    { extendedTimeframe: 'quarter', from: '2026-01-31', end: '2026-04-30' },
+    { extendedTimeframe: 'year', from: '2024-02-29', end: '2025-02-28' },
+    { extendedTimeframe: 'year2', from: '2024-02-29', end: '2026-02-28' },
+    { extendedTimeframe: 'year3', from: '2020-02-29', end: '2023-02-28' },
+  ])(
+    'clamps the $extendedTimeframe maximum from $from to $end',
+    async ({ extendedTimeframe, from, end }) => {
+      const { service, platformInternalClient } = createService({
+        extendedTimeframe,
+      });
+      const endDate = new Date(`${end}T23:59:59.999Z`);
+      const range = {
+        from: `${from}T00:00:00.000Z`,
+        to: endDate.toISOString(),
+        timeZone: 'UTC',
+      };
+
+      await expect(service.getRangeData('widget-1', range)).resolves.toEqual(
+        [],
+      );
+      expect(platformInternalClient.getQueryData).toHaveBeenCalledTimes(1);
+      platformInternalClient.getQueryData.mockClear();
+
+      await expect(
+        service.getRangeData('widget-1', {
+          ...range,
+          to: new Date(endDate.getTime() + 1).toISOString(),
+        }),
+      ).rejects.toMatchObject({ status: 400 });
+      expect(platformInternalClient.getQueryData).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    {
+      from: '2026-01-30T23:00:00.000Z',
+      to: '2026-02-28T22:59:59.999Z',
+      outside: '2026-02-28T23:00:00.000Z',
+    },
+    {
+      from: '2026-03-30T22:00:00.000Z',
+      to: '2026-04-30T21:59:59.999Z',
+      outside: '2026-04-30T22:00:00.000Z',
+    },
+  ])(
+    'clamps month ends in the browser calendar timezone ($from)',
+    async ({ from, to, outside }) => {
+      const { service, platformInternalClient } = createService({
+        extendedTimeframe: 'month',
+      });
+      const range = { from, to, timeZone: 'Europe/Berlin' };
+
+      await expect(service.getRangeData('widget-1', range)).resolves.toEqual(
+        [],
+      );
+      platformInternalClient.getQueryData.mockClear();
+      await expect(
+        service.getRangeData('widget-1', { ...range, to: outside }),
+      ).rejects.toMatchObject({ status: 400 });
+      expect(platformInternalClient.getQueryData).not.toHaveBeenCalled();
+    },
+  );
 
   it('accepts the exact maximum configured historic timeframe', async () => {
     const { service, platformInternalClient } = createService();

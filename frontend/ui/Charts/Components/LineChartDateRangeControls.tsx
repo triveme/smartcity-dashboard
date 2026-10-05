@@ -1,11 +1,14 @@
 'use client';
 
-import { ReactElement, useState } from 'react';
+import { ComponentPropsWithRef, ReactElement } from 'react';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 import WizardLabel from '@/ui/WizardLabel';
 import UniversalButton from '@/ui/Buttons/UniversalButton';
-import { calculateEndDate, calculateStartDate } from '@/utils/dateTimeHelper';
+import {
+  calculateEndDate,
+  calculateStartDate,
+  getLatestAllowedDate,
+} from '@/utils/dateTimeHelper';
 import { LineChartDateRange } from '@/utils/Charts/lineChartZoom';
 
 type LineChartDateRangeControlsProps = {
@@ -18,9 +21,16 @@ type LineChartDateRangeControlsProps = {
   extendedDateSelection: boolean;
   extendedTimeframe: string;
   onLoadData: () => Promise<void>;
+  isLoading?: boolean;
 };
 
 const DATE_PICKER_PORTAL_ID = 'line-chart-date-range-picker-portal';
+
+export function ReadOnlyDatePickerInput(
+  props: ComponentPropsWithRef<'input'>,
+): ReactElement {
+  return <input {...props} readOnly />;
+}
 
 function normalizeStartOfDay(date: Date): Date {
   const normalizedDate = new Date(date);
@@ -47,12 +57,24 @@ function constrainDateRange({
   extendedTimeframe: string;
   fullDateRange: LineChartDateRange;
 }): LineChartDateRange {
-  let nextRange = dateRange;
+  const maximumDate = getLatestAllowedDate(fullDateRange.max);
+  let nextRange = {
+    min: new Date(Math.min(dateRange.min.getTime(), maximumDate.getTime())),
+    max: new Date(Math.min(dateRange.max.getTime(), maximumDate.getTime())),
+  };
 
   if (nextRange.min > nextRange.max) {
     nextRange =
       changedBoundary === 'min'
-        ? { min: nextRange.min, max: normalizeEndOfDay(nextRange.min) }
+        ? {
+            min: nextRange.min,
+            max: new Date(
+              Math.min(
+                normalizeEndOfDay(nextRange.min).getTime(),
+                maximumDate.getTime(),
+              ),
+            ),
+          }
         : { min: normalizeStartOfDay(nextRange.max), max: nextRange.max };
   }
 
@@ -76,6 +98,18 @@ function constrainDateRange({
 
   const minimumStartDate = calculateStartDate(extendedTimeframe, nextRange.max);
 
+  if (minimumStartDate) {
+    const endDateFromMinimumStart = calculateEndDate(
+      extendedTimeframe,
+      minimumStartDate,
+      fullDateRange.max,
+    );
+
+    if (endDateFromMinimumStart && nextRange.max > endDateFromMinimumStart) {
+      minimumStartDate.setDate(minimumStartDate.getDate() + 1);
+    }
+  }
+
   return minimumStartDate
     ? { min: minimumStartDate, max: nextRange.max }
     : nextRange;
@@ -94,9 +128,13 @@ export default function LineChartDateRangeControls(
     extendedDateSelection,
     extendedTimeframe,
     onLoadData,
+    isLoading = false,
   } = props;
+  const maximumDate = getLatestAllowedDate(fullDateRange.max);
 
   const handleMinDateChange = (date: Date | null): void => {
+    if (isLoading) return;
+
     if (!date) {
       onDateRangeChange(null);
       return;
@@ -114,6 +152,8 @@ export default function LineChartDateRangeControls(
   };
 
   const handleMaxDateChange = (date: Date | null): void => {
+    if (isLoading) return;
+
     if (!date) {
       onDateRangeChange(null);
       return;
@@ -147,18 +187,18 @@ export default function LineChartDateRangeControls(
             endDate={maxDate}
             selectsStart
             selected={minDate}
+            disabled={isLoading}
             onChange={handleMinDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
             customInput={
-              <input
+              <ReadOnlyDatePickerInput
                 className="block h-10 w-full min-w-0 rounded-lg border-4 px-4 text-sm"
-                readOnly
                 style={inputStyle}
               />
             }
             dateFormat="yyyy-MM-dd"
-            maxDate={fullDateRange.max}
+            maxDate={maximumDate}
             minDate={extendedDateSelection ? undefined : fullDateRange.min}
           />
         </div>
@@ -171,18 +211,18 @@ export default function LineChartDateRangeControls(
             endDate={maxDate}
             selectsEnd
             selected={maxDate}
+            disabled={isLoading}
             onChange={handleMaxDateChange}
             portalId={DATE_PICKER_PORTAL_ID}
             wrapperClassName="w-[250px] shrink-0"
             customInput={
-              <input
+              <ReadOnlyDatePickerInput
                 className="block h-10 w-full min-w-0 rounded-lg border-4 px-4 text-sm"
-                readOnly
                 style={inputStyle}
               />
             }
             dateFormat="yyyy-MM-dd"
-            maxDate={fullDateRange.max}
+            maxDate={maximumDate}
             minDate={extendedDateSelection ? undefined : fullDateRange.min}
           />
         </div>

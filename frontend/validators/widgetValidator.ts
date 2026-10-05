@@ -18,7 +18,7 @@ export function validateWidgetWithChildren(
   errorsOccured = {
     ...errorsOccured,
     ...validateWidget(widgetWithChildren.widget),
-    ...validateTab(widgetWithChildren.tab),
+    ...validateTab(widgetWithChildren.tab, widgetWithChildren.queryConfig),
     ...validateWidgetHeightBasedOnComponentType(widgetWithChildren),
   };
 

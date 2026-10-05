@@ -1,5 +1,6 @@
 'use client';
 
+import 'react-datepicker/dist/react-datepicker.css';
 import { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
@@ -15,6 +16,7 @@ import {
   getDisplayedLineChartData,
   getEffectiveLineChartDateRange,
   getInitialLineChartZoomRange,
+  getReconciledLineChartZoomRange,
   getVisibleRangeFromChart,
   filterLineChartDataByAttribute,
   LineChartDateRange,
@@ -28,7 +30,10 @@ import {
   reconcileSingleSelectionLegendState,
   SingleSelectionLegendState,
 } from '@/utils/Charts/lineChartLegendSelection';
-import { getXMinMax } from '@/utils/Charts/lineChartUtil';
+import {
+  filterLineChartDataByValidDates,
+  getXMinMax,
+} from '@/utils/Charts/lineChartUtil';
 import { buildLineChartOption } from './ChartOptions/LineChartOptions';
 import LineChartDateRangeControls from './Components/LineChartDateRangeControls';
 import LineChartFilterControls from './Components/LineChartFilterControls';
@@ -50,6 +55,7 @@ import { calculateEndDate } from '@/utils/dateTimeHelper';
 import { useAuth } from 'react-oidc-context';
 import { getWidgetDataForRange } from '@/api/widget-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
+import { useAppliedLineChartDateSelection } from '@/app/custom-hooks/useAppliedLineChartDateSelection';
 type LineChartSpecificProps = {
   isStepline?: boolean;
   chartAggregationMode?: aggregationEnum | null;
@@ -111,9 +117,10 @@ function normalizeLineChartProps(
   props: LineChartProps,
   entityId: string | null,
 ): NormalizedLineChartProps {
+  const validChartData = filterLineChartDataByValidDates(props.data);
   const chartData = entityId
-    ? props.data.filter((series) => series.id === entityId)
-    : props.data;
+    ? validChartData.filter((series) => series.id === entityId)
+    : validChartData;
   const {
     data: _data,
     usesQueryParameter: _usesQueryParameter,
@@ -207,9 +214,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const [chartWidth, setChartWidth] = useState(0);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const [rangeData, setRangeData] = useState<ChartData[] | null>(null);
+  const [isRangeDataLoading, setIsRangeDataLoading] = useState(false);
 
   const chartInstanceRef = useRef<ECharts | null>(null);
+  const hasInitializedZoomRef = useRef(false);
   const lastCurrentAreaConfigKeyRef = useRef('');
   const availableAttributes = useMemo(
     () => getUniqueField(config.chartData, false),
@@ -255,32 +263,22 @@ export default function LineChart(props: LineChartProps): ReactElement {
         : null,
     [fullDateRange, selectedMaxDate, selectedMinDate],
   );
-  const doesSelectedRangeOverlapDefaultData =
-    fullDateRange !== null &&
-    selectedDateRange !== null &&
-    selectedDateRange.min <= fullDateRange.max &&
-    selectedDateRange.max >= fullDateRange.min;
   const isHistoricDateRange =
     config.extendedDateSelection &&
     fullDateRange !== null &&
     selectedDateRange !== null &&
     selectedDateRange.min < fullDateRange.min;
-  const dateFilteredSourceChartData = useMemo(
-    () =>
-      effectiveDateRange && doesSelectedRangeOverlapDefaultData
-        ? getDisplayedLineChartData({
-            sourceData: attributeFilteredChartData,
-            dateRange: effectiveDateRange,
-          })
-        : attributeFilteredChartData,
-    [
-      attributeFilteredChartData,
-      doesSelectedRangeOverlapDefaultData,
-      effectiveDateRange,
-    ],
-  );
-  const activeChartData =
-    rangeData && rangeData.length > 0 ? rangeData : dateFilteredSourceChartData;
+  const {
+    chartData: activeChartData,
+    applyDateSelection,
+    tryApplyAvailableDateSelection,
+  } = useAppliedLineChartDateSelection({
+    baseData: attributeFilteredChartData,
+    fullDateRange,
+    effectiveDateRange,
+    isEnabled: isAdvancedDateSelectionEnabled === true,
+    extendedDateSelection: config.extendedDateSelection ?? false,
+  });
 
   const zoomBaseRange = useMemo(
     () => getXMinMax(activeChartData),
@@ -289,11 +287,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const effectiveVisibleRange = useMemo(
     () =>
       zoomBaseRange
-        ? getEffectiveLineChartDateRange(
-            zoomBaseRange,
-            visibleRange?.min ?? null,
-            visibleRange?.max ?? null,
-          )
+        ? getReconciledLineChartZoomRange(zoomBaseRange, visibleRange)
         : null,
     [visibleRange, zoomBaseRange],
   );
@@ -413,16 +407,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
   };
 
   useEffect(() => {
-    if (!isHistoricDateRange) {
-      setRangeData(null);
-    }
-  }, [isHistoricDateRange]);
-
-  useEffect(() => {
-    setVisibleRange(null);
-  }, [rangeData]);
-
-  useEffect(() => {
     if (!config.hasAdditionalSelection) {
       setSelectedAttribute('');
       return;
@@ -455,18 +439,19 @@ export default function LineChart(props: LineChartProps): ReactElement {
       return;
     }
 
+    const initialRange = hasInitializedZoomRef.current
+      ? zoomBaseRange
+      : getInitialLineChartZoomRange(
+          zoomBaseRange,
+          config.chartInitialZoomPosition,
+          config.chartInitialZoomTimeframe,
+        );
+    hasInitializedZoomRef.current = true;
+
     setVisibleRange((currentRange) => {
       const nextRange = currentRange
-        ? getEffectiveLineChartDateRange(
-            zoomBaseRange,
-            currentRange.min,
-            currentRange.max,
-          )
-        : getInitialLineChartZoomRange(
-            zoomBaseRange,
-            config.chartInitialZoomPosition,
-            config.chartInitialZoomTimeframe,
-          );
+        ? getReconciledLineChartZoomRange(zoomBaseRange, currentRange)
+        : initialRange;
 
       if (
         currentRange &&
@@ -518,6 +503,16 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const handleDateRangeChange = (
     dateRange: LineChartDateRange | null,
   ): void => {
+    if (isRangeDataLoading) return;
+
+    const nextDateRange = dateRange ?? fullDateRange;
+    if (
+      !config.extendedDateSelection ||
+      (nextDateRange && tryApplyAvailableDateSelection(nextDateRange))
+    ) {
+      setVisibleRange(null);
+    }
+
     if (!dateRange) {
       setSelectedMinDate(null);
       setSelectedMaxDate(null);
@@ -693,14 +688,27 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [hasBottomLegend]);
 
   const handleLoadDataForSelectedRange = async () => {
-    if (!selectedDateRange || !fullDateRange || !isHistoricDateRange) {
-      setRangeData(null);
+    if (isRangeDataLoading) return;
+
+    if (!selectedDateRange || !fullDateRange) return;
+
+    if (!isHistoricDateRange) {
+      applyDateSelection(selectedDateRange, null);
+      setVisibleRange(null);
       return;
     }
 
     if (selectedDateRange.min > selectedDateRange.max) {
       openSnackbar(
         'Es muss ein gültiger Zeitraum ausgewählt werden!',
+        'warning',
+      );
+      return;
+    }
+
+    if (!config.extendedTimeframe?.trim()) {
+      openSnackbar(
+        'Für dieses Diagramm ist kein erweiterter Zeitbereich konfiguriert. Bitte die Diagrammkonfiguration prüfen!',
         'warning',
       );
       return;
@@ -734,6 +742,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
       tabId: config.tabId,
     };
 
+    setIsRangeDataLoading(true);
     try {
       const rangeChartData = await getWidgetDataForRange(
         accessToken,
@@ -741,18 +750,25 @@ export default function LineChart(props: LineChartProps): ReactElement {
         range,
       );
 
-      if (rangeChartData && rangeChartData.length === 0) {
+      const validRangeChartData =
+        filterLineChartDataByValidDates(rangeChartData);
+
+      if (!getXMinMax(validRangeChartData)) {
         openSnackbar(
           'Für den ausgewählten Zeitraum sind keine Daten verfügbar.',
           'warning',
         );
-        setRangeData(null);
+        applyDateSelection(selectedDateRange, []);
+        setVisibleRange(null);
         return;
       }
-      setRangeData(rangeChartData);
+      applyDateSelection(selectedDateRange, validRangeChartData);
+      setVisibleRange(null);
     } catch (error) {
       console.error(error);
       openSnackbar('Daten konnten nicht geladen werden!', 'error');
+    } finally {
+      setIsRangeDataLoading(false);
     }
   };
 
@@ -824,10 +840,22 @@ export default function LineChart(props: LineChartProps): ReactElement {
           filterTextColor={config.filterTextColor}
           onSelect={setSelectedAttribute}
           selectedAttribute={selectedAttribute}
+          disabled={isRangeDataLoading}
         />
       )}
       <div className="min-w-0 flex h-full flex-1 flex-col">
-        <div className="w-full min-h-0 min-w-0 flex-1" ref={chartRef} />
+        <div className="relative min-h-0 min-w-0 flex-1">
+          <div className="h-full w-full" ref={chartRef} />
+          {!zoomBaseRange && (
+            <div
+              role="status"
+              className="absolute inset-0 flex items-center justify-center px-4 text-center"
+              style={{ color: config.axisLabelFontColor }}
+            >
+              Für den ausgewählten Zeitraum sind keine gültigen Daten verfügbar.
+            </div>
+          )}
+        </div>
         {(showSingleSelectionLegendControls ||
           (isAdvancedDateSelectionEnabled &&
             fullDateRange &&
@@ -862,6 +890,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
                       }
                       extendedTimeframe={config.extendedTimeframe ?? ''}
                       onLoadData={handleLoadDataForSelectedRange}
+                      isLoading={isRangeDataLoading}
                     />
                   </div>
                 )}

@@ -88,6 +88,14 @@ export const extendedTimeFrameValues = [
   { label: '3 Jahre', value: timeframeEnum.year3 },
 ];
 
+export function getDefaultExtendedTimeframe(
+  queryTimeframe?: string | null,
+): timeframeEnum | undefined {
+  return extendedTimeFrameValues.find(
+    (option) => option.value !== '' && option.value === queryTimeframe,
+  )?.value as timeframeEnum | undefined;
+}
+
 export const chartInitialZoomPositionOptions = [
   { label: 'Erste', value: 'first' },
   { label: 'Letzte', value: 'last' },

@@ -56,6 +56,7 @@ export type WizardErrors = {
   tabComponentTypeError?: string;
   timeSeriesUrlError?: string;
   timeValueError?: string;
+  extendedTimeframeError?: string;
   titleError?: string;
   typeError?: string;
   updateIntervalError?: string;
