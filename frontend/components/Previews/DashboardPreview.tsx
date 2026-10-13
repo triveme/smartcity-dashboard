@@ -16,7 +16,6 @@ import { dashboardTypeEnum, Panel, Tab } from '@/types';
 import { deletePanel, postPanel, updatePanel } from '@/api/panel-service';
 import { EMPTY_PANEL } from '@/utils/objectHelper';
 import { getMapStaticValues } from '@/utils/mapValueColorMode';
-import { getMapPopupDecimalPlace } from '@/utils/combinedMapDataHelper';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
 import IFrameComponent from '@/ui/IFrameComponent';
@@ -194,9 +193,7 @@ export default function DashboardPreview(
       )}
       {isMapDashboard && (
         <Map
-          popupDecimalPlace={getMapPopupDecimalPlace(
-            selectedTab?.mapWidgetValues,
-          )}
+          popupDecimalPlace={selectedTab?.mapPopupDecimalPlaces ?? 2}
           mapMaxZoom={resolveMapZoomSetting(
             selectedTab?.mapMaxZoom,
             selectedTab?.componentSubType,

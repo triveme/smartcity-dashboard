@@ -269,7 +269,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
     selectedDateRange !== null &&
     selectedDateRange.min < fullDateRange.min;
   const {
-    chartData: activeChartData,
+    chartData: dateSelectedChartData,
     applyDateSelection,
     tryApplyAvailableDateSelection,
   } = useAppliedLineChartDateSelection({
@@ -280,6 +280,16 @@ export default function LineChart(props: LineChartProps): ReactElement {
     extendedDateSelection: config.extendedDateSelection ?? false,
   });
 
+  const activeChartData = useMemo(
+    () =>
+      config.hasAdditionalSelection
+        ? filterLineChartDataByAttribute(
+            dateSelectedChartData,
+            selectedAttribute,
+          )
+        : dateSelectedChartData,
+    [config.hasAdditionalSelection, dateSelectedChartData, selectedAttribute],
+  );
   const zoomBaseRange = useMemo(
     () => getXMinMax(activeChartData),
     [activeChartData],

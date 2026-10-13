@@ -113,19 +113,15 @@ export class QueryConfigService {
           `${authData.apiUrl}/eventtypes`,
           requestConfig,
         ),
-        axios.get<UsiVirtualSensor | UsiVirtualSensor[]>(
+        axios.get<{ virtualsensors: UsiVirtualSensor[] }>(
           `${authData.apiUrl}/virtualsensors`,
           requestConfig,
         ),
       ]);
 
-      const virtualSensors = Array.isArray(virtualSensorsResponse.data)
-        ? virtualSensorsResponse.data
-        : [virtualSensorsResponse.data];
-
       const transformedData = eventTypesResponse.data.eventtypes.map(
         (eventType) => {
-          const virtualSensorIds = virtualSensors
+          const virtualSensorIds = virtualSensorsResponse.data.virtualsensors
             .filter((sensor) => sensor.resultEventType === eventType.id)
             .map((sensor) => sensor.id);
 

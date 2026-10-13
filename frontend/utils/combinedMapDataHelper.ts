@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  MapModalWidget,
   QueryDataWithAttributes,
   tabComponentTypeEnum,
   WidgetWithContent,
@@ -9,18 +8,6 @@ import {
 const attributesToBeExcluded = [
   'query', // combined using a different function due to the structure difference
 ];
-
-export function getMapPopupDecimalPlace(
-  mapWidgetValues?: MapModalWidget[] | null,
-): number {
-  return (
-    mapWidgetValues?.find(
-      (widget) =>
-        widget.componentType === tabComponentTypeEnum.value &&
-        widget.decimalPlaces != null,
-    )?.decimalPlaces ?? 2
-  );
-}
 
 export function combineWidgetAttributes(
   combinedWidgets: WidgetWithContent[],
@@ -51,9 +38,11 @@ export function combineWidgetAttributes(
       combinedAttributes.popupDecimalPlace = [];
     }
     (combinedAttributes.popupDecimalPlace as number[])[widgetIndex] =
-      getMapPopupDecimalPlace(
-        widget.tabs.flatMap((tab) => tab.mapWidgetValues ?? []),
-      );
+      (
+        widget.tabs.find(
+          (tab) => tab.componentType === tabComponentTypeEnum.map,
+        ) ?? widget.tabs[0]
+      )?.mapPopupDecimalPlaces ?? 2;
 
     widget.tabs.forEach((tab: Record<string, any>) => {
       Object.keys(tab).forEach((key) => {

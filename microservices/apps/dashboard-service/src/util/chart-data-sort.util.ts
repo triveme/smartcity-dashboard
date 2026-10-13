@@ -63,7 +63,7 @@ export function sortFlattenedTimeSeriesData(
     const to = Math.max(minTime, maxTime);
 
     return flattenedData.filter((item) => {
-      const pointTime = new Date(item.Jahr).getTime();
+      const pointTime = Number(item.Jahr);
       const inRange = pointTime >= from && pointTime <= to;
       return inRange;
     });

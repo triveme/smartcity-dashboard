@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpException,
   HttpStatus,
@@ -241,12 +242,21 @@ export class WidgetController {
     );
   }
 
+  @Public()
   @Get('/download-data/:widgetId')
   async downloadData(
     @Param('widgetId') widgetId: string,
     @Query('currAreaConfig') currAreaConfig: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<string> {
+    const widget = await this.service.getByIdForExport(
+      widgetId,
+      request.roles ?? [],
+    );
+    if (!widget.allowDataExport) {
+      throw new ForbiddenException('Widget data export is disabled');
+    }
+
     const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
       | CurrentAreaConfig
       | CurrentAreaConfig[];
@@ -254,7 +264,6 @@ export class WidgetController {
     return this.widgetDataService.downloadWidgetData(
       widgetId,
       parsedCurrAreaConfig,
-      request.headers.authorization,
     );
   }
   @Public()

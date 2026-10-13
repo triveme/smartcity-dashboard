@@ -1,15 +1,21 @@
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import { widgets } from '@app/postgres-db/schemas';
 import { Parser } from '@json2csv/plainjs';
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { WidgetToPanelRepo } from '../widget-to-panel/widget-to-panel.repo';
 import { PanelRepo } from '../panel/panel.repo';
 import { TabService } from '../tab/tab.service';
-import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { CurrentAreaConfig } from '../widget/widget.model';
-import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
+import { CsvDataService } from '../csv-data/csv-data.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
 
 @Injectable()
@@ -19,7 +25,7 @@ export class DashboardDataService {
     private readonly widgetsToPanelRepo: WidgetToPanelRepo,
     private readonly panelRepo: PanelRepo,
     private readonly tabService: TabService,
-    private readonly platformInternalClient: PlatformInternalClientService,
+    private readonly csvDataService: CsvDataService,
     private readonly platformQueryResolver: PlatformQueryResolverService,
   ) {}
 
@@ -27,10 +33,8 @@ export class DashboardDataService {
     dashboardId: string,
     ids: string[],
     currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
-    authorization?: string | string[],
   ): Promise<string> {
     const allCsvData: string[] = [];
-    const errorMessages: string[] = [];
 
     try {
       const widgetIds = new Set(ids.map((id) => id));
@@ -104,17 +108,13 @@ export class DashboardDataService {
           if (!queryWithAllInfos) {
             const warning = `No query information found for widget with id: ${panelWidget.id}`;
             console.warn(warning);
-            errorMessages.push(warning);
-            // Pushing the error messages to the CSV output
-            allCsvData.push(
-              `"entityId","attrName","value","index"\n"No data found for widget with id: ${panelWidget.id}"`,
-            );
-            continue;
+            throw new NotFoundException('Widget query not found');
           }
 
           const queryBatch = {
             queryIds: [queryWithAllInfos.query.id],
-            query_config: queryWithAllInfos.query_config,
+            query_config: { ...queryWithAllInfos.query_config },
+            data_source: queryWithAllInfos.data_source,
             auth_data: queryWithAllInfos.auth_data,
           };
           if (
@@ -126,7 +126,20 @@ export class DashboardDataService {
               queryBatch.query_config.aggrMode = 'none';
             }
 
-            if (filterConfig.changeTimeFramePeriod === true) {
+            if (filterConfig?.downloadCurrentArea === true) {
+              const from = new Date(filterConfig.minRange);
+              const to = new Date(filterConfig.maxRange);
+              if (
+                !Number.isFinite(from.getTime()) ||
+                !Number.isFinite(to.getTime()) ||
+                from > to
+              ) {
+                throw new BadRequestException('Visible range is invalid');
+              }
+              queryBatch.query_config.timeframe = 'user_defined';
+              queryBatch.query_config.dataStartDate = from;
+              queryBatch.query_config.dataUntilDate = to;
+            } else if (filterConfig?.changeTimeFramePeriod === true) {
               queryBatch.query_config.timeframe = filterConfig.timeFramePeriod;
             } else {
               if (!queryBatch.query_config.timeframe) {
@@ -135,13 +148,7 @@ export class DashboardDataService {
             }
           }
 
-          const rawData = await this.platformInternalClient.getQueryData<
-            object | object[]
-          >(queryBatch.auth_data.type, queryBatch.queryIds[0], authorization, {
-            timeframe: queryBatch.query_config.timeframe,
-            aggrMode: queryBatch.query_config.aggrMode,
-            aggrPeriod: queryBatch.query_config.aggrPeriod,
-          });
+          const rawData = await this.csvDataService.getData(queryBatch);
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
@@ -168,7 +175,11 @@ export class DashboardDataService {
           if (flattenedData.length === 0) {
             const warning = `No data found for widget with id: ${panelWidget.id}`;
             console.warn(warning);
-            errorMessages.push(warning);
+            allCsvData.push(
+              queryBatch.auth_data.type === 'internal'
+                ? '"Quartal","Geschlecht","Altersklasse","Jahr","Value"'
+                : '"entityId","attrName","value","index"',
+            );
           } else {
             let opts;
 
@@ -194,35 +205,21 @@ export class DashboardDataService {
 
             const parser = new Parser(opts);
 
-            const normalizedCurrAreaConfing =
-              filterConfig.downloadCurrentArea === true
-                ? sortFlattenedTimeSeriesData(
-                    flattenedData,
-                    queryBatch.auth_data.type,
-                    filterConfig.selectedLegendNames,
-                    filterConfig.minRange,
-                    filterConfig.maxRange,
-                  )
-                : flattenedData;
-
-            const csv = parser.parse(normalizedCurrAreaConfing);
+            const csv = parser.parse(flattenedData);
             allCsvData.push(csv);
           }
         } catch (widgetError) {
+          if (widgetError instanceof HttpException) throw widgetError;
           const warning = `Error processing widget with id: ${panelWidget.id} - ${widgetError.message}`;
           console.warn(warning);
-          errorMessages.push(warning);
+          throw new InternalServerErrorException('CSV export failed');
         }
-      }
-
-      if (allCsvData.length === 0 && errorMessages.length > 0) {
-        const errorCsv = `Error downloading data, issues encountered:\n${errorMessages.join('\n')}`;
-        return errorCsv;
       }
 
       const resultCsv = allCsvData.join('\n');
       return resultCsv;
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       console.error(
         'Error downloading data for dashboard with id:',
         dashboardId,
@@ -230,8 +227,7 @@ export class DashboardDataService {
         error,
       );
 
-      const errorCsv = `Error downloading data, issues encountered:\n${error.message}`;
-      return errorCsv;
+      throw new InternalServerErrorException('CSV export failed');
     }
   }
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseUUIDPipe,
@@ -190,6 +191,7 @@ export class DashboardController {
     return this.service.delete(id, roles, tenant);
   }
 
+  @Public()
   @Get('/download-data/:dashboardId')
   async downloadData(
     @Param('dashboardId') dashboardId: string,
@@ -198,15 +200,31 @@ export class DashboardController {
     currAreaConfig: string,
     @Req() request: AuthenticatedRequest,
   ): Promise<string> {
+    const dashboard = await this.service.getDashboardWithWidgets(
+      dashboardId,
+      request.roles ?? [],
+    );
+    if (!dashboard.allowDataExport) {
+      throw new ForbiddenException('Dashboard data export is disabled');
+    }
+    const widgetIds = Array.isArray(ids) ? ids : ids ? [ids] : [];
+    const dashboardWidgetIds = new Set(
+      dashboard.panels.flatMap((panel) =>
+        panel.widgets.map((widget) => widget.id),
+      ),
+    );
+    if (widgetIds.some((widgetId) => !dashboardWidgetIds.has(widgetId))) {
+      throw new ForbiddenException('Widget does not belong to dashboard');
+    }
+
     const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
       | CurrentAreaConfig
       | CurrentAreaConfig[];
 
     return this.dashboardDataService.downloadDashboardData(
       dashboardId,
-      ids,
+      widgetIds,
       parsedCurrAreaConfig,
-      request.headers.authorization,
     );
   }
 }

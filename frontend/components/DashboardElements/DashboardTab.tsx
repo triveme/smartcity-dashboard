@@ -41,7 +41,6 @@ import {
 import {
   combineQueryData,
   combineWidgetAttributes,
-  getMapPopupDecimalPlace,
 } from '@/utils/combinedMapDataHelper';
 import {
   getCombinedMapStaticValues,
@@ -952,9 +951,7 @@ export default async function DashboardTab(
                     tab.mapShapeColor ? tab.mapShapeColor : '#FF0000'
                   }
                   mapUnitsTexts={tab.mapUnitsTexts || []}
-                  popupDecimalPlace={getMapPopupDecimalPlace(
-                    tab.mapWidgetValues,
-                  )}
+                  popupDecimalPlace={tab.mapPopupDecimalPlaces ?? 2}
                   isFullscreenMap={false}
                   mapAllowFilter={tab.mapAllowFilter || false}
                   mapFilterAttribute={tab.mapFilterAttribute || ''}

@@ -7,6 +7,8 @@ type CheckBoxProps = {
   value: boolean;
   handleSelectChange: (isSelected: boolean) => void;
   tooltipText?: string;
+  type?: 'checkbox' | 'radio';
+  name?: string;
 };
 
 export default function CheckBox({
@@ -14,24 +16,30 @@ export default function CheckBox({
   value,
   handleSelectChange,
   tooltipText,
+  type = 'checkbox',
+  name,
 }: CheckBoxProps): ReactElement {
   const handleTouchStart = (e: React.TouchEvent): void => {
     e.preventDefault();
     e.stopPropagation();
-    handleSelectChange(!value);
+    handleSelectChange(type === 'radio' ? true : !value);
   };
 
   return (
     <label
       className="flex w-full items-center space-x-2 cursor-pointer select-none h-full"
-      role="checkbox"
+      role={type}
       aria-checked={value}
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleSelectChange(!value)}
+      onKeyDown={(e) =>
+        e.key === 'Enter' &&
+        handleSelectChange(type === 'radio' ? true : !value)
+      }
       onTouchStart={handleTouchStart}
     >
       <input
-        type="checkbox"
+        type={type}
+        name={name}
         checked={value}
         onChange={(e) => handleSelectChange(e.target.checked)}
         className="hidden"

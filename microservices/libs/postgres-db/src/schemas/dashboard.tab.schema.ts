@@ -92,6 +92,7 @@ export const tabs = pgTable('tab', {
   mapAllowFilter: boolean('map_allow_filter'),
   mapAllowLegend: boolean('map_allow_legend'),
   mapAllowPopups: boolean('map_allow_popups'),
+  mapPopupDecimalPlaces: smallint('map_popup_decimal_places').default(2),
   mapAllowScroll: boolean('map_allow_scroll'),
   mapAllowZoom: boolean('map_allow_zoom'),
   mapClusterAtMaxZoom: boolean('map_cluster_at_max_zoom'),

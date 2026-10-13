@@ -1,0 +1,1 @@
+ALTER TABLE "tab" ADD COLUMN IF NOT EXISTS "map_popup_decimal_places" smallint DEFAULT 2;

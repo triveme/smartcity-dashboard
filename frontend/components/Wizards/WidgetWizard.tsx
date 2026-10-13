@@ -230,6 +230,9 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const handleCreateWidgetClick = async (): Promise<void> => {
     const nextQueryConfig = createQueryConfig(queryConfig);
     if (tab) {
+      if (tab.componentType === tabComponentTypeEnum.map) {
+        tab.mapPopupDecimalPlaces ??= 2;
+      }
       if (tab.componentSubType === tabComponentSubTypeEnum.stageableChart) {
         if (!tab.chartStaticValues || tab.chartStaticValues.length === 0) {
           tab.chartStaticValuesTexts = [];

@@ -40,6 +40,7 @@ export type WizardErrors = {
   mapFilterAttributeError?: string;
   mapModalWidgetError?: string;
   mapModalWidgetIndexError?: number[];
+  mapPopupDecimalPlacesError?: string;
   mapTypeError?: string;
   nameError?: string;
   panelGeneralInfoError?: string;

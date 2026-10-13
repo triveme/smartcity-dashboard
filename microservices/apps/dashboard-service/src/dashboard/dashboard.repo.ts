@@ -115,7 +115,7 @@ export class DashboardRepo {
 
   async getDashboardWithContent(
     id: string,
-    tenantId: string,
+    tenantIds: string[],
     rolesFromRequest: string[],
   ): Promise<FlatDashboardData[]> {
     const tenantSubSelect = this.db
@@ -123,7 +123,7 @@ export class DashboardRepo {
         dashboardId: dashboardsToTenants.dashboardId,
       })
       .from(dashboardsToTenants)
-      .where(eq(dashboardsToTenants.tenantId, tenantId));
+      .where(inArray(dashboardsToTenants.tenantId, tenantIds));
 
     const dashboardContent = await this.db
       .select()
