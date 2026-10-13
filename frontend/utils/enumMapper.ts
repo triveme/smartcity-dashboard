@@ -82,7 +82,19 @@ export const extendedTimeFrameValues = [
   { label: '1 Tag', value: timeframeEnum.day },
   { label: '1 Woche', value: timeframeEnum.week },
   { label: 'Monat', value: timeframeEnum.month },
+  { label: 'Quartal', value: timeframeEnum.quarter },
+  { label: 'Jahr', value: timeframeEnum.year },
+  { label: '2 Jahre', value: timeframeEnum.year2 },
+  { label: '3 Jahre', value: timeframeEnum.year3 },
 ];
+
+export function getDefaultExtendedTimeframe(
+  queryTimeframe?: string | null,
+): timeframeEnum | undefined {
+  return extendedTimeFrameValues.find(
+    (option) => option.value !== '' && option.value === queryTimeframe,
+  )?.value as timeframeEnum | undefined;
+}
 
 export const chartInitialZoomPositionOptions = [
   { label: 'Erste', value: 'first' },

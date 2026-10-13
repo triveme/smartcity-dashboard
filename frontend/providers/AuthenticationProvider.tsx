@@ -4,6 +4,7 @@ import React, { ReactElement } from 'react';
 import { AuthProvider, AuthProviderProps } from 'react-oidc-context';
 import { env } from 'next-dynenv';
 import { WebStorageStateStore, User } from 'oidc-client-ts';
+import Cookies from 'js-cookie';
 
 import AuthWrapper from './AuthWrapper'; // Make sure the path is correct
 
@@ -40,6 +41,15 @@ export default function AuthenticationProvider({
   }
 
   function onSigninCallback(user: User | void): void {
+    if (user?.access_token) {
+      // The destination is server-rendered and needs the token on the first
+      // request after the OIDC callback, before AuthWrapper can run its effect.
+      Cookies.set('access_token', user.access_token, {
+        secure: true,
+        sameSite: 'Strict',
+      });
+    }
+
     const state = user?.state as string;
 
     if (state) {

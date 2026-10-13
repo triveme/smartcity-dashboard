@@ -6,6 +6,7 @@ type FilterButtonProps = {
   filterColor: string | undefined;
   filterTextColor: string | undefined;
   clickedAttribute: string;
+  disabled?: boolean;
 };
 
 export default function FilterButton(props: FilterButtonProps): ReactElement {
@@ -15,6 +16,7 @@ export default function FilterButton(props: FilterButtonProps): ReactElement {
     filterColor,
     filterTextColor,
     clickedAttribute,
+    disabled = false,
   } = props;
 
   return (
@@ -24,6 +26,7 @@ export default function FilterButton(props: FilterButtonProps): ReactElement {
           <button
             key={`button-linechart-${attribute}`}
             onClick={() => onClick(attribute)}
+            disabled={disabled}
             style={{
               width: '100%',
               padding: 4,

@@ -22,6 +22,7 @@ import { getCorporateInfosWithLogos } from '@/app/actions';
 import IconWithLink from '@/ui/IconWithLink';
 import { getTenantOfPage } from '@/utils/tenantHelper';
 import { getMapStaticValues } from '@/utils/mapValueColorMode';
+import { getMapPopupDecimalPlace } from '@/utils/combinedMapDataHelper';
 import StageableChart from '@/ui/Charts/stageablechart/StageableChart';
 import Slider from '@/ui/Charts/slider/Slider';
 import SliderOverview from '@/ui/Charts/slideroverview/SliderOverview';
@@ -597,6 +598,7 @@ export default function DashboardWidgetPreview(
         tab.componentSubType !== tabComponentSubTypeEnum.custom_map && (
           <div id="map" className="h-full w-full">
             <Map
+              popupDecimalPlace={getMapPopupDecimalPlace(tab.mapWidgetValues)}
               mapMaxZoom={resolveMapZoomSetting(
                 tab.mapMaxZoom,
                 tab.componentSubType,
@@ -667,6 +669,7 @@ export default function DashboardWidgetPreview(
         tab.componentSubType == tabComponentSubTypeEnum.custom_map && (
           <div id="map" className="h-full w-full">
             <Map
+              popupDecimalPlace={getMapPopupDecimalPlace(tab.mapWidgetValues)}
               mapMaxZoom={resolveMapZoomSetting(
                 tab.mapMaxZoom,
                 tab.componentSubType,

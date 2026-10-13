@@ -24,8 +24,6 @@ export default function SmallCircle(props: SVGProps): ReactElement {
     return 24 * 0.75;
   }
 
-  console.log('Height : ', getIconSize(height));
-
   return (
     <svg
       width={getIconSize(height)}

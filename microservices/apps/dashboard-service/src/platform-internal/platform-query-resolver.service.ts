@@ -12,7 +12,7 @@ import {
   queryConfigs,
 } from '@app/postgres-db/schemas/query-config.schema';
 import { Query, queries } from '@app/postgres-db/schemas/query.schema';
-import { tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
+import { Tab, tabs } from '@app/postgres-db/schemas/dashboard.tab.schema';
 
 export type ResolvedQuery = {
   query: Query;
@@ -21,17 +21,31 @@ export type ResolvedQuery = {
   auth_data: AuthData;
 };
 
+export type ResolvedWidgetQuery = ResolvedQuery & {
+  tab: Tab;
+};
+
 @Injectable()
 export class PlatformQueryResolverService {
   constructor(@Inject(POSTGRES_DB) private readonly db: DbType) {}
 
-  async getByWidgetId(widgetId: string): Promise<ResolvedQuery | null> {
-    const tab = await this.db
+  async getByWidgetId(
+    widgetId: string,
+    tabId?: string,
+  ): Promise<ResolvedWidgetQuery | null> {
+    const tabsForWidget = await this.db
       .select()
       .from(tabs)
       .where(eq(tabs.widgetId, widgetId));
-    if (!tab[0]?.queryId) return null;
-    return this.getByQueryId(tab[0].queryId);
+    const tab = tabId
+      ? tabsForWidget.find((widgetTab) => widgetTab.id === tabId)
+      : tabsForWidget[0];
+
+    if (!tab?.queryId) return null;
+
+    const resolvedQuery = await this.getByQueryId(tab.queryId);
+
+    return resolvedQuery ? { ...resolvedQuery, tab } : null;
   }
 
   async getByQueryId(queryId: string): Promise<ResolvedQuery | null> {

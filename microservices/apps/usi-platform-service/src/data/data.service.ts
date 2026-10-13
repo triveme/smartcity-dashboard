@@ -19,6 +19,18 @@ export type UsiEventType = {
   attributes: string[];
 };
 
+interface UsiApiEventType {
+  id: string;
+  name: string;
+  sensors: string[];
+  description: Record<string, unknown>;
+}
+
+interface UsiVirtualSensor {
+  id: string;
+  resultEventType: string;
+}
+
 interface SensorDataItem {
   timestamp?: string;
   data_timestamp?: string;
@@ -87,8 +99,7 @@ export class QueryConfigService {
   ): Promise<UsiEventType[]> {
     try {
       signal.throwIfAborted();
-      const url = `${authData.apiUrl}/eventtypes`;
-      const response = await axios.get(url, {
+      const requestConfig = {
         auth: {
           username: authData.appUser,
           password: EncryptionUtil.decryptPassword(
@@ -96,13 +107,37 @@ export class QueryConfigService {
           ),
         },
         signal,
-      });
+      };
+      const [eventTypesResponse, virtualSensorsResponse] = await Promise.all([
+        axios.get<{ eventtypes: UsiApiEventType[] }>(
+          `${authData.apiUrl}/eventtypes`,
+          requestConfig,
+        ),
+        axios.get<UsiVirtualSensor | UsiVirtualSensor[]>(
+          `${authData.apiUrl}/virtualsensors`,
+          requestConfig,
+        ),
+      ]);
 
-      const transformedData = response.data.eventtypes.map((eventType) => ({
-        name: eventType.name,
-        sensors: eventType.sensors,
-        attributes: Object.keys(eventType.description),
-      }));
+      const virtualSensors = Array.isArray(virtualSensorsResponse.data)
+        ? virtualSensorsResponse.data
+        : [virtualSensorsResponse.data];
+
+      const transformedData = eventTypesResponse.data.eventtypes.map(
+        (eventType) => {
+          const virtualSensorIds = virtualSensors
+            .filter((sensor) => sensor.resultEventType === eventType.id)
+            .map((sensor) => sensor.id);
+
+          return {
+            name: eventType.name,
+            sensors: Array.from(
+              new Set([...(eventType.sensors ?? []), ...virtualSensorIds]),
+            ),
+            attributes: Object.keys(eventType.description),
+          };
+        },
+      );
 
       return transformedData;
     } catch (error) {

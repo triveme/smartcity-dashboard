@@ -40,6 +40,7 @@ import {
   lineChartSimplificationOptions,
   tabComponentQueryParamWhitelist,
   extendedTimeFrameValues,
+  getDefaultExtendedTimeframe,
 } from '@/utils/enumMapper';
 import WizardUrlTextfield from '@/ui/WizardUrlTextfield';
 import HorizontalDivider from '@/ui/HorizontalDivider';
@@ -171,6 +172,33 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
   const hasSelectedInitialZoomTimeframe = initialZoomTimeframeOptions.some(
     (option) => option.value === tab?.chartInitialZoomTimeframe,
   );
+
+  useEffect(() => {
+    if (
+      !queryConfig.extendedDateSelection ||
+      tab?.extendedTimeframe?.trim() ||
+      (tab?.componentSubType !== tabComponentSubTypeEnum.lineChart &&
+        tab?.componentSubType !== tabComponentSubTypeEnum.lineChartDynamic)
+    ) {
+      return;
+    }
+
+    const defaultTimeframe = getDefaultExtendedTimeframe(queryConfig.timeframe);
+
+    if (defaultTimeframe) {
+      setTab((currentTab) =>
+        currentTab?.extendedTimeframe?.trim()
+          ? {}
+          : { extendedTimeframe: defaultTimeframe },
+      );
+    }
+  }, [
+    queryConfig.extendedDateSelection,
+    queryConfig.timeframe,
+    setTab,
+    tab?.componentSubType,
+    tab?.extendedTimeframe,
+  ]);
 
   const handleTabChange = (update: Partial<Tab>): void => {
     setTab((prevTab) => {
@@ -933,7 +961,7 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                             extendedTimeframe: enumValue as timeframeEnum,
                           });
                         }}
-                        error={errors && errors.timeValueError}
+                        error={errors?.extendedTimeframeError}
                         iconColor={iconColor}
                         borderColor={borderColor}
                         backgroundColor={backgroundColor}

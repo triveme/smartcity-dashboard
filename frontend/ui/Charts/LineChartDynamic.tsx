@@ -104,6 +104,8 @@ export default function LineChartDynamic(
   return (
     <>
       <LineChart
+        widgetId={tab?.widgetId || ''}
+        tabId={tab?.id || ''}
         chartYAxisScaleChartMinValue={
           tab?.chartYAxisScaleChartMinValue !== undefined &&
           tab?.chartYAxisScaleChartMinValue !== null

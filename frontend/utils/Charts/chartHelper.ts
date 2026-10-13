@@ -1,6 +1,7 @@
 import { ChartData } from '@/types';
 import { ECharts } from 'echarts';
 import { Dictionary } from 'lodash';
+import { shiftDateByMonths } from '@/utils/dateTimeHelper';
 
 type LabelMap = Map<number, [number, number, string]>;
 const germanWeekdayFormatter = new Intl.DateTimeFormat('de-DE', {
@@ -507,7 +508,7 @@ export const getXAxisBounds = (
   }
 
   const end = new Date(maxTime);
-  const start = new Date(maxTime);
+  let start = new Date(maxTime);
 
   switch (aggrPeriod) {
     case 'day': {
@@ -521,27 +522,27 @@ export const getXAxisBounds = (
     }
 
     case 'month': {
-      start.setMonth(start.getMonth() - 1);
+      start = shiftDateByMonths(start, -1);
       break;
     }
 
     case 'quarter': {
-      start.setMonth(start.getMonth() - 3);
+      start = shiftDateByMonths(start, -3);
       break;
     }
 
     case 'year': {
-      start.setFullYear(start.getFullYear() - 1);
+      start = shiftDateByMonths(start, -12);
       break;
     }
 
     case 'year2': {
-      start.setFullYear(start.getFullYear() - 2);
+      start = shiftDateByMonths(start, -24);
       break;
     }
 
     case 'year3': {
-      start.setFullYear(start.getFullYear() - 3);
+      start = shiftDateByMonths(start, -36);
       break;
     }
 

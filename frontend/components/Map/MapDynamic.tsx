@@ -2,6 +2,7 @@
 
 import { CSSProperties, ReactElement, useEffect, useState } from 'react';
 import Map from './Map';
+import { getMapPopupDecimalPlace } from '@/utils/combinedMapDataHelper';
 import {
   CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
   CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
@@ -207,6 +208,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
         <Map
           data={mapData || []}
           combinedMapData={combinedMapData}
+          popupDecimalPlace={combinedMapData?.popupDecimalPlace as number[]}
           mapAllowFilter={true}
           combinedQueryData={combinedQueryData}
           uiFilterData={uiFilterData}
@@ -289,6 +291,9 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           menuStyle={menuStyle}
           ciColors={ciColors}
           mapUnitsTexts={tab?.mapUnitsTexts || []}
+          mapUnitsTextsByDataSource={
+            combinedMapData?.mapUnitsTexts as string[][]
+          }
           allowShare={allowShare || false}
           dashboardId={dashboardId || ''}
           allowDataExport={allowDataExport || false}
@@ -347,6 +352,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           }
           mapShapeColor={tab?.mapShapeColor ? tab?.mapShapeColor : '#FF0000'}
           mapWidgetValues={tab?.mapWidgetValues ? tab?.mapWidgetValues : []}
+          popupDecimalPlace={getMapPopupDecimalPlace(tab?.mapWidgetValues)}
           mapAllowFilter={tab?.mapAllowFilter || false}
           mapFilterAttribute={tab?.mapFilterAttribute || ''}
           mapGeoJSON={tab?.mapGeoJSON || ''}

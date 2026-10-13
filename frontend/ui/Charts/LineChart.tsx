@@ -1,5 +1,6 @@
 'use client';
 
+import 'react-datepicker/dist/react-datepicker.css';
 import { ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { echarts, ECHARTS_LOCALE } from '@/utils/Charts/echartsClient';
@@ -15,6 +16,7 @@ import {
   getDisplayedLineChartData,
   getEffectiveLineChartDateRange,
   getInitialLineChartZoomRange,
+  getReconciledLineChartZoomRange,
   getVisibleRangeFromChart,
   filterLineChartDataByAttribute,
   LineChartDateRange,
@@ -28,7 +30,10 @@ import {
   reconcileSingleSelectionLegendState,
   SingleSelectionLegendState,
 } from '@/utils/Charts/lineChartLegendSelection';
-import { getXMinMax } from '@/utils/Charts/lineChartUtil';
+import {
+  filterLineChartDataByValidDates,
+  getXMinMax,
+} from '@/utils/Charts/lineChartUtil';
 import { buildLineChartOption } from './ChartOptions/LineChartOptions';
 import LineChartDateRangeControls from './Components/LineChartDateRangeControls';
 import LineChartFilterControls from './Components/LineChartFilterControls';
@@ -46,10 +51,11 @@ import {
   ChartStaticValueProps,
   ChartTimeProps,
 } from '../../types/chartSharedProps';
-import { calculateEndDate, calculateStartDate } from '@/utils/dateTimeHelper';
+import { calculateEndDate } from '@/utils/dateTimeHelper';
 import { useAuth } from 'react-oidc-context';
 import { getWidgetDataForRange } from '@/api/widget-service';
 import { useSnackbar } from '@/providers/SnackBarFeedbackProvider';
+import { useAppliedLineChartDateSelection } from '@/app/custom-hooks/useAppliedLineChartDateSelection';
 type LineChartSpecificProps = {
   isStepline?: boolean;
   chartAggregationMode?: aggregationEnum | null;
@@ -111,9 +117,10 @@ function normalizeLineChartProps(
   props: LineChartProps,
   entityId: string | null,
 ): NormalizedLineChartProps {
+  const validChartData = filterLineChartDataByValidDates(props.data);
   const chartData = entityId
-    ? props.data.filter((series) => series.id === entityId)
-    : props.data;
+    ? validChartData.filter((series) => series.id === entityId)
+    : validChartData;
   const {
     data: _data,
     usesQueryParameter: _usesQueryParameter,
@@ -150,18 +157,6 @@ function normalizeLineChartProps(
     extendedTimeframe: props.extendedTimeframe,
     extendedDateSelection: props.extendedDateSelection ?? false,
   };
-}
-
-function normalizeStartOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
-  return normalizedDate;
-}
-
-function normalizeEndOfDay(date: Date): Date {
-  const normalizedDate = new Date(date);
-  normalizedDate.setHours(23, 59, 59, 999);
-  return normalizedDate;
 }
 
 function getCurrentAreaConfigKey(config: CurrentAreaConfig): string {
@@ -219,13 +214,10 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const [chartWidth, setChartWidth] = useState(0);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const [minDateBeforeCurrentPeriod, setMinDateBeforeCurrentPeriod] =
-    useState<Date | null>(null);
-  const [maxDateBeforeCurrentPeriod, setMaxDateBeforeCurrentPeriod] =
-    useState<Date | null>(null);
-  const [rangeData, setRangeData] = useState<ChartData[] | null>(null);
+  const [isRangeDataLoading, setIsRangeDataLoading] = useState(false);
 
   const chartInstanceRef = useRef<ECharts | null>(null);
+  const hasInitializedZoomRef = useRef(false);
   const lastCurrentAreaConfigKeyRef = useRef('');
   const availableAttributes = useMemo(
     () => getUniqueField(config.chartData, false),
@@ -261,18 +253,32 @@ export default function LineChart(props: LineChartProps): ReactElement {
       selectedMinDate,
     ],
   );
-  const dateFilteredSourceChartData = useMemo(
+  const selectedDateRange = useMemo(
     () =>
-      effectiveDateRange
-        ? getDisplayedLineChartData({
-            sourceData: attributeFilteredChartData,
-            dateRange: effectiveDateRange,
-          })
-        : attributeFilteredChartData,
-    [attributeFilteredChartData, effectiveDateRange],
+      fullDateRange
+        ? {
+            min: selectedMinDate ?? fullDateRange.min,
+            max: selectedMaxDate ?? fullDateRange.max,
+          }
+        : null,
+    [fullDateRange, selectedMaxDate, selectedMinDate],
   );
-  const activeChartData =
-    rangeData && rangeData.length > 0 ? rangeData : dateFilteredSourceChartData;
+  const isHistoricDateRange =
+    config.extendedDateSelection &&
+    fullDateRange !== null &&
+    selectedDateRange !== null &&
+    selectedDateRange.min < fullDateRange.min;
+  const {
+    chartData: activeChartData,
+    applyDateSelection,
+    tryApplyAvailableDateSelection,
+  } = useAppliedLineChartDateSelection({
+    baseData: attributeFilteredChartData,
+    fullDateRange,
+    effectiveDateRange,
+    isEnabled: isAdvancedDateSelectionEnabled === true,
+    extendedDateSelection: config.extendedDateSelection ?? false,
+  });
 
   const zoomBaseRange = useMemo(
     () => getXMinMax(activeChartData),
@@ -281,11 +287,7 @@ export default function LineChart(props: LineChartProps): ReactElement {
   const effectiveVisibleRange = useMemo(
     () =>
       zoomBaseRange
-        ? getEffectiveLineChartDateRange(
-            zoomBaseRange,
-            visibleRange?.min ?? null,
-            visibleRange?.max ?? null,
-          )
+        ? getReconciledLineChartZoomRange(zoomBaseRange, visibleRange)
         : null,
     [visibleRange, zoomBaseRange],
   );
@@ -405,16 +407,6 @@ export default function LineChart(props: LineChartProps): ReactElement {
   };
 
   useEffect(() => {
-    if (!minDateBeforeCurrentPeriod || !maxDateBeforeCurrentPeriod) {
-      setRangeData(null);
-    }
-  }, [minDateBeforeCurrentPeriod, maxDateBeforeCurrentPeriod]);
-
-  useEffect(() => {
-    setVisibleRange(null);
-  }, [rangeData]);
-
-  useEffect(() => {
     if (!config.hasAdditionalSelection) {
       setSelectedAttribute('');
       return;
@@ -433,22 +425,12 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [availableAttributes, config.hasAdditionalSelection]);
 
   useEffect(() => {
-    if (!isAdvancedDateSelectionEnabled || !fullDateRange) {
-      setSelectedMinDate(null);
-      setSelectedMaxDate(null);
+    if (isAdvancedDateSelectionEnabled && fullDateRange) {
       return;
     }
 
-    setSelectedMinDate((currentDate) =>
-      currentDate
-        ? new Date(Math.max(currentDate.getTime(), fullDateRange.min.getTime()))
-        : null,
-    );
-    setSelectedMaxDate((currentDate) =>
-      currentDate
-        ? new Date(Math.min(currentDate.getTime(), fullDateRange.max.getTime()))
-        : null,
-    );
+    setSelectedMinDate(null);
+    setSelectedMaxDate(null);
   }, [fullDateRange, isAdvancedDateSelectionEnabled]);
 
   useEffect(() => {
@@ -457,18 +439,19 @@ export default function LineChart(props: LineChartProps): ReactElement {
       return;
     }
 
+    const initialRange = hasInitializedZoomRef.current
+      ? zoomBaseRange
+      : getInitialLineChartZoomRange(
+          zoomBaseRange,
+          config.chartInitialZoomPosition,
+          config.chartInitialZoomTimeframe,
+        );
+    hasInitializedZoomRef.current = true;
+
     setVisibleRange((currentRange) => {
       const nextRange = currentRange
-        ? getEffectiveLineChartDateRange(
-            zoomBaseRange,
-            currentRange.min,
-            currentRange.max,
-          )
-        : getInitialLineChartZoomRange(
-            zoomBaseRange,
-            config.chartInitialZoomPosition,
-            config.chartInitialZoomTimeframe,
-          );
+        ? getReconciledLineChartZoomRange(zoomBaseRange, currentRange)
+        : initialRange;
 
       if (
         currentRange &&
@@ -517,71 +500,27 @@ export default function LineChart(props: LineChartProps): ReactElement {
     );
   }, [hasBottomLegend]);
 
-  const handleMinDateChange = (date: Date | null): void => {
-    if (!date) {
-      setSelectedMinDate(null);
-      return;
-    }
+  const handleDateRangeChange = (
+    dateRange: LineChartDateRange | null,
+  ): void => {
+    if (isRangeDataLoading) return;
 
-    const nextMinDate = normalizeStartOfDay(date);
-
+    const nextDateRange = dateRange ?? fullDateRange;
     if (
-      config.extendedDateSelection &&
-      fullDateRange &&
-      nextMinDate < fullDateRange?.min
+      !config.extendedDateSelection ||
+      (nextDateRange && tryApplyAvailableDateSelection(nextDateRange))
     ) {
-      setMinDateBeforeCurrentPeriod(nextMinDate);
-      const maxDate = calculateEndDate(
-        config.extendedTimeframe ?? '',
-        nextMinDate,
-        fullDateRange.max,
-      );
-      setMaxDateBeforeCurrentPeriod(maxDate);
-      return;
+      setVisibleRange(null);
     }
 
-    setMinDateBeforeCurrentPeriod(null);
-    setMaxDateBeforeCurrentPeriod(null);
-
-    setSelectedMinDate(nextMinDate);
-    setSelectedMaxDate((currentDate) =>
-      currentDate && currentDate.getTime() < nextMinDate.getTime()
-        ? normalizeEndOfDay(date)
-        : currentDate,
-    );
-  };
-
-  const handleMaxDateChange = (date: Date | null): void => {
-    if (!date) {
+    if (!dateRange) {
+      setSelectedMinDate(null);
       setSelectedMaxDate(null);
       return;
     }
 
-    const nextMaxDate = normalizeEndOfDay(date);
-
-    if (
-      config.extendedDateSelection &&
-      fullDateRange &&
-      nextMaxDate < fullDateRange?.min
-    ) {
-      setMaxDateBeforeCurrentPeriod(nextMaxDate);
-      const minDate = calculateStartDate(
-        config.extendedTimeframe ?? '',
-        nextMaxDate,
-      );
-      setMinDateBeforeCurrentPeriod(minDate);
-      return;
-    }
-
-    setMaxDateBeforeCurrentPeriod(null);
-    setMinDateBeforeCurrentPeriod(null);
-
-    setSelectedMaxDate(nextMaxDate);
-    setSelectedMinDate((currentDate) =>
-      currentDate && currentDate.getTime() > nextMaxDate.getTime()
-        ? normalizeStartOfDay(date)
-        : currentDate,
-    );
+    setSelectedMinDate(dateRange.min);
+    setSelectedMaxDate(dateRange.max);
   };
 
   const handleSelectAllLegends = (): void => {
@@ -749,12 +688,41 @@ export default function LineChart(props: LineChartProps): ReactElement {
   }, [hasBottomLegend]);
 
   const handleLoadDataForSelectedRange = async () => {
-    if (!minDateBeforeCurrentPeriod || !maxDateBeforeCurrentPeriod) {
-      openSnackbar('Es muss ein gültiges Datum ausgewählt werden!', 'warning');
+    if (isRangeDataLoading) return;
+
+    if (!selectedDateRange || !fullDateRange) return;
+
+    if (!isHistoricDateRange) {
+      applyDateSelection(selectedDateRange, null);
+      setVisibleRange(null);
       return;
     }
 
-    if (minDateBeforeCurrentPeriod > maxDateBeforeCurrentPeriod) {
+    if (selectedDateRange.min > selectedDateRange.max) {
+      openSnackbar(
+        'Es muss ein gültiger Zeitraum ausgewählt werden!',
+        'warning',
+      );
+      return;
+    }
+
+    if (!config.extendedTimeframe?.trim()) {
+      openSnackbar(
+        'Für dieses Diagramm ist kein erweiterter Zeitbereich konfiguriert. Bitte die Diagrammkonfiguration prüfen!',
+        'warning',
+      );
+      return;
+    }
+
+    const maxAllowedDate = fullDateRange
+      ? calculateEndDate(
+          config.extendedTimeframe ?? '',
+          selectedDateRange.min,
+          fullDateRange.max,
+        )
+      : null;
+
+    if (!maxAllowedDate || selectedDateRange.max > maxAllowedDate) {
       openSnackbar(
         'Es muss ein gültiger Zeitraum ausgewählt werden!',
         'warning',
@@ -768,10 +736,13 @@ export default function LineChart(props: LineChartProps): ReactElement {
     }
 
     const range = {
-      from: minDateBeforeCurrentPeriod.toISOString(),
-      to: maxDateBeforeCurrentPeriod.toISOString(),
+      from: selectedDateRange.min.toISOString(),
+      to: selectedDateRange.max.toISOString(),
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      tabId: config.tabId,
     };
 
+    setIsRangeDataLoading(true);
     try {
       const rangeChartData = await getWidgetDataForRange(
         accessToken,
@@ -779,18 +750,25 @@ export default function LineChart(props: LineChartProps): ReactElement {
         range,
       );
 
-      if (rangeChartData && rangeChartData.length === 0) {
+      const validRangeChartData =
+        filterLineChartDataByValidDates(rangeChartData);
+
+      if (!getXMinMax(validRangeChartData)) {
         openSnackbar(
           'Für den ausgewählten Zeitraum sind keine Daten verfügbar.',
           'warning',
         );
-        setRangeData(null);
+        applyDateSelection(selectedDateRange, []);
+        setVisibleRange(null);
         return;
       }
-      setRangeData(rangeChartData);
+      applyDateSelection(selectedDateRange, validRangeChartData);
+      setVisibleRange(null);
     } catch (error) {
       console.error(error);
       openSnackbar('Daten konnten nicht geladen werden!', 'error');
+    } finally {
+      setIsRangeDataLoading(false);
     }
   };
 
@@ -862,10 +840,22 @@ export default function LineChart(props: LineChartProps): ReactElement {
           filterTextColor={config.filterTextColor}
           onSelect={setSelectedAttribute}
           selectedAttribute={selectedAttribute}
+          disabled={isRangeDataLoading}
         />
       )}
       <div className="min-w-0 flex h-full flex-1 flex-col">
-        <div className="w-full min-h-0 min-w-0 flex-1" ref={chartRef} />
+        <div className="relative min-h-0 min-w-0 flex-1">
+          <div className="h-full w-full" ref={chartRef} />
+          {!zoomBaseRange && (
+            <div
+              role="status"
+              className="absolute inset-0 flex items-center justify-center px-4 text-center"
+              style={{ color: config.axisLabelFontColor }}
+            >
+              Für den ausgewählten Zeitraum sind keine gültigen Daten verfügbar.
+            </div>
+          )}
+        </div>
         {(showSingleSelectionLegendControls ||
           (isAdvancedDateSelectionEnabled &&
             fullDateRange &&
@@ -892,16 +882,15 @@ export default function LineChart(props: LineChartProps): ReactElement {
                       filterColor={config.filterColor}
                       filterTextColor={config.filterTextColor}
                       fullDateRange={fullDateRange}
-                      maxDate={effectiveDateRange.max}
-                      minDate={effectiveDateRange.min}
-                      onMaxDateChange={handleMaxDateChange}
-                      onMinDateChange={handleMinDateChange}
+                      maxDate={selectedDateRange?.max ?? effectiveDateRange.max}
+                      minDate={selectedDateRange?.min ?? effectiveDateRange.min}
+                      onDateRangeChange={handleDateRangeChange}
                       extendedDateSelection={
                         config.extendedDateSelection ?? false
                       }
-                      minDateBeforeCurrentPeriod={minDateBeforeCurrentPeriod}
-                      maxDateBeforeCurrentPeriod={maxDateBeforeCurrentPeriod}
+                      extendedTimeframe={config.extendedTimeframe ?? ''}
                       onLoadData={handleLoadDataForSelectedRange}
+                      isLoading={isRangeDataLoading}
                     />
                   </div>
                 )}

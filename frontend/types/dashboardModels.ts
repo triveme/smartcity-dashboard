@@ -871,4 +871,6 @@ export type CalendarData = {
 export type WidgetDataRange = {
   from: string;
   to: string;
+  timeZone: string;
+  tabId?: string;
 };

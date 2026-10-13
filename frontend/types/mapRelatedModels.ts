@@ -72,6 +72,7 @@ export interface BaseMapProps {
 }
 // Single map specific props
 export interface SingleMapProps extends BaseMapProps {
+  popupDecimalPlace?: number;
   mapMarkerColor: string;
   mapMarkerIcon: string;
   mapMarkerIconColor: string;
@@ -95,6 +96,7 @@ export interface SingleMapProps extends BaseMapProps {
 
 // Combined map specific props
 export interface CombinedMapProps extends BaseMapProps {
+  popupDecimalPlace?: number[];
   combinedMapData?: Record<string, boolean | any[] | null>;
   mapActiveMarkerColor: string[];
   mapMarkerColor?: string[];
@@ -106,6 +108,7 @@ export interface CombinedMapProps extends BaseMapProps {
   mapCombinedWmsUrl?: string;
   mapCombinedWmsLayer?: string;
   mapNames?: string[];
+  mapUnitsTextsByDataSource?: string[][];
   // Value-based coloring support for combined maps
   mapAttributeForValueBased?: string[];
   mapFormSizeFactor?: number[];

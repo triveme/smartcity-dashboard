@@ -10,6 +10,7 @@ type LineChartFilterControlsProps = {
   onSelect: (attribute: string) => void;
   filterColor?: string;
   filterTextColor?: string;
+  disabled?: boolean;
 };
 
 export default function LineChartFilterControls(
@@ -21,6 +22,7 @@ export default function LineChartFilterControls(
     onSelect,
     filterColor = '#F1B434',
     filterTextColor = '#FFFFFF',
+    disabled = false,
   } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -30,6 +32,7 @@ export default function LineChartFilterControls(
         <button
           className="flex w-full items-center justify-between rounded-lg border-2 bg-transparent p-2"
           onClick={() => setIsDropdownOpen((currentState) => !currentState)}
+          disabled={disabled}
           style={{
             borderColor: filterColor,
             color: filterColor,
@@ -52,6 +55,7 @@ export default function LineChartFilterControls(
               <button
                 className="w-full p-2 text-left hover:opacity-75"
                 key={`dropdown-${attribute}`}
+                disabled={disabled}
                 onClick={() => {
                   onSelect(attribute);
                   setIsDropdownOpen(false);
@@ -73,6 +77,7 @@ export default function LineChartFilterControls(
         filterColor={filterColor}
         filterTextColor={filterTextColor}
         onClick={onSelect}
+        disabled={disabled}
       />
     </>
   );

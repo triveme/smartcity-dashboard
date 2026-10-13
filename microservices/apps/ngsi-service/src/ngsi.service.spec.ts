@@ -1,6 +1,71 @@
 import { NgsiService } from './ngsi.service';
 
 describe('NgsiService scheduler queueing', () => {
+  const createTenantScopedService = (queryTenant: string) => {
+    const batch = {
+      queryIds: ['query-1'],
+      data_source: { id: 'source-1' },
+      auth_data: {
+        id: 'auth-1',
+        type: 'ngsi-ld',
+        tenantAbbreviation: queryTenant,
+      },
+      query_config: {
+        dataSourceId: 'source-1',
+        entityIds: ['sensor-1'],
+        attributes: ['temperature'],
+      },
+    } as any;
+    const dataService = {
+      executeQueuedFetch: jest.fn().mockResolvedValue({}),
+    };
+    const queryService = {
+      getQueryHashMap: jest
+        .fn()
+        .mockResolvedValue(new Map([['query-1', batch]])),
+    };
+
+    return {
+      dataService,
+      service: new NgsiService(
+        {} as any,
+        dataService as any,
+        {} as any,
+        queryService as any,
+      ),
+    };
+  };
+
+  it('allows a query tenant included in a multi-tenant claim', async () => {
+    const { service, dataService } = createTenantScopedService('buerstadt');
+
+    await expect(
+      service.getQueuedQueryData(
+        'query-1',
+        {},
+        [],
+        'nfk, buerstadt, luedenscheid',
+      ),
+    ).resolves.toEqual({});
+
+    expect(dataService.executeQueuedFetch).toHaveBeenCalled();
+  });
+
+  it('rejects a query tenant absent from a multi-tenant claim', async () => {
+    const { service, dataService } = createTenantScopedService('menden');
+
+    await expect(
+      service.getQueuedQueryData(
+        'query-1',
+        {},
+        [],
+        'nfk, buerstadt, luedenscheid',
+      ),
+    ).rejects.toMatchObject({ status: 403 });
+
+    expect(dataService.executeQueuedFetch).not.toHaveBeenCalled();
+  });
+
   it('submits every due FIWARE batch as background queue work', async () => {
     const batch = {
       queryIds: ['query-1'],

@@ -1,0 +1,1 @@
+ALTER TABLE "query_config" ALTER COLUMN "interval" SET DATA TYPE integer;

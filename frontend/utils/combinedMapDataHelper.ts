@@ -1,9 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { QueryDataWithAttributes, WidgetWithContent } from '@/types';
+import {
+  MapModalWidget,
+  QueryDataWithAttributes,
+  tabComponentTypeEnum,
+  WidgetWithContent,
+} from '@/types';
 
 const attributesToBeExcluded = [
   'query', // combined using a different function due to the structure difference
 ];
+
+export function getMapPopupDecimalPlace(
+  mapWidgetValues?: MapModalWidget[] | null,
+): number {
+  return (
+    mapWidgetValues?.find(
+      (widget) =>
+        widget.componentType === tabComponentTypeEnum.value &&
+        widget.decimalPlaces != null,
+    )?.decimalPlaces ?? 2
+  );
+}
 
 export function combineWidgetAttributes(
   combinedWidgets: WidgetWithContent[],
@@ -29,6 +46,14 @@ export function combineWidgetAttributes(
     if (widget.name) {
       (combinedAttributes['mapNames'] as any[])[widgetIndex] = widget.name;
     }
+
+    if (!combinedAttributes.popupDecimalPlace) {
+      combinedAttributes.popupDecimalPlace = [];
+    }
+    (combinedAttributes.popupDecimalPlace as number[])[widgetIndex] =
+      getMapPopupDecimalPlace(
+        widget.tabs.flatMap((tab) => tab.mapWidgetValues ?? []),
+      );
 
     widget.tabs.forEach((tab: Record<string, any>) => {
       Object.keys(tab).forEach((key) => {
@@ -121,7 +146,8 @@ export function combineWidgetAttributes(
         key === 'chartStaticValues' ||
         key === 'chartStaticValuesLogos' ||
         key === 'chartStaticValuesTexts' ||
-        key === 'mapDateColorRules'
+        key === 'mapDateColorRules' ||
+        key === 'mapUnitsTexts'
       ) {
         // Group by dataSource and extract the values
         const groupedByDataSource: { [dataSource: number]: any[] } = {};
@@ -132,7 +158,9 @@ export function combineWidgetAttributes(
             if (!groupedByDataSource[dataSource]) {
               groupedByDataSource[dataSource] = [];
             }
-            // Extract the actual value (handle both wrapped and unwrapped values)
+            // Extract the actual value (handle both wrapped and unwrapped values).
+            // mapUnitsTexts must remain grouped so each combined-map source
+            // keeps its own popup-unit sequence.
             const actualValue = item.value !== undefined ? item.value : item;
             groupedByDataSource[dataSource].push(actualValue);
           }
