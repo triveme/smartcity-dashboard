@@ -293,6 +293,7 @@ export type Tab = {
   mapAllowFilter?: boolean;
   mapAllowLegend?: boolean;
   mapAllowPopups?: boolean;
+  mapPopupDecimalPlaces?: number;
   mapAllowScroll?: boolean;
   mapAllowZoom?: boolean;
   mapClusterAtMaxZoom?: boolean;

@@ -139,6 +139,7 @@ export class TabService {
     values: Partial<Tab>,
     transaction?: DbType,
   ): Promise<Tab> {
+    this.validateMapPopupDecimalPlaces(values);
     const result = await this.tabRepo.update(id, values, transaction);
     this.handleSpecialTabs(result);
     return result;
@@ -149,6 +150,7 @@ export class TabService {
   }
 
   private validateTabData(values: NewTab): void {
+    this.validateMapPopupDecimalPlaces(values);
     if (values.componentType === 'Karte') {
       if (
         !this.isValidDecimal(values.mapLatitude + '') ||
@@ -159,6 +161,21 @@ export class TabService {
           HttpStatus.BAD_REQUEST,
         );
       }
+    }
+  }
+
+  private validateMapPopupDecimalPlaces(values: Partial<NewTab>): void {
+    const decimalPlaces = values.mapPopupDecimalPlaces;
+    if (
+      decimalPlaces != null &&
+      (!Number.isInteger(decimalPlaces) ||
+        decimalPlaces < 0 ||
+        decimalPlaces > 10)
+    ) {
+      throw new HttpException(
+        'Map popup decimal places must be an integer between 0 and 10',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

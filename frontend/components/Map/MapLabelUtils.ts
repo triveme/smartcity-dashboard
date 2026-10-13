@@ -225,7 +225,10 @@ export function getValueString(
   if (tempValue.value === null || tempValue.value === undefined) {
     return 'Keine Daten';
   }
-  if (tempValue.type === 'Number') {
+  // NGSI numeric values can be wrapped in a `Property` object, e.g.
+  // `{ type: 'Property', value: 4.0136, observedAt: '...' }`.
+  // Format the nested numeric value regardless of the wrapper type.
+  if (tempValue.type === 'Number' || typeof tempValue.value === 'number') {
     return convertToLocaleNumber(
       roundToDecimal(Number(tempValue.value), decimalPlaces).toString(),
       decimalSeparator,

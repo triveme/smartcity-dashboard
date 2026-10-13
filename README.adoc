@@ -6,6 +6,10 @@ To run the application locally, make sure all the prerequisites are installed (R
 
 Afterwards you can continue the setup with kubernetes link:./k8s/README.adoc[here].
 
+== Environment Variables
+
+See link:./README-Env-Variables.md[Deployment Environment Variables] for a self-contained reference covering required settings, optional overrides, defaults, target components and deployment checks. Access to internal deployment YAML files is not required; customers without deployment access can use it to coordinate configuration with their administrator.
+
 == Single Sign On
 
 We use https://www.keycloak.org/[Keycloak] as our Single Sign On (SSO) provider.

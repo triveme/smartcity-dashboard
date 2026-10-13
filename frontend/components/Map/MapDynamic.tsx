@@ -2,7 +2,6 @@
 
 import { CSSProperties, ReactElement, useEffect, useState } from 'react';
 import Map from './Map';
-import { getMapPopupDecimalPlace } from '@/utils/combinedMapDataHelper';
 import {
   CUSTOM_MAP_MAX_ZOOM_OFFSET_DEFAULT,
   CUSTOM_MAP_MIN_ZOOM_OFFSET_DEFAULT,
@@ -352,7 +351,7 @@ export default function MapDynamic(props: MapDynamicProps): ReactElement {
           }
           mapShapeColor={tab?.mapShapeColor ? tab?.mapShapeColor : '#FF0000'}
           mapWidgetValues={tab?.mapWidgetValues ? tab?.mapWidgetValues : []}
-          popupDecimalPlace={getMapPopupDecimalPlace(tab?.mapWidgetValues)}
+          popupDecimalPlace={tab?.mapPopupDecimalPlaces ?? 2}
           mapAllowFilter={tab?.mapAllowFilter || false}
           mapFilterAttribute={tab?.mapFilterAttribute || ''}
           mapGeoJSON={tab?.mapGeoJSON || ''}

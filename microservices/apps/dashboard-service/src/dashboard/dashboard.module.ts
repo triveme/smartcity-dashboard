@@ -45,8 +45,10 @@ import { PopulateChartService } from 'apps/data-translation-service/src/populate
 import { DataTranslationRepo } from 'apps/data-translation-service/src/data-translation.repo';
 import { PopulateMapService } from 'apps/data-translation-service/src/populate/populate-map.service';
 import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
+import { CsvDataModule } from '../csv-data/csv-data.module';
 
 @Module({
+  imports: [CsvDataModule],
   providers: [
     DashboardService,
     DashboardDataService,

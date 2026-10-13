@@ -111,6 +111,18 @@ export class WidgetService {
     }
   }
 
+  async getByIdForExport(
+    id: string,
+    rolesFromRequest: string[],
+  ): Promise<Widget> {
+    const widget = await this.widgetRepo.getById(id);
+    if (!widget) {
+      throw new HttpException('Widget Not Found', HttpStatus.NOT_FOUND);
+    }
+    checkAuthorizationToRead(widget, rolesFromRequest);
+    return widget;
+  }
+
   async getById(id: string, rolesFromRequest: string[]): Promise<Widget> {
     const widget = await this.widgetRepo.getById(id);
 

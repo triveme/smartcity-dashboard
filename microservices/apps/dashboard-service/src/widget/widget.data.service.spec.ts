@@ -5,6 +5,7 @@ jest.mock(
 );
 
 import { WidgetDataService } from './widget.data.service';
+import { BadGatewayException } from '@nestjs/common';
 
 describe('WidgetDataService platform requests', () => {
   beforeEach(() => {
@@ -34,6 +35,7 @@ describe('WidgetDataService platform requests', () => {
     const platformInternalClient = {
       getQueryData: jest.fn().mockResolvedValue([]),
     };
+    const csvDataService = { getData: jest.fn().mockResolvedValue([]) };
     const platformQueryResolver = {
       getByWidgetId: jest.fn().mockResolvedValue({
         query: { id: 'query-1' },
@@ -42,6 +44,7 @@ describe('WidgetDataService platform requests', () => {
           extendedDateSelection: options?.extendedDateSelection ?? true,
         },
         auth_data: { type: 'ngsi-ld' },
+        data_source: { id: 'source-1' },
         tab: { extendedTimeframe: options?.extendedTimeframe ?? 'week' },
       }),
     };
@@ -51,6 +54,7 @@ describe('WidgetDataService platform requests', () => {
       populateChartService as never,
       platformInternalClient as never,
       platformQueryResolver as never,
+      csvDataService as never,
     );
 
     return {
@@ -58,6 +62,9 @@ describe('WidgetDataService platform requests', () => {
       platformInternalClient,
       platformQueryResolver,
       populateChartService,
+      csvDataService,
+      db,
+      tabService,
     };
   };
 
@@ -335,27 +342,219 @@ describe('WidgetDataService platform requests', () => {
     );
   });
 
-  it('gets widget-download data through the selected platform client', async () => {
-    const { service, platformInternalClient } = createService();
+  it.each([true, false])(
+    'rejects CSV source failures (HTTP: %s)',
+    async (isHttpError) => {
+      const { service, csvDataService } = createService();
+      csvDataService.getData.mockRejectedValue(
+        isHttpError
+          ? new BadGatewayException('Source data could not be fetched')
+          : new Error('Source credentials could not be loaded'),
+      );
+      await expect(
+        service.downloadWidgetData('widget-1', {
+          changeTimeFramePeriod: false,
+          downloadCurrentArea: false,
+        } as never),
+      ).rejects.toMatchObject({ status: isHttpError ? 502 : 500 });
+    },
+  );
 
-    await service.downloadWidgetData(
-      'widget-1',
-      {
-        changeTimeFramePeriod: false,
-        downloadCurrentArea: false,
-      } as never,
-      'Bearer caller-token',
-    );
+  it('gets widget-download data directly without a user token or platform request', async () => {
+    const { service, platformInternalClient, csvDataService } = createService();
 
-    expect(platformInternalClient.getQueryData).toHaveBeenCalledWith(
-      'ngsi-ld',
-      'query-1',
-      'Bearer caller-token',
-      {
+    const csv = await service.downloadWidgetData('widget-1', {
+      changeTimeFramePeriod: false,
+      downloadCurrentArea: false,
+    } as never);
+    expect(csv).toBe('"entityId","attrName","value","index"');
+
+    expect(csvDataService.getData).toHaveBeenCalledWith({
+      queryIds: ['query-1'],
+      auth_data: { type: 'ngsi-ld' },
+      data_source: { id: 'source-1' },
+      query_config: {
+        attributes: ['temperature'],
+        extendedDateSelection: true,
         timeframe: 'month',
         aggrMode: 'none',
-        aggrPeriod: undefined,
       },
+    });
+    expect(platformInternalClient.getQueryData).not.toHaveBeenCalled();
+  });
+
+  it('uses the matching widget configuration regardless of array order', async () => {
+    const { service, csvDataService } = createService();
+
+    await service.downloadWidgetData('widget-1', [
+      { id: 'widget-2', changeTimeFramePeriod: true, timeFramePeriod: 'year' },
+      { id: 'widget-1', changeTimeFramePeriod: true, timeFramePeriod: 'week' },
+    ] as never);
+
+    expect(csvDataService.getData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query_config: expect.objectContaining({ timeframe: 'week' }),
+      }),
     );
+  });
+
+  it.each(['ngsi', 'ngsi-ld', 'ngsi-v2'])(
+    'fetches the visible historical range without filtering returned %s CSV data',
+    async (type) => {
+      const { service, csvDataService, platformQueryResolver } =
+        createService();
+      const query = await platformQueryResolver.getByWidgetId();
+      query.auth_data.type = type;
+      Object.assign(query.query_config, { timeframe: 'week', aggrMode: 'avg' });
+      query.query_config.attributes = ['temperature', 'humidity'];
+      const minRange = '2026-09-01T00:00:00.000Z';
+      const maxRange = '2026-09-02T23:59:59.999Z';
+      csvDataService.getData.mockResolvedValue({
+        entityId: 'sensor-1',
+        index: [minRange, maxRange, '2026-09-03T00:00:00.000Z'],
+        attrs: [
+          { attrName: 'temperature', values: [10, 20, 30] },
+          { attrName: 'humidity', values: [40, 50, 60] },
+        ],
+      });
+
+      const csv = await service.downloadWidgetData('widget-1', {
+        id: 'widget-1',
+        downloadCurrentArea: true,
+        changeTimeFramePeriod: false,
+        minRange,
+        maxRange,
+        selectedLegendNames: ['temperature'],
+      } as never);
+
+      expect(csvDataService.getData).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query_config: expect.objectContaining({
+            timeframe: 'user_defined',
+            dataStartDate: new Date(minRange),
+            dataUntilDate: new Date(maxRange),
+            aggrMode: 'avg',
+          }),
+        }),
+      );
+      expect(csv).toContain(minRange);
+      expect(csv).toContain(maxRange);
+      expect(csv).toContain('2026-09-03');
+      expect(csv).toContain('"temperature"');
+      expect(csv).toContain('"humidity"');
+      expect(csv.split('\n')).toHaveLength(7);
+      expect(query.query_config).toMatchObject({
+        timeframe: 'week',
+        aggrMode: 'avg',
+      });
+      expect(query.query_config).not.toHaveProperty('dataStartDate');
+    },
+  );
+
+  it.each([
+    { minRange: 'invalid', maxRange: '2026-09-02' },
+    { minRange: '2026-09-03', maxRange: '2026-09-02' },
+    { minRange: undefined, maxRange: undefined },
+  ])('rejects invalid visible CSV ranges: %j', async (range) => {
+    const { service, csvDataService } = createService();
+
+    await expect(
+      service.downloadWidgetData('widget-1', {
+        id: 'widget-1',
+        downloadCurrentArea: true,
+        ...range,
+      } as never),
+    ).rejects.toMatchObject({ status: 400 });
+    expect(csvDataService.getData).not.toHaveBeenCalled();
+  });
+
+  it('keeps the stored timeframe for standard-configuration exports', async () => {
+    const { service, csvDataService, platformQueryResolver } = createService();
+    const query = await platformQueryResolver.getByWidgetId();
+    Object.assign(query.query_config, {
+      timeframe: 'quarter',
+      aggrMode: 'avg',
+    });
+
+    await service.downloadWidgetData('widget-1', {
+      id: 'widget-1',
+      downloadCurrentArea: false,
+      changeTimeFramePeriod: false,
+      timeFramePeriod: 'year',
+      minRange: '2026-09-01',
+      maxRange: '2026-09-02',
+    } as never);
+
+    expect(csvDataService.getData).toHaveBeenCalledWith(
+      expect.objectContaining({ query_config: query.query_config }),
+    );
+  });
+
+  it('uses stored query settings when no matching configuration exists', async () => {
+    const { service, csvDataService } = createService();
+
+    await service.downloadWidgetData('widget-1', [
+      { id: 'widget-2', changeTimeFramePeriod: true, timeFramePeriod: 'year' },
+    ] as never);
+
+    expect(csvDataService.getData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query_config: expect.objectContaining({ timeframe: 'month' }),
+      }),
+    );
+  });
+
+  it('resolves the configuration separately for each combined-widget child', async () => {
+    const { service, csvDataService, db, tabService } = createService();
+    const where = jest
+      .fn()
+      .mockResolvedValueOnce([{ id: 'widget-1' }])
+      .mockResolvedValueOnce([{ id: 'child-1' }])
+      .mockResolvedValueOnce([{ id: 'child-2' }]);
+    db.select.mockReturnValue({ from: jest.fn(() => ({ where })) });
+    tabService.getTabsByWidgetId.mockResolvedValue([
+      {
+        componentType: 'Kombinierte Komponente',
+        childWidgets: ['child-1', 'child-2'],
+      },
+    ]);
+
+    await service.downloadWidgetData('widget-1', [
+      { id: 'child-2', changeTimeFramePeriod: true, timeFramePeriod: 'year' },
+      { id: 'child-1', changeTimeFramePeriod: true, timeFramePeriod: 'week' },
+    ] as never);
+
+    expect(csvDataService.getData).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        query_config: expect.objectContaining({ timeframe: 'week' }),
+      }),
+    );
+    expect(csvDataService.getData).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        query_config: expect.objectContaining({ timeframe: 'year' }),
+      }),
+    );
+  });
+
+  it('rejects missing widget queries instead of returning error CSV', async () => {
+    const { service, platformQueryResolver } = createService();
+    platformQueryResolver.getByWidgetId.mockResolvedValue(null);
+
+    await expect(
+      service.downloadWidgetData('widget-1', []),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('rejects missing widgets instead of returning error CSV', async () => {
+    const { service, db } = createService();
+    db.select.mockReturnValue({
+      from: jest.fn(() => ({ where: jest.fn().mockResolvedValue([]) })),
+    });
+
+    await expect(
+      service.downloadWidgetData('widget-1', []),
+    ).rejects.toMatchObject({ status: 404 });
   });
 });

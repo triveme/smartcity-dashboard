@@ -47,6 +47,15 @@ export function validateTab(tab: Tab, queryConfig?: QueryConfig): WizardErrors {
   ) {
     errorsOccured.urlError = 'Ungültige URL für iFrame';
   } else if (tab?.componentType === tabComponentTypeEnum.map) {
+    if (
+      tab.mapPopupDecimalPlaces != null &&
+      (!Number.isInteger(tab.mapPopupDecimalPlaces) ||
+        tab.mapPopupDecimalPlaces < 0 ||
+        tab.mapPopupDecimalPlaces > 10)
+    ) {
+      errorsOccured.mapPopupDecimalPlacesError =
+        'Die Dezimalstellen in Karten-Popups müssen zwischen 0 und 10 liegen.';
+    }
     if (!validateLat(tab?.mapLatitude) || !validateLong(tab?.mapLongitude)) {
       errorsOccured.latLongError =
         'Ungültige Latitude oder Longitude für die Karte';

@@ -136,12 +136,23 @@ export class DashboardService {
     rolesFromRequest: string[],
     tenantFromRequest: string,
   ): Promise<DashboardWithContent> {
-    const tenantFromDashboard =
-      await this.tenantService.getTenantByAbbreviation(tenantFromRequest);
+    const tenantAbbreviations = tenantFromRequest
+      .split(',')
+      .map((abbreviation) => abbreviation.trim())
+      .filter(Boolean);
+    const tenants = await Promise.all(
+      tenantAbbreviations.map((abbreviation) =>
+        this.tenantService.getTenantByAbbreviation(abbreviation),
+      ),
+    );
+
+    if (tenants.length === 0) {
+      throw new HttpException('Dashboard Not Found', HttpStatus.NOT_FOUND);
+    }
 
     const flatDashboardData = await this.dashboardRepo.getDashboardWithContent(
       id,
-      tenantFromDashboard.id,
+      tenants.map((tenant) => tenant.id),
       rolesFromRequest,
     );
 

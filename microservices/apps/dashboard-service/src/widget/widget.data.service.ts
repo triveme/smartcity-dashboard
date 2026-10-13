@@ -1,5 +1,13 @@
 import { Parser } from '@json2csv/plainjs';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { widgets } from '@app/postgres-db/schemas';
 import { eq } from 'drizzle-orm';
 import { DbType, POSTGRES_DB } from '@app/postgres-db';
@@ -7,10 +15,10 @@ import { TabService } from '../tab/tab.service';
 import { CurrentAreaConfig } from './widget.model';
 import type { ChartData } from 'apps/data-translation-service/src/data-translation.service';
 import { PopulateChartService } from 'apps/data-translation-service/src/populate/populate-chart.service';
-import { sortFlattenedTimeSeriesData } from '../util/chart-data-sort.util';
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
+import { CsvDataService } from '../csv-data/csv-data.service';
 
 export type HistoricRange = {
   from: string;
@@ -111,6 +119,7 @@ export class WidgetDataService {
     private readonly populateChartService: PopulateChartService,
     private readonly platformInternalClient: PlatformInternalClientService,
     private readonly platformQueryResolver: PlatformQueryResolverService,
+    private readonly csvDataService: CsvDataService,
   ) {}
 
   async getRangeData(
@@ -236,9 +245,7 @@ export class WidgetDataService {
   async downloadWidgetData(
     widgetId: string,
     currentAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
-    authorization?: string | string[],
   ): Promise<string> {
-    const errorMessages: string[] = [];
     const allCsvData: string[] = [];
 
     try {
@@ -250,8 +257,7 @@ export class WidgetDataService {
       if (!widget || widget.length === 0) {
         const warning = `No widget found with id: ${widgetId}`;
         console.warn(warning);
-        errorMessages.push(warning);
-        return `"entityId","attrName","value","index"\n"No widget found with id: ${widgetId}"`;
+        throw new NotFoundException('Widget not found');
       }
 
       // Expand combined widgets by replacing them with their child widgets
@@ -297,28 +303,28 @@ export class WidgetDataService {
         expandedWidgets.push(currentWidget);
       }
 
-      const normalizedCurrAreaConfing = Array.isArray(currentAreaConfig)
-        ? currentAreaConfig[0]
-        : currentAreaConfig;
+      const currentAreaConfigs = Array.isArray(currentAreaConfig)
+        ? currentAreaConfig
+        : [currentAreaConfig];
 
       // Process each widget (either the original widget or child widgets from combined widget)
       for (const widgetToProcess of expandedWidgets) {
         try {
+          const normalizedCurrAreaConfing = currentAreaConfigs.find(
+            (config) => config?.id === widgetToProcess.id,
+          );
           const queryWithAllInfos =
             await this.platformQueryResolver.getByWidgetId(widgetToProcess.id);
 
           if (!queryWithAllInfos) {
             const warning = `No query information found for widget with id: ${widgetToProcess.id}`;
             console.warn(warning);
-            errorMessages.push(warning);
-            allCsvData.push(
-              `"entityId","attrName","value","index"\n"No data found for widget with id: ${widgetToProcess.id}"`,
-            );
-            continue;
+            throw new NotFoundException('Widget query not found');
           }
           const queryBatch = {
             queryIds: [queryWithAllInfos.query.id],
             query_config: { ...queryWithAllInfos.query_config },
+            data_source: queryWithAllInfos.data_source,
             auth_data: queryWithAllInfos.auth_data,
           };
 
@@ -331,7 +337,22 @@ export class WidgetDataService {
               queryBatch.query_config.aggrMode = 'none';
             }
 
-            if (normalizedCurrAreaConfing.changeTimeFramePeriod === true) {
+            if (normalizedCurrAreaConfing?.downloadCurrentArea === true) {
+              const from = new Date(normalizedCurrAreaConfing.minRange);
+              const to = new Date(normalizedCurrAreaConfing.maxRange);
+              if (
+                !Number.isFinite(from.getTime()) ||
+                !Number.isFinite(to.getTime()) ||
+                from > to
+              ) {
+                throw new BadRequestException('Visible range is invalid');
+              }
+              queryBatch.query_config.timeframe = 'user_defined';
+              queryBatch.query_config.dataStartDate = from;
+              queryBatch.query_config.dataUntilDate = to;
+            } else if (
+              normalizedCurrAreaConfing?.changeTimeFramePeriod === true
+            ) {
               queryBatch.query_config.timeframe =
                 normalizedCurrAreaConfing.timeFramePeriod;
             } else {
@@ -341,13 +362,7 @@ export class WidgetDataService {
             }
           }
 
-          const rawData = await this.platformInternalClient.getQueryData<
-            object | object[]
-          >(queryBatch.auth_data.type, queryBatch.queryIds[0], authorization, {
-            timeframe: queryBatch.query_config.timeframe,
-            aggrMode: queryBatch.query_config.aggrMode,
-            aggrPeriod: queryBatch.query_config.aggrPeriod,
-          });
+          const rawData = await this.csvDataService.getData(queryBatch);
 
           // Ensure rawData is an array
           const rawDataArray = Array.isArray(rawData) ? rawData : [rawData];
@@ -402,47 +417,28 @@ export class WidgetDataService {
           if (flattenedData.length === 0) {
             const warning = `No data found for widget with id: ${widgetToProcess.id}`;
             console.warn(warning);
-            errorMessages.push(warning);
-            allCsvData.push(
-              `"entityId","attrName","value","index"\n"No data found for widget with id: ${widgetToProcess.id}"`,
-            );
+            allCsvData.push('"entityId","attrName","value","index"');
           } else {
             const opts = {
               fields: ['entityId', 'attrName', 'value', 'index'],
             };
             const parser = new Parser(opts);
 
-            const filteredFlattenedData =
-              normalizedCurrAreaConfing.downloadCurrentArea === true
-                ? sortFlattenedTimeSeriesData(
-                    flattenedData,
-                    queryBatch.auth_data.type,
-                    normalizedCurrAreaConfing.selectedLegendNames,
-                    normalizedCurrAreaConfing.minRange,
-                    normalizedCurrAreaConfing.maxRange,
-                  )
-                : flattenedData;
-
-            const csv = parser.parse(filteredFlattenedData);
+            const csv = parser.parse(flattenedData);
             allCsvData.push(csv);
           }
         } catch (widgetError) {
+          if (widgetError instanceof HttpException) throw widgetError;
           const warning = `Error processing widget with id: ${widgetToProcess.id} - ${widgetError.message}`;
           console.warn(warning);
-          errorMessages.push(warning);
+          throw new InternalServerErrorException('CSV export failed');
         }
-      }
-
-      if (allCsvData.length === 0 && errorMessages.length > 0) {
-        const errorCsv = `Error downloading data, issues encountered:\n${errorMessages.join(
-          '\n',
-        )}`;
-        return errorCsv;
       }
 
       const resultCsv = allCsvData.join('\n');
       return resultCsv;
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       console.error(
         'Error downloading data for widget with id:',
         widgetId,
@@ -450,8 +446,7 @@ export class WidgetDataService {
         error,
       );
 
-      const errorCsv = `Error downloading data, issues encountered:\n${error.message}`;
-      return errorCsv;
+      throw new InternalServerErrorException('CSV export failed');
     }
   }
 

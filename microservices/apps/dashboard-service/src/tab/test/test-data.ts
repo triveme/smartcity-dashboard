@@ -182,6 +182,7 @@ export async function getTab(
     valueFontSize: 50,
     valueUnitFontSize: 25,
     decimalPlaces: 2,
+    mapPopupDecimalPlaces: 2,
     widgetId: widgetId,
     queryId: queryId,
     rangeStaticValuesMin: [1, 51],

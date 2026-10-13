@@ -1959,6 +1959,22 @@ export default function TabWizard(props: TabWizardProps): ReactElement {
                       }
                       label="Popups"
                     />
+                    <div className="flex flex-col w-full pb-2">
+                      <WizardLabel label="Dezimalstellen in Karten-Popups" />
+                      <WizardDropdownSelection
+                        currentValue={tab.mapPopupDecimalPlaces ?? 2}
+                        selectableValues={[...limitOfDecimalPlaces]}
+                        onSelect={(value: string | number): void =>
+                          handleTabChange({
+                            mapPopupDecimalPlaces: Number(value),
+                          })
+                        }
+                        error={errors?.mapPopupDecimalPlacesError}
+                        iconColor={iconColor}
+                        borderColor={borderColor}
+                        backgroundColor={backgroundColor}
+                      />
+                    </div>
                     <WizardSelectBox
                       checked={tab?.mapAllowScroll || false}
                       onChange={(value: boolean): void =>

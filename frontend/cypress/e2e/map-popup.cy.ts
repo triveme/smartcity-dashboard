@@ -2,11 +2,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import MapPopupContent, { Marker } from '../../components/Map/MapPopupContent';
 import { getValueString } from '../../components/Map/MapLabelUtils';
-import { MapModalWidget, tabComponentTypeEnum } from '../../types';
-import {
-  combineWidgetAttributes,
-  getMapPopupDecimalPlace,
-} from '../../utils/combinedMapDataHelper';
+import { MapModalWidget, Tab, tabComponentTypeEnum } from '../../types';
+import { validateTab } from '../../validators/tabValidator';
+import { combineWidgetAttributes } from '../../utils/combinedMapDataHelper';
 
 describe('Inline map popup decimal places', () => {
   const marker: Marker = {
@@ -35,50 +33,62 @@ describe('Inline map popup decimal places', () => {
       }),
     );
 
-  it('defaults missing value-widget precision to two decimals', () => {
-    expect(getMapPopupDecimalPlace()).to.equal(2);
-    expect(getMapPopupDecimalPlace(null)).to.equal(2);
-    expect(getMapPopupDecimalPlace([])).to.equal(2);
-    expect(getMapPopupDecimalPlace([mapWidget])).to.equal(2);
+  it('defaults missing map popup precision to two decimals', () => {
     expect(renderPopup()).to.contain('12,35');
     expect(renderPopup({ isCombinedMap: true })).to.contain('12,35');
   });
 
-  it('uses value-widget precision and preserves explicit zero', () => {
-    expect(
-      getMapPopupDecimalPlace([{ ...mapWidget, decimalPlaces: 0 }]),
-    ).to.equal(0);
+  it('uses dedicated map popup precision and preserves explicit zero', () => {
+    const tab = { mapPopupDecimalPlaces: 0 };
     expect(
       renderPopup({
-        popupDecimalPlace: getMapPopupDecimalPlace([
-          { ...mapWidget, decimalPlaces: 0 },
-        ]),
+        popupDecimalPlace: tab.mapPopupDecimalPlaces ?? 2,
       }),
     ).to.contain('<strong> 12 ');
   });
 
-  it('ignores chart widgets and picks the first configured value widget', () => {
-    expect(
-      getMapPopupDecimalPlace([
-        {
-          ...mapWidget,
-          componentType: tabComponentTypeEnum.diagram,
-          decimalPlaces: 0,
-        },
-        mapWidget,
-        { ...mapWidget, decimalPlaces: 3 },
+  it('ignores modal value-widget precision and ordering', () => {
+    for (const mapWidgetValues of [
+      [
+        { ...mapWidget, decimalPlaces: 0 },
         { ...mapWidget, decimalPlaces: 5 },
-      ]),
-    ).to.equal(3);
-    expect(
-      getMapPopupDecimalPlace([
+      ],
+      [
+        { ...mapWidget, decimalPlaces: 5 },
+        { ...mapWidget, decimalPlaces: 0 },
+      ],
+      [],
+    ]) {
+      const combined = combineWidgetAttributes([
         {
-          ...mapWidget,
-          componentType: tabComponentTypeEnum.diagram,
-          decimalPlaces: 0,
+          tabs: [
+            {
+              componentType: tabComponentTypeEnum.map,
+              mapPopupDecimalPlaces: 3,
+              mapWidgetValues,
+            },
+          ],
         },
-      ]),
-    ).to.equal(2);
+      ] as Parameters<typeof combineWidgetAttributes>[0]);
+
+      expect(combined.popupDecimalPlace).to.deep.equal([3]);
+    }
+  });
+
+  it('validates popup precision in the wizard', () => {
+    const tab = { componentType: tabComponentTypeEnum.map } as Tab;
+    for (const mapPopupDecimalPlaces of [undefined, 0, 2, 10]) {
+      expect(
+        validateTab({ ...tab, mapPopupDecimalPlaces })
+          .mapPopupDecimalPlacesError,
+      ).to.equal(undefined);
+    }
+    for (const mapPopupDecimalPlaces of [-1, 1.5, 11, NaN, Infinity]) {
+      expect(
+        validateTab({ ...tab, mapPopupDecimalPlaces })
+          .mapPopupDecimalPlacesError,
+      ).to.be.a('string');
+    }
   });
 
   it('applies the supplied map precision to every numeric attribute', () => {
@@ -97,27 +107,36 @@ describe('Inline map popup decimal places', () => {
     expect(html).to.contain('65,432');
   });
 
-  it('keeps combined-source precision aligned when a source has no widgets', () => {
+  it('keeps source map precision aligned independently of modal widgets', () => {
     const combined = combineWidgetAttributes([
       {
         name: 'Source A',
         tabs: [
           {
+            componentType: tabComponentTypeEnum.map,
             mapObject: [marker.details],
-            mapWidgetValues: [{ ...mapWidget, decimalPlaces: 0 }],
+            mapPopupDecimalPlaces: 0,
           },
         ],
       },
       {
         name: 'Source B',
-        tabs: [{ mapObject: [marker.details] }],
+        tabs: [
+          {
+            componentType: tabComponentTypeEnum.map,
+            mapObject: [marker.details],
+            mapWidgetValues: [{ ...mapWidget, decimalPlaces: 5 }],
+          },
+        ],
       },
       {
         name: 'Source C',
         tabs: [
           {
+            componentType: tabComponentTypeEnum.map,
             mapObject: [marker.details],
-            mapWidgetValues: [{ ...mapWidget, decimalPlaces: 3 }],
+            mapPopupDecimalPlaces: 3,
+            mapWidgetValues: [{ ...mapWidget, decimalPlaces: 0 }],
           },
         ],
       },
@@ -158,6 +177,24 @@ describe('Inline map popup decimal places', () => {
         popupDecimalPlace: 5,
       }),
     ).to.contain('12.34568');
+  });
+
+  it('rounds numeric values wrapped in an NGSI Property', () => {
+    expect(
+      renderPopup({
+        marker: {
+          ...marker,
+          details: {
+            currentLevel: {
+              type: 'Property',
+              value: 4.01369571685791,
+              observedAt: '2026-10-13T13:29:09.420Z',
+            },
+          },
+        },
+        popupDecimalPlace: 2,
+      }),
+    ).to.contain('4,01');
   });
 
   it('applies supplied and default precision to total consumption', () => {

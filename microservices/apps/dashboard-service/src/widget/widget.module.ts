@@ -36,8 +36,10 @@ import { PopulateMapService } from 'apps/data-translation-service/src/populate/p
 import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
 import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
+import { CsvDataModule } from '../csv-data/csv-data.module';
 
 @Module({
+  imports: [CsvDataModule],
   providers: [
     WidgetService,
     WidgetDataService,

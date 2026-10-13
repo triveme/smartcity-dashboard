@@ -29,11 +29,7 @@ We run a PostgreSQL database via Kubernetes. Before developing or testing locall
 - Migrations
 
 ## Environment Variables
-The project requires several environment variables to be configured. Detailed documentation for these variables can be found in the respective README files of each component:
-- [General Environment Variables](README-Env-Variables.adoc)
-- [Frontend Environment Variables](frontend/README.adoc)
-- [Backend Environment Variables](microservices/README.adoc)
-- [Database Environment Variables](database/README.adoc)
+Use the self-contained [Deployment Environment Variables](README-Env-Variables.md) reference for required settings, optional overrides, defaults, target components and deployment checks. It does not require access to internal deployment YAML files; customers without deployment access can use it to coordinate configuration with their administrator.
 
 ## Component Descriptions
 

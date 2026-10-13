@@ -122,7 +122,18 @@ export default function DataExportButton(
     setCurrentAreaConfing((prev) => {
       const alreadyExists = prev && prev.some((item) => item.id === config.id);
       if (alreadyExists) {
-        return prev.map((item) => (item.id === config.id ? config : item));
+        return prev.map((item) =>
+          item.id === config.id
+            ? {
+                ...config,
+                downloadCurrentArea: item.downloadCurrentArea,
+                changeTimeFramePeriod: item.changeTimeFramePeriod,
+                timeFramePeriod: item.changeTimeFramePeriod
+                  ? item.timeFramePeriod
+                  : config.timeFramePeriod,
+              }
+            : item,
+        );
       }
       return [...prev, config];
     });
@@ -348,7 +359,33 @@ export default function DataExportButton(
                             <div className="ml-5">
                               <div className="mt-4">
                                 <CheckBox
-                                  label="Möchten Sie die Daten für den aktuellen Bereich herunterladen?"
+                                  type="radio"
+                                  name={`data-export-${id}-${widget.id}`}
+                                  label="Daten der Standardkonfiguration"
+                                  value={
+                                    !itemCofig?.downloadCurrentArea &&
+                                    !itemCofig?.changeTimeFramePeriod
+                                  }
+                                  handleSelectChange={() =>
+                                    setCurrentAreaConfing((prev) =>
+                                      prev.map((item) =>
+                                        item.id === widget.id
+                                          ? {
+                                              ...item,
+                                              downloadCurrentArea: false,
+                                              changeTimeFramePeriod: false,
+                                            }
+                                          : item,
+                                      ),
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="mt-4">
+                                <CheckBox
+                                  type="radio"
+                                  name={`data-export-${id}-${widget.id}`}
+                                  label="Daten für den aktuell sichtbaren Bereich"
                                   value={
                                     itemCofig?.downloadCurrentArea ?? false
                                   }
@@ -359,10 +396,7 @@ export default function DataExportButton(
                                           ? {
                                               ...item,
                                               downloadCurrentArea: value,
-                                              changeTimeFramePeriod: value
-                                                ? false
-                                                : (item?.changeTimeFramePeriod ??
-                                                  false),
+                                              changeTimeFramePeriod: false,
                                             }
                                           : item,
                                       ),
@@ -372,7 +406,9 @@ export default function DataExportButton(
                               </div>
                               <div className="mt-4">
                                 <CheckBox
-                                  label="Zeitspannenauswahl?"
+                                  type="radio"
+                                  name={`data-export-${id}-${widget.id}`}
+                                  label="Zeitspannenauswahl"
                                   value={
                                     itemCofig?.changeTimeFramePeriod ?? false
                                   }
@@ -383,10 +419,7 @@ export default function DataExportButton(
                                           ? {
                                               ...item,
                                               changeTimeFramePeriod: value,
-                                              downloadCurrentArea: value
-                                                ? false
-                                                : (item?.downloadCurrentArea ??
-                                                  false),
+                                              downloadCurrentArea: false,
                                             }
                                           : item,
                                       ),

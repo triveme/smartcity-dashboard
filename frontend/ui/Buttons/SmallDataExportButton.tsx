@@ -73,7 +73,18 @@ export default function SmallDataExportButton(
     const widgetConfig = allWidgetsCurrentAreaConfig.find(
       (item) => item.id === id,
     );
-    setWidgetCurrentAreaConfing(widgetConfig);
+    setWidgetCurrentAreaConfing((prev) =>
+      !widgetConfig || prev?.id !== id
+        ? widgetConfig
+        : {
+            ...widgetConfig,
+            downloadCurrentArea: prev.downloadCurrentArea,
+            changeTimeFramePeriod: prev.changeTimeFramePeriod,
+            timeFramePeriod: prev.changeTimeFramePeriod
+              ? prev.timeFramePeriod
+              : widgetConfig.timeFramePeriod,
+          },
+    );
   }, [id, allWidgetsCurrentAreaConfig]);
 
   const handleSetVisibleChartData = (dataFromEvent: Event) => {
@@ -133,16 +144,39 @@ export default function SmallDataExportButton(
         <Modal onClose={handleCloseModal} ciColors={ciColors}>
           <div>
             <CheckBox
-              label="Möchten Sie die Daten für den aktuellen Bereich herunterladen?"
+              type="radio"
+              name={`data-export-${id}`}
+              label="Daten der Standardkonfiguration"
+              value={
+                !widgetCurrentAreaConfig?.downloadCurrentArea &&
+                !widgetCurrentAreaConfig?.changeTimeFramePeriod
+              }
+              handleSelectChange={() =>
+                setWidgetCurrentAreaConfing(
+                  (prev) =>
+                    ({
+                      ...prev,
+                      id,
+                      downloadCurrentArea: false,
+                      changeTimeFramePeriod: false,
+                    }) as CurrentAreaConfig,
+                )
+              }
+            />
+          </div>
+          <div className="mt-4">
+            <CheckBox
+              type="radio"
+              name={`data-export-${id}`}
+              label="Daten für den aktuell sichtbaren Bereich"
               value={widgetCurrentAreaConfig?.downloadCurrentArea ?? false}
               handleSelectChange={(value) =>
                 setWidgetCurrentAreaConfing((prev) => {
                   return {
                     ...prev,
+                    id,
                     downloadCurrentArea: value,
-                    changeTimeFramePeriod: value
-                      ? false
-                      : (prev?.changeTimeFramePeriod ?? false),
+                    changeTimeFramePeriod: false,
                   } as CurrentAreaConfig;
                 })
               }
@@ -150,16 +184,17 @@ export default function SmallDataExportButton(
           </div>
           <div className="mt-4">
             <CheckBox
-              label="Zeitspannenauswahl?"
+              type="radio"
+              name={`data-export-${id}`}
+              label="Zeitspannenauswahl"
               value={widgetCurrentAreaConfig?.changeTimeFramePeriod ?? false}
               handleSelectChange={(value) => {
                 setWidgetCurrentAreaConfing((prev) => {
                   return {
                     ...prev,
+                    id,
                     changeTimeFramePeriod: value,
-                    downloadCurrentArea: value
-                      ? false
-                      : (prev?.downloadCurrentArea ?? false),
+                    downloadCurrentArea: false,
                   } as CurrentAreaConfig;
                 });
               }}
