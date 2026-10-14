@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth/auth.service';
-import axios from 'axios';
+import axios, { AxiosHeaders, AxiosRequestConfig } from 'axios';
 import { QueryBatch, TabQueryWithAllInfos } from '../ngsi.service';
 import sharp = require('sharp');
 import { QueryConfig } from '@app/postgres-db/schemas/query-config.schema';
@@ -273,7 +273,9 @@ export class DataService {
         headers = {
           'NGSILD-Tenant': auth_data.ngsildTenant,
           Authorization: `Bearer ${accessToken}`,
-          Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+          common: new AxiosHeaders({
+            Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+          }),
         };
 
         if (query_config.isBlacklist === true) {
@@ -321,7 +323,9 @@ export class DataService {
         headers = {
           'NGSILD-Tenant': auth_data.ngsildTenant,
           Authorization: `Bearer ${accessToken}`,
-          Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+          common: new AxiosHeaders({
+            Link: `<${auth_data.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+          }),
         };
 
         const entityIds =
@@ -490,7 +494,7 @@ export class DataService {
 
   private async getNgsiLdEntitiesExcludingBlacklist(
     url: string,
-    headers: Record<string, string>,
+    headers: AxiosRequestConfig['headers'],
     queryConfig: QueryConfig,
     attributes?: string[],
     signal?: AbortSignal,

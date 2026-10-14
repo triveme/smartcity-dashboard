@@ -10,7 +10,7 @@ import {
   dataSources,
 } from '@app/postgres-db/schemas/data-source.schema';
 import { checkAuthorizationToRead } from '@app/auth-helper/right-management/right-management.service';
-import axios from 'axios';
+import axios, { AxiosHeaders } from 'axios';
 import {
   DataPlatformQueue,
   DataPlatformQueueFingerprintInput,
@@ -30,7 +30,7 @@ type PreparedNgsiLdEntityRequest = {
   headers: {
     Authorization: string;
     'NGSILD-Tenant': string;
-    Link: string;
+    common: AxiosHeaders;
   };
 };
 
@@ -227,7 +227,9 @@ export class FiwareWizardService {
     const headers = {
       Authorization: `Bearer ${token}`,
       'NGSILD-Tenant': relatedAuthData.ngsildTenant,
-      Link: `<${relatedAuthData.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+      common: new AxiosHeaders({
+        Link: `<${relatedAuthData.ngsildContextUrl}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"`,
+      }),
     };
 
     return {
