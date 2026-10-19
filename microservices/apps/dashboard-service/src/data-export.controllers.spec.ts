@@ -14,14 +14,30 @@ import { AuthGuard } from '@app/auth-helper/AuthGuard';
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { Test } from '@nestjs/testing';
+import * as httpRequest from 'supertest';
 import { DashboardController } from './dashboard/dashboard.controller';
+import { DashboardDataService } from './dashboard/dashboard.data.service';
+import { DashboardService } from './dashboard/dashboard.service';
 import { WidgetController } from './widget/widget.controller';
+import { CurrentAreaConfig } from './widget/widget.model';
 
 describe('CSV export controller access checks', () => {
   const request = {
     roles: ['reader'],
     headers: { authorization: 'Bearer caller-token' },
   };
+  const currentAreaConfig: CurrentAreaConfig[] = [
+    {
+      id: 'widget-1',
+      minRange: '2026-10-14T12:00:00.000Z',
+      maxRange: '2026-10-14T23:00:00.000Z',
+      selectedLegendNames: ['Average parking duration'],
+      downloadCurrentArea: false,
+      changeTimeFramePeriod: false,
+      timeFramePeriod: 'day',
+    },
+  ];
   const dashboardService = { getDashboardWithWidgets: jest.fn() };
   const widgetService = { getByIdForExport: jest.fn() };
   const dashboardDataService = { downloadDashboardData: jest.fn() };
@@ -70,7 +86,7 @@ describe('CSV export controller access checks', () => {
       dashboardController.downloadData(
         'dashboard-1',
         ['widget-1'],
-        '{}',
+        currentAreaConfig,
         request as never,
       ),
     ).resolves.toBe('csv-data');
@@ -82,8 +98,54 @@ describe('CSV export controller access checks', () => {
     expect(dashboardDataService.downloadDashboardData).toHaveBeenCalledWith(
       'dashboard-1',
       ['widget-1'],
-      {},
+      currentAreaConfig,
     );
+  });
+
+  it('accepts large chart configurations in a POST body instead of a GET query', async () => {
+    const module = await Test.createTestingModule({
+      controllers: [DashboardController],
+      providers: [
+        { provide: DashboardService, useValue: dashboardService },
+        { provide: DashboardDataService, useValue: dashboardDataService },
+      ],
+    }).compile();
+    const app = module.createNestApplication();
+    const largeAreaConfig = Array.from(
+      { length: 56 },
+      (_unused, widgetIndex) => ({
+        ...currentAreaConfig[0],
+        id: `widget-${widgetIndex + 1}`,
+        selectedLegendNames: ['Average parking duration'.repeat(10)],
+      }),
+    );
+    const body = { ids: ['widget-1'], currAreaConfig: largeAreaConfig };
+
+    expect(Buffer.byteLength(JSON.stringify(body))).toBeGreaterThan(16_384);
+
+    try {
+      await app.init();
+      const response = await httpRequest(app.getHttpServer())
+        .post('/dashboards/download-data/dashboard-1')
+        .send(body)
+        .expect(200);
+
+      expect(response.text).toBe('csv-data');
+      expect(dashboardDataService.downloadDashboardData).toHaveBeenCalledWith(
+        'dashboard-1',
+        ['widget-1'],
+        largeAreaConfig,
+      );
+
+      await httpRequest(app.getHttpServer())
+        .get('/dashboards/download-data/dashboard-1')
+        .expect(404);
+      expect(dashboardDataService.downloadDashboardData).toHaveBeenCalledTimes(
+        1,
+      );
+    } finally {
+      await app.close();
+    }
   });
 
   it('checks widget read access with middleware roles before exporting', async () => {
@@ -109,7 +171,7 @@ describe('CSV export controller access checks', () => {
       dashboardController.downloadData(
         'dashboard-1',
         ['widget-1'],
-        '{}',
+        currentAreaConfig,
         request as never,
       ),
     ).rejects.toMatchObject({ status: 403 });
@@ -130,7 +192,7 @@ describe('CSV export controller access checks', () => {
       dashboardController.downloadData(
         'dashboard-1',
         ['foreign-widget'],
-        '{}',
+        currentAreaConfig,
         request as never,
       ),
     ).rejects.toMatchObject({ status: 403 });
@@ -141,14 +203,14 @@ describe('CSV export controller access checks', () => {
     await dashboardController.downloadData(
       'dashboard-1',
       'widget-1' as never,
-      '{}',
+      currentAreaConfig,
       request as never,
     );
 
     expect(dashboardDataService.downloadDashboardData).toHaveBeenCalledWith(
       'dashboard-1',
       ['widget-1'],
-      {},
+      currentAreaConfig,
     );
   });
 
@@ -161,7 +223,7 @@ describe('CSV export controller access checks', () => {
       dashboardController.downloadData(
         'dashboard-1',
         ['widget-1'],
-        '{}',
+        currentAreaConfig,
         request as never,
       ),
     ).rejects.toMatchObject({ status: 403 });
@@ -169,10 +231,15 @@ describe('CSV export controller access checks', () => {
   });
 
   it('checks anonymous dashboard read access with empty roles', async () => {
-    await dashboardController.downloadData('dashboard-1', ['widget-1'], '{}', {
-      headers: {},
-      authenticated: false,
-    } as never);
+    await dashboardController.downloadData(
+      'dashboard-1',
+      ['widget-1'],
+      currentAreaConfig,
+      {
+        headers: {},
+        authenticated: false,
+      } as never,
+    );
     expect(dashboardService.getDashboardWithWidgets).toHaveBeenCalledWith(
       'dashboard-1',
       [],
@@ -180,7 +247,7 @@ describe('CSV export controller access checks', () => {
     expect(dashboardDataService.downloadDashboardData).toHaveBeenCalledWith(
       'dashboard-1',
       ['widget-1'],
-      {},
+      currentAreaConfig,
     );
   });
 
@@ -201,9 +268,12 @@ describe('CSV export controller access checks', () => {
       new ForbiddenException(),
     );
     await expect(
-      dashboardController.downloadData('dashboard-1', ['widget-1'], '{}', {
-        headers: {},
-      } as never),
+      dashboardController.downloadData(
+        'dashboard-1',
+        ['widget-1'],
+        currentAreaConfig,
+        { headers: {} } as never,
+      ),
     ).rejects.toMatchObject({ status: 403 });
     expect(dashboardDataService.downloadDashboardData).not.toHaveBeenCalled();
   });
@@ -222,10 +292,15 @@ describe('CSV export controller access checks', () => {
     });
 
     await expect(
-      dashboardController.downloadData('dashboard-1', ['widget-1'], '{}', {
-        headers: {},
-        authenticated: false,
-      } as never),
+      dashboardController.downloadData(
+        'dashboard-1',
+        ['widget-1'],
+        currentAreaConfig,
+        {
+          headers: {},
+          authenticated: false,
+        } as never,
+      ),
     ).rejects.toMatchObject({ status: 403 });
     expect(dashboardDataService.downloadDashboardData).not.toHaveBeenCalled();
   });
