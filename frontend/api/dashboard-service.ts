@@ -130,17 +130,17 @@ export async function getDashboardDownloadData(
 ): Promise<string> {
   const backendUrl = getBackendUrl();
   try {
-    const response = await axios.get(
+    const response = await axios.post(
       `${backendUrl}/dashboards/download-data/${dashboardId}`,
+      {
+        ids: widgetsIds ? widgetsIds : [],
+        currAreaConfig: currentAreaConfig,
+      },
       {
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
           : undefined,
         responseType: 'blob',
-        params: {
-          ids: widgetsIds ? widgetsIds : [],
-          currAreaConfig: JSON.stringify(currentAreaConfig),
-        },
       },
     );
 

@@ -4,6 +4,8 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -192,12 +194,13 @@ export class DashboardController {
   }
 
   @Public()
-  @Get('/download-data/:dashboardId')
+  @Post('/download-data/:dashboardId')
+  @HttpCode(HttpStatus.OK)
   async downloadData(
     @Param('dashboardId') dashboardId: string,
-    @Query('ids') ids: string[],
-    @Query('currAreaConfig')
-    currAreaConfig: string,
+    @Body('ids') ids: string[],
+    @Body('currAreaConfig')
+    currAreaConfig: CurrentAreaConfig | CurrentAreaConfig[],
     @Req() request: AuthenticatedRequest,
   ): Promise<string> {
     const dashboard = await this.service.getDashboardWithWidgets(
@@ -217,14 +220,10 @@ export class DashboardController {
       throw new ForbiddenException('Widget does not belong to dashboard');
     }
 
-    const parsedCurrAreaConfig = JSON.parse(currAreaConfig) as
-      | CurrentAreaConfig
-      | CurrentAreaConfig[];
-
     return this.dashboardDataService.downloadDashboardData(
       dashboardId,
       widgetIds,
-      parsedCurrAreaConfig,
+      currAreaConfig,
     );
   }
 }
