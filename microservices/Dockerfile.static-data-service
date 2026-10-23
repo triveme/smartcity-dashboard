@@ -1,5 +1,5 @@
 # Base image for building the application
-FROM nexus.edag.de:8203/library/node:20.16.0-alpine AS builder
+FROM node:24.22.1-alpine AS builder
 
 # Create app directory in a more standard location
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build static-data-service
 
 # Base image for the final stage
-FROM nexus.edag.de:8203/library/node:20.16.0-alpine
+FROM node:24.22.1-alpine
 
 # Create app directory
 WORKDIR /usr/microservices/apps

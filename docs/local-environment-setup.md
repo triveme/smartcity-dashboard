@@ -67,6 +67,16 @@ The `.env.local` files are excluded from Docker builds via `.dockerignore`, so:
 - Docker images won't include local development configuration
 - Production deployments remain unaffected
 
+## Build All Local Docker Images
+
+`docker-compose.local.yml` intentionally starts only PostgreSQL and Keycloak. To build all application, migration, and backup/restore images without starting them, run this from the repository root:
+
+```bash
+npm run docker:build
+```
+
+The command adds `docker-compose.build.yml`, which defines the build contexts for every project Dockerfile and produces local `smartcity/<name>:local` image tags.
+
 ## Git Status
 
 These files are ignored by git:
