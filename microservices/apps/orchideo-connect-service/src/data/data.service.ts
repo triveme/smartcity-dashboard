@@ -171,7 +171,7 @@ export class DataService {
     try {
       const apiUrl = await this.getUrl(apiId);
       const effectiveLimit = limit ?? 2147483647;
-      const url = `${apiUrl}/${collection}/${source}/entities?limit=${effectiveLimit}`;
+      const url = `${apiUrl}/${collection}/${source}/entities?limit=${effectiveLimit}&include=all`;
 
       this.logger.debug('getEntities: ', url);
 
