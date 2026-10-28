@@ -370,7 +370,7 @@ export class DataService {
       reducedItem['timestamp'] = item['timestamp'];
 
       for (const attribute of attributes) {
-        if (Object.prototype.hasOwnProperty.call(item, attribute)) {
+        if (item.hasOwnProperty(attribute)) {
           reducedItem[attribute] = item[attribute];
         }
       }
