@@ -2,7 +2,7 @@
 
 == Local Development
 
-To run the application locally, make sure all the prerequisites are installed (Rancher Desktop, Node.js (v.20.13.0), PgAdmin/DBeaver, K9S) and then install the dependencies for all packages (`npm install` in root, frontend, microservices).
+To run the application locally, make sure all the prerequisites are installed (Rancher Desktop, Node.js (v.24.22.1), PgAdmin/DBeaver, K9S) and then install the dependencies for all packages (`npm install` in root, frontend, microservices).
 
 Afterwards you can continue the setup with kubernetes link:./k8s/README.adoc[here].
 

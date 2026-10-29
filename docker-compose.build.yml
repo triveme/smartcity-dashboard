@@ -1,0 +1,67 @@
+# Build-only Compose extension. It intentionally has no runtime configuration;
+# use it with docker compose build, together with docker-compose.local.yml.
+services:
+  migrations:
+    image: smartcity/migrations:local
+    build:
+      context: .
+      dockerfile: Dockerfile.migrations
+
+  frontend:
+    image: smartcity/frontend:local
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+
+  frontend-with-basepath:
+    image: smartcity/frontend-with-basepath:local
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend-with-basepath
+
+  dashboard-service:
+    image: smartcity/dashboard-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.dashboard-service }
+  data-translation-service:
+    image: smartcity/data-translation-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.data-translation-service }
+  infopin-service:
+    image: smartcity/infopin-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.infopin-service }
+  internal-data-service:
+    image: smartcity/internal-data-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.internal-data-service }
+  mail-service:
+    image: smartcity/mail-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.mail-service }
+  ngsi-service:
+    image: smartcity/ngsi-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.ngsi-service }
+  orchideo-connect-service:
+    image: smartcity/orchideo-connect-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.orchideo-connect-service }
+  plan-bar-service:
+    image: smartcity/plan-bar-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.plan-bar-service }
+  project-data-service:
+    image: smartcity/project-data-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.project-data-service }
+  report-service:
+    image: smartcity/report-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.report-service }
+  sql-view-service:
+    image: smartcity/sql-view-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.sql-view-service }
+  static-data-service:
+    image: smartcity/static-data-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.static-data-service }
+  usi-platform-service:
+    image: smartcity/usi-platform-service:local
+    build: { context: ./microservices, dockerfile: Dockerfile.usi-platform-service }
+
+  backup:
+    image: smartcity/backup:local
+    build: { context: ./hcloud/backup, dockerfile: Dockerfile.backup }
+  restore:
+    image: smartcity/restore:local
+    build: { context: ./hcloud/backup, dockerfile: Dockerfile.restore }

@@ -1,10 +1,13 @@
 {
   "name": "microservices",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "^24.22.1"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
@@ -50,7 +53,7 @@
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
     "@types/multer": "^1.4.11",
-    "@types/node": "^20.3.1",
+    "@types/node": "^24",
     "@types/pg": "^8.10.3",
     "@types/sharp": "^0.32.0",
     "@types/supertest": "^2.0.12",
@@ -107,5 +110,9 @@
       "<rootDir>/libs/",
       "<rootDir>/apps/"
     ]
+  },
+  "allowScripts": {
+    "@nestjs/core@10.4.22": true,
+    "sharp@0.33.5": true
   }
 }

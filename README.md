@@ -53,13 +53,13 @@ npm run test
 ```
 
 ## Docker
-The project uses Docker for containerization. The Docker images are built using the following Dockerfiles:
-- Migrations: `Dockerfile.migrations`
-- Mail Service: `Dockerfile.mail-service`
-- Infopin Service: `Dockerfile.infopin-service`
-- Static Data Service: `Dockerfile.static-data-service`
-- Report Service: `Dockerfile.report-service`
-- Frontend: `Dockerfile.frontend`
+`docker-compose.local.yml` starts only PostgreSQL and Keycloak. To build every project image locally (migrations, both frontend variants, all microservices, and the backup/restore utilities), run:
+
+```bash
+npm run docker:build
+```
+
+This uses the build-only `docker-compose.build.yml` extension and tags images as `smartcity/<name>:local`.
 
 ## Jenkins Pipeline
 The Jenkins pipeline is defined in the Jenkinsfile. It includes stages for building Docker images, running tests, and deploying the application.

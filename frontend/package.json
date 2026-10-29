@@ -1,7 +1,10 @@
 {
   "name": "frontend",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "private": true,
+  "engines": {
+    "node": "^24.22.1"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:web": "next dev",
@@ -55,7 +58,7 @@
     "@types/leaflet": "^1.9.8",
     "@types/leaflet.markercluster": "^1.5.4",
     "@types/lodash": "^4.17.0",
-    "@types/node": "^20",
+    "@types/node": "^24",
     "@types/quill": "^2.0.14",
     "@types/react": "19.0.8",
     "@types/react-dom": "19.0.3",
@@ -90,5 +93,11 @@
     "@types/draft-js": {
       "immutable": "^3.8.3"
     }
+  },
+  "allowScripts": {
+    "core-js@3.43.0": true,
+    "cypress@13.17.0": true,
+    "sharp@0.33.5": true,
+    "unrs-resolver@1.7.13": true
   }
 }
