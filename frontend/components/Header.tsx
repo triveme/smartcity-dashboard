@@ -206,10 +206,7 @@ export default function Header(props: HeaderProps): ReactElement {
       <div className="flex items-center">
         {showLogo && (
           <div className="p-3">
-            <Link
-              href={logoHref}
-              aria-label="Zur Startseite des Mandanten"
-            >
+            <Link href={logoHref} aria-label="Zur Startseite des Mandanten">
               <HeaderLogo />
             </Link>
           </div>

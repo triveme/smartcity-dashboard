@@ -32,9 +32,13 @@ const createService = () => {
   const widgetDataService = {
     runQueryDataPopulation: jest.fn().mockResolvedValue(undefined),
   };
+  const widgetRepo = { getByIds: jest.fn().mockResolvedValue([]) };
+  const tenantRepo = {
+    getTenantByAbbreviation: jest.fn().mockResolvedValue({ id: 'tenant-1' }),
+  };
   const service = new WidgetService(
     db as never,
-    {} as never,
+    widgetRepo as never,
     {} as never,
     {} as never,
     {} as never,
@@ -45,7 +49,7 @@ const createService = () => {
     {} as never,
     {} as never,
     {} as never,
-    {} as never,
+    tenantRepo as never,
     {} as never,
     {} as never,
     widgetDataService as never,
@@ -56,8 +60,56 @@ const createService = () => {
     queryConfigService,
     tabService,
     widgetDataService,
+    widgetRepo,
+    tenantRepo,
+    selectWhere,
   };
 };
+
+describe('WidgetService tenant widgets', () => {
+  it('returns an empty array when the tenant has no widget associations', async () => {
+    const { service, selectWhere, widgetRepo } = createService();
+    selectWhere.mockReset().mockResolvedValue([]);
+
+    await expect(
+      service.getWidgetsByTenantAbbreviation('tenant-a'),
+    ).resolves.toEqual([]);
+    expect(widgetRepo.getByIds).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty array when associated widgets no longer exist', async () => {
+    const { service, selectWhere } = createService();
+    selectWhere.mockReset().mockResolvedValue([{ widgetId: 'widget-1' }]);
+
+    await expect(
+      service.getWidgetsByTenantAbbreviation('tenant-a'),
+    ).resolves.toEqual([]);
+  });
+
+  it('returns the widgets associated with the tenant', async () => {
+    const { service, selectWhere, widgetRepo } = createService();
+    const widgets = [{ id: 'widget-1' }];
+    selectWhere.mockReset().mockResolvedValue([{ widgetId: 'widget-1' }]);
+    widgetRepo.getByIds.mockResolvedValue(widgets);
+
+    await expect(
+      service.getWidgetsByTenantAbbreviation('tenant-a'),
+    ).resolves.toEqual(widgets);
+    expect(widgetRepo.getByIds).toHaveBeenCalledWith(['widget-1']);
+  });
+
+  it('preserves the 404 for a missing tenant', async () => {
+    const { service, tenantRepo } = createService();
+    tenantRepo.getTenantByAbbreviation.mockResolvedValue(undefined);
+
+    await expect(
+      service.getWidgetsByTenantAbbreviation('missing-tenant'),
+    ).rejects.toMatchObject({
+      message: 'Tenant not found',
+      status: 404,
+    });
+  });
+});
 
 describe('WidgetService initial platform population', () => {
   beforeEach(() => jest.spyOn(console, 'error').mockImplementation());

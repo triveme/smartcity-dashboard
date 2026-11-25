@@ -1,11 +1,11 @@
 import React, { JSX } from 'react';
 import { convertToLocaleNumber, roundToDecimal } from '@/utils/mathHelper';
 import {
-  getGermanVehicleType,
   getGermanLabelForSensorAttribute,
   getFormattedDate,
   getValueString,
 } from './MapLabelUtils';
+import { ValueTranslation } from '@/types';
 
 export type Marker = {
   position: [number, number];
@@ -20,6 +20,8 @@ interface MapPopupContentProps {
   marker: Marker;
   isCombinedMap: boolean;
   decimalSeparator: string;
+  translations: ValueTranslation[];
+  tenant?: string;
   popupDecimalPlace?: number;
 }
 
@@ -27,6 +29,8 @@ export default function MapPopupContent({
   marker,
   isCombinedMap,
   decimalSeparator,
+  translations,
+  tenant,
   popupDecimalPlace = 2,
 }: MapPopupContentProps): JSX.Element {
   let index = -1;
@@ -87,8 +91,10 @@ export default function MapPopupContent({
                   Fahrzeugart:
                   <strong>
                     {' '}
-                    {getGermanVehicleType(
-                      String(tempValue.value).toUpperCase(),
+                    {getGermanLabelForSensorAttribute(
+                      String(tempValue.value),
+                      translations,
+                      tenant,
                     )}
                   </strong>
                 </div>
@@ -108,7 +114,7 @@ export default function MapPopupContent({
             index++;
             return (
               <div key={key}>
-                {getGermanLabelForSensorAttribute(key)}:{' '}
+                {getGermanLabelForSensorAttribute(key, translations, tenant)}:{' '}
                 <strong>
                   {' '}
                   {getValueString(
@@ -157,8 +163,10 @@ export default function MapPopupContent({
                   Fahrzeugart:
                   <strong>
                     {' '}
-                    {getGermanVehicleType(
-                      String(tempValue.value).toUpperCase(),
+                    {getGermanLabelForSensorAttribute(
+                      String(tempValue.value),
+                      translations,
+                      tenant,
                     )}
                   </strong>
                 </div>
@@ -178,7 +186,7 @@ export default function MapPopupContent({
             index++;
             return (
               <div key={key}>
-                {getGermanLabelForSensorAttribute(key)}:{' '}
+                {getGermanLabelForSensorAttribute(key, translations, tenant)}:{' '}
                 <strong>
                   {' '}
                   {getValueString(

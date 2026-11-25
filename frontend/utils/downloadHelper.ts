@@ -7,12 +7,13 @@ import {
   getWidgetWithChildrenById,
 } from '@/api/widget-service';
 import {
+  CorporateInfo,
+  DashboardWithContent,
+  WidgetWithChildren,
   ChartData,
   CurrentAreaConfig,
-  DashboardWithContent,
   tabComponentSubTypeEnum,
   tabComponentTypeEnum,
-  WidgetWithChildren,
 } from '@/types';
 
 type ExportDataWhitelistType = {
@@ -111,6 +112,8 @@ export const downloadCSV = async (
         return;
     }
 
+    // console.log('csvData lalala', csvData);
+
     // Create a Blob from the CSV string
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
 
@@ -130,6 +133,52 @@ export const downloadCSV = async (
     openSnackbar('Der Download der CSV-Datei ist fehlgeschlagen.', 'error');
   }
 };
+
+export function downloadThemeJSON(
+  data:
+    | CorporateInfo
+    | Omit<CorporateInfo, 'headerLogo' | 'sidebarLogos'>
+    | undefined,
+  filename = 'corporateInfo.json',
+): void {
+  try {
+    const json = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([json], { type: 'application/json' });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to download JSON file:', error);
+  }
+}
+
+/** Standard-Dateiname für den Theme-Export (ohne Endung). */
+export const DEFAULT_THEME_FILE_NAME = 'corporate-identity-theme';
+
+/** Macht aus Benutzereingabe einen sicheren Dateinamen (ohne Endung). */
+export function sanitizeFileName(
+  input: string,
+  fallback = DEFAULT_THEME_FILE_NAME,
+): string {
+  const cleaned = input
+    .trim()
+    .replace(/\.json$/i, '')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_')
+    .replace(/^\.+/, '')
+    .slice(0, 100);
+  return cleaned.length > 0 ? cleaned : fallback;
+}
 
 export function downloadChartDataCsv(data: ChartData[]): void {
   const headers = ['entityId', 'attrName', 'value', 'index'];

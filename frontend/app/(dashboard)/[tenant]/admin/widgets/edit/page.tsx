@@ -74,6 +74,7 @@ export default function Pages(): ReactElement {
         ></PageHeadline>
       </div>
       <WidgetWizard
+        ciColors={corporateInfo}
         iconColor={corporateInfo?.dashboardFontColor || '#fff'}
         borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
         backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}

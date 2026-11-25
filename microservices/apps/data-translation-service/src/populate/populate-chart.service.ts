@@ -11,6 +11,8 @@ import { PopulateMapService } from './populate-map.service';
 import { DataTranslationRepo } from '../data-translation.repo';
 import { parseCleanNumber } from 'apps/internal-data-service/src/helper';
 import { RoundingService } from '../transformation/rounding.service';
+import { ValueTranslationRepo } from 'apps/dashboard-service/src/value-translation/value-translation.repo';
+import { ValueTranslation } from '@app/postgres-db/schemas/value-translation.schema';
 
 @Injectable()
 export class PopulateChartService {
@@ -18,6 +20,7 @@ export class PopulateChartService {
     private readonly dataTranslationRepo: DataTranslationRepo,
     private readonly populateMapService: PopulateMapService,
     private readonly roundingService: RoundingService,
+    private readonly valueTranslationRepo: ValueTranslationRepo,
   ) {}
 
   async populateTab(
@@ -36,6 +39,8 @@ export class PopulateChartService {
     if (!queryConfig) {
       return null;
     }
+
+    const translations = await this.valueTranslationRepo.getAllTranslations();
 
     tab.timeframe = queryConfig.timeframe ?? null;
     tab.extendedDateSelection = queryConfig.extendedDateSelection ?? undefined;
@@ -69,6 +74,7 @@ export class PopulateChartService {
           queryConfig.attributes[0],
           datasource,
           tab,
+          translations,
         );
         this.postProcessValue(
           tab.chartData,
@@ -84,7 +90,12 @@ export class PopulateChartService {
         (tab.componentSubType === 'Table' ||
           tab.componentSubType === 'Table (dynamisch)')
       ) {
-        this.populateTableTabWithQueryDataArray(queryConfig, query, tab);
+        this.populateTableTabWithQueryDataArray(
+          queryConfig,
+          query,
+          tab,
+          translations,
+        );
         this.postProcessValue(
           tab.chartData,
           queryConfig.roundingMode,
@@ -123,6 +134,7 @@ export class PopulateChartService {
         tab.chartData = this.normalizeHistoricalQueryData(
           query.queryData,
           queryConfig,
+          translations,
           usesQueryParameter,
         );
         return queryConfig.timeframe ?? null;
@@ -140,6 +152,7 @@ export class PopulateChartService {
               attribute,
               datasource,
               tab,
+              translations,
             );
           } else {
             this.populateTabWithQueryDataObject(
@@ -148,6 +161,7 @@ export class PopulateChartService {
               queryConfig,
               tab,
               isSingleAttribute,
+              translations,
               usesQueryParameter,
             );
           }
@@ -166,6 +180,7 @@ export class PopulateChartService {
   public normalizeHistoricalQueryData(
     queryData: unknown,
     queryConfig: QueryConfig,
+    translations: ValueTranslation[],
     usesQueryParameter = false,
   ): ChartData[] {
     if (
@@ -187,6 +202,7 @@ export class PopulateChartService {
         tab,
         queryDataMap,
         attribute,
+        translations,
         isSingleAttribute,
         usesQueryParameter,
       );
@@ -252,6 +268,7 @@ export class PopulateChartService {
     attribute: string,
     datasource: DataSource,
     tab: TabWithContent,
+    translations: ValueTranslation[],
   ): void {
     // Piechart adjustment
     if (tab.componentSubType === 'Pie Chart') {
@@ -279,7 +296,7 @@ export class PopulateChartService {
                   : tvalue;
 
               if (tvalue !== null && tvalue !== undefined) {
-                const label = getGermanLabelForAttribute(attr);
+                const label = getGermanLabelForAttribute(attr, translations);
                 tab.chartLabels.push(label);
                 tab.chartValues.push(tvalue);
 
@@ -302,7 +319,10 @@ export class PopulateChartService {
               const sensorValue =
                 attributes[queryConfig.attributes[0]]?.value || 0;
               const sensorLabel = attributes['name']?.value || `${id} ${i}`;
-              const label = getGermanLabelForAttribute(sensorLabel);
+              const label = getGermanLabelForAttribute(
+                sensorLabel,
+                translations,
+              );
 
               tab.chartLabels.push(label);
               tab.chartValues.push(sensorValue);
@@ -337,7 +357,10 @@ export class PopulateChartService {
                 const value = attrObj.values[attrObj.values.length - 1];
 
                 // Use attribute name as label
-                const label = getGermanLabelForAttribute(attrObj.attrName);
+                const label = getGermanLabelForAttribute(
+                  attrObj.attrName,
+                  translations,
+                );
 
                 tab.chartLabels.push(label);
                 tab.chartValues.push(value);
@@ -383,7 +406,10 @@ export class PopulateChartService {
                         }
                       }
 
-                      const processedLabel = getGermanLabelForAttribute(label);
+                      const processedLabel = getGermanLabelForAttribute(
+                        label,
+                        translations,
+                      );
                       tab.chartLabels.push(processedLabel);
                       tab.chartValues.push(value);
 
@@ -407,7 +433,7 @@ export class PopulateChartService {
                 : null;
 
             if (value !== null) {
-              const label = getGermanLabelForAttribute(attribute);
+              const label = getGermanLabelForAttribute(attribute, translations);
               tab.chartLabels.push(label);
               tab.chartValues.push(value);
 
@@ -428,6 +454,7 @@ export class PopulateChartService {
     queryConfig: QueryConfig,
     query: Query,
     tab: TabWithContent,
+    translations: ValueTranslation[],
   ): void {
     const attributes = queryConfig.attributes.filter((attr) => attr !== 'name');
     const isSingleAttribute = attributes.length === 1;
@@ -485,7 +512,12 @@ export class PopulateChartService {
                   : attribute;
 
         tab.chartData.push({
-          name: this.utilNameFunction(attribute, sensorName, isSingleAttribute),
+          name: this.utilNameFunction(
+            attribute,
+            sensorName,
+            translations,
+            isSingleAttribute,
+          ),
           values: [[timestamp, normalizedValue]],
           color: null,
           id: rowId,
@@ -500,6 +532,7 @@ export class PopulateChartService {
     queryConfig: QueryConfig,
     tab: TabWithContent,
     isSingleAttribute: boolean,
+    translations: ValueTranslation[],
     usesQueryParameter = false,
   ): void {
     const queryDataMap = new Map(Object.entries(query.queryData));
@@ -511,6 +544,7 @@ export class PopulateChartService {
       tab,
       queryDataMap,
       attribute,
+      translations,
       isSingleAttribute,
       usesQueryParameter,
       preserveTextValues,
@@ -522,6 +556,7 @@ export class PopulateChartService {
     tab: TabWithContent,
     queryDataMap: Map<string, any>,
     attribute: string,
+    translations: ValueTranslation[],
     isSingleAttribute: boolean,
     usesQueryParameter = false,
     preserveTextValues = false,
@@ -530,6 +565,7 @@ export class PopulateChartService {
       this.populateHistoricTabWithSingleEntityId(
         tab,
         queryDataMap,
+        translations,
         preserveTextValues,
       );
     } else {
@@ -537,6 +573,7 @@ export class PopulateChartService {
         tab,
         queryDataMap,
         attribute,
+        translations,
         isSingleAttribute,
         usesQueryParameter,
         preserveTextValues,
@@ -547,6 +584,7 @@ export class PopulateChartService {
   private populateHistoricTabWithSingleEntityId(
     tab: TabWithContent,
     queryDataMap: Map<string, any>,
+    translations: ValueTranslation[],
     preserveTextValues = false,
   ): void {
     const entityAttributes = queryDataMap.get('attributes');
@@ -576,6 +614,7 @@ export class PopulateChartService {
 
         const chartDataName = this.buildSingleEntityChartDataName(
           attrName,
+          translations,
           entityDisplayName,
           hasSelectedDisplayAttribute,
         );
@@ -648,22 +687,27 @@ export class PopulateChartService {
 
   private buildSingleEntityChartDataName(
     attributeName: string,
+    translations: ValueTranslation[],
     entityDisplayName?: string,
     useEntityDisplayName = false,
   ): string {
-    const attributeLabel = getGermanLabelForAttribute(attributeName);
+    const attributeLabel = getGermanLabelForAttribute(
+      attributeName,
+      translations,
+    );
 
     if (!useEntityDisplayName || !entityDisplayName) {
       return attributeLabel;
     }
 
-    return `${getGermanLabelForAttribute(entityDisplayName)} | ${attributeLabel}`;
+    return `${getGermanLabelForAttribute(entityDisplayName, translations)} | ${attributeLabel}`;
   }
 
   private populateHistoricTabWithMultipleEntityIds(
     tab: TabWithContent,
     queryDataMap: Map<string, FiwareAttribute[]>,
     attribute: string,
+    translations: ValueTranslation[],
     isSingleAttribute: boolean,
     usesQueryParameter = false,
     preserveTextValues = false,
@@ -696,6 +740,7 @@ export class PopulateChartService {
               this.utilNameFunction(
                 attribute,
                 sensorName,
+                translations,
                 isSingleAttribute,
                 usesQueryParameter,
               ),
@@ -743,16 +788,17 @@ export class PopulateChartService {
   private utilNameFunction(
     labelAttribute: string,
     sensorName: string,
+    translations: ValueTranslation[],
     isSingleAttribute: boolean,
     usesQueryParameter = false,
   ): string {
     if (isSingleAttribute) {
       if (usesQueryParameter) {
-        return getGermanLabelForAttribute(labelAttribute);
+        return getGermanLabelForAttribute(labelAttribute, translations);
       }
-      return `${getGermanLabelForAttribute(sensorName)}`;
+      return `${getGermanLabelForAttribute(sensorName, translations)}`;
     } else {
-      return `${getGermanLabelForAttribute(sensorName)} | ${getGermanLabelForAttribute(labelAttribute)}`;
+      return `${getGermanLabelForAttribute(sensorName, translations)} | ${getGermanLabelForAttribute(labelAttribute, translations)}`;
     }
   }
 

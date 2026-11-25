@@ -328,6 +328,7 @@ export default function QuerySqlWizard(
                 iconColor={iconColor}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
+                searchable={true}
               />
             </div>
             <RefreshButton

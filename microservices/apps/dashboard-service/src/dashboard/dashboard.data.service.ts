@@ -17,6 +17,7 @@ import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { CurrentAreaConfig } from '../widget/widget.model';
 import { CsvDataService } from '../csv-data/csv-data.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
+import { ValueTranslationRepo } from '../value-translation/value-translation.repo';
 
 @Injectable()
 export class DashboardDataService {
@@ -27,6 +28,7 @@ export class DashboardDataService {
     private readonly tabService: TabService,
     private readonly csvDataService: CsvDataService,
     private readonly platformQueryResolver: PlatformQueryResolverService,
+    private readonly valueTranslationRepo: ValueTranslationRepo,
   ) {}
 
   async downloadDashboardData(
@@ -95,6 +97,8 @@ export class DashboardDataService {
       const currAreaConfing = Array.isArray(currentAreaConfig)
         ? currentAreaConfig
         : [currentAreaConfig];
+
+      const translations = await this.valueTranslationRepo.getAllTranslations();
 
       for (const panelWidget of expandedWidgets) {
         try {
@@ -167,9 +171,11 @@ export class DashboardDataService {
               : queryBatch.auth_data.type === 'ngsi' ||
                   queryBatch.auth_data.type === 'ngsi-ld' ||
                   queryBatch.auth_data.type === 'ngsi-v2'
-                ? flattenNgsiExportData(rawDataArray, [
-                    ...(queryBatch.query_config.attributes || []),
-                  ])
+                ? flattenNgsiExportData(
+                    rawDataArray,
+                    [...(queryBatch.query_config.attributes || [])],
+                    translations,
+                  )
                 : [];
 
           if (flattenedData.length === 0) {

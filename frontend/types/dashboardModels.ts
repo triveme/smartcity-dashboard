@@ -97,6 +97,20 @@ export type Widget = {
   usesQueryParameter?: boolean;
 };
 
+export type ResetWidget = {
+  height: number;
+  icon: string;
+  width: number;
+  allowDataExport: boolean;
+  allowShare: boolean;
+  description: string;
+  showName: boolean;
+  subheadline: string;
+  visibility: visibilityEnum;
+  readRoles: string[];
+  writeRoles: string[];
+};
+
 export type WidgetWithContent = {
   id?: string;
   name: string;
@@ -498,10 +512,28 @@ export type QueryConfig = {
   createdAt?: string;
   updatedAt?: string;
   timeframe: string;
+  dataStartDate?: string;
+  dataUntilDate?: string;
+  extendedDateSelection?: boolean;
+  isBlacklist?: boolean;
   isReporting?: boolean;
   roundingMode?: string;
   roundingTarget?: number;
   aggrPeriod: string;
+  queryData?: unknown;
+};
+
+export type ResetQueryConfig = {
+  interval: number;
+  fiwareType: string;
+  entityIds: string[];
+  attributes: string[];
+  aggrMode: string;
+  timeframe: string;
+  aggrPeriod: string;
+  isReporting: boolean;
+  fiwareService: string;
+  fiwareServicePath: string;
   dataStartDate: string;
   dataUntilDate: string;
   extendedDateSelection: boolean;
@@ -722,6 +754,7 @@ export type WidgetWithChildren = {
   queryConfig?: QueryConfig;
   reportConfig?: ReportConfig;
   datasource?: DataSource;
+  queryData?: unknown;
 };
 
 export type AuthData = {
@@ -874,4 +907,12 @@ export type WidgetDataRange = {
   to: string;
   timeZone: string;
   tabId?: string;
+};
+
+export type ValueTranslation = {
+  id: string;
+  category: string;
+  rawValue: string;
+  label: string;
+  tenantId: string | null;
 };

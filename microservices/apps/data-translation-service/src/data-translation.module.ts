@@ -13,6 +13,7 @@ import { PopulateListviewService } from './populate/populate-listview';
 import { RoundingService } from './transformation/rounding.service';
 import { PopulateValueService } from './populate/populate-value.service';
 import { PopulateCalendarService } from './populate/populate-calendar.service';
+import { ValueTranslationRepo } from 'apps/dashboard-service/src/value-translation/value-translation.repo';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { PopulateCalendarService } from './populate/populate-calendar.service';
     PopulateListviewService,
     PopulateCalendarService,
     RoundingService,
+    ValueTranslationRepo,
   ],
 })
 export class DataTranslationServiceModule {}

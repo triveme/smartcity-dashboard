@@ -1,4 +1,5 @@
 import { getGermanLabelForAttribute } from '@app/common';
+import { ValueTranslation } from '@app/postgres-db/schemas/value-translation.schema';
 
 export type FlattenedNgsiExportRow = {
   entityId: string;
@@ -32,6 +33,7 @@ type NgsiAttribute = {
 export function flattenNgsiExportData(
   rawDataArray: unknown[],
   queryAttributes: string[],
+  translations: ValueTranslation[],
 ): FlattenedNgsiExportRow[] {
   const isSingleAttribute =
     queryAttributes.filter((attribute) => attribute !== 'name').length === 1;
@@ -45,7 +47,7 @@ export function flattenNgsiExportData(
       return [];
     }
 
-    const entityLabels = getEntityLabels(attributes);
+    const entityLabels = getEntityLabels(attributes, translations);
 
     return attributes.flatMap((attr) => {
       const attrName = attr.attrName || '';
@@ -60,7 +62,7 @@ export function flattenNgsiExportData(
           attrName,
           value,
           index: dataItem.index ? dataItem.index[index] : null,
-          seriesName: getGermanLabelForAttribute(attrName),
+          seriesName: getGermanLabelForAttribute(attrName, translations),
         }));
       }
 
@@ -72,6 +74,7 @@ export function flattenNgsiExportData(
             attrName,
             sensorLabel,
             isSingleAttribute,
+            translations,
           );
           const indexValues = entity.index || [];
           const entityValues = entity.values || [];
@@ -89,11 +92,14 @@ export function flattenNgsiExportData(
   });
 }
 
-function getEntityLabels(attributes: NgsiAttribute[]): Map<string, string> {
+function getEntityLabels(
+  attributes: NgsiAttribute[],
+  translations: ValueTranslation[],
+): Map<string, string> {
   const labels = new Map<string, string>();
 
-  appendLabelsByAttribute(labels, attributes, 'name');
-  appendLabelsByAttribute(labels, attributes, 'id');
+  appendLabelsByAttribute(labels, attributes, 'name', translations);
+  appendLabelsByAttribute(labels, attributes, 'id', translations);
 
   return labels;
 }
@@ -102,6 +108,7 @@ function appendLabelsByAttribute(
   labels: Map<string, string>,
   attributes: NgsiAttribute[],
   targetAttribute: string,
+  translations: ValueTranslation[],
 ): void {
   const attribute = attributes.find(
     (item) => item.attrName === targetAttribute,
@@ -121,7 +128,10 @@ function appendLabelsByAttribute(
       }
 
       if (!labels.has(entityId)) {
-        labels.set(entityId, getGermanLabelForAttribute(String(rawLabel)));
+        labels.set(
+          entityId,
+          getGermanLabelForAttribute(String(rawLabel), translations),
+        );
       }
     });
   });
@@ -131,12 +141,16 @@ function buildSeriesName(
   attrName: string,
   sensorLabel: string,
   isSingleAttribute: boolean,
+  translations: ValueTranslation[],
 ): string {
-  const formattedSensorLabel = getGermanLabelForAttribute(sensorLabel);
+  const formattedSensorLabel = getGermanLabelForAttribute(
+    sensorLabel,
+    translations,
+  );
 
   if (isSingleAttribute) {
     return formattedSensorLabel;
   }
 
-  return `${formattedSensorLabel} | ${getGermanLabelForAttribute(attrName)}`;
+  return `${formattedSensorLabel} | ${getGermanLabelForAttribute(attrName, translations)}`;
 }

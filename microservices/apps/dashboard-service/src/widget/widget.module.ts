@@ -36,6 +36,7 @@ import { PopulateMapService } from 'apps/data-translation-service/src/populate/p
 import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
 import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
+import { ValueTranslationRepo } from '../value-translation/value-translation.repo';
 import { CsvDataModule } from '../csv-data/csv-data.module';
 
 @Module({
@@ -72,8 +73,10 @@ import { CsvDataModule } from '../csv-data/csv-data.module';
     RoundingService,
     PlatformInternalClientService,
     PlatformQueryResolverService,
+    ValueTranslationRepo,
   ],
   controllers: [WidgetController],
+  exports: [WidgetService, WidgetDataService],
 })
 export class WidgetModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

@@ -188,6 +188,7 @@ export default function QueryUsiWizard(
                 iconColor={iconColor}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
+                searchable={true}
               />
             </div>
           </div>
@@ -231,6 +232,7 @@ export default function QueryUsiWizard(
                 iconColor={iconColor}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
+                searchable={true}
               />
             </div>
           </div>

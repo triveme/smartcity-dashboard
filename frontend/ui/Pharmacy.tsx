@@ -32,8 +32,12 @@ export default function PharmacyComponent(
   const [data, setData] = useState<PharmacyDetails[]>();
   useEffect(() => {
     if (props.details !== '') {
-      const json = JSON.parse(props.details);
-      setData([json?.apotheken?.apotheke].flat());
+      try {
+        const json = JSON.parse(props.details);
+        setData([json?.apotheken?.apotheke].flat().filter(Boolean));
+      } catch {
+        setData([]);
+      }
     }
   }, [props.details]);
 
@@ -52,6 +56,11 @@ export default function PharmacyComponent(
 
   return (
     <div className="overflow-y-auto flex-1 h-full text-left">
+      {data?.length === 0 && (
+        <p className="text-lg" style={containerStyle}>
+          Keine Apotheken gefunden.
+        </p>
+      )}
       {data?.map((pharmacy, index) => {
         const isLast = index === data.length - 1;
         return (

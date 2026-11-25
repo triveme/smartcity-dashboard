@@ -26,6 +26,14 @@ type ListViewDetailsProps = {
   listviewFilterButtonHoverBackgroundColor?: string;
 };
 
+// Splits a contact field (website/e-mail) that may contain several values
+// separated by comma, semicolon or line break. A single value yields one entry.
+const splitMultiValue = (value: string): string[] =>
+  value
+    .split(/[,;\n]+/)
+    .map((v) => v.trim())
+    .filter(Boolean);
+
 // Headline Yellow Component
 const HeadlineYellow = ({
   text,
@@ -257,7 +265,7 @@ export function ListViewDetails(
             </div>
           )}
 
-          {info.email && info.email.trim() && (
+          {info.email && splitMultiValue(info.email).length > 0 && (
             <div className="flex flex-col">
               <h4
                 className="font-semibold text-sm"
@@ -265,17 +273,20 @@ export function ListViewDetails(
               >
                 E-Mail:
               </h4>
-              <a
-                href={`mailto:${info.email}`}
-                className="text-sm hover:underline"
-                style={{ color: headlineGrayColor }}
-              >
-                {info.email}
-              </a>
+              {splitMultiValue(info.email).map((email) => (
+                <a
+                  key={email}
+                  href={`mailto:${email}`}
+                  className="text-sm hover:underline"
+                  style={{ color: headlineGrayColor }}
+                >
+                  {email}
+                </a>
+              ))}
             </div>
           )}
 
-          {info.website && info.website.trim() && (
+          {info.website && splitMultiValue(info.website).length > 0 && (
             <div className="flex flex-col">
               <h4
                 className="font-semibold text-sm"
@@ -283,19 +294,20 @@ export function ListViewDetails(
               >
                 Website:
               </h4>
-              <a
-                href={
-                  info.website.startsWith('http')
-                    ? info.website
-                    : `https://${info.website}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm hover:underline"
-                style={{ color: headlineGrayColor }}
-              >
-                {info.website}
-              </a>
+              {splitMultiValue(info.website).map((website) => (
+                <a
+                  key={website}
+                  href={
+                    website.startsWith('http') ? website : `https://${website}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm hover:underline"
+                  style={{ color: headlineGrayColor }}
+                >
+                  {website}
+                </a>
+              ))}
             </div>
           )}
 

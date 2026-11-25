@@ -94,6 +94,7 @@ import {
   createSelectRouteHandler,
 } from './MapProjectUtils';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import { useValueTranslations } from '@/app/custom-hooks/useValueTranslations';
 
 const defaultPinDraftIcon = L.icon({
   iconUrl: markerIcon.src,
@@ -197,6 +198,9 @@ export default function MapNew(props: MapNewProps): JSX.Element {
   const requiredRole = 'scs-project-admin';
   const isProjectAdmin = roleOptions.includes(requiredRole);
   const showProjectPinControls = Boolean(props.isProjectMap) && isProjectAdmin;
+
+  //Use custom hook to get attributes translation once in 2 minutes
+  const { data: translations = [] } = useValueTranslations();
 
   // Extract roles from JWT token when auth changes
   useEffect(
@@ -1661,6 +1665,8 @@ export default function MapNew(props: MapNewProps): JSX.Element {
       marker={marker}
       isCombinedMap={isCombinedMap}
       decimalSeparator={decimalSeparator}
+      translations={translations}
+      tenant={tenant}
       popupDecimalPlace={
         isCombinedMap
           ? ((props as CombinedMapProps).popupDecimalPlace?.[

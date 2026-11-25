@@ -27,6 +27,13 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+
+    // AuthHelperMiddleware validates Keycloak tokens through JWKS and marks
+    // the request as authenticated before guards are executed.
+    if (request.authenticated === true) {
+      return true;
+    }
+
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException();

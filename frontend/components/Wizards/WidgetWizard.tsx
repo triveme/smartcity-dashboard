@@ -15,6 +15,7 @@ import IconSelection from '@/ui/Icons/IconSelection';
 import RoleSelection from '@/components/RoleSelecton';
 import {
   aggregationEnum,
+  CorporateInfo,
   QueryConfig,
   ReportConfig,
   tabComponentSubTypeEnum,
@@ -28,6 +29,7 @@ import {
   getWidgetWithChildrenById,
   postWidgetWithChildren,
   updateWidgetWithChildren,
+  resetWidgetData,
 } from '@/api/widget-service';
 import { Tab, Widget } from '@/types';
 import CancelButton from '@/ui/Buttons/CancelButton';
@@ -54,9 +56,11 @@ import {
   updateReportConfig,
 } from '@/api/report-service';
 import CheckBox from '@/ui/CheckBox';
+import DebuggingModalButton from '@/ui/Buttons/DebuggingModalButton';
 import { isDataExportSupported } from '@/utils/downloadHelper';
 
 type WidgetWizardProps = {
+  ciColors: CorporateInfo | undefined;
   iconColor: string;
   borderColor: string;
   backgroundColor: string;
@@ -87,8 +91,19 @@ function createQueryConfig(
   };
 }
 
+function hasDebugData(data: unknown): boolean {
+  if (data === null || data === undefined) return false;
+  if (Array.isArray(data)) return data.length > 0;
+  if (typeof data === 'object') {
+    return Object.keys(data as Record<string, unknown>).length > 0;
+  }
+  if (typeof data === 'string') return data.trim().length > 0;
+  return true;
+}
+
 export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const {
+    ciColors,
     iconColor,
     borderColor,
     backgroundColor,
@@ -120,6 +135,13 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
   const [generalFormIsOpen, setGeneralFormIsOpen] = useState(
     !itemId ? true : false,
   );
+
+  // QUERY DATA
+  const [queryData, setQueryData] = useState<unknown>();
+
+  // WIDGET DATA
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [widgetData, setWidgetData] = useState<any>();
 
   // QUERY CONFIG
   const [queryConfig, setQueryConfig] = useState<QueryConfig>(() =>
@@ -197,6 +219,9 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
       setWidget(widgetWithChildrenData.widget);
       setQueryConfig(createQueryConfig(widgetWithChildrenData.queryConfig));
       setTab(widgetWithChildrenData.tab);
+      // Set widget and query data for debugging modal
+      setQueryData(widgetWithChildrenData?.queryData);
+      setWidgetData(widgetWithChildrenData?.widget.widgetData?.data);
     }
   }, [widgetWithChildrenData]);
 
@@ -412,6 +437,31 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
     } catch (error) {
       console.error(error);
       openSnackbar('Speichern fehlgeschlagen.', 'error');
+    }
+  };
+
+  const handleResetWidgetData = async (): Promise<void> => {
+    if (!widget.id) {
+      openSnackbar(
+        'Widget muss zuerst gespeichert werden, bevor Daten zurückgesetzt werden können.',
+        'warning',
+      );
+      return;
+    }
+
+    if (!hasDebugData(widgetData) && !hasDebugData(queryData)) {
+      openSnackbar('Keine Daten zum Löschen vorhanden.', 'warning');
+      return;
+    }
+
+    try {
+      await resetWidgetData(auth?.user?.access_token, widget.id);
+      openSnackbar('Daten erfolgreich zurückgesetzt.', 'success');
+      setQueryData([]);
+      setWidgetData({});
+    } catch (error) {
+      console.error(error);
+      openSnackbar('Zurücksetzen der Daten fehlgeschlagen.', 'error');
     }
   };
 
@@ -764,6 +814,13 @@ export default function WidgetWizard(props: WidgetWizardProps): ReactElement {
         </div>
       </div>
       <div className="flex justify-end space-x-2 py-4">
+        <DebuggingModalButton
+          ciColors={ciColors}
+          widgetData={widgetData}
+          queryConfig={queryConfig}
+          queryData={queryData}
+          handleResetWidgetData={handleResetWidgetData}
+        />
         <CancelButton />
         <SaveButton handleSaveClick={handleCreateWidgetClick} />
       </div>
