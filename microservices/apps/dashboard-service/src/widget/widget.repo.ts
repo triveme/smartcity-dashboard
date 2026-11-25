@@ -58,6 +58,17 @@ export class WidgetRepo {
     return this.db.select().from(widgets).where(inArray(widgets.id, ids));
   }
 
+  async getWidgetWithContent(id: string): Promise<FlatWidgetData[]> {
+    return this.db
+      .select()
+      .from(widgets)
+      .leftJoin(tabs, eq(widgets.id, tabs.widgetId))
+      .leftJoin(dataModels, eq(tabs.dataModelId, dataModels.id))
+      .leftJoin(queries, eq(tabs.queryId, queries.id))
+      .leftJoin(widgetData, eq(widgets.id, widgetData.widgetId))
+      .where(eq(widgets.id, id));
+  }
+
   async getWidgetWithContentAndData(id: string): Promise<FlatWidgetData[]> {
     return this.db
       .select()
@@ -181,10 +192,27 @@ export class WidgetRepo {
     transaction?: DbType,
   ): Promise<Widget> {
     const dbActor = transaction === undefined ? this.db : transaction;
+    const normalizedValues: Widget = {
+      id: values.id,
+      name: values.name,
+      description: values.description,
+      subheadline: values.subheadline,
+      allowDataExport: values.allowDataExport,
+      allowShare: values.allowShare,
+      headlineColor: values.headlineColor,
+      height: values.height,
+      icon: values.icon,
+      readRoles: values.readRoles,
+      showName: values.showName,
+      visibility: values.visibility,
+      width: values.width,
+      writeRoles: values.writeRoles,
+      usesQueryParameter: values.usesQueryParameter,
+    };
 
     const updatedWidgetArr = await dbActor
       .update(widgets)
-      .set(values)
+      .set(normalizedValues)
       .where(eq(widgets.id, id))
       .returning();
 

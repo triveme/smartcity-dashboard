@@ -15,11 +15,14 @@ import FontCiWizard from './FontCiWizard';
 import useWizardState from '../../app/custom-hooks/singleState';
 import { SizeProp } from '@fortawesome/fontawesome-svg-core';
 import ComponentsCiWizard from './ComponentsCiWizard';
+import ImportExportCiWizard from './ImportExportCiWizard';
+import TranslationCiWizard from './TranslationCiWizard';
 
 type Props = {
   corporateInfo: CorporateInfo | undefined;
   state: ReturnType<typeof useWizardState>['state'];
   updateState: ReturnType<typeof useWizardState>['updateState'];
+  updateStateBulk: ReturnType<typeof useWizardState>['updateStateBulk'];
   headerLogoId: string | null;
   setHeaderLogoId: Dispatch<SetStateAction<string | null>>;
   sidebarLogos: SidebarLogo[];
@@ -39,6 +42,7 @@ export default function CorporateInfoWizard({
   corporateInfo,
   state,
   updateState,
+  updateStateBulk,
   headerLogoId,
   setHeaderLogoId,
   sidebarLogos,
@@ -54,7 +58,9 @@ export default function CorporateInfoWizard({
     { name: 'Widget', icon: 'Gear', size: 'sm' },
     { name: 'Component', icon: 'Cogs', size: 'sm' },
     { name: 'Logo', icon: 'Image', size: 'sm' },
-    { name: 'Schriftarten', icon: 'Font', size: 'sm' }, // Fonts
+    { name: 'Schriftarten', icon: 'Font', size: 'sm' },
+    { name: 'Import/Export', icon: 'Import/Export', size: 'sm' },
+    { name: 'Übersetzungen', icon: 'Language', size: 'sm' },
   ];
 
   useEffect(() => {
@@ -98,7 +104,7 @@ export default function CorporateInfoWizard({
               );
             })}
           </div>
-          <div className="px-4 py-2">
+          <div className="flex gap-5 items-center px-4 py-2">
             <SaveButton handleSaveClick={handleSaveCorporateInfoClick} />
           </div>
         </div>
@@ -874,6 +880,23 @@ export default function CorporateInfoWizard({
               updateState('cssStyleInjectionValue', cssStyle)
             }
           />
+        )}
+        {activeTab === 'Import/Export' && (
+          <ImportExportCiWizard
+            setNewTheme={(values: CorporateInfo): void => {
+              updateStateBulk(values);
+            }}
+            corporateInfo={corporateInfo}
+            widgetPrimaryColor={state.widgetPrimaryColor}
+            widgetFontColor={state.widgetFontColor}
+            setHeaderLogoId={setHeaderLogoId}
+            setSidebarLogos={setSidebarLogos}
+            borderColor={corporateInfo?.panelBorderColor || '#2B3244'}
+            backgroundColor={corporateInfo?.dashboardPrimaryColor || '#2B3244'}
+          />
+        )}
+        {activeTab === 'Übersetzungen' && (
+          <TranslationCiWizard corporateInfo={corporateInfo} />
         )}
       </div>
     </div>

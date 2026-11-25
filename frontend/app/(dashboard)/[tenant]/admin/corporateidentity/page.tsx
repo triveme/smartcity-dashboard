@@ -44,7 +44,7 @@ export default function CorporateIdentity(): ReactElement {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInitDone, setIsInitDone] = useState(false);
 
-  const { state, updateState } = useWizardState();
+  const { state, updateState, updateStateBulk } = useWizardState();
 
   // Tracking window size and adjust sidebar visibility
   useEffect(() => {
@@ -672,6 +672,7 @@ export default function CorporateIdentity(): ReactElement {
           corporateInfo={corporateInfo}
           state={state}
           updateState={updateState}
+          updateStateBulk={updateStateBulk}
           handleSaveCorporateInfoClick={handleSaveCorporateInfoClick}
           headerLogoId={headerLogoId}
           setHeaderLogoId={setHeaderLogoId}

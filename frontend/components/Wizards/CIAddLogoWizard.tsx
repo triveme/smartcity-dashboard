@@ -38,8 +38,7 @@ const CIAddLogoWizard: FC<Props> = ({
   const [selectedLogoId, setSelectedLogoId] = useState<string | null>('');
   const [selectedHeaderLogoName, setSelectedHeaderLogoName] =
     useState<string>('');
-  const [selectedFaviconName, setSelectedFaviconName] =
-    useState<string>('');
+  const [selectedFaviconName, setSelectedFaviconName] = useState<string>('');
 
   const params = useParams();
   const tenant = (params.tenant as string) || undefined;

@@ -15,7 +15,12 @@ import {
   menuArrowDirectionEnum,
 } from '@/types';
 import { InterestingPlace } from '@/types/dataModels';
-import { CalendarData, PieChartDataItem } from '@/types/dashboardModels';
+import {
+  PieChartDataItem,
+  ResetQueryConfig,
+  ResetWidget,
+  CalendarData,
+} from '@/types/dashboardModels';
 import { MarkerType } from '@/types/mapRelatedModels';
 
 export const EMPTY_PANEL: Panel = {
@@ -52,6 +57,20 @@ export const EMPTY_WIDGET: Widget = {
   writeRoles: [],
 };
 
+export const RESET_WIDGET: ResetWidget = {
+  width: 4,
+  height: 200,
+  icon: '',
+  allowDataExport: false,
+  allowShare: false,
+  description: '',
+  showName: false,
+  subheadline: '',
+  visibility: visibilityEnum.public,
+  readRoles: [],
+  writeRoles: [],
+};
+
 export const EMPTY_QUERY_CONFIG: QueryConfig = {
   fiwareType: '',
   fiwareService: '',
@@ -67,6 +86,22 @@ export const EMPTY_QUERY_CONFIG: QueryConfig = {
   dataUntilDate: '',
   extendedDateSelection: false,
   isBlacklist: false,
+};
+
+export const RESET_QUERY_CONFIG: ResetQueryConfig = {
+  interval: 300,
+  fiwareType: '',
+  entityIds: [],
+  attributes: [],
+  aggrMode: aggregationEnum.none,
+  timeframe: timeframeEnum.day,
+  aggrPeriod: aggregationPeriodEnum.hour,
+  isReporting: false,
+  fiwareService: '',
+  fiwareServicePath: '/',
+  dataStartDate: '',
+  dataUntilDate: '',
+  extendedDateSelection: false,
 };
 
 export const EMPTY_MAP_MODAL_WIDGET: MapModalWidget = {

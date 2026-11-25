@@ -18,6 +18,7 @@ import { PopulateChartService } from 'apps/data-translation-service/src/populate
 import { flattenNgsiExportData } from '../util/ngsi-export.util';
 import { PlatformInternalClientService } from '../platform-internal/platform-internal.client.service';
 import { PlatformQueryResolverService } from '../platform-internal/platform-query-resolver.service';
+import { ValueTranslationRepo } from '../value-translation/value-translation.repo';
 import { CsvDataService } from '../csv-data/csv-data.service';
 
 export type HistoricRange = {
@@ -119,6 +120,7 @@ export class WidgetDataService {
     private readonly populateChartService: PopulateChartService,
     private readonly platformInternalClient: PlatformInternalClientService,
     private readonly platformQueryResolver: PlatformQueryResolverService,
+    private readonly valueTranslationRepo: ValueTranslationRepo,
     private readonly csvDataService: CsvDataService,
   ) {}
 
@@ -215,9 +217,13 @@ export class WidgetDataService {
           },
         );
 
+        const translations =
+          await this.valueTranslationRepo.getAllTranslations();
+
         return this.populateChartService.normalizeHistoricalQueryData(
           queryData,
           queryConfig,
+          translations,
           usesQueryParameter,
         );
       } else {
@@ -307,6 +313,8 @@ export class WidgetDataService {
         ? currentAreaConfig
         : [currentAreaConfig];
 
+      const translations = await this.valueTranslationRepo.getAllTranslations();
+
       // Process each widget (either the original widget or child widgets from combined widget)
       for (const widgetToProcess of expandedWidgets) {
         try {
@@ -373,6 +381,7 @@ export class WidgetDataService {
               ? flattenNgsiExportData(
                   rawDataArray,
                   queryBatch.query_config.attributes || [],
+                  translations,
                 )
               : rawDataArray.flatMap((dataItem) => {
                   // Check for 'attrs' or 'attributes' property

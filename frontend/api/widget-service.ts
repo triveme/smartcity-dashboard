@@ -30,9 +30,19 @@ export async function getWidgets(
   return await fetch(url, {
     headers,
   })
-    .then((res) => res.json())
+    .then(async (res) => {
+      if (!res.ok) {
+        throw new Error(`Failed to fetch widgets: ${res.status}`);
+      }
+      const widgets = await res.json();
+      if (!Array.isArray(widgets)) {
+        throw new Error('Invalid widgets response: expected an array');
+      }
+      return widgets;
+    })
     .catch((err) => {
       console.error(err);
+      throw err;
     });
 }
 
@@ -311,6 +321,34 @@ export async function updateWidgetWithChildren(
   }
 }
 
+export async function resetWidgetData(
+  accessToken: string | undefined,
+  widgetId: string,
+): Promise<void> {
+  const backendUrl = getBackendUrl();
+
+  const headers: Record<string, string> = {};
+
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  try {
+    await axios.post(
+      `${backendUrl}/widgets/${widgetId}/reset-data`,
+      {},
+      { headers },
+    );
+  } catch (err) {
+    console.error(err);
+    if (axios.isAxiosError(err)) {
+      console.error('HTTP Error on resetWidgetData:', err.response?.status);
+      console.error('Response body:', err.response?.data);
+    }
+    throw err;
+  }
+}
+
 export async function getWidgetWithChildrenById(
   accessToken: string | undefined,
   widgetId: string,
@@ -323,6 +361,9 @@ export async function getWidgetWithChildrenById(
         headers: accessToken
           ? { Authorization: `Bearer ${accessToken}` }
           : undefined,
+        params: {
+          includeContent: true,
+        },
       },
     );
     return response.data;

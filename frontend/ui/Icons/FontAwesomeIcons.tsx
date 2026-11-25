@@ -72,6 +72,8 @@ import {
   faDownload,
   faCogs,
   faDatabase,
+  faFileUpload,
+  faArrowsLeftRight,
   faCircleInfo,
   faLink,
   faPaperPlane,
@@ -113,6 +115,7 @@ import {
   faStore,
   faFireExtinguisher,
   faXmark,
+  faLanguage,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const AvailableIcons = [
@@ -213,6 +216,7 @@ export const AvailableIcons = [
   'Store',
   'FireExtinguisher',
   'XMark',
+  'Language',
 ];
 
 type FontAwesomeIconsProps = {
@@ -440,6 +444,12 @@ export default function FontAwesomeIcons(
       return <FontAwesomeIcon icon={faCogs} color={color} size={size} />;
     case 'Database':
       return <FontAwesomeIcon icon={faDatabase} color={color} size={size} />;
+    case 'Upload':
+      return <FontAwesomeIcon icon={faFileUpload} color={color} size={size} />;
+    case 'Import/Export':
+      return (
+        <FontAwesomeIcon icon={faArrowsLeftRight} color={color} size={size} />
+      );
     case 'Info':
       return <FontAwesomeIcon icon={faCircleInfo} color={color} size={size} />;
     case 'Link':
@@ -544,6 +554,8 @@ export default function FontAwesomeIcons(
       );
     case 'XMark':
       return <FontAwesomeIcon icon={faXmark} color={color} size={size} />;
+    case 'Language':
+      return <FontAwesomeIcon icon={faLanguage} color={color} size={size} />;
     default:
       return <div></div>;
   }

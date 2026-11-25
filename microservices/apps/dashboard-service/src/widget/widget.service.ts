@@ -11,6 +11,7 @@ import { DbType, POSTGRES_DB } from '@app/postgres-db';
 import {
   NewWidget,
   Widget,
+  widgetData,
   // widgets,
 } from '@app/postgres-db/schemas/dashboard.widget.schema';
 import { WidgetToPanelService } from '../widget-to-panel/widget-to-panel.service';
@@ -62,6 +63,7 @@ export type WidgetWithChildren = {
   query?: Query;
   queryConfig: QueryConfig;
   datasource: DataSource;
+  queryData?: unknown;
 };
 
 @Injectable()
@@ -238,10 +240,7 @@ export class WidgetService {
       .where(eq(widgetsToTenants.tenantId, tenant.id));
 
     if (!widgetToTenantIds || widgetToTenantIds.length === 0) {
-      throw new HttpException(
-        'Widgets Not Found for Tenant',
-        HttpStatus.NOT_FOUND,
-      );
+      return [];
     }
 
     const widgetIds = widgetToTenantIds.map(
@@ -252,10 +251,6 @@ export class WidgetService {
     if (retrievedWidgets.length === 0) {
       this.logger.warn(
         `Widgets Not Found for Tenant with abbreviation ${abbreviation}`,
-      );
-      throw new HttpException(
-        'Widgets Not Found for Tenant',
-        HttpStatus.NOT_FOUND,
       );
     }
 
@@ -720,6 +715,12 @@ export class WidgetService {
 
       await this.tabService.handleSpecialTabs(widgetWithChildren.tab);
 
+      const queryData =
+        flatWidgetData.find((row) => row?.query?.queryData)?.query?.queryData ??
+        null;
+
+      widgetWithChildren.queryData = queryData;
+
       return widgetWithChildren;
     } catch (error) {
       this.logger.error(`Error populating widget content for ${id}:`, error);
@@ -990,6 +991,40 @@ export class WidgetService {
     const query = await this.queryService.create(newQuery, tx);
 
     return query.id;
+  }
+
+  async resetWidgeAndQuerytData(widgetId: string): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      // Clear query.queryData for all queries associated with this widget
+      const tabsForWidget = await this.tabService.getTabsByWidgetId(widgetId);
+
+      for (const tab of tabsForWidget) {
+        try {
+          const query = await this.queryService.getQueryByTabId(tab.id);
+          if (query?.id) {
+            await this.queryService.update(query.id, { queryData: [] }, tx); // clear queryData
+          }
+        } catch (error) {
+          this.logger.error(
+            `Error clearing queryData during reset for tab ${tab.id}:`,
+            error,
+          );
+        }
+      }
+
+      // Clear widget_data.data for this widget
+      try {
+        await tx
+          .update(widgetData)
+          .set({ data: {} })
+          .where(eq(widgetData.widgetId, widgetId));
+      } catch (error) {
+        this.logger.error(
+          `Error clearing widget_data during reset for widget ${widgetId}:`,
+          error,
+        );
+      }
+    });
   }
 
   private populateRoles(

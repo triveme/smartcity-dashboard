@@ -29,6 +29,7 @@ describe('Inline map popup decimal places', () => {
         marker,
         isCombinedMap: false,
         decimalSeparator: ',',
+        translations: [],
         ...overrides,
       }),
     );

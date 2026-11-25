@@ -26,6 +26,7 @@ import { GeneralSettingsModule } from './general-settings/general-settings.modul
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { NoStoreCacheInterceptor } from './http-cache/no-store-cache.interceptor';
+import { ValueTranslationModule } from './value-translation/value-translation.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { NoStoreCacheInterceptor } from './http-cache/no-store-cache.interceptor
     LogoModule,
     LoggerModule,
     GeneralSettingsModule,
+    ValueTranslationModule,
   ],
   providers: [
     AuthDataService,

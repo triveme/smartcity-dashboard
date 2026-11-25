@@ -68,8 +68,6 @@ const sanitizeCSSInjection = (userInput: string): string => {
 
     textFilter(text, tagName) {
       if (tagName === 'style') {
-        console.log(text);
-
         return text;
       }
 

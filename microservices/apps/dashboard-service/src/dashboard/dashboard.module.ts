@@ -45,6 +45,7 @@ import { PopulateChartService } from 'apps/data-translation-service/src/populate
 import { DataTranslationRepo } from 'apps/data-translation-service/src/data-translation.repo';
 import { PopulateMapService } from 'apps/data-translation-service/src/populate/populate-map.service';
 import { RoundingService } from 'apps/data-translation-service/src/transformation/rounding.service';
+import { ValueTranslationRepo } from '../value-translation/value-translation.repo';
 import { CsvDataModule } from '../csv-data/csv-data.module';
 
 @Module({
@@ -78,18 +79,19 @@ import { CsvDataModule } from '../csv-data/csv-data.module';
     WidgetToPanelRepo,
     WidgetToTenantRepo,
     WidgetRepo,
-    WidgetService,
     TabService,
     TabRepo,
     CorporateInfoSidebarLogosRepo,
     LogoRepo,
     LogoService,
     GeneralSettingsRepo,
+    WidgetService,
     WidgetDataService,
     PopulateChartService,
     DataTranslationRepo,
     PopulateMapService,
     RoundingService,
+    ValueTranslationRepo,
   ],
   controllers: [DashboardController],
 })

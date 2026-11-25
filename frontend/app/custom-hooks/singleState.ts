@@ -207,6 +207,7 @@ type UseWizardStateReturn = {
     key: K,
     value: CorporateInfo[K],
   ) => void;
+  updateStateBulk: (values: Partial<CorporateInfo>) => void;
 };
 
 const useWizardState = (): UseWizardStateReturn => {
@@ -222,7 +223,11 @@ const useWizardState = (): UseWizardStateReturn => {
     }));
   };
 
-  return { state, updateState };
+  const updateStateBulk = (values: Partial<CorporateInfo>): void => {
+    setState((prevState) => ({ ...prevState, ...values }));
+  };
+
+  return { state, updateState, updateStateBulk };
 };
 
 export default useWizardState;

@@ -365,6 +365,13 @@
       "when": 1791451327094,
       "tag": "0051_heavy_mongu_1.4.4",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "5",
+      "when": 1792571660465,
+      "tag": "0052_unique_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }

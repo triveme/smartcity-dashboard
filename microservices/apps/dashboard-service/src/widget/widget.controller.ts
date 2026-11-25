@@ -283,4 +283,26 @@ export class WidgetController {
       request.headers.authorization,
     );
   }
+
+  @Public()
+  @Post('/:id/reset-data')
+  async resetWidgetData(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() request: AuthenticatedRequest,
+  ): Promise<void> {
+    const roles = request.roles ?? [];
+
+    if (
+      this.authHelperUtility.isAdmin(roles) ||
+      this.authHelperUtility.isEditor(roles)
+    ) {
+      await this.service.resetWidgeAndQuerytData(id);
+      return;
+    } else {
+      throw new HttpException(
+        'Unauthorized to reset widget data',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
 }

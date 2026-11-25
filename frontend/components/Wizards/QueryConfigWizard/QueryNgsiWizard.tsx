@@ -323,6 +323,7 @@ export default function QueryNgsiWizard(
                       iconColor={iconColor}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
+                      searchable={true}
                     />
                   </div>
                   <RefreshButton
@@ -379,6 +380,7 @@ export default function QueryNgsiWizard(
                       iconColor={iconColor}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
+                      searchable={true}
                     />
                   </div>
                   <RefreshButton
@@ -468,6 +470,7 @@ export default function QueryNgsiWizard(
                       iconColor={iconColor}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
+                      searchable={true}
                     />
                   </div>
                   <RefreshButton
@@ -542,6 +545,7 @@ export default function QueryNgsiWizard(
                       iconColor={iconColor}
                       borderColor={borderColor}
                       backgroundColor={backgroundColor}
+                      searchable={true}
                     />
                   </div>
                   <RefreshButton

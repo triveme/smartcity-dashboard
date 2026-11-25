@@ -333,6 +333,7 @@ export default function QueryInternalDataWizard(
                 iconColor={iconColor}
                 borderColor={borderColor}
                 backgroundColor={backgroundColor}
+                searchable={true}
               />
             </div>
             <RefreshButton

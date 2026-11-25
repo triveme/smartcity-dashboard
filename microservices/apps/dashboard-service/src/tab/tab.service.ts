@@ -195,6 +195,44 @@ export class TabService {
     }
   }
 
+  /**
+   * Notdienste wechseln i.d.R. zwischen 8 und 9 Uhr (lokale Ortszeit).
+   * Gibt true zurueck, wenn es jetzt bereits 09:00 Uhr oder spaeter ist,
+   * die Daten aber vor 09:00 Uhr des heutigen Tages abgerufen wurden und
+   * damit noch den Notdienst von gestern enthalten koennen.
+   */
+  private isPharmacyDataBeforeNotdienstWechsel(
+    lastUpdate: string | Date,
+    now: Date = new Date(),
+  ): boolean {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Berlin',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    });
+    const toParts = (date: Date): { day: string; hour: number } => {
+      const parts = Object.fromEntries(
+        formatter.formatToParts(date).map((p) => [p.type, p.value]),
+      );
+      return {
+        day: `${parts.year}-${parts.month}-${parts.day}`,
+        hour: Number(parts.hour),
+      };
+    };
+
+    const current = toParts(now);
+    if (current.hour < 9) {
+      return false;
+    }
+    const last = toParts(new Date(lastUpdate));
+    return (
+      last.day < current.day || (last.day === current.day && last.hour < 9)
+    );
+  }
+
   private async handlePharmacyDetails(tab: Tab): Promise<void> {
     if (tab.componentType !== 'Apotheke') {
       return;
@@ -208,6 +246,8 @@ export class TabService {
     }
 
     // In cases: last fetch was less than 6 hours AND
+    //           the last fetch was not before today's Notdienstwechsel (09:00)
+    //           although it is already past 09:00 AND
     //           tab already has details AND
     //           fetched data hs the same zip than the tab
     // do not fetch, return with the fethced values
@@ -215,6 +255,7 @@ export class TabService {
       tab.pharmacyLastUpdate &&
       new Date(tab.pharmacyLastUpdate).getTime() >=
         new Date(new Date().getTime() - 6 * 60 * 60 * 1000).getTime() &&
+      !this.isPharmacyDataBeforeNotdienstWechsel(tab.pharmacyLastUpdate) &&
       tab.pharmacyDetails &&
       tab.pharmacyZipCode == JSON.parse(tab.pharmacyDetails)?.parameter?.plzort
     ) {
@@ -227,7 +268,7 @@ export class TabService {
       const pharmacyServiceUrl =
         'https://apotheken.notdienstdaten.de/emergencies_xml/';
       const response = await axios.get(
-        `${pharmacyServiceUrl}?plzort=${tab.pharmacyZipCode ?? 36119}`,
+        `${pharmacyServiceUrl}?plzort=${tab.pharmacyZipCode ?? 36119}&radius=40`,
         {
           auth: {
             username: tab.pharmacyUsername,

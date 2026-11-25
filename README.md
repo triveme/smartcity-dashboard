@@ -67,6 +67,7 @@ The Jenkins pipeline is defined in the Jenkinsfile. It includes stages for build
 ## Additional Documentation
 - [Technical Documentation](docs/technical-documentation.md)
 - [Project Dependencies](docs/project-dependencies.md)
+- [Theme Import / Export (Corporate Identity)](docs/theme-import-export.md)
 - [Kubernetes Setup (Internal Deployment)](k8s/README-internal.adoc)
 - [Kubernetes Setup (External Deployment)](k8s/README-external.adoc)
 

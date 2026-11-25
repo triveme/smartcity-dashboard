@@ -14,6 +14,7 @@ export type WidgetWithChildren = {
   tab: Tab;
   queryConfig: QueryConfig;
   datasource: DataSource;
+  queryData?: unknown;
 };
 
 export type WidgetWithComponentTypes = {
